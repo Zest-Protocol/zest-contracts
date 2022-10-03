@@ -1,0 +1,218 @@
+---
+id: 0
+name: "Simulated deployment, used as a default for `clarinet console`, `clarinet test` and `clarinet check`"
+network: simnet
+genesis:
+  wallets:
+    - name: deployer
+      address: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+      balance: "100000000000000"
+    - name: wallet_1
+      address: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
+      balance: "100000000000000"
+    - name: wallet_2
+      address: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+      balance: "100000000000000"
+    - name: wallet_3
+      address: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+      balance: "100000000000000"
+    - name: wallet_4
+      address: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
+      balance: "100000000000000"
+    - name: wallet_5
+      address: ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB
+      balance: "100000000000000"
+    - name: wallet_6
+      address: ST3AM1A56AK2C1XAFJ4115ZSV26EB49BVQ10MGCS0
+      balance: "100000000000000"
+    - name: wallet_7
+      address: ST3PF13W7Z0RRM42A8VZRVFQ75SV1K26RXEP8YGKJ
+      balance: "100000000000000"
+    - name: wallet_8
+      address: ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP
+      balance: "100000000000000"
+    - name: wallet_9
+      address: STNHKEPYEPJ8ET55ZZ0M5A34J0R3N5FM2CMMMAZ6
+      balance: "100000000000000"
+  contracts:
+    - pox
+    - costs-v1
+    - bns
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - emulated-contract-publish:
+            contract-name: proposal-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/traits/proposal-trait.clar
+        - emulated-contract-publish:
+            contract-name: extension-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/traits/extension-trait.clar
+        - emulated-contract-publish:
+            contract-name: executor-dao
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/executor-dao.clar
+        - emulated-contract-publish:
+            contract-name: zge004-onboard-borrower
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/extensions/zge004-onboard-borrower.clar
+        - emulated-contract-publish:
+            contract-name: zgp001-kill-emergency-execute
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/proposals/zgp001-kill-emergency-execute.clar
+        - emulated-contract-publish:
+            contract-name: sip-010-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/sip-010-trait.clar
+        - emulated-contract-publish:
+            contract-name: vault-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/vault-trait.clar
+        - emulated-contract-publish:
+            contract-name: distribution-token-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/distribution-token-trait.clar
+        - emulated-contract-publish:
+            contract-name: ownable-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/ownable-trait.clar
+        - emulated-contract-publish:
+            contract-name: lp-token-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/lp-token-trait.clar
+        - emulated-contract-publish:
+            contract-name: swap-router-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/swap-router-trait.clar
+        - emulated-contract-publish:
+            contract-name: payment-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/payment-trait.clar
+        - emulated-contract-publish:
+            contract-name: globals
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/globals.clar
+        - emulated-contract-publish:
+            contract-name: liquidity-vault-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/liquidity-vault-trait.clar
+        - emulated-contract-publish:
+            contract-name: coll-vault-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/coll-vault-trait.clar
+        - emulated-contract-publish:
+            contract-name: loan-v1-0
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/loan/loan-v1-0.clar
+        - emulated-contract-publish:
+            contract-name: funding-vault
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/loan/funding-vault.clar
+        - emulated-contract-publish:
+            contract-name: test-utils
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/bitcoin/test/test-utils.clar
+        - emulated-contract-publish:
+            contract-name: clarity-bitcoin
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/bitcoin/test/clarity-bitcoin.clar
+        - emulated-contract-publish:
+            contract-name: governance-token-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/traits/governance-token-trait.clar
+        - emulated-contract-publish:
+            contract-name: zge001-proposal-voting
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/extensions/zge001-proposal-voting.clar
+        - emulated-contract-publish:
+            contract-name: zge002-emergency-proposals
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/extensions/zge002-emergency-proposals.clar
+        - emulated-contract-publish:
+            contract-name: zge003-emergency-execute
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/extensions/zge003-emergency-execute.clar
+        - emulated-contract-publish:
+            contract-name: onboarding
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/onboarding.clar
+        - emulated-contract-publish:
+            contract-name: coll-vault
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/loan/coll-vault.clar
+    - id: 1
+      transactions:
+        - emulated-contract-publish:
+            contract-name: xbtc
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/token/xbtc-simnet.clar
+        - emulated-contract-publish:
+            contract-name: bridge
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/bitcoin/magic-bridge/bridge.clar
+        - emulated-contract-publish:
+            contract-name: rewards-calc-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/rewards-calc-trait.clar
+        - emulated-contract-publish:
+            contract-name: zge000-governance-token
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/extensions/zge000-governance-token.clar
+        - emulated-contract-publish:
+            contract-name: cover-pool-v1-0
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/pool/cover-pool-v1-0.clar
+        - emulated-contract-publish:
+            contract-name: distribution-token-cycles-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/trait/distribution-token-cycles-trait.clar
+        - emulated-contract-publish:
+            contract-name: pool-v1-0
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/pool/pool-v1-0.clar
+        - emulated-contract-publish:
+            contract-name: supplier-interface
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/bitcoin/supplier-interface.clar
+        - emulated-contract-publish:
+            contract-name: after-deployment
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/after-deployment_simnet.clar
+        - emulated-contract-publish:
+            contract-name: rewards-calc
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/rewards-calc.clar
+        - emulated-contract-publish:
+            contract-name: zest-reward-dist
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/token/zest-reward-dist.clar
+        - emulated-contract-publish:
+            contract-name: protocol-treasury
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/protocol-treasury.clar
+        - emulated-contract-publish:
+            contract-name: lp-token
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/token/lp-token.clar
+        - emulated-contract-publish:
+            contract-name: liquidity-vault-v1-0
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/pool/liquidity-vault-v1-0.clar
+        - emulated-contract-publish:
+            contract-name: swap-router
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/swap-router.clar
+        - emulated-contract-publish:
+            contract-name: cp-token
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/token/cp-token.clar
+        - emulated-contract-publish:
+            contract-name: payment-fixed
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/loan/payment-fixed.clar
+        - emulated-contract-publish:
+            contract-name: zgp000-bootstrap
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/zest-dao/contracts/proposals/zgp000-bootstrap-simnet.clar

@@ -3,6 +3,8 @@
 
 (use-trait ft .sip-010-trait.sip-010-trait)
 
+;; (define-data-var contract-owner principal .executor-dao)
+
 (define-data-var contract-owner principal tx-sender)
 
 
@@ -29,6 +31,14 @@
   )
 )
 
+;; transfers funds from the vault to recipient
+;;
+;; @restricted contract-owner
+;; @returns true
+;;
+;; @param amount: amount of funds
+;; @param recipient: recipient of the funds
+;; @param ft: SIP-010 token contract
 (define-public (transfer (amount uint) (recipient principal) (ft <ft>))
     (begin
       (try! (is-approved-contract contract-caller))
@@ -36,23 +46,23 @@
     )
 )
 
-;; --- approved
+;; --- approved contracts
 
 (define-map approved-contracts principal bool)
 
-(define-public (add-contract (contract principal))
-  (begin
-		(asserts! (is-contract-owner contract-caller) ERR_UNAUTHORIZED)
-		(ok (map-set approved-contracts contract true))
-	)
-)
+;; (define-public (add-contract (contract principal))
+  ;; (begin
+		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+		;; (ok (map-set approved-contracts contract true))
+	;; )
+;; )
 
-(define-public (remove-contract (contract principal))
-  (begin
-		(asserts! (is-contract-owner contract-caller) ERR_UNAUTHORIZED)
-		(ok (map-set approved-contracts contract false))
-	)
-)
+;; (define-public (remove-contract (contract principal))
+  ;; (begin
+		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+		;; (ok (map-set approved-contracts contract false))
+	;; )
+;; )
 
 (define-read-only (is-approved-contract (contract principal))
   (if (default-to false (map-get? approved-contracts contract))
@@ -62,4 +72,7 @@
 )
 
 
-(define-constant ERR_UNAUTHORIZED (err u300))
+(define-constant ERR_UNAUTHORIZED (err u1000))
+
+(map-set approved-contracts .lp-token true)
+(map-set approved-contracts .pool-v1-0 true)

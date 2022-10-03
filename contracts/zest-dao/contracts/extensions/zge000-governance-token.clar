@@ -1,4 +1,4 @@
-;; Title: EDE000 Governance Token
+;; Title: ZGE000 Governance Token
 ;; Author: Marvin Janssen
 ;; Depends-On: 
 ;; Synopsis:
@@ -18,10 +18,10 @@
 (define-fungible-token zest)
 (define-fungible-token zest-locked)
 
-(define-data-var token-name (string-ascii 32) "Zest Token")
-(define-data-var token-symbol (string-ascii 10) "Zest")
+(define-data-var token-name (string-ascii 32) "Zest")
+(define-data-var token-symbol (string-ascii 10) "ZEST")
 (define-data-var token-uri (optional (string-utf8 256)) none)
-(define-data-var token-decimals uint u6)
+(define-data-var token-decimals uint u8)
 
 ;; --- Authorisation check
 

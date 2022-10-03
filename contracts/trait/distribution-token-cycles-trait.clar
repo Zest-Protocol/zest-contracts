@@ -1,4 +1,4 @@
-(define-trait lp-token-trait
+(define-trait distribution-token-cycles-trait
   (
 
     ;; -- SIP-013-trait
@@ -39,6 +39,8 @@
     ;; withdraw earned rewards
     (withdraw-rewards (uint) (response uint uint))
 
+    (withdraw-cycle-rewards (uint) (response uint uint))
+
     ;; withdraw earned rewards
     (add-rewards (uint uint) (response uint uint))
 
@@ -48,18 +50,11 @@
     ;; mint and apply points correction
     (burn (uint uint principal) (response bool uint))
 
-
-    ;; -- Additional DFT functions
-
     ;; cycle rewards functions
     (set-cycle-start (uint uint) (response bool uint))
 
-    ;; get amount of losses per account
-    (recognize-losses (uint principal) (response uint uint))
-
-
-    ;; distribute losses to all stakers
-    (distribute-losses (uint uint) (response uint uint))
+    ;; set rewards in a cycler
+    ;; (set-cycle-rewards (uint uint uint) (response bool uint))
 
   )
 )

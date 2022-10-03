@@ -5,13 +5,14 @@
 (use-trait cv .coll-vault-trait.coll-vault-trait)
 (use-trait ft .sip-010-trait.sip-010-trait)
 (use-trait payment .payment-trait.payment-trait)
+(use-trait swap .swap-router-trait.swap-router-trait)
 
 (impl-trait .ownable-trait.ownable-trait)
 
 (define-data-var last-deposit uint u0)
 (define-data-var last-withdrawal uint u0)
 
-(define-public (deposit-to-pool (lp-token <lp-token>) (zp-token <dt>) (lv <lv>))
+(define-public (deposit-to-pool (lp-token <lp-token>) (zp-token <dt>) (lv <lv>) (factor uint))
   (let (
     (last-id (var-get last-deposit))
     (last-payment (unwrap! (get-deposit last-id) ERR_INVALID_KEY_VAL))
@@ -19,7 +20,7 @@
     (height (get height last-payment))
   )
     (try! (transfer amount .pool-v1-0))
-    (try! (contract-call? .pool-v1-0 deposit lp-token zp-token amount height lv))
+    (try! (contract-call? .pool-v1-0 send-funds lp-token zp-token amount factor height lv))
     (ok (var-set last-deposit (+ u1 last-id)))
   )
 )
@@ -27,31 +28,31 @@
 (define-public (withdraw-from-pool (lp-token <lp-token>) (lv <lv>) (amount uint))
   (begin
     (try! (transfer amount .pool-v1-0))
-    (contract-call? .pool-v1-0 withdraw lp-token lv amount .xbtc)
+    (contract-call? .pool-v1-0 withdraw lp-token lv amount)
   )
 )
 
-(define-private (transfer (amount uint) (recipient principal))
-  (as-contract (contract-call? .xbtc transfer amount tx-sender recipient none))
+(define-private (transfer (amount uint) (recipient principal) (xbtc <ft>))
+  (as-contract (contract-call? xbtc transfer amount tx-sender recipient none))
 )
 
-(define-public (drawdown (loan-id uint) (height uint) (coll-token <ft>) (coll-vault <cv>) (fv <v>))
+(define-public (drawdown (loan-id uint) (height uint) (lp-token <lp-token>) (coll-token <ft>) (coll-vault <cv>) (fv <v>))
   (begin
-    (contract-call? .loan-v1-0 drawdown loan-id height coll-token coll-vault fv)
+    (contract-call? .pool-v1-0 drawdown loan-id height lp-token coll-token coll-vault fv)
   )
 )
 
-(define-public (verify-payment (loan-id uint) (height uint) (payment <payment>) (lp-token <lp-token>) (sp-token <lp-token>) (amount uint))
-  (begin
-    (try! (transfer amount .loan-v1-0))
-    (contract-call? .loan-v1-0 make-payment loan-id height payment lp-token sp-token amount)
-  )
-)
-
-(define-public (verify-full-payment (loan-id uint) (height uint) (payment <payment>) (lp-token <lp-token>) (sp-token <lp-token>) (amount uint))
+(define-public (verify-payment (loan-id uint) (height uint) (payment <payment>) (lp-token <lp-token>) (cp-token <lp-token>) (zd-token <dt>) (swap-router <swap>) (amount uint))
   (begin
     (try! (transfer amount .loan-v1-0))
-    (contract-call? .loan-v1-0 make-full-payment loan-id height payment lp-token sp-token amount)
+    (contract-call? .loan-v1-0 make-payment loan-id height payment lp-token cp-token zd-token swap-router amount)
+  )
+)
+
+(define-public (verify-full-payment (loan-id uint) (height uint) (payment <payment>) (lp-token <lp-token>) (cp-token <lp-token>) (zd-token <dt>) (swap-router <swap>) (amount uint))
+  (begin
+    (try! (transfer amount .loan-v1-0))
+    (contract-call? .loan-v1-0 make-full-payment loan-id height payment lp-token cp-token zd-token swap-router amount)
   )
 )
 
@@ -108,4 +109,4 @@
 )
 
 (define-constant ERR_INVALID_KEY_VAL (err u3000))
-(define-constant ERR_UNAUTHORIZED (err u300))
+(define-constant ERR_UNAUTHORIZED (err u1000))

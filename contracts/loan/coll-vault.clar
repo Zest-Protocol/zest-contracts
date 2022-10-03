@@ -7,69 +7,110 @@
 
 (define-map loan-coll uint { coll-type: principal, amount: uint})
 
-(define-read-only (is-loan)
-    (is-eq contract-caller .loan-v1-0)
+(define-public (get-loan-coll (loan-id uint))
+  (ok (unwrap! (map-get? loan-coll loan-id) ERR_INVALID_LOAN_ID))
 )
 
-(define-data-var loan-contract principal tx-sender)
+;; --- approved
 
-(define-public (set-loan-contract (loan principal))
-  (begin
-    (asserts! (is-contract-owner contract-caller) ERR_UNAUTHORIZED)
-    (ok (var-set loan-contract loan))
+(define-map approved-contracts principal bool)
+
+;; (define-public (add-contract (contract principal))
+  ;; (begin
+		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+		;; (ok (map-set approved-contracts contract true))
+	;; )
+;; )
+
+;; (define-public (remove-contract (contract principal))
+  ;; (begin
+		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+		;; (ok (map-set approved-contracts contract false))
+	;; )
+;; )
+
+(define-read-only (is-approved-contract (contract principal))
+  (if (default-to false (map-get? approved-contracts contract))
+    (ok true)
+    ERR_UNAUTHORIZED
   )
 )
 
-(define-read-only (get-loan-contract)
-  (var-get loan-contract)
-)
-
-(define-public (get-loan-coll (loan-id uint))
-  (ok (unwrap! (map-get? loan-coll loan-id) ERR_INVALID_VALUES))
-)
-
+;; stores collateral into the contract
+;;
+;; @restricted loan-contract
+;; @returns true
+;;
+;; @param coll-type: new loan contract
+;; @param amount: amount of collateral stored
+;; @param loan-id: loan associated to the amount of collateral
 (define-public (store (coll-type <ft>) (amount uint) (loan-id uint))
-    (begin
-        (asserts! (is-loan) ERR_UNAUTHORIZED)
-        (try! (contract-call? coll-type transfer amount tx-sender (as-contract tx-sender) none))
-        (map-insert loan-coll loan-id { coll-type: (contract-of coll-type), amount: amount })
-        (ok true)
-    )
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (try! (contract-call? coll-type transfer amount tx-sender (as-contract tx-sender) none))
+    (map-insert loan-coll loan-id { coll-type: (contract-of coll-type), amount: amount })
+    (ok true)
+  )
 )
 
+;; add collateral for a loan that is already initiated
+;;
+;; @restricted loan-contract
+;; @returns true
+;;
+;; @param coll-type: new loan contract
+;; @param amount: amount of collateral stored
+;; @param loan-id: loan associated to the amount of collateral
 (define-public (add-collateral (coll-type <ft>) (amount uint) (loan-id uint))
   (let (
-    (coll (unwrap! (map-get? loan-coll loan-id) ERR_LOAN_DOES_NOT_EXIST))
+    (coll (unwrap! (map-get? loan-coll loan-id) ERR_INVALID_LOAN_ID))
   )
-    (asserts! (is-loan) ERR_UNAUTHORIZED)
+    (try! (is-approved-contract contract-caller))
     (try! (contract-call? coll-type transfer amount tx-sender (as-contract tx-sender) none))
     (map-set loan-coll loan-id { coll-type: (contract-of coll-type), amount: (+ (get amount coll) amount) })
     (ok true)
   )
 )
 
+;; empties the amount of collateral stored for a loan
+;;
+;; @restricted loan-contract
+;; @returns true
+;;
+;; @param coll-type: new loan contract
+;; @param loan-id: loan associated to the amount of collateral
+;; @param recipient: recipient of the collateral
 (define-public (draw (coll-type <ft>) (loan-id uint) (recipient principal))
-    (let (
-        (coll (unwrap! (map-get? loan-coll loan-id) ERR_LOAN_DOES_NOT_EXIST))
-        (sender (as-contract tx-sender))
-    )
-        (asserts! (is-loan) ERR_UNAUTHORIZED)
-        ;; empty collateral from Loan
-        (try! (as-contract (contract-call? coll-type transfer (get amount coll) sender recipient none)))
-        (map-set loan-coll loan-id { coll-type: (contract-of coll-type), amount: u0 })
-        (ok (get amount coll))
-    )
+  (let (
+    (coll (unwrap! (map-get? loan-coll loan-id) ERR_INVALID_LOAN_ID))
+    (sender (as-contract tx-sender))
+  )
+    (try! (is-approved-contract contract-caller))
+    ;; empty collateral from Loan
+    (try! (as-contract (contract-call? coll-type transfer (get amount coll) sender recipient none)))
+    (map-set loan-coll loan-id { coll-type: (contract-of coll-type), amount: u0 })
+    (ok (get amount coll))
+  )
 )
 
+;; transfers funds from the collateral vault to recipient
+;;
+;; @restricted loan-contract
+;; @returns true
+;;
+;; @param amount: amount of collateral
+;; @param recipient: recipient of the collateral
+;; @param ft: SIP-010 token contract
 (define-public (transfer (amount uint) (recipient principal) (ft <ft>))
-    (begin
-      (asserts! (is-loan) ERR_UNAUTHORIZED)
-      (as-contract (contract-call? ft transfer amount tx-sender recipient none))
-    )
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (as-contract (contract-call? ft transfer amount tx-sender recipient none))
+  )
 )
 
 ;; --- ownable trait
 
+;; (define-data-var contract-owner principal .executor-dao)
 (define-data-var contract-owner principal tx-sender)
 (define-data-var late-fee uint u10) ;; late fee in Basis Points
 
@@ -88,6 +129,7 @@
   (is-eq caller (var-get contract-owner))
 )
 
-(define-constant ERR_UNAUTHORIZED (err u300))
-(define-constant ERR_LOAN_DOES_NOT_EXIST (err u304))
-(define-constant ERR_INVALID_VALUES (err u5001))
+(define-constant ERR_UNAUTHORIZED (err u1000))
+(define-constant ERR_INVALID_LOAN_ID (err u3005))
+
+(map-set approved-contracts .loan-v1-0 true)

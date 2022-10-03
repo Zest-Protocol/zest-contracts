@@ -1,4 +1,4 @@
-;; Title: ZGE003 Emergency Proposals
+;; Title: ZGE002 Emergency Proposals
 ;; Author: Marvin Janssen
 ;; Depends-On: ZGE001
 ;; Synopsis:

@@ -1,14 +1,15 @@
-;; holds xBTC rewards to LPers in a Pool
+;; holds Zest rewards to stakers
 
 (impl-trait .lp-token-trait.lp-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
 (use-trait ft .sip-010-trait.sip-010-trait)
 
-(define-fungible-token lp)
+(define-fungible-token sp-001)
 (define-map token-balances {token-id: uint, owner: principal} uint)
 (define-map token-supplies uint uint)
-(define-map token-uris uint (string-ascii 256))
+
+(define-data-var token-uri (string-utf8 256) u"")
 
 ;; (define-data-var contract-owner principal .executor-dao)
 (define-data-var contract-owner principal tx-sender)
@@ -29,7 +30,7 @@
 )
 
 (define-read-only (get-overall-balance (who principal))
-	(ok (ft-get-balance lp who))
+	(ok (ft-get-balance sp-001 who))
 )
 
 (define-read-only (get-total-supply (token-id uint))
@@ -41,22 +42,15 @@
 )
 
 (define-read-only (get-overall-supply)
-	(ok (ft-get-supply lp))
+	(ok (ft-get-supply sp-001))
 )
 
 (define-read-only (get-decimals (token-id uint))
 	(ok u0)
 )
 
-(define-public (set-token-uri (token-id uint) (value (string-ascii 256)))
-  (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (ok (map-set token-uris token-id value))
-  )
-)
-
 (define-read-only (get-token-uri (token-id uint))
-	(ok (map-get? token-uris token-id))
+	(ok none)
 )
 
 (define-public (transfer (token-id uint) (amount uint) (sender principal) (recipient principal))
@@ -78,7 +72,7 @@
 		(asserts! (<= amount sender-balance) ERR_INSUFFICIENT_BALANCE)
 		(set-balance token-id (- sender-balance amount) sender)
 		(set-balance token-id (+ (get-balance-uint token-id recipient) amount) recipient)
-		(try! (ft-transfer? lp amount sender recipient))
+		(try! (ft-transfer? sp-001 amount sender recipient))
 		(print {type: "sft_transfer", token-id: token-id, amount: amount, sender: sender, recipient: recipient})
 		(ok true)
 	)
@@ -120,10 +114,11 @@
 ;; -- Recognize earnings --
 
 (define-constant POINTS_MULTIPLIER (pow u2 u64))
-
 (define-map points-per-share uint uint)
+
 (define-map points-correction { token-id: uint, owner: principal } int)
 (define-map withdrawn-funds { token-id: uint, owner: principal } uint)
+
 
 (define-read-only (get-points-per-share (token-id uint))
   (default-to u0 (map-get? points-per-share token-id))
@@ -148,12 +143,10 @@
 (define-public (withdraw-rewards (token-id uint))
   (let (
     (recipient tx-sender)
-    (recipient-contract contract-caller)
     (withdrawable-funds (withdrawable-funds-of token-id recipient))
   )
     (try! (is-approved-contract contract-caller))
     (map-set withdrawn-funds { token-id: token-id , owner: recipient} (+ withdrawable-funds (get-withdrawn-funds token-id recipient)))
-    ;; (as-contract (try! (contract-call? .xbtc transfer withdrawable-funds tx-sender recipient none)))
     (ok withdrawable-funds)
   )
 )
@@ -176,7 +169,7 @@
 (define-public (mint (token-id uint) (amount uint) (recipient principal))
 	(begin
     (try! (is-approved-contract contract-caller))
-		(try! (ft-mint? lp amount recipient))
+		(try! (ft-mint? sp-001 amount recipient))
 		;; (try! (tag-nft-token-id {token-id: token-id, owner: recipient}))
 		(set-balance token-id (+ (get-balance-uint token-id recipient) amount) recipient)
 		(map-set token-supplies token-id (+ (unwrap-panic (get-total-supply token-id)) amount))
@@ -189,7 +182,7 @@
 (define-public (burn (token-id uint) (amount uint) (owner principal))
  (begin
     (try! (is-approved-contract contract-caller))
-    (try! (ft-burn? lp amount owner))
+    (try! (ft-burn? sp-001 amount owner))
     (set-balance token-id (- (get-balance-uint token-id owner) amount) owner)
 		(map-set token-supplies token-id (- (unwrap-panic (get-total-supply token-id)) amount))
     (burn-priv token-id amount owner)
@@ -197,6 +190,7 @@
     (ok true)
 	)
 )
+
 
 (define-private (burn-priv (token-id uint) (amount uint) (owner principal))
   (let (
@@ -340,10 +334,10 @@
 
 ;; -- pool rewards storage
 
-;; ;; token-id -> cycle-start
-;; (define-map cycle-start uint uint)
-;; ;; total rewards in cycle
-;; (define-map rewards { token-id: uint, cycle: uint} uint)
+;; token-id -> cycle-start
+(define-map cycle-start uint uint)
+;; total rewards in cycle
+(define-map rewards { token-id: uint, cycle: uint} uint)
 
 (define-public (set-cycle-start (token-id uint) (start uint))
   (begin
@@ -357,7 +351,6 @@
 (define-constant ERR_PANIC (err u7001))
 
 
-(map-set approved-contracts .loan-v1-0 true)
-(map-set approved-contracts .pool-v1-0 true)
 (map-set approved-contracts .payment-fixed true)
-(map-set approved-contracts .supplier-interface true)
+(map-set approved-contracts .pool-v1-0 true)
+(map-set approved-contracts .cover-pool-v1-0 true)

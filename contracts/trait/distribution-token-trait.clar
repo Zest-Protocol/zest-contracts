@@ -1,36 +1,52 @@
 (define-trait distribution-token-trait
   (
-    ;; Transfer from the caller to a new principal
-    (transfer (uint principal principal (optional (buff 34))) (response bool uint))
 
-    ;; the human readable name of the token
-    (get-name () (response (string-ascii 32) uint))
+    ;; -- SIP-013-trait
+    ;; Get a token type balance of the passed principal.
+		(get-balance (uint principal) (response uint uint))
 
-    ;; the ticker symbol, or empty if none
-    (get-symbol () (response (string-ascii 32) uint))
+		;; Get the total SFT balance of the passed principal.
+		(get-overall-balance (principal) (response uint uint))
 
-    ;; the number of decimals used, e.g. 6 would mean 1_000_000 represents 1 token
-    (get-decimals () (response uint uint))
+		;; Get the current total supply of a token type.
+		(get-total-supply (uint) (response uint uint))
 
-    ;; the balance of the passed principal
-    (get-balance (principal) (response uint uint))
+		;; Get the overall SFT supply.
+		(get-overall-supply () (response uint uint))
 
-    ;; the current total supply (which does not need to be a constant)
-    (get-total-supply () (response uint uint))
+		;; Get the number of decimal places of a token type.
+		(get-decimals (uint) (response uint uint))
 
-    ;; an optional URI that represents metadata of this token
-    (get-token-uri () (response (optional (string-utf8 256)) uint))
+		;; Get an optional token URI that represents metadata for a specific token.
+		(get-token-uri (uint) (response (optional (string-ascii 256)) uint))
+
+		;; Transfer from one principal to another.
+		(transfer (uint uint principal principal) (response bool uint))
+
+		;; Transfer from one principal to another with a memo.
+		(transfer-memo (uint uint principal principal (buff 34)) (response bool uint))
+
+
+    ;; -- SIP-013-transfer-many-trait
+    ;; Transfer many tokens at once.
+		(transfer-many ((list 200 {token-id: uint, amount: uint, sender: principal, recipient: principal})) (response bool uint))
+
+		;; Transfer many tokens at once with memos.
+		(transfer-many-memo ((list 200 {token-id: uint, amount: uint, sender: principal, recipient: principal, memo: (buff 34)})) (response bool uint))
+
+
+    ;; -- DFT trait functions
+    ;; withdraw earned rewards
+    (withdraw-rewards (uint) (response uint uint))
 
     ;; withdraw earned rewards
-    (withdraw-funds () (response int uint))
-
-    ;; withdraw earned rewards
-    (deposit-rewards (int) (response int uint))
+    (add-rewards (uint uint) (response uint uint))
 
     ;; mint and apply points correction
-    (mint (principal uint) (response bool uint))
+    (mint (uint uint principal) (response bool uint))
 
     ;; mint and apply points correction
-    (burn (principal uint) (response bool uint))
+    (burn (uint uint principal) (response bool uint))
+
   )
 )

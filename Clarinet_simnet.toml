@@ -7,26 +7,25 @@ requirements = ["SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin"]
 cache_dir = ".requirements"
 cache_location=".requirements"
 boot_contracts = ["pox", "costs-v1", "bns"]
+
 [contracts.after-deployment]
-path = "contracts/after-deployment.clar"
+path = "contracts/after-deployment_simnet.clar"
 
 [contracts.bridge]
 path = "contracts/bitcoin/magic-bridge/bridge.clar"
 
 [contracts.clarity-bitcoin]
-path = "contracts/bitcoin/magic-bridge/clarity-bitcoin.clar"
+path = "contracts/bitcoin/test/clarity-bitcoin.clar"
+
+# [contracts.clarity-bitcoin]
+# path = "contracts/bitcoin/test/clarity-bitcoin.clar"
 
 [contracts.coll-vault]
 path = "contracts/loan/coll-vault.clar"
+depends_on = ["executor-dao"]
 
 [contracts.coll-vault-trait]
 path = "contracts/trait/coll-vault-trait.clar"
-
-[contracts.cover-pool-v1-0]
-path = "contracts/pool/cover-pool-v1-0.clar"
-
-[contracts.cp-token]
-path = "contracts/token/cp-token.clar"
 
 [contracts.distribution-token-trait]
 path = "contracts/trait/distribution-token-trait.clar"
@@ -54,12 +53,14 @@ path = "contracts/trait/liquidity-vault-trait.clar"
 
 [contracts.liquidity-vault-v1-0]
 path = "contracts/pool/liquidity-vault-v1-0.clar"
+depends_on = ["executor-dao"]
 
 [contracts.loan-v1-0]
 path = "contracts/loan/loan-v1-0.clar"
 
 [contracts.lp-token]
 path = "contracts/token/lp-token.clar"
+depends_on = ["executor-dao"]
 
 [contracts.lp-token-trait]
 path = "contracts/trait/lp-token-trait.clar"
@@ -72,12 +73,14 @@ path = "contracts/trait/ownable-trait.clar"
 
 [contracts.payment-fixed]
 path = "contracts/loan/payment-fixed.clar"
+depends_on = ["executor-dao", "pool-v1-0", "loan-v1-0"]
 
 [contracts.payment-trait]
 path = "contracts/trait/payment-trait.clar"
 
 [contracts.pool-v1-0]
 path = "contracts/pool/pool-v1-0.clar"
+depends_on = ["loan-v1-0", "distribution-token-cycles-trait"]
 
 [contracts.proposal-trait]
 path = "contracts/zest-dao/contracts/traits/proposal-trait.clar"
@@ -87,6 +90,7 @@ path = "contracts/protocol-treasury.clar"
 
 [contracts.rewards-calc]
 path = "contracts/rewards-calc.clar"
+depends_on = ["executor-dao"]
 
 [contracts.rewards-calc-trait]
 path = "contracts/trait/rewards-calc-trait.clar"
@@ -94,8 +98,17 @@ path = "contracts/trait/rewards-calc-trait.clar"
 [contracts.sip-010-trait]
 path = "contracts/trait/sip-010-trait.clar"
 
+[contracts.cp-token]
+path = "contracts/token/cp-token.clar"
+depends_on = ["executor-dao"]
+
+[contracts.cover-pool-v1-0]
+path = "contracts/pool/cover-pool-v1-0.clar"
+depends_on = ["loan-v1-0", "zge000-governance-token"]
+
 [contracts.supplier-interface]
 path = "contracts/bitcoin/supplier-interface.clar"
+depends_on = ["pool-v1-0"]
 
 [contracts.swap-router]
 path = "contracts/swap-router.clar"
@@ -109,35 +122,40 @@ path = "contracts/bitcoin/test/test-utils.clar"
 [contracts.vault-trait]
 path = "contracts/trait/vault-trait.clar"
 
-[contracts.vesting-logic]
-path = "contracts/vesting-logic.clar"
-
 [contracts.xbtc]
-path = "contracts/token/xbtc.clar"
+path = "contracts/token/xbtc-simnet.clar"
 
 [contracts.zest-reward-dist]
 path = "contracts/token/zest-reward-dist.clar"
+depends_on = ["executor-dao"]
 
 [contracts.zge000-governance-token]
 path = "contracts/zest-dao/contracts/extensions/zge000-governance-token.clar"
+depends_on = ["executor-dao", "governance-token-trait", "sip-010-trait"]
 
 [contracts.zge001-proposal-voting]
 path = "contracts/zest-dao/contracts/extensions/zge001-proposal-voting.clar"
+depends_on = ["executor-dao", "proposal-trait", "extension-trait", "governance-token-trait", "zge000-governance-token"]
 
 [contracts.zge002-emergency-proposals]
 path = "contracts/zest-dao/contracts/extensions/zge002-emergency-proposals.clar"
+depends_on = ["executor-dao", "extension-trait", "zge001-proposal-voting"]
 
 [contracts.zge003-emergency-execute]
 path = "contracts/zest-dao/contracts/extensions/zge003-emergency-execute.clar"
+depends_on = ["executor-dao", "extension-trait", "zge001-proposal-voting"]
 
 [contracts.zge004-onboard-borrower]
 path = "contracts/zest-dao/contracts/extensions/zge004-onboard-borrower.clar"
+depends_on = ["executor-dao", "extension-trait"]
 
 [contracts.zgp000-bootstrap]
-path = "contracts/zest-dao/contracts/proposals/zgp000-bootstrap.clar"
+path = "contracts/zest-dao/contracts/proposals/zgp000-bootstrap-simnet.clar"
+depends_on = ["executor-dao", "proposal-trait", "extension-trait", "zge000-governance-token", "zge001-proposal-voting", "zge002-emergency-proposals", "zge003-emergency-execute"]
 
 [contracts.zgp001-kill-emergency-execute]
 path = "contracts/zest-dao/contracts/proposals/zgp001-kill-emergency-execute.clar"
+depends_on = ["zge003-emergency-execute", "executor-dao"]
 
 [repl]
 costs_version = 1

@@ -1,6 +1,6 @@
 (define-data-var owner principal tx-sender)
 
-(define-constant ERR_UNAUTHORIZED (err u201))
+(define-constant ERR_UNAUTHORIZED (err u1000))
 (define-constant ERR_PANIC (err u202))
 (define-constant ERR_TX_ESCROWED (err u203))
 (define-constant ERR_TX_DOES_NOT_EXIST (err u203))

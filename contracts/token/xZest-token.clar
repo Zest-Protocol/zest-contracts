@@ -1,14 +1,16 @@
-;; holds xBTC rewards to LPers in a Pool
+;; holds Zest rewards to Stakers
 
-(impl-trait .lp-token-trait.lp-token-trait)
+(impl-trait .distribution-token-trait.distribution-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
 (use-trait ft .sip-010-trait.sip-010-trait)
 
-(define-fungible-token lp)
+
+(define-fungible-token zest-dist)
 (define-map token-balances {token-id: uint, owner: principal} uint)
 (define-map token-supplies uint uint)
 (define-map token-uris uint (string-ascii 256))
+
 
 ;; (define-data-var contract-owner principal .executor-dao)
 (define-data-var contract-owner principal tx-sender)
@@ -29,19 +31,19 @@
 )
 
 (define-read-only (get-overall-balance (who principal))
-	(ok (ft-get-balance lp who))
-)
-
-(define-read-only (get-total-supply (token-id uint))
-	(ok (get-total-supply-uint token-id))
+	(ok (ft-get-balance zest-dist who))
 )
 
 (define-read-only (get-total-supply-uint (token-id uint))
 	(default-to u0 (map-get? token-supplies token-id))
 )
 
+(define-read-only (get-total-supply (token-id uint))
+	(ok (get-total-supply-uint token-id))
+)
+
 (define-read-only (get-overall-supply)
-	(ok (ft-get-supply lp))
+	(ok (ft-get-supply zest-dist))
 )
 
 (define-read-only (get-decimals (token-id uint))
@@ -66,24 +68,18 @@
       (points-mag (to-int (* amount (get-points-per-share token-id))))
       (points-correction-from (+ (get-points-correction token-id sender) points-mag))
       (points-correction-to (+ (get-points-correction token-id recipient) points-mag))
-      (loss-mag (to-int (* amount (get-losses-per-share token-id))))
-      (loss-correction-from (+ (get-losses-correction token-id sender) points-mag))
-      (loss-correction-to (+ (get-losses-correction token-id recipient) points-mag))
 		)
     (map-set points-correction { token-id: token-id, owner: sender } points-correction-from)
     (map-set points-correction { token-id: token-id, owner: recipient } points-correction-to)
-    (map-set losses-correction { token-id: token-id, owner: sender } loss-correction-from)
-    (map-set losses-correction { token-id: token-id, owner: recipient } loss-correction-to)
 		(asserts! (or (is-eq sender tx-sender) (is-eq sender contract-caller)) ERR_UNAUTHORIZED)
 		(asserts! (<= amount sender-balance) ERR_INSUFFICIENT_BALANCE)
 		(set-balance token-id (- sender-balance amount) sender)
 		(set-balance token-id (+ (get-balance-uint token-id recipient) amount) recipient)
-		(try! (ft-transfer? lp amount sender recipient))
+		(try! (ft-transfer? zest-dist amount sender recipient))
 		(print {type: "sft_transfer", token-id: token-id, amount: amount, sender: sender, recipient: recipient})
 		(ok true)
 	)
 )
-
 
 (define-public (transfer-memo (token-id uint) (amount uint) (sender principal) (recipient principal) (memo (buff 34)))
 	(begin
@@ -109,7 +105,7 @@
 	(fold transfer-many-memo-iter transfers (ok true))
 )
 
-;; -- distribution-token-trait --
+;; distribution-token-trait BEGIN
 ;; Uses Funds Distribution Token model from : https://github.com/ethereum/EIPs/issues/2222
 ;; token circulation can be of 2^112 because:
 ;; Max satoshi :
@@ -117,14 +113,13 @@
 ;; require 2^51 precision
 ;; and max uint precision is 2^128
 
-;; -- Recognize earnings --
-
 (define-constant POINTS_MULTIPLIER (pow u2 u64))
 
 (define-map points-per-share uint uint)
 (define-map points-correction { token-id: uint, owner: principal } int)
 (define-map withdrawn-funds { token-id: uint, owner: principal } uint)
 
+;; GETTERS
 (define-read-only (get-points-per-share (token-id uint))
   (default-to u0 (map-get? points-per-share token-id))
 )
@@ -148,12 +143,10 @@
 (define-public (withdraw-rewards (token-id uint))
   (let (
     (recipient tx-sender)
-    (recipient-contract contract-caller)
     (withdrawable-funds (withdrawable-funds-of token-id recipient))
   )
     (try! (is-approved-contract contract-caller))
     (map-set withdrawn-funds { token-id: token-id , owner: recipient} (+ withdrawable-funds (get-withdrawn-funds token-id recipient)))
-    ;; (as-contract (try! (contract-call? .xbtc transfer withdrawable-funds tx-sender recipient none)))
     (ok withdrawable-funds)
   )
 )
@@ -174,9 +167,9 @@
 )
 
 (define-public (mint (token-id uint) (amount uint) (recipient principal))
-	(begin
+  (begin
     (try! (is-approved-contract contract-caller))
-		(try! (ft-mint? lp amount recipient))
+		(try! (ft-mint? zest-dist amount recipient))
 		;; (try! (tag-nft-token-id {token-id: token-id, owner: recipient}))
 		(set-balance token-id (+ (get-balance-uint token-id recipient) amount) recipient)
 		(map-set token-supplies token-id (+ (unwrap-panic (get-total-supply token-id)) amount))
@@ -187,9 +180,9 @@
 )
 
 (define-public (burn (token-id uint) (amount uint) (owner principal))
- (begin
+  (begin
     (try! (is-approved-contract contract-caller))
-    (try! (ft-burn? lp amount owner))
+    (try! (ft-burn? zest-dist amount owner))
     (set-balance token-id (- (get-balance-uint token-id owner) amount) owner)
 		(map-set token-supplies token-id (- (unwrap-panic (get-total-supply token-id)) amount))
     (burn-priv token-id amount owner)
@@ -201,13 +194,9 @@
 (define-private (burn-priv (token-id uint) (amount uint) (owner principal))
   (let (
     (point-correction (to-int (* amount (get-points-per-share token-id))))
-    (loss-correction (to-int (* amount (get-losses-per-share token-id))))
   )
     (map-set points-correction { owner: owner, token-id: token-id }
       (+ (get-points-correction token-id owner) point-correction)
-    )
-    (map-set losses-correction { owner: owner, token-id: token-id }
-      (+ (get-losses-correction token-id owner) loss-correction)
     )
   )
 )
@@ -215,13 +204,9 @@
 (define-private (mint-priv (token-id uint) (amount uint) (recipient principal))
   (let (
     (point-correction (to-int (* amount (get-points-per-share token-id))))
-    (loss-correction (to-int (* amount (get-losses-per-share token-id))))
   )
     (map-set points-correction { owner: recipient, token-id: token-id }
       (- (get-points-correction token-id recipient) point-correction)
-    )
-    (map-set losses-correction { owner: recipient, token-id: token-id }
-      (- (get-losses-correction token-id recipient) loss-correction)
     )
   )
 )
@@ -241,60 +226,20 @@
   )
 )
 
-;; -- Recognize losses --
-
-(define-map losses-per-share uint uint)
-(define-map losses-correction { token-id: uint, owner: principal } int)
-(define-map recognized-losses { token-id: uint, owner: principal } uint)
-
-(define-read-only (get-losses-per-share (token-id uint))
-  (default-to u0 (map-get? losses-per-share token-id))
+;; ;; -- ownable-trait --
+(define-public (get-contract-owner)
+  (ok (var-get contract-owner))
 )
 
-(define-read-only (get-losses-correction (token-id uint) (owner principal))
-  (default-to 0 (map-get? losses-correction { token-id: token-id, owner: owner }))
-)
-
-(define-read-only (get-recognized-losses (token-id uint) (owner principal))
-  (default-to u0 (map-get? recognized-losses { token-id: token-id, owner: owner }))
-)
-
-(define-public (recognize-losses (token-id uint) (owner principal))
-  (let (
-    (recipient tx-sender)
-    (losses (recognizable-losses-of token-id recipient))
-  )
-    (try! (is-approved-contract contract-caller))
-    (map-set recognized-losses { token-id: token-id, owner: owner } (+ losses (get-recognized-losses token-id owner) losses))
-    (ok losses)
+(define-public (set-contract-owner (owner principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (ok (var-set contract-owner owner))
   )
 )
 
-(define-read-only (recognizable-losses-of (token-id uint) (owner principal))
-  (- (accumulative-losses-of token-id owner) (get-recognized-losses token-id owner))
-)
-
-(define-read-only (accumulative-losses-of (token-id uint) (owner principal))
-  (/
-    (to-uint (+
-      (to-int (* (get-losses-per-share token-id) (get-balance-uint token-id owner)))
-      (get-losses-correction token-id owner)
-    ))
-  POINTS_MULTIPLIER)
-)
-
-(define-public (distribute-losses (token-id uint) (delta uint))
-  (let (
-    (total-supply (get-total-supply-uint token-id))
-    (valid-token-id (asserts! (> total-supply u0) ERR_PANIC))
-    (added-losses (/ (* delta POINTS_MULTIPLIER) total-supply))
-    (total-losses-shared (+ (get-losses-per-share token-id) added-losses))
-  )
-    (try! (is-approved-contract contract-caller))
-    (map-set losses-per-share token-id total-losses-shared)
-    (print { type: "lost_funds", added-points: added-losses })
-    (ok total-losses-shared)
-  )
+(define-read-only (is-contract-owner (caller principal))
+  (is-eq caller (var-get contract-owner))
 )
 
 ;; --- approved
@@ -322,42 +267,8 @@
   )
 )
 
-;; -- ownable-trait --
-(define-public (get-contract-owner)
-  (ok (var-get contract-owner))
-)
-
-(define-public (set-contract-owner (owner principal))
-  (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (ok (var-set contract-owner owner))
-  )
-)
-
-(define-read-only (is-contract-owner (caller principal))
-  (is-eq caller (var-get contract-owner))
-)
-
-;; -- pool rewards storage
-
-;; ;; token-id -> cycle-start
-;; (define-map cycle-start uint uint)
-;; ;; total rewards in cycle
-;; (define-map rewards { token-id: uint, cycle: uint} uint)
-
-(define-public (set-cycle-start (token-id uint) (start uint))
-  (begin
-    (try! (is-approved-contract contract-caller))
-    (ok true)
-  )
-)
-
 (define-constant ERR_INVALID_PRINCIPAL (err u5000))
 (define-constant ERR_INSUFFICIENT_BALANCE (err u7000))
 (define-constant ERR_PANIC (err u7001))
 
-
-(map-set approved-contracts .loan-v1-0 true)
-(map-set approved-contracts .pool-v1-0 true)
-(map-set approved-contracts .payment-fixed true)
-(map-set approved-contracts .supplier-interface true)
+(map-set approved-contracts .staking-pool true)

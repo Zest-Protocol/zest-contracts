@@ -27,21 +27,21 @@
 		))
 
 		;; Set emergency team members.
-		(try! (contract-call? .zge002-emergency-proposals set-emergency-team-member 'STC6G8DC2A0V58A6399M22C06BF4EK5JZSQW7BWP true))
-		(try! (contract-call? .zge002-emergency-proposals set-emergency-team-member 'ST58JQJZEHBJTGPHVES8FN448T98QV2VF9JWQ31B true))
+		(try! (contract-call? .zge002-emergency-proposals set-emergency-team-member 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM true))
+		(try! (contract-call? .zge002-emergency-proposals set-emergency-team-member 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5 true))
 
 		;; Set executive team members.
-		(try! (contract-call? .zge003-emergency-execute set-executive-team-member 'STC6G8DC2A0V58A6399M22C06BF4EK5JZSQW7BWP true))
-		(try! (contract-call? .zge003-emergency-execute set-executive-team-member 'ST58JQJZEHBJTGPHVES8FN448T98QV2VF9JWQ31B true))
-		(try! (contract-call? .zge003-emergency-execute set-executive-team-member 'ST24EA7AG3068VF6X0ZB68CQ2HNEJWPZN6MXGZTBM true))
-		(try! (contract-call? .zge003-emergency-execute set-executive-team-member 'ST2GYC2YYAMQ3SJ6DXFFVGFN54DBC5A7DGN7ZG60Y true))
+		(try! (contract-call? .zge003-emergency-execute set-executive-team-member 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM true))
+		(try! (contract-call? .zge003-emergency-execute set-executive-team-member 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5 true))
+		(try! (contract-call? .zge003-emergency-execute set-executive-team-member 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG true))
+		(try! (contract-call? .zge003-emergency-execute set-executive-team-member 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC true))
 		(try! (contract-call? .zge003-emergency-execute set-signals-required u3)) ;; signal from 3 out of 4 team members requied.
 
 		;; Mint initial token supply.
 		(try! (contract-call? .zge000-governance-token edg-mint-many
 			(list
-				{amount: u10000000000000, recipient: sender}
-        {amount: u2100000000000000, recipient: 'STC6G8DC2A0V58A6399M22C06BF4EK5JZSQW7BWP}
+				{amount: u10000000000, recipient: sender}
+        {amount: u2100000000000000, recipient: 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC}
 			)
 		))
     
