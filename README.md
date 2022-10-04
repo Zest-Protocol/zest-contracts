@@ -10,6 +10,6 @@ The audit was done in 2 iterations and 1 review.
 | ----------- | ------ |
 | 1 | [Link](https://github.com/Trust-Machines/zest-contracts/tree/b8158372ec05069ceccbb939f48f3ac2bf31e8de) |
 | 2 | [Link](https://github.com/Trust-Machines/zest-contracts/tree/4e3829dcaffcbe4214c3a96fae1c5aa975d187cd) |
-| 3 | [Link](https://github.com/Trust-Machines/zest-contracts/tree/2ad356b2f17811f7f178a5363652d35a0041e621) |
+| 3 | [Link](https://github.com/Trust-Machines/zest-contracts/tree/244e3b2c0aa156afc04a844f67ad2e781b651075) |
 
 The file hashes of the audited contracts were used to determine the version of the contract. A Sha256 Checksum was used to the determine the contents of the contracts.
