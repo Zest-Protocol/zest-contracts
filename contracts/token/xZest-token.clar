@@ -71,7 +71,7 @@
 		)
     (map-set points-correction { token-id: token-id, owner: sender } points-correction-from)
     (map-set points-correction { token-id: token-id, owner: recipient } points-correction-to)
-		(asserts! (or (is-eq sender tx-sender) (is-eq sender contract-caller)) ERR_UNAUTHORIZED)
+		(asserts! (is-eq sender contract-caller) ERR_UNAUTHORIZED)
 		(asserts! (<= amount sender-balance) ERR_INSUFFICIENT_BALANCE)
 		(set-balance token-id (- sender-balance amount) sender)
 		(set-balance token-id (+ (get-balance-uint token-id recipient) amount) recipient)
@@ -137,16 +137,14 @@
 )
 
 (define-constant DFT_PRECISION (pow u10 u5))
-(define-constant BITCOIN_PRECISION (pow u10 u8))
 
 ;; claim withdrawable funds by the token owner
-(define-public (withdraw-rewards (token-id uint))
+(define-public (withdraw-rewards (token-id uint) (caller principal))
   (let (
-    (recipient tx-sender)
-    (withdrawable-funds (withdrawable-funds-of token-id recipient))
+    (withdrawable-funds (withdrawable-funds-of token-id caller))
   )
     (try! (is-approved-contract contract-caller))
-    (map-set withdrawn-funds { token-id: token-id , owner: recipient} (+ withdrawable-funds (get-withdrawn-funds token-id recipient)))
+    (map-set withdrawn-funds { token-id: token-id , owner: caller } (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
     (ok withdrawable-funds)
   )
 )

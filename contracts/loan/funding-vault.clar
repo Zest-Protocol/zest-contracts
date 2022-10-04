@@ -12,10 +12,10 @@
 ;; @param recipient: recipient of the funds
 ;; @param ft: SIP-010 token contract
 (define-public (transfer (amount uint) (recipient principal) (ft <ft>))
-    (begin
-        (try! (is-approved-contract contract-caller))
-        (as-contract (contract-call? ft transfer amount tx-sender recipient none))
-    )
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (as-contract (contract-call? ft transfer amount tx-sender recipient none))
+  )
 )
 
 ;; (define-data-var contract-owner principal .executor-dao)

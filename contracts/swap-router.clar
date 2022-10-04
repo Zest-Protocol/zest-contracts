@@ -6,6 +6,8 @@
 ;; dummy tuple -> x-to-y-rate in BP
 (define-map lp { token-x: principal, token-y: principal } uint)
 
+(define-constant BP u10000)
+
 ;; x-token: xBTC
 ;; y-token: Zest
 
@@ -25,7 +27,7 @@
     (bp (unwrap! (get-pair x-token y-token) ERR_INVALID_POOL))
   )
     (asserts! (> dy u0) ERR_PANIC)
-    (ok (/ (* bp dy) u10000))
+    (ok (/ (* bp dy) BP))
   )
 )
 
@@ -37,7 +39,7 @@
     (bp (unwrap! (get-pair y-token x-token) ERR_INVALID_POOL))
   )
     (asserts! (> dx u0) ERR_PANIC)
-    (ok  (/ (* bp dx) u10000))
+    (ok  (/ (* bp dx) BP))
   )
 )
 
@@ -45,11 +47,16 @@
   (map-get? lp { token-x: (contract-of x-token), token-y: (contract-of y-token) })
 )
 
-(map-set lp { token-x: .xbtc, token-y: .xbtc } u10000)
-(map-set lp { token-x: .xbtc, token-y: .zge000-governance-token } u1000)
-(map-set lp { token-x: 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin, token-y: 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin } u10000)
-(map-set lp { token-x: 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin, token-y: .zge000-governance-token } u1000)
-(map-set lp { token-x: .zge000-governance-token, token-y: .xbtc } u100000)
+(define-constant xbtc .xbtc)
+(define-constant zest .zge000-governance-token)
+(define-constant wrapped-bitcoin-mainnet 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin)
+
+
+(map-set lp { token-x: xbtc, token-y: xbtc } BP)
+(map-set lp { token-x: xbtc, token-y: zest } u1000)
+(map-set lp { token-x: wrapped-bitcoin-mainnet, token-y: wrapped-bitcoin-mainnet } BP)
+(map-set lp { token-x: wrapped-bitcoin-mainnet, token-y: zest } u1000)
+(map-set lp { token-x: zest, token-y: xbtc } u100000)
 
 (define-constant ERR_PANIC (err u7001))
 (define-constant ERR_INVALID_POOL (err u7002))

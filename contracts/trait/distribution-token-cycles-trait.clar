@@ -37,9 +37,9 @@
 
     ;; -- DFT trait functions
     ;; withdraw earned rewards
-    (withdraw-rewards (uint) (response uint uint))
+    (withdraw-rewards (uint principal) (response uint uint))
 
-    (withdraw-cycle-rewards (uint) (response uint uint))
+    (withdraw-cycle-rewards (uint principal) (response uint uint))
 
     ;; withdraw earned rewards
     (add-rewards (uint uint) (response uint uint))

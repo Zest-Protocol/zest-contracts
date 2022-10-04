@@ -15,20 +15,6 @@
 
 (define-map approved-contracts principal bool)
 
-;; (define-public (add-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract true))
-	;; )
-;; )
-
-;; (define-public (remove-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract false))
-	;; )
-;; )
-
 (define-read-only (is-approved-contract (contract principal))
   (if (default-to false (map-get? approved-contracts contract))
     (ok true)
@@ -47,7 +33,7 @@
 (define-public (store (coll-type <ft>) (amount uint) (loan-id uint))
   (begin
     (try! (is-approved-contract contract-caller))
-    (try! (contract-call? coll-type transfer amount tx-sender (as-contract tx-sender) none))
+    (try! (contract-call? coll-type transfer amount contract-caller (as-contract tx-sender) none))
     (map-insert loan-coll loan-id { coll-type: (contract-of coll-type), amount: amount })
     (ok true)
   )
@@ -66,7 +52,7 @@
     (coll (unwrap! (map-get? loan-coll loan-id) ERR_INVALID_LOAN_ID))
   )
     (try! (is-approved-contract contract-caller))
-    (try! (contract-call? coll-type transfer amount tx-sender (as-contract tx-sender) none))
+    (try! (contract-call? coll-type transfer amount contract-caller (as-contract tx-sender) none))
     (map-set loan-coll loan-id { coll-type: (contract-of coll-type), amount: (+ (get amount coll) amount) })
     (ok true)
   )

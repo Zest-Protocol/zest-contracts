@@ -30,7 +30,7 @@
     (id (+ u1 (var-get last-id)))
     (sp-contract (contract-of sp-token))
   )
-    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (asserts! (is-contract-owner contract-caller) ERR_UNAUTHORIZED)
     (asserts! (contract-call? .globals is-sp sp-contract) ERR_INVALID_SP)
     (map-set pool id
     {
@@ -51,10 +51,10 @@
     (asserts! (is-eq (get status pool-data) READY) ERR_POOL_CLOSED)
     (asserts! (not (is-eq (get status pool-data) DEFAULT)) ERR_POOL_DEFAULT)
     
-    (map-set funds-sent { owner: tx-sender, token-id: token-id } { withdrawal-signaled: u0, amount: u0 })
+    (map-set funds-sent { owner: contract-caller, token-id: token-id } { withdrawal-signaled: u0, amount: u0 })
     
-    (try! (contract-call? .zge000-governance-token transfer amount tx-sender (as-contract tx-sender) none))
-    (try! (contract-call? sp-token mint token-id (to-precision amount) tx-sender))
+    (try! (contract-call? .zge000-governance-token transfer amount contract-caller (as-contract tx-sender) none))
+    (try! (contract-call? sp-token mint token-id (to-precision amount) contract-caller))
     (ok true)
   )
 )
@@ -63,17 +63,17 @@
   (let (
     (sp-contract (contract-of sp-token))
   )
-    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (asserts! (is-contract-owner contract-caller) ERR_UNAUTHORIZED)
     (asserts! (contract-call? .globals is-sp sp-contract) ERR_INVALID_SP)
 
-    (try! (contract-call? .zge000-governance-token transfer amount tx-sender (as-contract tx-sender) none))
+    (try! (contract-call? .zge000-governance-token transfer amount contract-caller (as-contract tx-sender) none))
     (contract-call? sp-token add-rewards token-id amount)
   )
 )
 
 (define-public (withdraw-rewards (sp-token <dt>) (token-id uint))
   (let (
-    (recipient tx-sender)
+    (recipient contract-caller)
     (withdrawn-funds (try! (contract-call? sp-token withdraw-rewards token-id)))
   )
     (asserts! (contract-call? .globals is-xbtc (contract-of sp-token)) ERR_INVALID_SP)
@@ -85,18 +85,19 @@
 
 (define-public (signal-withdrawal (token-id uint) (amount uint))
   (let (
-    (funds-sent-data (unwrap! (map-get? funds-sent { owner: tx-sender, token-id: token-id }) ERR_INVALID_PRINCIPAL))
+    (recipient contract-caller)
+    (funds-sent-data (unwrap! (map-get? funds-sent { owner: recipient, token-id: token-id }) ERR_INVALID_PRINCIPAL))
   )
-    (map-set funds-sent { owner: tx-sender, token-id: token-id } (merge funds-sent-data { withdrawal-signaled: block-height, amount: amount }))
+    (map-set funds-sent { owner: recipient, token-id: token-id } (merge funds-sent-data { withdrawal-signaled: block-height, amount: amount }))
     (ok true)
   )
 )
 
 (define-public (withdraw (sp-token <dt>) (token-id uint) (amount uint))
   (let (
-    (recipient tx-sender)
+    (recipient contract-caller)
     (pool-data (get-pool token-id))
-    (funds-sent-data (unwrap! (map-get? funds-sent { owner: tx-sender, token-id: token-id }) ERR_INVALID_PRINCIPAL))
+    (funds-sent-data (unwrap! (map-get? funds-sent { owner: recipient, token-id: token-id }) ERR_INVALID_PRINCIPAL))
     (withdrawal-signaled (get withdrawal-signaled funds-sent-data))
     (globals (contract-call? .globals get-globals))
     (stx-time-delta (- block-height withdrawal-signaled))
@@ -110,7 +111,7 @@
     (as-contract (try! (contract-call? .zge000-governance-token transfer amount (as-contract tx-sender) recipient none)))
     ;; amount transferred is checked by the amount of sp-tokens being burned
     (print { event: "pool_withdrawal", funds-withdrawn: amount, caller: recipient })
-    (contract-call? sp-token burn token-id (to-precision amount) tx-sender)
+    (contract-call? sp-token burn token-id (to-precision amount) recipient)
   )
 )
 
@@ -119,7 +120,6 @@
 )
 
 (define-constant DFT_PRECISION (pow u10 u5))
-(define-constant BITCOIN_PRECISION (pow u10 u8))
 
 (define-read-only (to-precision (amount uint))
   (* amount DFT_PRECISION)

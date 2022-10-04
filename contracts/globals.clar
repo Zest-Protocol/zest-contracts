@@ -336,14 +336,14 @@
 
 (define-public (onboard-user (user principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (try! (is-contract-owner))
     (ok (map-set onboarded user true))
   )
 )
 
 (define-public (offboard-user (user principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (try! (is-contract-owner))
     (ok (map-set onboarded user false))
   )
 )

@@ -13,6 +13,8 @@
 (define-constant ONE_DAY u144)
 (define-constant CYCLE (* u14 u144))
 
+(define-constant BP u10000)
+
 (define-constant INIT 0x00)
 (define-constant READY 0x01)
 (define-constant CLOSED 0x02)
@@ -34,6 +36,7 @@
     principal-out: uint,
     cycle-length: uint,
     min-cycles: uint,
+    max-maturity-length: uint,
     pool-stx-start: uint,
     pool-btc-start: uint,
     status: (buff 1),
@@ -83,6 +86,7 @@
   (delegate-fee uint)
   (liquidity-cap uint)
   (min-cycles uint)
+  (max-maturity-length uint)
   (liquidity-vault <lv>)
   (cp-token <lp-token>)
   (open bool)
@@ -91,7 +95,6 @@
     (lp-contract (contract-of lp-token))
     (sp-contract (contract-of cp-token))
     (zp-contract (contract-of zp-token))
-    (globals (contract-call? .globals get-globals))
   )
     (asserts! (is-contract-owner contract-caller) ERR_UNAUTHORIZED)
     (asserts! (is-none (map-get? pool-data token-id)) ERR_UNAUTHORIZED)
@@ -102,7 +105,7 @@
     (asserts! (contract-call? .globals is-liquidity-vault (contract-of liquidity-vault)) ERR_INVALID_LV)
     (asserts! (contract-call? .globals is-payment (contract-of payment)) ERR_INVALID_PAYMENT)
 
-    (asserts! (<= (+ cover-fee delegate-fee) u10000) ERR_INVALID_FEES)
+    (asserts! (<= (+ cover-fee delegate-fee) BP) ERR_INVALID_FEES)
     (asserts! (> min-cycles u0) ERR_INVALID_VALUES)
 
     (try! (contract-call? .cover-pool-v1-0 create-pool cp-token token-id open (* CYCLE u1) min-cycles))
@@ -122,6 +125,7 @@
         principal-out: u0,
         cycle-length: (* CYCLE u1),
         min-cycles: min-cycles,
+        max-maturity-length: max-maturity-length,
         pool-stx-start: u0,
         pool-btc-start: u0,
         status: INIT,
@@ -162,9 +166,9 @@
     (lp-contract (contract-of lp-token))
     (pool (try! (get-pool token-id)))
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (asserts! (lc-check liquidity-cap (get liquidity-cap pool)) ERR_INVALID_LIQ)
     (map-set pool-data token-id (merge pool { liquidity-cap: liquidity-cap }))
     (ok true)
@@ -176,9 +180,9 @@
     (lp-contract (contract-of lp-token))
     (pool (try! (get-pool token-id)))
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (asserts! (> (get cycle-length pool) cycle-length) ERR_INVALID_LOCKUP)
 
     (try! (contract-call? .cover-pool-v1-0 set-cycle-length cp-token token-id cycle-length))
@@ -192,9 +196,9 @@
     (lp-contract (contract-of lp-token))
     (pool (try! (get-pool token-id)))
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (asserts! (and (< min-cycles (get min-cycles pool)) (> min-cycles u0)) ERR_INVALID_LOCKUP)
 
     (try! (contract-call? .cover-pool-v1-0 set-min-cycles cp-token token-id min-cycles))
@@ -208,10 +212,10 @@
     (lp-contract (contract-of lp-token))
     (pool (try! (get-pool token-id)))
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (<= (+ delegate-fee (get cover-fee pool)) u10000) ERR_INVALID_FEES)
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
+    (asserts! (<= (+ delegate-fee (get cover-fee pool)) BP) ERR_INVALID_FEES)
 
     (map-set pool-data token-id (merge pool { delegate-fee: delegate-fee }))
     (ok true)
@@ -223,10 +227,10 @@
     (lp-contract (contract-of lp-token))
     (pool (try! (get-pool token-id)))
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (<= (+ cover-fee (get delegate-fee pool)) u10000) ERR_INVALID_FEES)
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
+    (asserts! (<= (+ cover-fee (get delegate-fee pool)) BP) ERR_INVALID_FEES)
 
     (map-set pool-data token-id (merge pool { cover-fee: cover-fee }))
     (ok true)
@@ -238,9 +242,9 @@
     (lp-contract (contract-of lp-token))
     (pool (try! (get-pool token-id)))
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (try! (contract-call? .cover-pool-v1-0 set-open cp-token token-id open))
     (ok (map-set pool-data token-id (merge pool { open: open } )))
   )
@@ -252,8 +256,8 @@
     (pool (try! (get-pool token-id)))
     (height block-height)
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (try! (contract-call? .cover-pool-v1-0 finalize-pool cp-token token-id))
     (try! (contract-call? zp-token set-cycle-start token-id height))
     (ok (map-set pool-data token-id (merge pool { status: READY, pool-stx-start: height, pool-btc-start: burn-block-height } )))
@@ -271,7 +275,7 @@
 ;; @param factor: multiplier to the amount of time locked
 ;; @param height: height of the confirmed Bitcoin tx
 ;; @param liquidity-vault: contract holding the liquid funds in the pool
-(define-public (send-funds (lp-token <lp-token>) (token-id uint) (zp-token <dt>) (amount uint) (factor uint) (height uint) (lv <lv>) (xbtc <ft>))
+(define-public (send-funds (lp-token <lp-token>) (token-id uint) (zp-token <dt>) (amount uint) (factor uint) (height uint) (lv <lv>) (caller principal) (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
     (lv-contract (contract-of lv))
@@ -283,19 +287,18 @@
     (try! (is-paused))
     (try! (is-supplier-interface))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
-    (asserts! (or (get open pool) (is-liquidity-provider token-id tx-sender)) ERR_UNAUTHORIZED)
+    (asserts! (or (get open pool) (is-liquidity-provider token-id caller)) ERR_UNAUTHORIZED)
     (asserts! (is-eq (get liquidity-vault pool) lv-contract) ERR_INVALID_LV)
     (asserts! (is-eq (get zp-token pool) zp-contract) ERR_INVALID_ZP)
     (asserts! (is-eq (get status pool) READY) ERR_POOL_CLOSED)
     (asserts! (<= (+ (get principal-out pool) amount lv-balance) (get liquidity-cap pool)) ERR_LIQUIDITY_CAP_EXCESS)
-    (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
     (asserts! (>= factor (get min-cycles pool)) ERR_INVALID_LOCKUP)
     ;; bridge sends funds to the pool before executing this call
-    (map-set funds-sent { owner: tx-sender, token-id: token-id } (unwrap-panic (get-new-factor lp-token tx-sender token-id amount factor current-cycle)))
+    (map-set funds-sent { owner: caller, token-id: token-id } (unwrap-panic (get-new-factor lp-token caller token-id amount factor current-cycle)))
     
-    (try! (contract-call? xbtc transfer amount tx-sender lv-contract none))
-    (try! (contract-call? lp-token mint token-id (to-precision amount) tx-sender))
-    (try! (contract-call? zp-token mint token-id (to-precision amount) tx-sender))
+    (try! (contract-call? xbtc transfer amount caller lv-contract none))
+    (try! (contract-call? lp-token mint token-id (to-precision amount) caller))
+    (try! (contract-call? zp-token mint token-id (to-precision amount) caller))
     (ok true)
   )
 )
@@ -307,11 +310,11 @@
     (match (map-get? funds-sent { owner: owner, token-id: token-id })
       funds-sent-data (let (
         (total-funds (+ prev-funds (to-precision amount)))
-        (new-val (/ (* u10000 (to-precision amount)) total-funds))
-        (prev-val (/ (* u10000 prev-funds) total-funds))
+        (new-val (/ (* BP (to-precision amount)) total-funds))
+        (prev-val (/ (* BP prev-funds) total-funds))
         (prev-factor (get factor funds-sent-data))
-        (factor-sum (+ (* new-val factor) (* u10000 prev-factor)))
-        (new-factor (if (> (/ factor-sum u10000) u1) (+ u1 (/ factor-sum u10000)) (/ factor-sum u10000)))
+        (factor-sum (+ (* new-val factor) (* BP prev-factor)))
+        (new-factor (if (> (/ factor-sum BP) u1) (+ u1 (/ factor-sum BP)) (/ factor-sum BP)))
       )
         (ok { factor: new-factor, cycle-sent: (get cycle-sent funds-sent-data), withdrawal-signaled: u0, cycle-claimed: (get cycle-claimed funds-sent-data), amount: u0 })
       )
@@ -346,8 +349,10 @@
   (funding-vault principal)
   )
   (let (
-    (last-id (try! (contract-call? .loan-v1-0 create-loan token-id loan-amount coll-ratio coll-token apr maturity-length payment-period coll-vault funding-vault)))
+    (pool (try! (get-pool token-id)))
+    (last-id (try! (contract-call? .loan-v1-0 create-loan token-id loan-amount coll-ratio coll-token apr maturity-length payment-period coll-vault contract-caller funding-vault)))
   )
+    (asserts! (>= (get max-maturity-length pool) maturity-length) ERR_INVALID_MATURITY_LENGTH)
     (map-insert loans last-id { lp-token: (contract-of lp-token ), token-id: token-id, funding-vault: funding-vault })
     (ok last-id)
   )
@@ -361,24 +366,25 @@
 ;; @param lp-token: token contract that points to the requested pool
 ;; @param lv: contract trait holding the liquid funds in the pool
 ;; @param amount: amount used to fund the loan request
-(define-public (fund-loan (loan-id uint) (lp-token <lp-token>) (token-id uint) (lv <lv>) (amount uint) (xbtc <ft>))
+(define-public (fund-loan (loan-id uint) (lp-token <lp-token>) (token-id uint) (lv <lv>) (xbtc <ft>))
   (let (
     (loan (unwrap! (map-get? loans loan-id) ERR_INVALID_LP))
+    (loan-data (contract-call? .loan-v1-0 get-loan-read token-id))
     (lp-contract (contract-of lp-token))
     (lv-contract (contract-of lv))
     (pool (try! (get-pool token-id)))
     (lv-balance (unwrap! (contract-call? xbtc get-balance lv-contract) ERR_PANIC))
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (>= lv-balance amount) ERR_NOT_ENOUGH_LIQUIDITY)
+    (asserts! (>= lv-balance (get loan-amount loan-data)) ERR_NOT_ENOUGH_LIQUIDITY)
     
     ;; a success in transfer means there were enough funds in the liquidity-vault
-    (try! (contract-call? lv transfer amount (get funding-vault loan) xbtc))
-    (try! (contract-call? .loan-v1-0 fund-loan loan-id amount))
-    (ok (map-set pool-data token-id (merge pool { principal-out: (+ amount (get principal-out pool)) } )))
+    (try! (contract-call? lv transfer (get loan-amount loan-data) (get funding-vault loan) xbtc))
+    (try! (contract-call? .loan-v1-0 fund-loan loan-id))
+    (ok (map-set pool-data token-id (merge pool { principal-out: (+ (get loan-amount loan-data) (get principal-out pool)) } )))
   )
 )
 
@@ -393,15 +399,16 @@
 (define-public (unwind (loan-id uint) (lp-token <lp-token>) (token-id uint) (fv <v>) (amount uint) (xbtc <ft>))
   (let (
     (loan (unwrap! (map-get? loans loan-id) ERR_INVALID_LP))
+    ;; (loan-data (contract-call? .loan-v1-0 get-loan-read token-id))
     (lp-contract (contract-of lp-token))
     (fv-contract (contract-of fv))
     (pool (try! (get-pool token-id)))
-    (returned-funds (try! (contract-call? .loan-v1-0 unwind loan-id amount)))
+    (returned-funds (try! (contract-call? .loan-v1-0 unwind loan-id)))
   )
     (asserts! (is-eq fv-contract (get funding-vault loan)) ERR_INVALID_FV)
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
 
-    (try! (contract-call? fv transfer amount (get liquidity-vault pool) xbtc))
+    (try! (contract-call? fv transfer returned-funds (get liquidity-vault pool) xbtc))
     (ok (map-set pool-data token-id (merge pool { principal-out: (- (get principal-out pool) returned-funds) } )))
   )
 )
@@ -418,13 +425,13 @@
 ;; @param lv: contract trait holding the liquid funds in the pool
 ;; @param amount: amount being withdrawn
 ;; @param ft: id of loan being funded
-(define-public (withdraw (lp-token <lp-token>) (token-id uint) (lv <lv>) (amount uint) (xbtc <ft>))
+(define-public (withdraw (lp-token <lp-token>) (token-id uint) (lv <lv>) (amount uint) (caller principal) (xbtc <ft>))
   (let (
-    (recipient tx-sender)
+    ;; (recipient contract-caller)
     (pool (try! (get-pool token-id)))
-    (lost-funds (try! (contract-call? lp-token recognize-losses token-id recipient)))
+    (lost-funds (try! (contract-call? lp-token recognize-losses token-id caller)))
     (lv-contract (contract-of lv))
-    (funds-sent-data (unwrap! (map-get? funds-sent { owner: tx-sender, token-id: token-id }) ERR_INVALID_PRINCIPAL))
+    (funds-sent-data (unwrap! (map-get? funds-sent { owner: caller, token-id: token-id }) ERR_INVALID_PRINCIPAL))
     (withdrawal-signaled (get withdrawal-signaled funds-sent-data))
     (globals (contract-call? .globals get-globals))
     (stx-time-delta (- block-height withdrawal-signaled))
@@ -441,10 +448,10 @@
     (asserts! (< stx-time-delta (+ (get lp-unstake-window globals) cooldown-time)) ERR_UNSTAKE_WINDOW_EXPIRED)
     (asserts! (>= (get amount funds-sent-data) amount) ERR_EXCEEDED_SIGNALED_AMOUNT)
     ;; this transfer should only happen in the bridge contract
-    (try! (contract-call? lv transfer (- amount lost-funds) recipient xbtc))
+    (try! (contract-call? lv transfer (- amount lost-funds) caller xbtc))
     ;; amount transferred is checked by the amount of lp-tokens being burned
-    (print { event: "pool_withdrawal", funds-withdrawn: amount, caller: recipient })
-    (contract-call? lp-token burn token-id (to-precision amount) tx-sender)
+    (print { event: "pool_withdrawal", funds-withdrawn: amount, caller: caller })
+    (contract-call? lp-token burn token-id (to-precision amount) caller)
   )
 )
 
@@ -456,9 +463,9 @@
 (define-public (signal-withdrawal (lp-token <lp-token>) (token-id uint) (amount uint))
   (let (
     (pool (try! (get-pool token-id)))
-    (funds-sent-data (unwrap! (map-get? funds-sent { owner: tx-sender, token-id: token-id }) ERR_INVALID_PRINCIPAL))
+    (funds-sent-data (unwrap! (map-get? funds-sent { owner: contract-caller, token-id: token-id }) ERR_INVALID_PRINCIPAL))
   )
-    (map-set funds-sent { owner: tx-sender, token-id: token-id } (merge funds-sent-data { withdrawal-signaled: block-height, amount: amount }))
+    (map-set funds-sent { owner: contract-caller, token-id: token-id } (merge funds-sent-data { withdrawal-signaled: block-height, amount: amount }))
     (ok true)
   )
 )
@@ -471,14 +478,14 @@
 ;; @param rewards-calc: token contract that points to the requested pool
 (define-public (withdraw-zest-rewards (token-id uint) (dtc <dtc>) (rewards-calc <rewards-calc>))
   (let (
-    (commitment-rewards (try! (contract-call? dtc withdraw-cycle-rewards token-id)))
-    (passive-rewards (try! (contract-call? dtc withdraw-rewards token-id)))
-    (funds-sent-data (try! (get-funds-sent tx-sender token-id)))
+    (commitment-rewards (try! (contract-call? dtc withdraw-cycle-rewards token-id contract-caller)))
+    (passive-rewards (try! (contract-call? dtc withdraw-rewards token-id contract-caller)))
+    (funds-sent-data (try! (get-funds-sent contract-caller token-id)))
     (current-cycle (unwrap-panic (get-current-cycle token-id)))
     (delta (- current-cycle (get cycle-claimed funds-sent-data)))
     (is-rewards-calc (asserts! (contract-call? .globals is-rewards-calc (contract-of rewards-calc)) ERR_INVALID_REWARDS_CALC))
     (is-zp (asserts! (contract-call? .globals is-zp (contract-of dtc)) ERR_INVALID_ZP))
-    (rewards (try! (contract-call? rewards-calc mint-rewards tx-sender (get factor funds-sent-data) commitment-rewards)))
+    (rewards (try! (contract-call? rewards-calc mint-rewards contract-caller (get factor funds-sent-data) commitment-rewards)))
   )
     (merge funds-sent-data { cycle-claimed: (get-current-cycle token-id) })
     (print { commitment: commitment-rewards, passive: passive-rewards })
@@ -489,10 +496,10 @@
 
 (define-public (withdraw-rewards (lp-token <lp-token>) (token-id uint) (lv <lv>) (xbtc <ft>))
   (let (
-    (withdrawn-funds (try! (contract-call? lp-token withdraw-rewards token-id)))
+    (withdrawn-funds (try! (contract-call? lp-token withdraw-rewards token-id contract-caller)))
   )
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
-    (try! (contract-call? lv transfer withdrawn-funds tx-sender xbtc))
+    (try! (contract-call? lv transfer withdrawn-funds contract-caller xbtc))
     (ok withdrawn-funds)
   )
 )
@@ -515,14 +522,13 @@
     (current-amount (get loan-amount loan-data))
     (req-amount (get new-amount rollover-data))
   )
-    (try! (tx-sender-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
-    (asserts! (is-eq tx-sender (get pool-delegate pool)) ERR_UNAUTHORIZED)
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (asserts! (is-eq (contract-of lp-token) (get lp-token loan)) ERR_INVALID_LP)
 
     (if (> req-amount current-amount)
-      (try! (fund-loan loan-id lp-token token-id lv (- req-amount current-amount) xbtc))
+      (try! (fund-loan loan-id lp-token token-id lv xbtc))
       false ;; if it's less, drawdown will repay the liquidity-vault
     )
 
@@ -543,7 +549,7 @@
 ;; @param lp-token: token that holds funds and distributes them
 ;; @param pool-delegate: pool delegate address
 ;; @param delegate-fee: delegate fees in BP
-(define-public (drawdown (loan-id uint) (lp-token <lp-token>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (fv <v>) (xbtc <ft>))
+(define-public (drawdown (loan-id uint) (lp-token <lp-token>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (fv <v>) (caller principal) (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
   )
@@ -551,7 +557,7 @@
     (try! (is-paused))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
 
-    (contract-call? .loan-v1-0 drawdown loan-id coll-token coll-vault fv (get liquidity-vault pool) lp-token token-id (get pool-delegate pool) (get delegate-fee pool) xbtc)
+    (contract-call? .loan-v1-0 drawdown loan-id coll-token coll-vault fv (get liquidity-vault pool) lp-token token-id (get pool-delegate pool) (get delegate-fee pool) caller xbtc)
   )
 )
 
@@ -578,7 +584,7 @@
   )
     (try! (is-paused))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
-    (asserts! (is-eq tx-sender (get pool-delegate pool)) ERR_UNAUTHORIZED)
+    (asserts! (is-eq contract-caller (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (asserts! (is-eq lp-contract (get lp-token loan)) ERR_UNAUTHORIZED)
     (asserts! (is-eq (get cp-token pool) (contract-of cp-token)) ERR_INVALID_SP)
 
@@ -643,7 +649,6 @@
 )
 
 (define-constant DFT_PRECISION (pow u10 u5))
-(define-constant BITCOIN_PRECISION (pow u10 u8))
 
 (define-read-only (to-precision (amount uint))
   (* amount DFT_PRECISION)
@@ -655,7 +660,7 @@
 
 ;; @desc sanity checks for liquidity cap
 (define-read-only (lc-check (new-lc uint) (previous-lc uint))
-  (and (> new-lc previous-lc) (> new-lc u0))
+  (and (> new-lc previous-lc))
 )
 
 (define-read-only (get-cycle-start (token-id uint))
@@ -707,13 +712,6 @@
   )
 )
 
-(define-public (tx-sender-is (valid-principal principal))
-  (if (is-eq tx-sender valid-principal)
-    (ok true)
-    ERR_UNAUTHORIZED
-  )
-)
-
 ;; -- onboarding liquidity-provider
 
 (define-map liquidity-providers { token-id: uint, lp: principal} bool)
@@ -760,7 +758,7 @@
 (define-constant ERR_COOLDOWN_ONGOING (err u2016))
 (define-constant ERR_EXCEEDED_SIGNALED_AMOUNT (err u2017))
 (define-constant ERR_INVALID_XBTC (err u2018))
-
+(define-constant ERR_INVALID_MATURITY_LENGTH (err u2019))
 
 (define-constant ERR_INVALID_FV (err u3000))
 

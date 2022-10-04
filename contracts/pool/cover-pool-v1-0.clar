@@ -10,6 +10,8 @@
 
 (define-data-var pool-id uint u0)
 
+(define-constant BP u10000)
+
 (define-constant ONE_DAY u144)
 (define-constant CYCLE (* u14 u144))
 
@@ -116,63 +118,86 @@
   (let (
     (pool (try! (get-pool (contract-of cp-token) token-id)))
     (cp-contract (contract-of cp-token))
+    (owner contract-caller)
   )
-    (try! (is-enabled))
+    (try! (is-paused))
 
     (asserts! (is-eq (get status pool) READY) ERR_POOL_CLOSED)
-    (asserts! (or (get open pool) (is-staker)) ERR_UNAUTHORIZED)
+    (asserts! (or (get open pool) (is-staker owner)) ERR_UNAUTHORIZED)
 
     (asserts! (>= cycles (get min-cycles pool)) ERR_INVALID_CYCLES)
 
-    (try! (contract-call? .zge000-governance-token transfer amount tx-sender (as-contract tx-sender) none))
-    (try! (contract-call? cp-token mint token-id (to-precision amount) tx-sender))
+    (try! (contract-call? .zge000-governance-token transfer amount owner (as-contract tx-sender) none))
+    (try! (contract-call? cp-token mint token-id (to-precision amount) owner))
 
-    (map-set sent-funds { owner: tx-sender, token-id: token-id } { start: block-height, cycles: cycles, withdrawal-signaled: u0 })
+    (map-set sent-funds { owner: owner, token-id: token-id } (unwrap-panic (get-new-factor cp-token owner token-id amount cycles block-height)))
     (ok true)
+  )
+)
+
+(define-private (get-new-factor (cp-token <cp-token>) (owner principal) (token-id uint) (amount uint) (cycles uint) (current-height uint))
+  (let (
+    (prev-funds (unwrap-panic (contract-call? cp-token get-balance token-id owner)))
+  )
+    (match (map-get? sent-funds { owner: owner, token-id: token-id })
+      funds-sent-data (let (
+        (total-funds (+ prev-funds (to-precision amount)))
+        (new-val (/ (* BP (to-precision amount)) total-funds))
+        (prev-val (/ (* BP prev-funds) total-funds))
+        (prev-factor (get cycles funds-sent-data))
+        (factor-sum (+ (* new-val cycles) (* BP prev-factor)))
+        (new-factor (if (> (/ factor-sum BP) u1) (+ u1 (/ factor-sum BP)) (/ factor-sum BP)))
+      )
+        (ok { cycles: new-factor, start: (get start funds-sent-data), withdrawal-signaled: u0 })
+      )
+      (ok { cycles: cycles, start: current-height, withdrawal-signaled: u0, })
+    )
   )
 )
 
 (define-public (signal-withdrawal (cp-token <cp-token>) (token-id uint))
   (let (
     (pool (try! (get-pool (contract-of cp-token) token-id)))
-    (sent-funds-data (try! (get-staker-data tx-sender token-id)))
+    (owner contract-caller)
+    (sent-funds-data (try! (get-staker-data owner token-id)))
   )
-    (map-set sent-funds { owner: tx-sender, token-id: token-id } (merge sent-funds-data { withdrawal-signaled: block-height }))
+    (map-set sent-funds { owner: owner, token-id: token-id } (merge sent-funds-data { withdrawal-signaled: block-height }))
     (ok true)
   )
 )
 
 (define-public (withdraw (cp-token <cp-token>) (token-id uint) (amount uint))
   (let (
-    (recipient tx-sender)
+    (recipient contract-caller)
     (pool (try! (get-pool (contract-of cp-token) token-id)))
-    (sent-funds-data (try! (get-staker-data tx-sender token-id)))
+    (sent-funds-data (try! (get-staker-data recipient token-id)))
     (lost-funds (try! (contract-call? cp-token recognize-losses token-id recipient)))
     (cp-contract (contract-of cp-token))
-    (withdrawal-time-delta (- block-height (get withdrawal-signaled sent-funds-data)))
-    (withrawal-signaled-time (get withdrawal-signaled sent-funds-data))
+    (withdrawal-signaled-time (get withdrawal-signaled sent-funds-data))
+    (withdrawal-time-delta (- block-height withdrawal-signaled-time))
     (globals (contract-call? .globals get-globals))
   )
     ;; has passed cooldown
-    (asserts! (> withdrawal-time-delta (get staker-cooldown-period globals)) (err u999))
+    (asserts! (> withdrawal-time-delta (get staker-cooldown-period globals)) ERR_COOLDOWN_IN_PROGRESS)
     ;; has reached window limit
-    (asserts! (< withdrawal-time-delta ( + withrawal-signaled-time (get staker-unstake-window globals))) (err u999))
+    (asserts! (< withdrawal-time-delta ( + withdrawal-signaled-time (get staker-unstake-window globals))) ERR_WINDOW_EXPIRED)
     ;; has lockup period expired
-    (asserts! (> withdrawal-time-delta (* (get cycles sent-funds-data) (get cycle-length pool))) (err u999))
+    (asserts! (> withdrawal-time-delta (* (get cycles sent-funds-data) (get cycle-length pool))) ERR_FUNDS_LOCKED)
 
     (try! (as-contract (contract-call? .zge000-governance-token transfer (- amount lost-funds) tx-sender recipient none)))
-    (try! (contract-call? cp-token burn token-id (to-precision amount) tx-sender))
+    (try! (contract-call? cp-token burn token-id (to-precision amount) recipient))
     (ok true)
   )
 )
 
 (define-public (withdraw-zest-rewards (cp-token <cp-token>) (token-id uint) (rewards-calc <rewards-calc>))
   (let (
-    (withdrawn-funds (try! (contract-call? cp-token withdraw-rewards token-id)))
-    (sent-funds-data (try! (get-staker-data tx-sender token-id)))
+    (withdrawn-funds (try! (contract-call? cp-token withdraw-rewards token-id contract-caller)))
+    (recipient contract-caller)
+    (sent-funds-data (try! (get-staker-data recipient token-id)))
     (is-rewards-calc (asserts! (contract-call? .globals is-rewards-calc (contract-of rewards-calc)) ERR_INVALID_REWARDS_CALC))
     (is-cp (asserts! (contract-call? .globals is-cp (contract-of cp-token)) ERR_INVALID_ZP))
-    (rewards (try! (contract-call? rewards-calc mint-rewards tx-sender (get cycles sent-funds-data) withdrawn-funds)))
+    (rewards (try! (contract-call? rewards-calc mint-rewards recipient (get cycles sent-funds-data) withdrawn-funds)))
   )
     (ok rewards)
   )
@@ -225,9 +250,7 @@
   )
 )
 
-(define-data-var enabled bool true)
-
-(define-private (is-enabled)
+(define-private (is-paused)
   (let (
     (globals (contract-call? .globals get-globals))
   )
@@ -239,7 +262,6 @@
 )
 
 (define-constant DFT_PRECISION (pow u10 u5))
-(define-constant BITCOIN_PRECISION (pow u10 u8))
 
 (define-read-only (to-precision (amount uint))
   (* amount DFT_PRECISION)
@@ -274,8 +296,8 @@
 	)
 )
 
-(define-read-only (is-staker)
-  (default-to false (map-get? stakers tx-sender))
+(define-read-only (is-staker (caller principal))
+  (default-to false (map-get? stakers caller))
 )
 
 (define-data-var pool-contract principal tx-sender)
@@ -311,5 +333,7 @@
 
 (define-constant ERR_INVALID_REWARDS_CALC (err u5009))
 (define-constant ERR_INVALID_ZP (err u5010))
+(define-constant ERR_COOLDOWN_IN_PROGRESS (err u5011))
+(define-constant ERR_WINDOW_EXPIRED (err u5012))
 
 (var-set pool-contract .pool-v1-0)

@@ -60,14 +60,15 @@
   (maturity-length uint)
   (payment-period uint)
   (coll-vault principal)
+  (caller principal)
   (funding-vault principal)
   )
   (let (
     (last-id (var-get last-loan-id))
     (globals (contract-call? .globals get-globals))
   )
-    (try! (can-borrow tx-sender))
     (try! (is-pool))
+    (try! (can-borrow caller))
     (asserts! (contract-call? .globals is-funding-vault funding-vault) ERR_INVALID_FV)
     (asserts! (contract-call? .globals is-coll-vault coll-vault) ERR_INVALID_CV)
     (asserts! (contract-call? .globals is-coll-contract (contract-of coll-token)) ERR_INVALID_COLL)
@@ -79,7 +80,7 @@
     (map-set loans last-id
       {
         status: INIT,
-        borrower: tx-sender,
+        borrower: caller,
         loan-amount: loan-amount,
         coll-ratio: coll-ratio,
         coll-token: (contract-of coll-token),
@@ -119,14 +120,13 @@
 ;;
 ;; @param loan-id: id of loan being funded
 ;; @param amount: amount the loan is being funded for
-(define-public (fund-loan (loan-id uint) (amount uint))
+(define-public (fund-loan (loan-id uint))
   (let (
     (loan (try! (get-loan loan-id)))
     (globals (contract-call? .globals get-globals))
   )
     (try! (is-pool))
     (asserts! (is-eq INIT (get status loan)) ERR_INVALID_STATUS)
-    (asserts! (is-eq amount (get loan-amount loan)) ERR_NOT_AGREED_AMOUNT)
     (asserts! (<= (- burn-block-height (get created loan)) (get funding-period globals)) ERR_FUNDING_EXPIRED)
 
     (ok true)
@@ -140,14 +140,14 @@
 ;;
 ;; @param loan-id: id of loan being funded
 ;; @param amount: amount the loan is being funded for
-(define-public (unwind (loan-id uint) (amount uint))
+(define-public (unwind (loan-id uint))
   (let (
     (loan (try! (get-loan loan-id)))
     (globals (contract-call? .globals get-globals))
   )
     (try! (is-pool))
     (asserts! (is-eq INIT (get status loan)) ERR_INVALID_STATUS)
-    (asserts! (>= amount (get loan-amount loan)) ERR_NOT_AGREED_AMOUNT)
+    ;; (asserts! (>= amount (get loan-amount loan)) ERR_NOT_AGREED_AMOUNT)
     (asserts! (> (- burn-block-height (get created loan)) (get funding-period globals)) ERR_FUNDING_IN_PROGRESS)
     
     (map-set loans loan-id (merge loan { status: EXPIRED }))
@@ -168,7 +168,19 @@
 ;; @param lp-token: token that holds funds and distributes them
 ;; @param pool-delegate: pool delegate address
 ;; @param delegate-fee: delegate fees in BP
-(define-public (drawdown (loan-id uint) (coll-token <ft>) (coll-vault <cv>) (fv <v>) (lv principal) (lp-token <lp-token>) (token-id uint) (pool-delegate principal) (delegate-fee uint) (xbtc <ft>))
+(define-public (drawdown
+  (loan-id uint)
+  (coll-token <ft>)
+  (coll-vault <cv>)
+  (fv <v>)
+  (lv principal)
+  (lp-token <lp-token>)
+  (token-id uint)
+  (pool-delegate principal)
+  (delegate-fee uint)
+  (caller principal)
+  (xbtc <ft>)
+  )
   (let (
     (loan (try! (get-loan loan-id)))
     (loan-amount (get loan-amount loan))
@@ -181,24 +193,31 @@
     (delegate-portion (get-bp investor-portion delegate-fee))
     (lp-portion (- investor-portion delegate-portion))
     (borrow-amount (- loan-amount treasury-portion investor-portion))
+    (return-value (try! (if (> coll-ratio u0)
+        (let (
+          (coll-amount (/ (* coll-ratio loan-amount) BP_PRC))
+        )
+          ;; borrower sends funds to collateral vault
+          (if (> coll-amount u0)
+            (begin
+              (try! (send-collateral coll-token coll-vault coll-amount loan-id))
+              (ok { borrow-amount: borrow-amount, coll-amount: coll-amount })
+            )
+            ERR_NOT_ENOUGH_COLLATERAL
+          )
+        )
+        (ok { borrow-amount: borrow-amount, coll-amount: u0 })
+      ))
+    )
   )
     (try! (is-pool))
-    (asserts! (is-eq (get borrower loan) tx-sender) ERR_UNAUTHORIZED)
+    (asserts! (is-eq (get borrower loan) caller) ERR_UNAUTHORIZED)
     (asserts! (< (- burn-block-height (get created loan)) funding-period) ERR_FUNDING_EXPIRED)
     (asserts! (is-eq (get coll-token loan) (contract-of coll-token)) ERR_INVALID_COLL)
     (asserts! (is-eq (get funding-vault loan) (contract-of fv)) ERR_INVALID_FV)
     (asserts! (is-eq (get coll-vault loan) (contract-of coll-vault)) ERR_INVALID_CV)
+    (asserts! (is-eq (get status loan) INIT) ERR_INVALID_STATUS)
 
-    (if (> coll-ratio u0)
-      (let (
-        (coll-amount (/ (* coll-ratio loan-amount) u10000))
-      )
-        ;; borrower sends funds to collateral vault
-        (try! (send-collateral coll-token coll-vault coll-amount loan-id))
-        true
-      )
-      false
-    )
     (print { delegate-portion: delegate-portion, borrow-amount: borrow-amount })
     (print { treasury-amount: treasury-portion, lp-portion: lp-portion })
 
@@ -211,7 +230,7 @@
 
     (map-set loans loan-id (merge loan { status: ACTIVE, next-payment: (+ burn-block-height (get payment-period loan)) }))
 
-    (ok borrow-amount)
+    (ok return-value)
   )
 )
 
@@ -228,14 +247,25 @@
 ;; @param zd-token: zd contract that holds zest rewards distributed for liquidity providers
 ;; @param swap-router: contract for swapping with DEX protocol
 ;; @param amount: amount that is being paid from the supplier interface
-(define-public (make-payment (loan-id uint) (height uint) (payment <payment>) (lp-token <lp-token>) (token-id uint) (cp-token <lp-token>) (zd-token <dt>) (swap-router <swap>) (amount uint) (xbtc <ft>))
+(define-public (make-payment
+  (loan-id uint)
+  (height uint)
+  (payment <payment>)
+  (lp-token <lp-token>)
+  (token-id uint)
+  (cp-token <lp-token>)
+  (zd-token <dt>)
+  (swap-router <swap>)
+  (amount uint)
+  (caller principal)
+  (xbtc <ft>))
   (let (
-    (done (try! (contract-call? xbtc transfer amount tx-sender (contract-of payment) none)))
+    (done (try! (contract-call? xbtc transfer amount caller (contract-of payment) none)))
     (loan (try! (get-loan loan-id)))
     (payment-response (try! (contract-call? payment make-next-payment lp-token token-id cp-token zd-token swap-router height loan-id xbtc)))
   )
     (try! (is-supplier-interface))
-    (asserts! (is-eq tx-sender (get borrower loan)) ERR_UNAUTHORIZED)
+    (asserts! (is-eq caller (get borrower loan)) ERR_UNAUTHORIZED)
     (asserts! (is-eq ACTIVE (get status loan)) ERR_INVALID_STATUS)
     (asserts! (>= amount (get reward payment-response)) ERR_NOT_ENOUGH_PAID)
 
@@ -267,7 +297,18 @@
 ;; @param zd-token: zd contract that holds zest rewards distributed for liquidity providers
 ;; @param swap-router: contract for swapping with DEX protocol
 ;; @param amount: amount that is being paid from the supplier interface
-(define-public (make-full-payment (loan-id uint) (height uint) (payment <payment>) (lp-token <lp-token>) (token-id uint) (cp-token <lp-token>) (zd-token <dt>) (swap-router <swap>) (amount uint) (xbtc <ft>))
+(define-public (make-full-payment
+  (loan-id uint)
+  (height uint)
+  (payment <payment>)
+  (lp-token <lp-token>)
+  (token-id uint)
+  (cp-token <lp-token>)
+  (zd-token <dt>)
+  (swap-router <swap>)
+  (amount uint)
+  (caller principal)
+  (xbtc <ft>))
   (begin
     (try! (as-contract (contract-call? xbtc transfer amount tx-sender (contract-of payment) none)))
     (let (
@@ -276,7 +317,7 @@
       (updated-loan (merge loan { next-payment: u0, remaining-payments: u0, status: MATURED}))
     )
       (try! (is-supplier-interface))
-      (asserts! (is-eq tx-sender (get borrower loan)) ERR_UNAUTHORIZED)
+      (asserts! (is-eq caller (get borrower loan)) ERR_UNAUTHORIZED)
       (asserts! (is-eq ACTIVE (get status loan)) ERR_INVALID_STATUS)
       (asserts! (>= amount (+ (get reward payment-response) (get full-payment payment-response))) ERR_NOT_ENOUGH_PAID)
 
@@ -348,7 +389,7 @@
   (let (
     (loan (try! (get-loan loan-id)))
   )
-    (asserts! (is-eq tx-sender (get borrower loan)) ERR_UNAUTHORIZED)
+    (asserts! (is-eq contract-caller (get borrower loan)) ERR_UNAUTHORIZED)
     (asserts! (is-none (map-get? rollover-progress loan-id)) ERR_ROLLOVER_EXISTS)
     (asserts! (is-eq u0 (mod maturity-length payment-period)) ERR_INVALID_TIME)
     (asserts! (contract-call? .globals is-coll-contract (contract-of coll-type)) ERR_INVALID_COLL)
@@ -395,11 +436,11 @@
           }))
     
     (loan-coll (try! (contract-call? cv get-loan-coll loan-id)))
-    (required-xbtc (/ (* (get coll-ratio rollover) (get loan-amount loan)) u10000))
+    (required-xbtc (/ (* (get coll-ratio rollover) (get loan-amount loan)) BP_PRC))
     (coll-xbtc-eq (try! (contract-call? swap-router get-x-given-y xbtc coll-type required-xbtc)))
     (diff-coll (try! (contract-call? swap-router get-x-given-y xbtc coll-type (- required-xbtc coll-xbtc-eq))))
   )
-    (asserts! (is-eq tx-sender (get borrower loan)) ERR_UNAUTHORIZED)
+    (asserts! (is-eq contract-caller (get borrower loan)) ERR_UNAUTHORIZED)
     (asserts! (is-eq ACCEPTED (get status rollover)) ERR_INVALID_STATUS)
     (asserts! (is-eq (contract-of coll-type) (get coll-type rollover)) ERR_INVALID_COLL)
     (asserts! (is-eq (contract-of cv) (get coll-vault loan)) ERR_INVALID_CV)
@@ -407,7 +448,10 @@
 
     (if (> coll-xbtc-eq required-xbtc)
       true
-      (try! (contract-call? cv add-collateral coll-type diff-coll loan-id))
+      (begin
+        (try! (contract-call? coll-type transfer diff-coll contract-caller (as-contract tx-sender) none))
+        (try! (contract-call? cv add-collateral coll-type diff-coll loan-id))
+      )
     )
 
     (if (> (get new-amount rollover) (get loan-amount loan))
@@ -461,7 +505,7 @@
 ;; --- ownable trait
 
 ;; (define-data-var contract-owner principal .executor-dao)
-(define-data-var contract-owner principal tx-sender)
+(define-data-var contract-owner principal .executor-dao)
 
 (define-read-only (get-contract-owner)
   (ok (var-get contract-owner))
@@ -499,7 +543,6 @@
 )
 
 (define-constant DFT_PRECISION (pow u10 u5))
-(define-constant BITCOIN_PRECISION (pow u10 u8))
 
 (define-read-only (to-precision (amount uint))
   (* amount DFT_PRECISION)
@@ -547,5 +590,6 @@
 (define-constant ERR_ROLLOVER_EXISTS (err u3012))
 (define-constant ERR_NOT_AGREED_AMOUNT (err u3013))
 (define-constant ERR_NOT_ONBOARDED (err u3014))
+(define-constant ERR_NOT_ENOUGH_COLLATERAL (err u3015))
 
 (var-set pool-contract .loan-v1-0)

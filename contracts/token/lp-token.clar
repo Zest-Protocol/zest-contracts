@@ -74,7 +74,7 @@
     (map-set points-correction { token-id: token-id, owner: recipient } points-correction-to)
     (map-set losses-correction { token-id: token-id, owner: sender } loss-correction-from)
     (map-set losses-correction { token-id: token-id, owner: recipient } loss-correction-to)
-		(asserts! (or (is-eq sender tx-sender) (is-eq sender contract-caller)) ERR_UNAUTHORIZED)
+		(asserts! (is-eq sender contract-caller) ERR_UNAUTHORIZED)
 		(asserts! (<= amount sender-balance) ERR_INSUFFICIENT_BALANCE)
 		(set-balance token-id (- sender-balance amount) sender)
 		(set-balance token-id (+ (get-balance-uint token-id recipient) amount) recipient)
@@ -142,18 +142,15 @@
 )
 
 (define-constant DFT_PRECISION (pow u10 u5))
-(define-constant BITCOIN_PRECISION (pow u10 u8))
 
 ;; claim withdrawable funds by the token owner
-(define-public (withdraw-rewards (token-id uint))
+(define-public (withdraw-rewards (token-id uint) (caller principal))
   (let (
-    (recipient tx-sender)
-    (recipient-contract contract-caller)
-    (withdrawable-funds (withdrawable-funds-of token-id recipient))
+    (withdrawable-funds (withdrawable-funds-of token-id caller))
   )
     (try! (is-approved-contract contract-caller))
-    (map-set withdrawn-funds { token-id: token-id , owner: recipient} (+ withdrawable-funds (get-withdrawn-funds token-id recipient)))
-    ;; (as-contract (try! (contract-call? .xbtc transfer withdrawable-funds tx-sender recipient none)))
+    (map-set withdrawn-funds { token-id: token-id , owner: caller } (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
+    
     (ok withdrawable-funds)
   )
 )
@@ -261,8 +258,7 @@
 
 (define-public (recognize-losses (token-id uint) (owner principal))
   (let (
-    (recipient tx-sender)
-    (losses (recognizable-losses-of token-id recipient))
+    (losses (recognizable-losses-of token-id owner))
   )
     (try! (is-approved-contract contract-caller))
     (map-set recognized-losses { token-id: token-id, owner: owner } (+ losses (get-recognized-losses token-id owner) losses))

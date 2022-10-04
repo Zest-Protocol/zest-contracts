@@ -24,13 +24,6 @@
   )
 )
 
-(define-public (fund-loan (amount uint) (recipient principal) (ft <ft>))
-  (begin
-    (try! (is-approved-contract contract-caller))
-    (contract-call? ft transfer amount tx-sender recipient none)
-  )
-)
-
 ;; transfers funds from the vault to recipient
 ;;
 ;; @restricted contract-owner
@@ -49,20 +42,6 @@
 ;; --- approved contracts
 
 (define-map approved-contracts principal bool)
-
-;; (define-public (add-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract true))
-	;; )
-;; )
-
-;; (define-public (remove-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract false))
-	;; )
-;; )
 
 (define-read-only (is-approved-contract (contract principal))
   (if (default-to false (map-get? approved-contracts contract))

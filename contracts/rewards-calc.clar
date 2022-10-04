@@ -7,6 +7,8 @@
 
 
 (define-constant CYCLE_LENGTH (* u14 u144))
+(define-constant PC_1 u100)
+(define-constant BP u10000)
 ;; cycle -> multiplier BP
 (define-map cycle-multipliers uint uint)
 
@@ -14,7 +16,7 @@
 (define-public (mint-rewards (recipient principal) (cycles uint) (base-amount uint))
   (let (
     (multiplier (get-multiplier cycles))
-    (to-mint (/ (* base-amount multiplier) u10000))
+    (to-mint (/ (* base-amount multiplier) BP))
   )
     (print { multiplier: multiplier })
     (try! (is-approved-contract contract-caller))
@@ -28,7 +30,7 @@
 ;; mints rewards based on number of cycles and base amount
 (define-public (mint-rewards-base (recipient principal) (base-amount uint))
   (let (
-    (to-mint (/ (* base-amount u100) u10000))
+    (to-mint (/ (* base-amount PC_1) BP))
   )
     (try! (is-approved-contract contract-caller))
     (asserts! (> to-mint u0) ERR_NOT_ENOUGH_REWARDS)
@@ -38,15 +40,16 @@
 )
 
 (define-read-only (get-multiplier (cycles uint))
-  (/ (to-uint (polynomial (to-int cycles))) u10000)
+  (/ (to-uint (polynomial (to-int cycles))) BP)
 )
 
 ;; 0.01x^3 - 0.01x^2 + 2x + 100
 (define-constant A 100)
 (define-constant B 100)
 (define-constant C 20000)
+(define-constant Y 1000000)
 (define-read-only (polynomial (x int))
-  (+ (- (* A (pow x 3)) (* B (pow x 2))) (* C x) 1000000)
+  (+ (- (* A (pow x 3)) (* B (pow x 2))) (* C x) Y)
 )
 
 
