@@ -2,7 +2,7 @@
 name = "testnet"
 
 [accounts.deployer]
-mnemonic = "grief helmet embark network vocal fall split cheap critic another sell attitude job meat pass roast will struggle furnace defy father defense thank current"
+mnemonic = ""
 balance = 100_000_000_000_000
 
 # secret_key: 753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601
