@@ -6,11 +6,15 @@
 (impl-trait .extension-trait.extension-trait)
 
 
-(define-constant CYCLE_LENGTH (* u14 u144))
-(define-constant PC_1 u100)
-(define-constant BP u10000)
+(define-constant ONE_DAY (contract-call? .globals get-day-length-default))
+(define-constant CYCLE (contract-call? .globals get-cycle-length-default))
 ;; cycle -> multiplier BP
 (define-map cycle-multipliers uint uint)
+
+(define-data-var base-rewards uint u100)
+
+(define-constant BP u10000)
+(define-constant ONE_PRC u100)
 
 ;; mints rewards based on number of cycles and base amount
 (define-public (mint-rewards (recipient principal) (cycles uint) (base-amount uint))
@@ -18,7 +22,6 @@
     (multiplier (get-multiplier cycles))
     (to-mint (/ (* base-amount multiplier) BP))
   )
-    (print { multiplier: multiplier })
     (try! (is-approved-contract contract-caller))
     (asserts! (> to-mint u0) ERR_NOT_ENOUGH_REWARDS)
     (try! (contract-call? .zge000-governance-token edg-mint to-mint recipient))
@@ -30,7 +33,7 @@
 ;; mints rewards based on number of cycles and base amount
 (define-public (mint-rewards-base (recipient principal) (base-amount uint))
   (let (
-    (to-mint (/ (* base-amount PC_1) BP))
+    (to-mint (/ (* base-amount (var-get base-rewards)) BP))
   )
     (try! (is-approved-contract contract-caller))
     (asserts! (> to-mint u0) ERR_NOT_ENOUGH_REWARDS)
@@ -43,27 +46,35 @@
   (/ (to-uint (polynomial (to-int cycles))) BP)
 )
 
+(define-read-only (get-mint-rewards (recipient principal) (cycles uint) (base-amount uint))
+  (let (
+    (multiplier (get-multiplier cycles))
+    (to-mint (/ (* base-amount multiplier) BP))
+  )
+    to-mint
+  )
+)
+
+(define-read-only (get-mint-rewards-base (recipient principal) (base-amount uint))
+  (/ (* base-amount (var-get base-rewards)) ONE_PRC)
+)
+
 ;; 0.01x^3 - 0.01x^2 + 2x + 100
 (define-constant A 100)
 (define-constant B 100)
 (define-constant C 20000)
-(define-constant Y 1000000)
 (define-read-only (polynomial (x int))
-  (+ (- (* A (pow x 3)) (* B (pow x 2))) (* C x) Y)
+  (+ (- (* A (pow x 3)) (* B (pow x 2))) (* C x) 1000000)
 )
 
-
-(define-public (set-multiplier (cycle uint) (multiplier uint))
-  (begin
-    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (ok (map-set cycle-multipliers cycle multiplier))
-  )
+(define-read-only (get-base-reward)
+  (var-get base-rewards)
 )
 
 ;; -- ownable-trait --
 
 ;; (define-data-var contract-owner principal .executor-dao)
-(define-data-var contract-owner principal tx-sender)
+(define-data-var contract-owner principal .executor-dao)
 
 (define-public (get-contract-owner)
   (ok (var-get contract-owner))
@@ -82,24 +93,13 @@
 
 ;; --- approved
 
-(define-map approved-contracts principal bool)
-
-;; (define-public (add-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract true))
-	;; )
-;; )
-
-;; (define-public (remove-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract false))
-	;; )
-;; )
+;; (define-map approved-contracts principal bool)
 
 (define-read-only (is-approved-contract (contract principal))
-  (if (default-to false (map-get? approved-contracts contract))
+  (if (or
+    (contract-call? .globals is-pool-contract contract)
+    ;; (contract-call? .globals is-loan-contract contract)
+    (contract-call? .globals is-cover-pool-contract contract))
     (ok true)
     ERR_UNAUTHORIZED
   )
@@ -110,10 +110,7 @@
 (define-public (callback (sender principal) (memo (buff 34)))
 	(ok true)
 )
-
-(define-constant ERR_UNAUTHORIZED (err u1000))
-(define-constant ERR_INVALID_CYCLE (err u6000))
-(define-constant ERR_NOT_ENOUGH_REWARDS (err u6001))
-
-(map-set approved-contracts .pool-v1-0 true)
-(map-set approved-contracts .cover-pool-v1-0 true)
+;; ERROR START 19000
+(define-constant ERR_UNAUTHORIZED (err u19000))
+(define-constant ERR_INVALID_CYCLE (err u19001))
+(define-constant ERR_NOT_ENOUGH_REWARDS (err u19002))

@@ -57,9 +57,10 @@
     ;; get amount of losses per account
     (recognize-losses (uint principal) (response uint uint))
 
+    (recognizable-losses-of (uint principal) (response uint uint))
+
 
     ;; distribute losses to all stakers
     (distribute-losses (uint uint) (response uint uint))
-
   )
 )

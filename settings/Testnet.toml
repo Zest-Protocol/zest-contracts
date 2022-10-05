@@ -2,8 +2,9 @@
 name = "testnet"
 
 [accounts.deployer]
-mnemonic = "okay planet mouse girl giraffe describe assist worry swim consider blade shop oval uphold purpose dumb brisk found amused april verb impulse you direct"
+mnemonic = "grief helmet embark network vocal fall split cheap critic another sell attitude job meat pass roast will struggle furnace defy father defense thank current"
 balance = 100_000_000_000_000
+
 # secret_key: 753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601
 # stx_address: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
 # btc_address: mqVnk6NPRdhntvfm4hh9vvjiRkFDUuSYsH
@@ -28,3 +29,8 @@ balance = 100_000_000_000_000
 # secret_key: d655b2523bcd65e34889725c73064feb17ceb796831c0e111ba1a552b0f31b3901
 # stx_address: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
 # btc_address: mvZtbibDAAA3WLpY7zXXFqRa3T4XSknBX7
+
+
+# mnemonic = "okay planet mouse girl giraffe describe assist worry swim consider blade shop oval uphold purpose dumb brisk found amused april verb impulse you direct"
+# mnemonic = "east approve abstract eagle gap rigid clown have alley salon lottery sort business unveil credit copper update hamster zoo hard census slush nominee curious"
+# mneomnic = "panda valley plate eyebrow spawn virus tree valley jump stadium canyon lock expand crunch try glare bullet soon assault slide episode mean image raise"

@@ -3,7 +3,7 @@
 (impl-trait .lp-token-trait.lp-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
-(use-trait ft .sip-010-trait.sip-010-trait)
+(use-trait ft .ft-trait.ft-trait)
 
 (define-fungible-token lp)
 (define-map token-balances {token-id: uint, owner: principal} uint)
@@ -70,6 +70,8 @@
       (loss-correction-from (+ (get-losses-correction token-id sender) points-mag))
       (loss-correction-to (+ (get-losses-correction token-id recipient) points-mag))
 		)
+    ;; DISABLED
+    (asserts! false ERR_UNAUTHORIZED)
     (map-set points-correction { token-id: token-id, owner: sender } points-correction-from)
     (map-set points-correction { token-id: token-id, owner: recipient } points-correction-to)
     (map-set losses-correction { token-id: token-id, owner: sender } loss-correction-from)
@@ -137,9 +139,9 @@
   (default-to u0 (map-get? withdrawn-funds { token-id: token-id, owner: owner }))
 )
 
-(define-read-only (get-sent-funds (token-id uint) (owner principal))
-  (/ (get-balance-uint token-id owner) DFT_PRECISION)
-)
+;; (define-read-only (get-sent-funds (token-id uint) (owner principal))
+;;   (/ (get-balance-uint token-id owner) DFT_PRECISION)
+;; )
 
 (define-constant DFT_PRECISION (pow u10 u5))
 
@@ -149,7 +151,7 @@
     (withdrawable-funds (withdrawable-funds-of token-id caller))
   )
     (try! (is-approved-contract contract-caller))
-    (map-set withdrawn-funds { token-id: token-id , owner: caller } (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
+    (map-set withdrawn-funds { token-id: token-id , owner: caller} (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
     
     (ok withdrawable-funds)
   )
@@ -256,17 +258,21 @@
   (default-to u0 (map-get? recognized-losses { token-id: token-id, owner: owner }))
 )
 
-(define-public (recognize-losses (token-id uint) (owner principal))
+(define-public (recognize-losses (token-id uint) (caller principal))
   (let (
-    (losses (recognizable-losses-of token-id owner))
+    (losses (recognizable-losses-of-read token-id caller))
   )
     (try! (is-approved-contract contract-caller))
-    (map-set recognized-losses { token-id: token-id, owner: owner } (+ losses (get-recognized-losses token-id owner) losses))
+    (map-set recognized-losses { token-id: token-id, owner: caller } (+ losses (get-recognized-losses token-id caller) losses))
     (ok losses)
   )
 )
 
-(define-read-only (recognizable-losses-of (token-id uint) (owner principal))
+(define-public (recognizable-losses-of (token-id uint) (owner principal))
+  (ok (- (accumulative-losses-of token-id owner) (get-recognized-losses token-id owner)))
+)
+
+(define-read-only (recognizable-losses-of-read (token-id uint) (owner principal))
   (- (accumulative-losses-of token-id owner) (get-recognized-losses token-id owner))
 )
 
@@ -296,20 +302,6 @@
 ;; --- approved
 
 (define-map approved-contracts principal bool)
-
-;; (define-public (add-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract true))
-	;; )
-;; )
-
-;; (define-public (remove-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract false))
-	;; )
-;; )
 
 (define-read-only (is-approved-contract (contract principal))
   (if (default-to false (map-get? approved-contracts contract))
@@ -348,12 +340,30 @@
   )
 )
 
-(define-constant ERR_INVALID_PRINCIPAL (err u5000))
-(define-constant ERR_INSUFFICIENT_BALANCE (err u7000))
-(define-constant ERR_PANIC (err u7001))
 
+(define-read-only (get-pool-sent-funds (token-id uint) (sender principal))
+  (get-balance-uint token-id sender)
+)
+
+(define-read-only (get-pool-lost-funds (token-id uint) (sender principal))
+  (recognizable-losses-of-read token-id sender)
+)
+
+(define-read-only (get-pool-funds-balance (token-id uint) (sender principal))
+(let (
+    (lost-funds (get-pool-sent-funds token-id sender))
+    (sent-funds (get-pool-lost-funds token-id sender))
+  )
+    (- sent-funds lost-funds)
+  )
+)
 
 (map-set approved-contracts .loan-v1-0 true)
 (map-set approved-contracts .pool-v1-0 true)
 (map-set approved-contracts .payment-fixed true)
 (map-set approved-contracts .supplier-interface true)
+
+;; ERROR START 12000
+(define-constant ERR_INVALID_PRINCIPAL (err u12000))
+(define-constant ERR_INSUFFICIENT_BALANCE (err u12001))
+(define-constant ERR_PANIC (err u12002))

@@ -3,10 +3,17 @@ name = "stacks-lending"
 authors = []
 description = ""
 telemetry = false
-requirements = ["SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin"]
-cache_dir = ".requirements"
-cache_location=".requirements"
+requirements = []
 boot_contracts = ["pox", "costs-v1", "bns"]
+
+[project.cache_location]
+path = ".requirements"
+[contracts.Wrapped-Bitcoin]
+path = "contracts/token/Wrapped-Bitcoin.clar"
+
+[contracts.Wrapped-USD]
+path = "contracts/token/Wrapped-USD.clar"
+
 [contracts.after-deployment]
 path = "contracts/after-deployment.clar"
 
@@ -22,17 +29,29 @@ path = "contracts/loan/coll-vault.clar"
 [contracts.coll-vault-trait]
 path = "contracts/trait/coll-vault-trait.clar"
 
+[contracts.cover-pool-data]
+path = "contracts/pool/cover-pool-data.clar"
+
 [contracts.cover-pool-v1-0]
 path = "contracts/pool/cover-pool-v1-0.clar"
+
+[contracts.cover-vault]
+path = "contracts/pool/cover-vault.clar"
+
+[contracts.cp-rewards-token]
+path = "contracts/token/cp-rewards-token.clar"
 
 [contracts.cp-token]
 path = "contracts/token/cp-token.clar"
 
-[contracts.distribution-token-trait]
-path = "contracts/trait/distribution-token-trait.clar"
+[contracts.distribution-token-cycles-losses-trait]
+path = "contracts/trait/distribution-token-cycles-losses-trait.clar"
 
 [contracts.distribution-token-cycles-trait]
 path = "contracts/trait/distribution-token-cycles-trait.clar"
+
+[contracts.distribution-token-trait]
+path = "contracts/trait/distribution-token-trait.clar"
 
 [contracts.executor-dao]
 path = "contracts/zest-dao/contracts/executor-dao.clar"
@@ -40,8 +59,14 @@ path = "contracts/zest-dao/contracts/executor-dao.clar"
 [contracts.extension-trait]
 path = "contracts/zest-dao/contracts/traits/extension-trait.clar"
 
+[contracts.ft-trait]
+path = "contracts/trait/ft-trait.clar"
+
 [contracts.funding-vault]
 path = "contracts/loan/funding-vault.clar"
+
+[contracts.funding-vault-trait]
+path = "contracts/trait/funding-vault-trait.clar"
 
 [contracts.globals]
 path = "contracts/globals.clar"
@@ -55,6 +80,9 @@ path = "contracts/trait/liquidity-vault-trait.clar"
 [contracts.liquidity-vault-v1-0]
 path = "contracts/pool/liquidity-vault-v1-0.clar"
 
+[contracts.loan-data]
+path = "contracts/loan/loan-data.clar"
+
 [contracts.loan-v1-0]
 path = "contracts/loan/loan-v1-0.clar"
 
@@ -63,9 +91,6 @@ path = "contracts/token/lp-token.clar"
 
 [contracts.lp-token-trait]
 path = "contracts/trait/lp-token-trait.clar"
-
-[contracts.onboarding]
-path = "contracts/onboarding.clar"
 
 [contracts.ownable-trait]
 path = "contracts/trait/ownable-trait.clar"
@@ -76,6 +101,9 @@ path = "contracts/loan/payment-fixed.clar"
 [contracts.payment-trait]
 path = "contracts/trait/payment-trait.clar"
 
+[contracts.pool-data]
+path = "contracts/pool/pool-data.clar"
+
 [contracts.pool-v1-0]
 path = "contracts/pool/pool-v1-0.clar"
 
@@ -85,14 +113,23 @@ path = "contracts/zest-dao/contracts/traits/proposal-trait.clar"
 [contracts.protocol-treasury]
 path = "contracts/protocol-treasury.clar"
 
+[contracts.read-data]
+path = "contracts/read-data.clar"
+
+[contracts.restricted-token-trait]
+path = "contracts/trait/restricted-token-trait.clar"
+
 [contracts.rewards-calc]
 path = "contracts/rewards-calc.clar"
 
 [contracts.rewards-calc-trait]
 path = "contracts/trait/rewards-calc-trait.clar"
 
-[contracts.sip-010-trait]
-path = "contracts/trait/sip-010-trait.clar"
+[contracts.rewards-read]
+path = "contracts/rewards-read.clar"
+
+[contracts.staking-pool]
+path = "contracts/pool/staking-pool.clar"
 
 [contracts.supplier-interface]
 path = "contracts/bitcoin/supplier-interface.clar"
@@ -103,17 +140,11 @@ path = "contracts/swap-router.clar"
 [contracts.swap-router-trait]
 path = "contracts/trait/swap-router-trait.clar"
 
-[contracts.test-utils]
-path = "contracts/bitcoin/test/test-utils.clar"
-
 [contracts.vault-trait]
 path = "contracts/trait/vault-trait.clar"
 
-[contracts.vesting-logic]
-path = "contracts/vesting-logic.clar"
-
-[contracts.xbtc]
-path = "contracts/token/xbtc.clar"
+[contracts.xZest-token]
+path = "contracts/token/xZest-token.clar"
 
 [contracts.zest-reward-dist]
 path = "contracts/token/zest-reward-dist.clar"

@@ -2,210 +2,29 @@
 id: 0
 name: Testnet deployment
 network: testnet
-node: "http://stacks-node-api.testnet.stacks.co"
+stacks-node: "http://stacks-node-api.testnet.stacks.co"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
 plan:
   batches:
+    # - id: 0
+    #   transactions:
+    #     - contract-publish:
+    #         contract-name: protocol-treasury
+    #         expected-sender: ST11WX7SEVYPQEB1PZTWM0K5FYSMW1CFGHPE4DYA3
+    #         cost: 11890
+    #         path: contracts/protocol-treasury.clar
+    #         anchor-block-only: true
+    #     - contract-publish:
+    #         contract-name: staking-pool
+    #         expected-sender: ST11WX7SEVYPQEB1PZTWM0K5FYSMW1CFGHPE4DYA3
+    #         cost: 64290
+    #         path: contracts/pool/staking-pool.clar
+    #         anchor-block-only: true
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: ownable-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/ownable-trait.clar
-            cost: 1430
-        - contract-publish:
-            contract-name: extension-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/traits/extension-trait.clar
-            cost: 940
-        - contract-publish:
-            contract-name: sip-010-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/sip-010-trait.clar
-            cost: 8400
-        - contract-publish:
-            contract-name: governance-token-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/traits/governance-token-trait.clar
-            cost: 4900
-        - contract-publish:
-            contract-name: proposal-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/traits/proposal-trait.clar
-            cost: 820
-        - contract-publish:
-            contract-name: executor-dao
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/executor-dao.clar
-            cost: 25470
-        - contract-publish:
-            contract-name: zge000-governance-token
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/extensions/zge000-governance-token.clar
-            cost: 40910
-        - contract-publish:
-            contract-name: rewards-calc-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/rewards-calc-trait.clar
-            cost: 1040
-        - contract-publish:
-            contract-name: rewards-calc
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/rewards-calc.clar
-            cost: 26790
-        - contract-publish:
-            contract-name: swap-router-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/swap-router-trait.clar
-            cost: 2750
-        - contract-publish:
-            contract-name: swap-router
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/swap-router.clar
-            cost: 16370
-        - contract-publish:
-            contract-name: xbtc
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/token/xbtc.clar
-            cost: 17000
-        - contract-publish:
-            contract-name: zge004-onboard-borrower
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/extensions/zge004-onboard-borrower.clar
-            cost: 4590
-        - contract-publish:
-            contract-name: lp-token-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/lp-token-trait.clar
-            cost: 19930
-        - contract-publish:
-            contract-name: distribution-token-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/distribution-token-trait.clar
-            cost: 17650
-        - contract-publish:
-            contract-name: payment-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/payment-trait.clar
-            cost: 4960
-        - contract-publish:
-            contract-name: clarity-bitcoin
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/bitcoin/magic-bridge/clarity-bitcoin.clar
-            cost: 412540
-        - contract-publish:
-            contract-name: bridge
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/bitcoin/magic-bridge/bridge.clar
-            cost: 292000
-        - contract-publish:
-            contract-name: zge001-proposal-voting
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/extensions/zge001-proposal-voting.clar
-            cost: 63110
-        - contract-publish:
-            contract-name: zest-reward-dist
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/token/zest-reward-dist.clar
-            cost: 94720
-        - contract-publish:
-            contract-name: liquidity-vault-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/liquidity-vault-trait.clar
-            cost: 3120
-        - contract-publish:
-            contract-name: coll-vault-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/coll-vault-trait.clar
-            cost: 3890
-        - contract-publish:
-            contract-name: vault-trait
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/trait/vault-trait.clar
-            cost: 2420
-        - contract-publish:
-            contract-name: globals
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/globals.clar
-            cost: 77070
-        - contract-publish:
-            contract-name: loan-v1-0
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/loan/loan-v1-0.clar
-            cost: 206340
-    - id: 1
-      transactions:
-        - contract-publish:
-            contract-name: cover-pool-v1-0
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/pool/cover-pool-v1-0.clar
-            cost: 95300
-        - contract-publish:
-            contract-name: pool-v1-0
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/pool/pool-v1-0.clar
-            cost: 291480
-        - contract-publish:
-            contract-name: payment-fixed
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/loan/payment-fixed.clar
-            cost: 114170
-        - contract-publish:
-            contract-name: liquidity-vault-v1-0
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/pool/liquidity-vault-v1-0.clar
-            cost: 19340
-        - contract-publish:
-            contract-name: coll-vault
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/loan/coll-vault.clar
-            cost: 40940
-        - contract-publish:
-            contract-name: cp-token
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/token/cp-token.clar
-            cost: 120500
-        - contract-publish:
-            contract-name: funding-vault
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/loan/funding-vault.clar
-            cost: 17010
-        - contract-publish:
-            contract-name: lp-token
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/token/lp-token.clar
-            cost: 124080
-        - contract-publish:
-            contract-name: zge002-emergency-proposals
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/extensions/zge002-emergency-proposals.clar
-            cost: 27000
-        - contract-publish:
-            contract-name: test-utils
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/bitcoin/test/test-utils.clar
-            cost: 4970
-        - contract-publish:
-            contract-name: zge003-emergency-execute
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/extensions/zge003-emergency-execute.clar
-            cost: 35720
-        - contract-publish:
-            contract-name: zgp000-bootstrap
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/proposals/zgp000-bootstrap.clar
-            cost: 61950
-        - contract-publish:
             contract-name: supplier-interface
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
+            expected-sender: ST11WX7SEVYPQEB1PZTWM0K5FYSMW1CFGHPE4DYA3
+            cost: 223040
             path: contracts/bitcoin/supplier-interface.clar
-            cost: 74560
-        - contract-publish:
-            contract-name: protocol-treasury
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/protocol-treasury.clar
-            cost: 8850
-        - contract-publish:
-            contract-name: zgp001-kill-emergency-execute
-            expected-sender: ST1A0C9DQT6S8AFY5KJKBJJXFD53E4VG8X2Q4905D
-            path: contracts/zest-dao/contracts/proposals/zgp001-kill-emergency-execute.clar
-            cost: 4220
+            anchor-block-only: true

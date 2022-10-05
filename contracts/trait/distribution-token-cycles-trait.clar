@@ -39,8 +39,10 @@
     ;; withdraw earned rewards
     (withdraw-rewards (uint principal) (response uint uint))
 
-    (withdraw-cycle-rewards (uint principal) (response uint uint))
+    (empty-commitments (uint principal) (response bool uint))
 
+    (withdraw-cycle-rewards (uint principal) (response (tuple (cycle-rewards uint) (passive-rewards uint)) uint))
+    
     ;; withdraw earned rewards
     (add-rewards (uint uint) (response uint uint))
 
@@ -52,6 +54,12 @@
 
     ;; cycle rewards functions
     (set-cycle-start (uint uint) (response bool uint))
+
+    ;; cycle rewards functions
+    (set-share-cycles (uint uint uint uint principal) (response bool uint))
+
+    ;; get withdrawable funds by the principal
+    (get-committed-funds (uint principal) (response uint uint))
 
     ;; set rewards in a cycler
     ;; (set-cycle-rewards (uint uint uint) (response bool uint))

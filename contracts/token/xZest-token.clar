@@ -3,7 +3,7 @@
 (impl-trait .distribution-token-trait.distribution-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
-(use-trait ft .sip-010-trait.sip-010-trait)
+(use-trait ft .ft-trait.ft-trait)
 
 
 (define-fungible-token zest-dist)
@@ -244,20 +244,6 @@
 
 (define-map approved-contracts principal bool)
 
-;; (define-public (add-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract true))
-	;; )
-;; )
-
-;; (define-public (remove-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract false))
-	;; )
-;; )
-
 (define-read-only (is-approved-contract (contract principal))
   (if (default-to false (map-get? approved-contracts contract))
     (ok true)
@@ -265,8 +251,9 @@
   )
 )
 
-(define-constant ERR_INVALID_PRINCIPAL (err u5000))
-(define-constant ERR_INSUFFICIENT_BALANCE (err u7000))
-(define-constant ERR_PANIC (err u7001))
-
 (map-set approved-contracts .staking-pool true)
+
+;; ERROR START 14000
+(define-constant ERR_INVALID_PRINCIPAL (err u14000))
+(define-constant ERR_INSUFFICIENT_BALANCE (err u14001))
+(define-constant ERR_PANIC (err u14002))

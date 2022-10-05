@@ -1,7 +1,17 @@
 ;; contract for holding the global values of the protocol
 (impl-trait .ownable-trait.ownable-trait)
 
+;; (define-constant ONE_DAY u36)
 (define-constant ONE_DAY u144)
+(define-constant CYCLE (* u14 ONE_DAY))
+
+(define-read-only (get-day-length-default)
+  ONE_DAY
+)
+
+(define-read-only (get-cycle-length-default)
+  CYCLE
+)
 
 (define-data-var globals
   {
@@ -19,12 +29,13 @@
     paused: bool,
     treasury: principal,
     supplier-interface: principal,
-    max-slippage: uint
+    max-slippage: uint,
+    contingency-plan: bool
   }
   {
     grace-period: (* u5 ONE_DAY),
     funding-period: (* u10 ONE_DAY),
-    treasury-fee: u50,
+    treasury-fee: u30,
     investor-fee: u50,
     lp-cooldown-period: (* u10 ONE_DAY),
     lp-unstake-window:  (* u2 ONE_DAY),
@@ -36,7 +47,8 @@
     treasury: .protocol-treasury,
     ;; supplier-interface: .bridge-router-test,
     supplier-interface: .supplier-interface,
-    max-slippage: u1000
+    max-slippage: u1000,
+    contingency-plan: false
   }
 )
 
@@ -53,11 +65,45 @@
 (define-map liquidity-vaults principal bool)
 (define-map funding-vaults principal bool)
 (define-map xbtc-contracts principal bool)
+(define-map cover-pool-tokens principal bool)
+(define-map cover-rewards-pool-tokens principal bool)
 (define-map coll-vaults principal bool)
+(define-map cover-vaults principal bool)
 (define-map coll-contracts principal bool)
 (define-map payments principal bool)
 
+(define-data-var pool-contract principal .pool-v1-0)
+(define-data-var loan-contract principal .loan-v1-0)
+(define-data-var cover-pool-contract principal .cover-pool-v1-0)
+(define-data-var supplier-interface-contract principal .supplier-interface)
 
+(define-read-only (is-pool-contract (contract principal))
+  (is-eq contract (var-get pool-contract))
+)
+
+(define-read-only (get-pool-contract)
+  (var-get pool-contract)
+)
+
+(define-read-only (is-loan-contract (contract principal))
+  (is-eq contract (var-get loan-contract))
+)
+
+(define-read-only (is-supplier-interface (contract principal))
+  (is-eq contract (var-get supplier-interface-contract))
+)
+
+(define-read-only (get-loan-contract)
+  (var-get loan-contract)
+)
+
+(define-read-only (is-cover-pool-contract (contract principal))
+  (is-eq contract (var-get cover-pool-contract))
+)
+
+(define-read-only (get-cover-pool-contract)
+  (var-get cover-pool-contract)
+)
 
 (define-read-only (is-rewards-calc (rewards-calc principal))
   (default-to false (map-get? rewards-calcs rewards-calc))
@@ -99,12 +145,24 @@
   (default-to false (map-get? coll-vaults coll-vault))
 )
 
+(define-read-only (is-cover-vault (cover-vault principal))
+  (default-to false (map-get? cover-vaults cover-vault))
+)
+
 (define-read-only (is-coll-contract (coll-contract principal))
   (default-to false (map-get? coll-contracts coll-contract))
 )
 
 (define-read-only (is-payment (payment principal))
   (default-to false (map-get? payments payment))
+)
+
+(define-read-only (is-cover-pool-token (token principal))
+  (default-to false (map-get? cover-pool-tokens token))
+)
+
+(define-read-only (is-cover-rewards-pool-token (token principal))
+  (default-to false (map-get? cover-rewards-pool-tokens token))
 )
 
 ;; map setters
@@ -179,6 +237,13 @@
   )
 )
 
+(define-public (set-cover-vault (cover-vault principal))
+  (begin
+    (try! (is-contract-owner))
+    (ok (map-set cover-vaults cover-vault true))
+  )
+)
+
 (define-public (set-coll-contract (coll-contract principal))
   (begin
     (try! (is-contract-owner))
@@ -190,6 +255,20 @@
   (begin
     (try! (is-contract-owner))
     (ok (map-set payments payment true))
+  )
+)
+
+(define-public (set-cover-pool-token (token principal))
+  (begin
+    (try! (is-contract-owner))
+    (ok (map-set cover-pool-tokens token true))
+  )
+)
+
+(define-public (set-cover-rewards-pool-token (token principal))
+  (begin
+    (try! (is-contract-owner))
+    (ok (map-set cover-rewards-pool-tokens token true))
   )
 )
 
@@ -292,8 +371,38 @@
   )
 )
 
+(define-public (set-contingency-plan (contingency-plan bool))
+  (begin
+    (try! (is-contract-owner))
+    (ok (var-set globals (merge (var-get globals) { contingency-plan: contingency-plan })))
+  )
+)
+
 (define-read-only (get-globals)
   (var-get globals)
+)
+
+;; -- contract setters
+
+(define-public (set-pool-contract (contract principal))
+  (begin
+    (try! (is-contract-owner))
+    (ok (var-set pool-contract contract))
+  )
+)
+
+(define-public (set-loan-contract (contract principal))
+  (begin
+    (try! (is-contract-owner))
+    (ok (var-set loan-contract contract))
+  )
+)
+
+(define-public (set-cover-pool-contract (contract principal))
+  (begin
+    (try! (is-contract-owner))
+    (ok (var-set cover-pool-contract contract))
+  )
 )
 
 ;; -- ownable-trait --
@@ -306,7 +415,7 @@
 
 (define-public (set-contract-owner (owner principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+		(try! (is-contract-owner))
     (ok (var-set contract-owner owner))
   )
 )
@@ -324,34 +433,95 @@
 
 ;; -- onboarding
 
-(define-map onboarded principal bool)
+(define-map onboarded-address { user: principal, btc-version: (buff 1), btc-hash: (buff 20) } bool)
+;; user -> number of addresses
+(define-map onboarded-user principal uint)
 
-(define-read-only (is-onboarded (user principal))
-  (default-to false (map-get? onboarded user))
+;; (define-read-only (is-onboarded-address))
+
+(define-read-only (is-onboarded-user-read (user principal))
+  (> (default-to u0 (map-get? onboarded-user user)) u0)
 )
 
 (define-public (is-onboarded-user (user principal))
-  (ok (default-to false (map-get? onboarded user)))
+  (ok (> (default-to u0 (map-get? onboarded-user user)) u0))
 )
 
-(define-public (onboard-user (user principal))
-  (begin
-    (try! (is-contract-owner))
-    (ok (map-set onboarded user true))
+(define-public (is-onboarded-address (user principal) (btc-version (buff 1)) (btc-hash (buff 20)))
+  (ok (default-to false (map-get? onboarded-address { user: user, btc-version: btc-version, btc-hash: btc-hash })))
+)
+
+(define-read-only (is-onboarded-address-read (user principal) (btc-version (buff 1)) (btc-hash (buff 20)))
+  (default-to false (map-get? onboarded-address { user: user, btc-version: btc-version, btc-hash: btc-hash }))
+)
+
+(define-public (onboard-user-address (user principal) (btc-version (buff 1)) (btc-hash (buff 20)))
+  (let (
+    (num-adds (default-to u0 (map-get? onboarded-user user)))
+  )
+		(try! (is-contract-owner))
+    (map-set onboarded-user user (+ u1 num-adds))
+    (ok (map-set onboarded-address { user: user, btc-version: btc-version, btc-hash: btc-hash } true))
   )
 )
 
-(define-public (offboard-user (user principal))
-  (begin
-    (try! (is-contract-owner))
-    (ok (map-set onboarded user false))
+(define-public (offboard-user-address (user principal) (btc-version (buff 1)) (btc-hash (buff 20)))
+  (let (
+    (num-adds (default-to u0 (map-get? onboarded-user user)))
+  )
+		(try! (is-contract-owner))
+    (asserts! (> num-adds u0) ERR_ALREADY_OFFBOARDED)
+    (map-set onboarded-user user (- num-adds u1))
+    (ok (map-delete onboarded-address { user: user, btc-version: btc-version, btc-hash: btc-hash }))
   )
 )
 
-(define-constant ERR_UNAUTHORIZED (err u1000))
+;; -- admin
+(define-map admins principal bool)
+
+(define-public (add-admin (admin principal))
+  (begin
+		(try! (is-contract-owner))
+		(ok (map-set admins admin true))
+	)
+)
+
+(define-public (remove-admin (admin principal))
+  (begin
+		(try! (is-contract-owner))
+		(ok (map-set admins admin false))
+	)
+)
+
+(define-read-only (is-admin (admin principal))
+  (default-to false (map-get? admins admin))
+)
+
+
+;; -- governor
+(define-map governors principal bool)
+
+(define-public (add-governor (governor principal))
+  (begin
+		(try! (is-contract-owner))
+		(ok (map-set governors governor true))
+	)
+)
+
+(define-public (remove-governor (governor principal))
+  (begin
+		(try! (is-contract-owner))
+		(ok (map-set governors governor false))
+	)
+)
+
+(define-read-only (is-governor (governor principal))
+  (default-to false (map-get? governors governor))
+)
 
 (map-set rewards-calcs .rewards-calc true)
 (map-set swaps .swap-router true)
+(map-set swaps .swap-router-xbtc-xusd true)
 (map-set cps .cp-token true)
 (map-set lps .lp-token true)
 (map-set zps .zest-reward-dist true)
@@ -359,7 +529,20 @@
 (map-set liquidity-vaults .liquidity-vault-v1-0 true)
 (map-set funding-vaults .funding-vault true)
 (map-set xbtc-contracts .xbtc true)
+(map-set xbtc-contracts .Wrapped-Bitcoin true)
 (map-set xbtc-contracts 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin true)
 (map-set coll-vaults .coll-vault true)
+(map-set cover-vaults .cover-vault true)
 (map-set coll-contracts .xbtc true)
+(map-set coll-contracts .Wrapped-Bitcoin true)
 (map-set payments .payment-fixed true)
+(map-set cover-pool-tokens .zge000-governance-token true)
+(map-set cover-pool-tokens .xbtc true)
+(map-set cover-pool-tokens .Wrapped-Bitcoin true)
+(map-set cover-pool-tokens 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin true)
+(map-set cover-rewards-pool-tokens .cp-rewards-token true)
+
+;; ERROR START 16000
+(define-constant ERR_UNAUTHORIZED (err u16000))
+(define-constant ERR_TOO_MANY_ADDRESSES (err u16001))
+(define-constant ERR_ALREADY_OFFBOARDED (err u16002))

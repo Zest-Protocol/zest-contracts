@@ -3,7 +3,7 @@
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait v .vault-trait.vault-trait)
 (use-trait cv .coll-vault-trait.coll-vault-trait)
-(use-trait ft .sip-010-trait.sip-010-trait)
+(use-trait ft .ft-trait.ft-trait)
 (use-trait payment .payment-trait.payment-trait)
 (use-trait swap .swap-router-trait.swap-router-trait)
 
@@ -85,7 +85,7 @@
 (define-public (transfer-funds (amount uint) (recipient principal))
   (begin
     (asserts! (is-eq contract-caller (var-get loan-contract)) ERR_UNAUTHORIZED)
-    (as-contract (contract-call? .xbtc transfer amount tx-sender recipient none))
+    (as-contract (contract-call? .Wrapped-Bitcoin transfer amount tx-sender recipient none))
   )
 )
 

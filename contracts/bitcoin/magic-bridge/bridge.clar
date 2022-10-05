@@ -5,11 +5,9 @@
   outbound-fee: (optional int),
   outbound-base-fee: int,
   inbound-base-fee: int,
-  name: (string-ascii 18)
 })
 (define-map supplier-by-public-key (buff 33) uint)
 (define-map supplier-by-controller principal uint)
-(define-map supplier-by-name (string-ascii 18) uint)
 
 (define-map swapper-by-id uint principal)
 (define-map swapper-by-principal principal uint)
@@ -67,12 +65,15 @@
 (define-constant MIN_EXPIRATION u250)
 (define-constant ESCROW_EXPIRATION u200)
 (define-constant OUTBOUND_EXPIRATION u200)
+(define-constant MAX_HTLC_EXPIRATION u550)
 
 (define-constant P2PKH_VERSION 0x00)
 (define-constant P2SH_VERSION 0x05)
 
 ;; use a placeholder txid to mark as "finalized"
 (define-constant REVOKED_OUTBOUND_TXID 0x00)
+;; placeholder to mark inbound swap as revoked
+(define-constant REVOKED_INBOUND_PREIMAGE 0x00)
 
 (define-constant ERR_PANIC (err u1)) ;; should never be thrown
 (define-constant ERR_SUPPLIER_EXISTS (err u2))
@@ -100,6 +101,10 @@
 (define-constant ERR_INSUFFICIENT_AMOUNT (err u24))
 (define-constant ERR_REVOKE_OUTBOUND_NOT_EXPIRED (err u25))
 (define-constant ERR_REVOKE_OUTBOUND_IS_FINALIZED (err u26))
+(define-constant ERR_INCONSISTENT_FEES (err u27))
+(define-constant ERR_REVOKE_INBOUND_NOT_EXPIRED (err u28))
+(define-constant ERR_REVOKE_INBOUND_IS_FINALIZED (err u29))
+
 
 ;; Register a supplier and add funds.
 ;; Validates that the public key and "controller" (STX address) are not
@@ -112,7 +117,6 @@
 ;; @param outbound-fee; optional fee (in basis points) for outbound
 ;; @param outbound-base-fee; fixed fee applied to outbound swaps (in xBTC sats)
 ;; @param inbound-base-fee; fixed fee for inbound swaps (in BTC/sats)
-;; @param name; human-readable name for suppliers
 ;; @param funds; amount of xBTC (sats) to initially supply
 (define-public (register-supplier
     (public-key (buff 33))
@@ -120,7 +124,6 @@
     (outbound-fee (optional int))
     (outbound-base-fee int)
     (inbound-base-fee int)
-    (name (string-ascii 18))
     (funds uint)
   )
   (let
@@ -133,7 +136,6 @@
         controller: tx-sender, 
         outbound-base-fee: outbound-base-fee,
         inbound-base-fee: inbound-base-fee,
-        name: name,
       })
     )
     (asserts! (map-insert supplier-by-id id supplier) ERR_PANIC)
@@ -145,7 +147,6 @@
     ;; validate that the public key and controller do not exist
     (asserts! (map-insert supplier-by-public-key public-key id) ERR_SUPPLIER_EXISTS)
     (asserts! (map-insert supplier-by-controller tx-sender id) ERR_SUPPLIER_EXISTS)
-    (asserts! (map-insert supplier-by-name name id) ERR_SUPPLIER_EXISTS)
     (var-set next-supplier-id (+ id u1))
     (try! (add-funds funds))
     (ok id)
@@ -216,27 +217,8 @@
         inbound-base-fee: inbound-base-fee,
       }))
     )
-    (map-set supplier-by-id supplier-id new-supplier)
-    (ok new-supplier)
-  )
-)
-
-;; Update the name for a supplier
-;;
-;; @returns new metadata for the supplier
-;;
-;; @param name; human-readable name for the supplier
-(define-public (update-supplier-name (name (string-ascii 18)))
-  (let
-    (
-      (supplier-id (unwrap! (get-supplier-id-by-controller contract-caller) ERR_UNAUTHORIZED))
-      (existing-supplier (unwrap! (get-supplier supplier-id) ERR_PANIC))
-      (new-supplier (merge existing-supplier {
-        name: name,
-      }))
-    )
-    (asserts! (map-insert supplier-by-name name supplier-id) ERR_SUPPLIER_EXISTS)
-    (asserts! (map-delete supplier-by-name (get name existing-supplier)) ERR_PANIC)
+    (try! (validate-fee inbound-fee))
+    (try! (validate-fee outbound-fee))
     (map-set supplier-by-id supplier-id new-supplier)
     (ok new-supplier)
   )
@@ -286,6 +268,9 @@
 ;; Validates that the BTC tx is valid by re-constructing the HTLC script
 ;; and comparing it to the BTC tx.
 ;; Validates that the HTLC data (like expiration) is valid.
+;; 
+;; `tx-sender` must be equal to the swapper embedded in the HTLC. This ensures
+;; that the `min-to-receive` parameter is provided by the end-user.
 ;;
 ;; @returns metadata regarding this inbound swap (see `inbound-meta` map)
 ;;
@@ -303,6 +288,7 @@
 ;; @param hash; a hash of the `preimage` used in this swap
 ;; @param swapper-buff; a 4-byte integer that indicates the `swapper-id`
 ;; @param supplier-id; the supplier used in this swap
+;; @param min-to-receive; minimum receivable calculated off-chain to avoid the supplier front-run the swap by adjusting fees
 (define-public (escrow-swap
     (block { header: (buff 80), height: uint })
     (prev-blocks (list 10 (buff 80)))
@@ -315,6 +301,7 @@
     (hash (buff 32))
     (swapper-buff (buff 4))
     (supplier-id uint)
+    (min-to-receive uint)
   )
   (let
     (
@@ -353,18 +340,21 @@
         redeem-script: htlc-redeem,
         sats: sats,
       })
-      (event (merge escrow meta))
     )
+    ;; assert tx-sender is swapper
+    (asserts! (is-eq tx-sender (unwrap! (map-get? swapper-by-id swapper-id) ERR_SWAPPER_NOT_FOUND)) ERR_UNAUTHORIZED)
     (asserts! (is-eq (get public-key supplier) recipient) ERR_INVALID_OUTPUT)
     (asserts! (is-eq output-script htlc-output) ERR_INVALID_OUTPUT)
     (asserts! (is-eq (len hash) u32) ERR_INVALID_HASH)
     (asserts! (map-insert inbound-swaps txid escrow) ERR_TXID_USED)
     (asserts! (map-insert inbound-meta txid meta) ERR_PANIC)
-    (unwrap! (map-get? swapper-by-id swapper-id) ERR_SWAPPER_NOT_FOUND)
+    (asserts! (>= xbtc min-to-receive) ERR_INCONSISTENT_FEES)
     (map-set supplier-funds supplier-id new-funds)
     (map-set supplier-escrow supplier-id new-escrow)
-    (print (merge event { topic: "escrow" }))
-    (print parsed-tx)
+    (print (merge (merge escrow meta) { 
+      topic: "escrow",
+      txid: txid,
+    }))
     (ok meta)
   )
 )
@@ -395,6 +385,51 @@
       (asserts! (>= (get expiration swap) block-height) ERR_ESCROW_EXPIRED)
       (map-set supplier-escrow supplier-id (- escrowed xbtc))
       (update-user-inbound-volume swapper xbtc)
+      (print (merge swap {
+        preimage: preimage,
+        topic: "finalize-inbound",
+        txid: txid,
+      }))
+      (ok swap)
+    )
+  )
+)
+
+;; Revoke an expired inbound swap.
+;; 
+;; If an inbound swap has expired, and is not finalized, then the `xbtc`
+;; amount of the swap is "stuck" in escrow. Calling this function will:
+;; 
+;; - Update the supplier's funds and escrow
+;; - Mark the swap as finalized
+;; 
+;; To finalize the swap, the pre-image stored for the swap is the constant
+;; REVOKED_INBOUND_PREIMAGE (0x00).
+;; 
+;; @returns the swap's metadata
+;; 
+;; @param txid; the txid of the BTC tx used for this inbound swap
+(define-public (revoke-expired-inbound (txid (buff 32)))
+  (match (map-get? inbound-preimages txid)
+    existing ERR_REVOKE_INBOUND_IS_FINALIZED
+    (let
+      (
+        (swap (unwrap! (map-get? inbound-swaps txid) ERR_INVALID_ESCROW))
+        (xbtc (get xbtc swap))
+        (supplier-id (get supplier swap))
+        (funds (get-funds supplier-id))
+        (escrowed (unwrap! (get-escrow supplier-id) ERR_PANIC))
+        (new-funds (+ funds xbtc))
+        (new-escrow (- escrowed xbtc))
+      )
+      (asserts! (<= (get expiration swap) block-height) ERR_REVOKE_INBOUND_NOT_EXPIRED)
+      (map-insert inbound-preimages txid REVOKED_INBOUND_PREIMAGE)
+      (map-set supplier-escrow supplier-id new-escrow)
+      (map-set supplier-funds supplier-id new-funds)
+      (print (merge swap {
+        topic: "revoke-inbound",
+        txid: txid,
+      }))
       (ok swap)
     )
   )
@@ -432,6 +467,10 @@
     (try! (transfer xbtc tx-sender (as-contract tx-sender)))
     (asserts! (map-insert outbound-swaps swap-id swap) ERR_PANIC)
     (var-set next-outbound-id (+ swap-id u1))
+    (print (merge swap {
+      swap-id: swap-id,
+      topic: "initiate-outbound",
+    }))
     (ok swap-id)
   )
 )
@@ -479,6 +518,11 @@
     (asserts! (map-insert completed-outbound-swap-txids txid swap-id) ERR_TXID_USED)
     (asserts! (>= output-sats (get sats swap)) ERR_INSUFFICIENT_AMOUNT)
     (update-user-outbound-volume (get swapper swap) xbtc)
+    (print (merge swap {
+      topic: "finalize-outbound",
+      txid: txid,
+      swap-id: swap-id,
+    }))
     (ok true)
   )
 )
@@ -499,6 +543,10 @@
     )
     (try! (as-contract (transfer xbtc tx-sender swapper)))
     (asserts! (map-insert completed-outbound-swaps swap-id REVOKED_OUTBOUND_TXID) ERR_PANIC)
+    (print (merge swap {
+      topic: "revoke-outbound",
+      swap-id: swap-id,
+    }))
     (ok swap)
   )
 )
@@ -513,19 +561,12 @@
   (map-get? supplier-by-public-key public-key)
 )
 
-(define-read-only (get-supplier-by-name (name (string-ascii 18)))
-  (map-get? supplier-by-name name)
-)
-
 (define-read-only (get-supplier (id uint))
   (map-get? supplier-by-id id)
 )
 
 (define-read-only (get-funds (id uint))
-  (match (map-get? supplier-funds id)
-    funds funds
-    u0
-  )
+  (default-to u0 (map-get? supplier-funds id))
 )
 
 (define-read-only (get-escrow (id uint))
@@ -620,7 +661,8 @@
 
 (define-private (transfer (amount uint) (sender principal) (recipient principal))
   (match
-    (contract-call? .xbtc transfer amount sender recipient none)
+    (contract-call? .Wrapped-Bitcoin transfer amount sender recipient none)
+    ;; (contract-call? 'ST19F1KWRKRF2BZMPW7MWV463K11WED2M39X1HR3A.Wrapped-Bitcoin transfer amount sender recipient none)
     success (ok success)
     error (begin
       (print { transfer-error: error })
@@ -700,9 +742,23 @@
 
 ;; validators
 
+;; Validate the expiration for an inbound swap.
+;; 
+;; There are two validations used here:
+;; 
+;; - Expiration isn't too soon. To ensure that the swapper and supplier have sufficient
+;; time to finalize, a swap must be escrowed with **at least** 250 blocks remaining.
+;; - Expiration isn't too far. The HTLC must have a `CHECKSEQUENCEVERIFY` of less
+;; than 550. This ensures that a supplier's xBTC isn't escrowed for unnecessarily long times.
+;; 
+;; @param expiration; the amount of blocks that need to pass before
+;; the sender can recover their HTLC. This is the value used with `CHECKSEQUENCEVERIFY`
+;; in the HTLC script.
+;; @param mined-height; the nearest stacks block after (or including) the Bitcoin
+;; block where the HTLC was confirmed.
 (define-read-only (validate-expiration (expiration uint) (mined-height uint))
   (if (> expiration (+ (- block-height mined-height) MIN_EXPIRATION))
-    (ok true)
+    (if (< expiration MAX_HTLC_EXPIRATION) (ok true) ERR_INVALID_EXPIRATION)
     ERR_INVALID_EXPIRATION
   )
 )
@@ -741,7 +797,7 @@
       (swap (unwrap! (get-outbound-swap swap-id) ERR_SWAP_NOT_FOUND))
       (finalize-txid (get-completed-outbound-swap-txid swap-id))
       (swap-expiration (+ (get created-at swap) OUTBOUND_EXPIRATION))
-      (is-expired (>= block-height swap-expiration))
+      (is-expired (>= burn-block-height swap-expiration))
       (is-not-finalized (is-none finalize-txid))
     )
     (asserts! is-expired ERR_REVOKE_OUTBOUND_NOT_EXPIRED)

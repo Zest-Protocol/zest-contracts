@@ -3,11 +3,11 @@
 (impl-trait .ownable-trait.ownable-trait)
 (impl-trait .vault-trait.vault-trait)
 
-(use-trait ft .sip-010-trait.sip-010-trait)
+(use-trait ft .ft-trait.ft-trait)
 
 (define-data-var contract-owner principal tx-sender)
 
-;; -- ownable-trait --
+;; ;; -- ownable-trait --
 (define-public (get-contract-owner)
   (ok (var-get contract-owner))
 )
@@ -30,5 +30,16 @@
   )
 )
 
+(define-read-only (is-approved-contract (contract principal))
+  (if (or
+    (contract-call? .globals is-pool-contract contract)
+    (contract-call? .globals is-loan-contract contract)
+    (contract-call? .globals is-cover-pool-contract contract))
+    (ok true)
+    ERR_UNAUTHORIZED
+  )
+)
 
-(define-constant ERR_UNAUTHORIZED (err u1000))
+;; ERROR START 17000
+
+(define-constant ERR_UNAUTHORIZED (err u17000))

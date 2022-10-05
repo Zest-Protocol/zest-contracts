@@ -1,9 +1,8 @@
 ;; holds Zest rewards to LPers
-
 (impl-trait .distribution-token-cycles-trait.distribution-token-cycles-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
-(use-trait ft .sip-010-trait.sip-010-trait)
+(use-trait ft .ft-trait.ft-trait)
 
 
 (define-fungible-token zest-dist)
@@ -15,6 +14,8 @@
 ;; (define-data-var contract-owner principal .executor-dao)
 (define-data-var contract-owner principal tx-sender)
 (define-constant ERR_UNAUTHORIZED (err u1000))
+
+(define-constant FOUR_EXP (pow u10 u4))
 
 ;; -- sip-010 functions
 
@@ -69,9 +70,11 @@
       (points-correction-from (+ (get-points-correction token-id sender) points-mag))
       (points-correction-to (+ (get-points-correction token-id recipient) points-mag))
 		)
+    ;; DISABLED
+    (asserts! false ERR_UNAUTHORIZED)
     (map-set points-correction { token-id: token-id, owner: sender } points-correction-from)
     (map-set points-correction { token-id: token-id, owner: recipient } points-correction-to)
-		(asserts! (is-eq sender contract-caller) ERR_UNAUTHORIZED)
+		(asserts!  (is-eq sender contract-caller) ERR_UNAUTHORIZED)
 		(asserts! (<= amount sender-balance) ERR_INSUFFICIENT_BALANCE)
 		(set-balance token-id (- sender-balance amount) sender)
 		(set-balance token-id (+ (get-balance-uint token-id recipient) amount) recipient)
@@ -113,7 +116,7 @@
 ;; require 2^51 precision
 ;; and max uint precision is 2^128
 
-(define-constant POINTS_MULTIPLIER (pow u2 u64))
+(define-constant POINTS_MULTIPLIER (pow u2 u32))
 
 (define-map points-per-share uint uint)
 (define-map points-correction { token-id: uint, owner: principal } int)
@@ -144,32 +147,60 @@
     (withdrawable-funds (withdrawable-funds-of-read token-id caller))
   )
     (try! (is-approved-contract contract-caller))
-    (map-set withdrawn-funds { token-id: token-id , owner: caller} (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
+    (map-set withdrawn-funds { token-id: token-id, owner: caller } (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
 
     (ok withdrawable-funds)
   )
 )
 
+;; always get all cycle rewards
 (define-public (withdraw-cycle-rewards (token-id uint) (caller principal))
   (let (
-    ;; (withdrawable-funds (withdrawable-funds-of-read token-id recipient))
-    (pool (unwrap-panic (contract-call? .pool-v1-0 get-pool token-id)))
-    (funds-sent (unwrap-panic (contract-call? .pool-v1-0 get-funds-sent caller token-id)))
-    (cycle-length (get cycle-length pool))
-    (cycle-sent (get cycle-sent funds-sent))
-    (cycle-claimed (if (is-eq cycle-sent u0) (+ u1 cycle-sent) (get cycle-claimed funds-sent)))
-    (factor (get factor funds-sent))
-    ;; temp value as cycle-delta before claim calculations
-    (cycle-delta factor)
-    (current-cycle (unwrap-panic (get-cycle-at token-id block-height cycle-length)))
-    (cycles (if (< cycle-delta current-cycle) cycle-delta current-cycle))
-    (sum (unwrap-panic (get-sum-cycles cycle-claimed cycles token-id)))
+    (funds-sent (try! (contract-call? .pool-v1-0 get-funds-sent caller token-id)))
+    (current-cycle (unwrap-panic (get-current-cycle token-id)))
+    (start-cycle (unwrap-panic (get-cycle-at token-id (get sent-at-stx funds-sent))))
+    (last-commitment-cycle (+ (get factor funds-sent) start-cycle))
+    (end-cycle (+ (get factor funds-sent) start-cycle))
+    (sum (unwrap! (remove-share-cycle (+ u1 start-cycle) end-cycle token-id caller) ERR_NOT_ENOUGH_TIME_PASSED))
+    (withdrawable-funds (unwrap-panic (withdraw-rewards token-id caller)))
+    (last-claim-at (get last-claim-at funds-sent))
+    (start-passive (if (is-eq last-claim-at u0) last-commitment-cycle last-claim-at))
+    (delta (if (> current-cycle last-commitment-cycle)
+      (- current-cycle start-passive)
+      u0
+    ))
+    (commitment-total (get-balance-uint token-id caller))
+    (passive-rewards (* delta commitment-total))
   )
-    (asserts! (> current-cycle cycle-claimed) ERR_NOT_ENOUGH_TIME_PASSED)
     (try! (is-approved-contract contract-caller))
-    (print { start-cycle: cycle-claimed, cycle-end: cycles })
 
-    (ok sum)
+    (ok { cycle-rewards: sum, passive-rewards: (/ passive-rewards FOUR_EXP) })
+  )
+)
+
+(define-read-only (get-withdrawable-rewards (token-id uint) (recipient principal))
+  (let (
+    (funds-sent (contract-call? .pool-v1-0 get-funds-sent-read recipient token-id))
+    (current-cycle (unwrap-panic (get-current-cycle token-id)))
+    (start-cycle (unwrap-panic (get-cycle-at token-id (get sent-at-stx funds-sent))))
+    (last-commitment-cycle (+ (get factor funds-sent) start-cycle))
+    (end-cycle (+ (get factor funds-sent) start-cycle))
+    ;; (end-cycle (if (> last-commitment-cycle current-cycle) current-cycle last-commitment-cycle))
+    (sum (unwrap-panic (get-sum-cycles (+ u1 start-cycle) end-cycle token-id recipient)))
+    (withdrawable-funds (withdrawable-funds-of-read token-id recipient))
+    ;; (passive-rewards (if (> current-cycle end-cycle) (- withdrawable-funds sum) u0))
+    (last-claim-at (get last-claim-at funds-sent))
+    (start-passive (if (is-eq last-claim-at u0) last-commitment-cycle last-claim-at))
+    (delta (if (> current-cycle last-commitment-cycle)
+      (- current-cycle start-passive)
+      u0
+    ))
+    (commitment-total (get-balance-uint token-id recipient))
+    ;; (passive-rewards (if (> current-cycle end-cycle) (- withdrawable-funds sum) u0))
+    (passive-rewards (* delta commitment-total))
+    ;; (passive-rewards u0)
+  )
+    { cycle-rewards: sum, passive-rewards: (/ passive-rewards FOUR_EXP) }
   )
 )
 
@@ -197,6 +228,7 @@
 		(set-balance token-id (+ (get-balance-uint token-id recipient) amount) recipient)
 		(map-set token-supplies token-id (+ (unwrap-panic (get-total-supply token-id)) amount))
     (mint-priv token-id amount recipient)
+
 		(print {type: "sft_mint", token-id: token-id, amount: amount, recipient: recipient})
 		(ok true)
 	)
@@ -269,20 +301,6 @@
 
 (define-map approved-contracts principal bool)
 
-;; (define-public (add-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract true))
-	;; )
-;; )
-
-;; (define-public (remove-contract (contract principal))
-  ;; (begin
-		;; (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-		;; (ok (map-set approved-contracts contract false))
-	;; )
-;; )
-
 (define-read-only (is-approved-contract (contract principal))
   (if (default-to false (map-get? approved-contracts contract))
     (ok true)
@@ -298,6 +316,9 @@
 ;; total rewards in cycle
 (define-map rewards { token-id: uint, cycle: uint} uint)
 
+(define-map funds-sent-cycle { token-id: uint, cycle: uint} uint )
+(define-map funds-sent-cycle-by-principal { token-id: uint, cycle: uint, user: principal } uint )
+
 (define-constant MAX_REWARD_CYCLES u32)
 (define-constant REWARD_CYCLE_INDEXES (list u0 u1 u2 u3 u4 u5 u6 u7 u8 u9 u10 u11 u12 u13 u14 u15 u16 u17 u18 u19 u20 u21 u22 u23 u24 u25 u26 u27 u28 u29 u30 u31))
 
@@ -309,9 +330,134 @@
   (default-to u0 (map-get? rewards { token-id: token-id, cycle: cycle }))
 )
 
-(define-read-only (get-cycle-at (token-id uint) (stacks-height uint) (cycle-length uint))
+(define-read-only (get-cycle-share (token-id uint) (cycle uint))
+  (default-to u0 (map-get? funds-sent-cycle { token-id: token-id, cycle: cycle }))
+)
+
+(define-read-only (get-cycle-share-principal (token-id uint) (cycle uint) (user principal))
+  (default-to u0 (map-get? funds-sent-cycle-by-principal { token-id: token-id, cycle: cycle, user: user }))
+)
+
+(define-public (empty-commitments (token-id uint) (caller principal))
+  (let (
+    (funds-sent (unwrap-panic (contract-call? .pool-v1-0 get-funds-sent caller token-id)))
+    (current-cycle (unwrap-panic (get-current-cycle token-id)))
+    (start-cycle (unwrap-panic (get-cycle-at token-id (get sent-at-stx funds-sent))))
+    (end-cycle (+ (get factor funds-sent) start-cycle))
+    (n-cycles (- end-cycle start-cycle))
+    (total-rewards (fold empty-commitments-clojure REWARD_CYCLE_INDEXES { token-id: token-id, first-cycle: start-cycle, period: n-cycles, caller: caller }))
+  )
+    (try! (is-approved-contract contract-caller))
+    (ok true)
+  )
+)
+
+(define-private (empty-commitments-clojure (cycle-idx uint) (result { token-id: uint, first-cycle: uint, period: uint, caller: principal }))
+  (let (
+    (current-cycle (+ cycle-idx (get first-cycle result)))
+    (caller (get caller result))
+    (token-id (get token-id result))
+    (rewards-in-cycle (get-cycle-rewards token-id current-cycle))
+    (share-in-cycle (get-cycle-share token-id current-cycle))
+    (funds-sent-in-cycle (get-cycle-share-principal token-id current-cycle caller))
+  )
+    (if  (> funds-sent-in-cycle u0)
+      (let (
+        (portion (/ (* rewards-in-cycle funds-sent-in-cycle) share-in-cycle))
+      )
+        ;; add to cycle amounts sent
+        ;; (map-set funds-sent-cycle { token-id: token-id, cycle: current-cycle } (- share-in-cycle funds-sent-in-cycle))
+        (map-delete funds-sent-cycle-by-principal { token-id: token-id, cycle: current-cycle, user: caller })
+        ;; add to funds sent by the user
+        { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), caller: caller }
+      )
+      ;; do if above cycle commitment
+      { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), caller: caller }
+    )
+  )
+)
+
+(define-private (remove-share-cycle (start-cycle uint) (end-cycle uint) (token-id uint) (caller principal))
+  (let (
+    (n-cycles (- end-cycle start-cycle))
+    (total-rewards (fold remove-share-cycles-clojure REWARD_CYCLE_INDEXES { token-id: token-id, first-cycle: start-cycle, period: n-cycles, total: u0, caller: caller }))
+  )
+    (ok (get total total-rewards))
+  )
+)
+
+(define-private (remove-share-cycles-clojure (cycle-idx uint) (result { token-id: uint, first-cycle: uint, period: uint, total: uint, caller: principal }))
+  (let (
+    (current-cycle (+ cycle-idx (get first-cycle result)))
+    (caller (get caller result))
+    (token-id (get token-id result))
+    ;; (rewards-in-cycle (get-cycle-rewards token-id current-cycle))
+    ;; (share-in-cycle (get-cycle-share token-id current-cycle))
+    (funds-sent-in-cycle (get-cycle-share-principal token-id current-cycle caller))
+  )
+    (if (and (> (unwrap-panic (get-current-cycle (get token-id result))) current-cycle) (> funds-sent-in-cycle u0))
+      (let (
+        (rewards-in-cycle (get-cycle-rewards token-id current-cycle))
+        (total-in-cycle (get-cycle-share (get token-id result) current-cycle))
+        (portion (/ (/ (* rewards-in-cycle funds-sent-in-cycle) total-in-cycle) POINTS_MULTIPLIER ))
+      )
+        ;; add to cycle amounts sent
+        ;; (map-set funds-sent-cycle { token-id: token-id, cycle: current-cycle } (- share-in-cycle funds-sent-in-cycle))
+        (map-delete funds-sent-cycle-by-principal { token-id: token-id, cycle: current-cycle, user: caller })
+        ;; add to funds sent by the user
+        { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), total: (+ (get total result) portion), caller: caller}
+      )
+      ;; do if above cycle commitment
+      { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), total: (get total result), caller: caller }
+    )
+  )
+)
+
+(define-public (set-share-cycles (start-cycle uint) (end-cycle uint) (token-id uint) (amount uint) (caller principal))
+  (let (
+    (n-cycles (- end-cycle start-cycle))
+    (total-rewards (fold set-share-cycles-clojure REWARD_CYCLE_INDEXES { token-id: token-id, first-cycle: (+ u1 start-cycle), period: n-cycles, amount: amount, caller: caller }))
+  )
+    (try! (is-approved-contract contract-caller))
+    (asserts! (<= n-cycles MAX_REWARD_CYCLES) ERR_INVALID_LENGTH)
+
+    (print { token-id: token-id, first-cycle: (+ u1 start-cycle), period: n-cycles, amount: amount })
+    (ok true)
+  )
+)
+
+(define-private (set-share-cycles-clojure (cycle-idx uint) (result { token-id: uint, first-cycle: uint, period: uint, amount: uint, caller: principal }))
+  (let (
+    (caller (get caller result))
+    (share-in-cycle (get-cycle-share (get token-id result) (+ cycle-idx (get first-cycle result))))
+    (funds-sent-in-cycle (get-cycle-share-principal (get token-id result) (+ cycle-idx (get first-cycle result)) caller))
+  )
+    (if (> (get period result) cycle-idx)
+      (begin
+        ;; add to cycle amounts sent
+        (map-set funds-sent-cycle { token-id: (get token-id result), cycle: (+ cycle-idx (get first-cycle result)) } (+ (get amount result) share-in-cycle))
+        ;; add to funds sent by the user
+        (map-set funds-sent-cycle-by-principal { token-id: (get token-id result), cycle: (+ cycle-idx (get first-cycle result)), user: caller } (+ funds-sent-in-cycle (get amount result)))
+        { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), amount: (get amount result), caller: caller }
+      )
+      ;; do if above cycle commitment
+      { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), amount: (get amount result), caller: caller }
+    )
+  )
+)
+
+(define-public (get-committed-funds (token-id uint) (owner principal))
+  (begin
+    (asserts! true (err u1))
+    (ok u1)
+  )
+)
+
+(define-read-only (get-cycle-at (token-id uint) (stacks-height uint))
   (let (
     (first-block (get-cycle-start token-id))
+    (pool (contract-call? .pool-v1-0 get-pool-read token-id))
+    (cycle-length (get cycle-length pool))
   )
     (if (>= stacks-height first-block)
       (some (/ (- stacks-height first-block) cycle-length))
@@ -322,7 +468,7 @@
 
 (define-read-only (get-current-cycle (token-id uint))
   (let (
-    (pool (contract-call? .pool-v1-0 get-pool-data token-id))
+    (pool (contract-call? .pool-v1-0 get-pool-read token-id))
     (cycle-length (get cycle-length pool))
     (first-block (get-cycle-start token-id))
     (stacks-height block-height)
@@ -336,7 +482,7 @@
 
 (define-read-only (get-next-cycle-height (token-id uint))
   (let (
-    (pool (contract-call? .pool-v1-0 get-pool-data token-id))
+    (pool (contract-call? .pool-v1-0 get-pool-read token-id))
     (cycle-length (get cycle-length pool))
     (first-block (get-cycle-start token-id))
     (stacks-height block-height)
@@ -357,45 +503,81 @@
 
 (define-private (set-rewards (token-id uint) (amount uint) (time uint))
   (let (
-    (pool (unwrap-panic (contract-call? .pool-v1-0 get-pool token-id)))
-    (cycle (unwrap-panic (get-cycle-at token-id time (get cycle-length pool))))
-    (cycle-rewards (get-cycle-rewards token-id cycle))
+    (current-cycle (unwrap-panic (get-cycle-at token-id time)))
+    (cycle-rewards (get-cycle-rewards token-id current-cycle))
+
+    (total-in-cycle (if (> u0 (get-cycle-share token-id current-cycle)) (get-cycle-share token-id current-cycle) u1))
+    (total-supply (get-total-supply-uint token-id))
+    (added-points (/ (* amount POINTS_MULTIPLIER) total-in-cycle))
+    (total-points-shared (+ (get-points-per-share token-id) added-points))
   )
-    (map-set rewards { token-id: token-id, cycle: cycle } (+ amount cycle-rewards))
-    cycle
+    (map-set rewards { token-id: token-id, cycle: current-cycle } (+ total-points-shared cycle-rewards))
+    current-cycle
   )
 )
 
-(define-read-only (get-sum-cycles (start-cycle uint) (end-cycle uint) (token-id uint))
+(define-read-only (get-all-cycle-rewards-of (token-id uint) (recipient principal))
   (let (
-    (n-cycles (- end-cycle start-cycle))
-    (total-rewards (fold get-sum-cycles-clojure REWARD_CYCLE_INDEXES { token-id: token-id, first-cycle: start-cycle, period: n-cycles, sum: u0 }))
+    (funds-sent (contract-call? .pool-v1-0 get-funds-sent-read recipient token-id))
+    (start-cycle (unwrap-panic (get-cycle-at token-id (get sent-at-stx funds-sent))))
+    (end-cycle (+ (get factor funds-sent) start-cycle))
+    (sum (unwrap-panic (get-sum-cycles (+ u1 start-cycle) (+ u1 end-cycle) token-id recipient)))
   )
-    (print { n-cycles: n-cycles })
-    (asserts! (<= (- end-cycle start-cycle) MAX_REWARD_CYCLES) ERR_INVALID_LENGTH)
+    sum
+  )
+)
+
+(define-read-only (get-claimable-rewards-by (token-id uint) (owner principal))
+  (let (
+    (funds-sent (contract-call? .pool-v1-0 get-funds-sent-read owner token-id))
+    (current-cycle (unwrap-panic (get-current-cycle token-id)))
+    (start-cycle (unwrap-panic (get-cycle-at token-id (get sent-at-stx funds-sent))))
+    (last-commitment-cycle (+ (get factor funds-sent) start-cycle))
+    (end-cycle (if (> last-commitment-cycle current-cycle) current-cycle last-commitment-cycle))
+  )
+    (get-sum-cycles (+ u1 start-cycle) (+ u1 end-cycle) token-id owner)
+  )
+)
+
+(define-read-only (get-sum-cycles (start-cycle uint) (end-cycle uint) (token-id uint) (recipient principal))
+  (let (
+    (ok-result (asserts! (> end-cycle start-cycle) ERR_NOT_ENOUGH_TIME_PASSED))
+    (n-cycles (- end-cycle start-cycle))
+    (total-rewards (fold get-sum-cycles-clojure REWARD_CYCLE_INDEXES { token-id: token-id, first-cycle: start-cycle, period: n-cycles, sum: u0, recipient: recipient }))
+  )
+    (asserts! (<= n-cycles MAX_REWARD_CYCLES) ERR_INVALID_LENGTH)
     (ok (get sum total-rewards))
   )
 )
 
-(define-private (get-sum-cycles-clojure (cycle-idx uint) (result { token-id: uint, first-cycle: uint, period: uint, sum: uint }))
+(define-private (get-sum-cycles-clojure (cycle-idx uint) (result { token-id: uint, first-cycle: uint, period: uint, sum: uint, recipient: principal }))
   (let (
-    (rewards-in-cycle (get-cycle-rewards (get token-id result) (+ cycle-idx (get first-cycle result))))
-  )
+    (current-cycle (+ cycle-idx (get first-cycle result)))
+    (token-id (get token-id result))
+    (balance (get-balance-uint token-id (get recipient result)))
+    )
     (if (> (get period result) cycle-idx)
-      { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), sum: (+ rewards-in-cycle (get sum result)) }
+      (let (
+        (rewards-in-cycle (get-cycle-rewards token-id current-cycle))
+        (total-in-cycle (get-cycle-share (get token-id result) current-cycle))
+        (funds-sent-in-cycle (get-cycle-share-principal (get token-id result) current-cycle (get recipient result)))
+        (portion (/ (/ (* rewards-in-cycle funds-sent-in-cycle) total-in-cycle) POINTS_MULTIPLIER ))
+      )
+        { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), sum: (+ portion (get sum result)), recipient: (get recipient result) }
+      )
       ;; do if all cycles
-      { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), sum: (get sum result) }
+      { token-id: (get token-id result), first-cycle: (get first-cycle result), period: (get period result), sum: (get sum result), recipient: (get recipient result) }
     )
   )
 )
 
-(define-constant ERR_INVALID_PRINCIPAL (err u5000))
-(define-constant ERR_INSUFFICIENT_BALANCE (err u7000))
-(define-constant ERR_PANIC (err u7001))
-(define-constant ERR_INVALID_LENGTH (err u7002))
-(define-constant ERR_NOT_ENOUGH_TIME_PASSED (err u7003))
-
-
 (map-set approved-contracts .loan-v1-0 true)
 (map-set approved-contracts .pool-v1-0 true)
 (map-set approved-contracts .payment-fixed true)
+
+;; ERROR START 15000
+(define-constant ERR_INVALID_PRINCIPAL (err u15000))
+(define-constant ERR_INSUFFICIENT_BALANCE (err u15001))
+(define-constant ERR_PANIC (err u15002))
+(define-constant ERR_INVALID_LENGTH (err u15003))
+(define-constant ERR_NOT_ENOUGH_TIME_PASSED (err u15004))

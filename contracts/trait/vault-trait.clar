@@ -1,4 +1,4 @@
-(use-trait ft .sip-010-trait.sip-010-trait)
+(use-trait ft .ft-trait.ft-trait)
 
 (define-trait vault-trait
   (

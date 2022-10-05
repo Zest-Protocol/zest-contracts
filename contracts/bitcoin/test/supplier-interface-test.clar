@@ -1,4 +1,4 @@
-(define-data-var owner principal tx-sender)
+(define-data-var owner principal .executor-dao)
 
 (define-constant ERR_UNAUTHORIZED (err u1000))
 (define-constant ERR_PANIC (err u202))
@@ -58,8 +58,8 @@
 
 (define-private (transfer-full (swapped-amount uint) (fee uint) (sender principal) (recipient principal))
     (begin
-        (try! (as-contract (contract-call? .xbtc transfer swapped-amount sender recipient none)))
-        (try! (as-contract (contract-call? .xbtc transfer fee (as-contract tx-sender) recipient none)))
+        (try! (as-contract (contract-call? .Wrapped-Bitcoin transfer swapped-amount sender recipient none)))
+        (try! (as-contract (contract-call? .Wrapped-Bitcoin transfer fee (as-contract tx-sender) recipient none)))
         (ok (+ swapped-amount fee))
     )
 )
