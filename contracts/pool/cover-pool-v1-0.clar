@@ -60,7 +60,6 @@
 
     (try! (contract-call? .cover-pool-data create-pool token-id data))
 
-    (print { event: "new_cover_pool", pool: data })
     (ok true)
   )
 )
@@ -206,8 +205,6 @@
 
     ;; consider when adding more funds
     (try! (contract-call? cp-token set-share-cycles current-cycle (+ (get cycles new-funds-sent) current-cycle) token-id amount sender))
-    (print { NEW-CYCLES: (get cycles new-funds-sent) })
-
 
     (ok new-funds-sent)
   )
@@ -522,7 +519,6 @@
 
     ;; (try! (contract-call? cover-vault transfer amount-to-send recipient cover-token))
     (try! (contract-call? cover-vault remove-asset cover-token amount-to-send token-id recipient))
-    (print { amount-to-send: amount-to-send, remaining-loan-amount: remaining-loan-amount, funds-in-pool: funds-in-pool })
     (try! (contract-call? cp-token distribute-losses token-id amount-to-send))
 
     (ok amount-to-send)
@@ -546,9 +542,7 @@
     (asserts! (is-eq (contract-of cover-token) (get cover-token pool)) ERR_INVALID_CP)
     (asserts! (is-eq (contract-of cover-vault) (get cover-vault pool)) ERR_INVALID_COVER_VAULT)
 
-    ;; TODO: cosider doing this by pool in vault
     (try! (contract-call? cover-vault remove-asset cover-token funds-in-pool token-id recipient))
-    ;; (try! (contract-call? cover-vault transfer funds-in-pool recipient cover-token))
 
     (try! (contract-call? .cover-pool-data set-pool token-id data))
     (ok funds-in-pool)

@@ -3,8 +3,10 @@ name = "stacks-lending"
 authors = []
 description = ""
 telemetry = false
-requirements = []
 boot_contracts = ["pox", "costs-v1", "bns"]
+
+[[project.requirements]]
+contract_id = "SP3NHG9CBN9SPH68HD8HGPS7F7499KCAEC9K20NZZ.bridge"
 
 [project.cache_location]
 path = ".requirements"

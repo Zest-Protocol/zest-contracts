@@ -1,19 +1,44 @@
 #V2
-::get-height
-::get_block_height
-:q
-quit
-exit
-::get_block_height
-(contract-call? .globals is-onboarded-user-read 'ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP)
-(contract-call? .globals is-onboarded-user-read 'ST31ZZ4171KDEGZ7RDMDG8W76XTS07W9MVRASC0KH)
-(contract-call? .pool-v1-0 get-pool-read u0)
-(contract-call? .pool-v1-0 get-pool-read u1)
-(contract-call? .pool-v1-0 get-pool-read)
-(contract-call? .pool-v1-0 get-pool-read u0)
-(contract-call? .pool-v1-0 get-pool-read u1)
-(contract-call? .pool-v1-0 is-liquidity-provider u2 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC)
-(contract-call? .pool-v1-0 is-liquidity-provider u1 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC)
-(contract-call? .pool-v1-0 is-liquidity-provider u0 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC)
-(contract-call? .pool-v1-0 is-liquidity-provider u1 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC)
-(contract-call? .pool-v1-0 is-liquidity-provider u2 'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC)
+(contract-call? .bridge-router-test deposit-to-pool 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-token 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.liquidity-vault-v1-0)
+(/ (* u10 u900 u10000) u10000)
+(/ (* u10 u900) u10000)
+(/ (* u10 u900 10000) u10000)
+(/ (* u10 u900 u10000) u10000)
+(/ (* u100 u900) u10000)
+(- u3 u1 u1)
+(- u4 u2 u1)
+(- u4 u1 u1)
+(- u4 u0 u1)
+(- u5 u0 u1)
+(- u5 u1 u1)
+(- u5 u2 u1)
+(- u5 (+u2 u1))
+(- u5 (+ u2 u1))
+(contract-call? .coll-vault is-loan)
+(- 1)
+::help
+::set_tx_sender ST3PF13W7Z0RRM42A8VZRVFQ75SV1K26RXEP8YGKJ
+(contract-call? .xbtc transfer u100000 tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.coll-vault none)
+(contract-call? '.xbtc transfer u100000 tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.coll-vault none)
+(contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xbtc transfer u100000 tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.coll-vault none)
+::assets_map
+::asses_map
+::help
+::get_assets_maps
+::help
+::list_functions
+::help
+::reload
+(hash160 0x00)
+(sha256 0x00)
+(contract-call? .rewards-calc u30)
+(contract-call? .rewards-calc polynomial u30)
+(contract-call? .rewards-calc polynomial (* u30 144))
+(contract-call? .rewards-calc polynomial (* u30 u144))
+(contract-call? .rewards-calc get-multiplier (* u30 u144))
+(contract-call? .rewards-calc get-multiplier (* u60 u144))
+(contract-call? .rewards-calc get-multiplier (* u120 u144))
+(contract-call? .rewards-calc get-multiplier (* u300 u144))
+(contract-call? .rewards-calc get-multiplier (* u365 u144))
+(contract-call? .rewards-calc polynomial (* u365 u144))
+(contract-call? .rewards-calc get-multiplier (* u365 u144))

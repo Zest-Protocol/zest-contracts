@@ -145,9 +145,11 @@
 (define-public (withdraw-rewards (token-id uint) (caller principal))
   (let (
     (withdrawable-funds (withdrawable-funds-of-read token-id caller))
+    (total (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
   )
     (try! (is-approved-contract contract-caller))
-    (map-set withdrawn-funds { token-id: token-id, owner: caller } (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
+    (map-set withdrawn-funds { token-id: token-id, owner: caller } total)
+    (print { type: "withdraw-rewards-zest-reward-dist", payload: { total: total, caller: caller } })
 
     (ok withdrawable-funds)
   )
@@ -289,6 +291,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (print { type: "set-contract-owner-zest-reward-dist", payload: owner })
     (ok (var-set contract-owner owner))
   )
 )
@@ -307,7 +310,6 @@
     ERR_UNAUTHORIZED
   )
 )
-
 
 ;; -- pool rewards storage
 
@@ -382,6 +384,7 @@
     (n-cycles (- end-cycle start-cycle))
     (total-rewards (fold remove-share-cycles-clojure REWARD_CYCLE_INDEXES { token-id: token-id, first-cycle: start-cycle, period: n-cycles, total: u0, caller: caller }))
   )
+    (print { type: "remove-share-cycles", payload: { start-cycle: start-cycle, end-cycle: end-cycle, token-id: token-id, caller: caller } })
     (ok (get total total-rewards))
   )
 )
@@ -421,7 +424,7 @@
     (try! (is-approved-contract contract-caller))
     (asserts! (<= n-cycles MAX_REWARD_CYCLES) ERR_INVALID_LENGTH)
 
-    (print { token-id: token-id, first-cycle: (+ u1 start-cycle), period: n-cycles, amount: amount })
+    (print { type: "set-share-cycles", payload: { start-cycle: start-cycle, end-cycle: end-cycle, token-id: token-id, caller: caller } })
     (ok true)
   )
 )
@@ -448,8 +451,7 @@
 
 (define-public (get-committed-funds (token-id uint) (owner principal))
   (begin
-    (asserts! true (err u1))
-    (ok u1)
+    (get-balance token-id owner)
   )
 )
 
@@ -497,6 +499,7 @@
 (define-public (set-cycle-start (token-id uint) (start uint))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-cycle-start", payload: { token-id: token-id, start: start } })
     (ok (map-set cycle-start token-id start))
   )
 )
@@ -511,6 +514,7 @@
     (added-points (/ (* amount POINTS_MULTIPLIER) total-in-cycle))
     (total-points-shared (+ (get-points-per-share token-id) added-points))
   )
+    (print { type: "set-rewards-zest-rewards-dist", payload: { token-id: token-id, cycle: current-cycle, rewards: (+ total-points-shared cycle-rewards) } })
     (map-set rewards { token-id: token-id, cycle: current-cycle } (+ total-points-shared cycle-rewards))
     current-cycle
   )

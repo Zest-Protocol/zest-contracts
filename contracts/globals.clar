@@ -170,6 +170,7 @@
 (define-public (set-rewards-calc (rewards-calc principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-rewads-calc", payload: rewards-calc })
     (ok (map-set rewards-calcs rewards-calc true))
   )
 )
@@ -177,6 +178,7 @@
 (define-public (set-swap (swap principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-swap", payload: swap })
     (ok (map-set swaps swap true))
   )
 )
@@ -184,6 +186,7 @@
 (define-public (set-cp (cp principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-cp", payload: cp })
     (ok (map-set cps cp true))
   )
 )
@@ -191,6 +194,7 @@
 (define-public (set-lp (lp principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-lp", payload: lp })
     (ok (map-set lps lp true))
   )
 )
@@ -198,6 +202,7 @@
 (define-public (set-zp (zp principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-zp", payload: zp })
     (ok (map-set zps zp true))
   )
 )
@@ -205,6 +210,7 @@
 (define-public (set-sp (sp principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-sp", payload: sp })
     (ok (map-set sps sp true))
   )
 )
@@ -212,6 +218,7 @@
 (define-public (set-liquidity-vault (liquidity-vault principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-liquidity-vault", payload: liquidity-vault })
     (ok (map-set liquidity-vaults liquidity-vault true))
   )
 )
@@ -219,6 +226,7 @@
 (define-public (set-funding-vault (funding-vault principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-funding-vault", payload: funding-vault })
     (ok (map-set funding-vaults funding-vault true))
   )
 )
@@ -226,6 +234,7 @@
 (define-public (set-xbtc-contract (xbtc-contract principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-xbtc-vault", payload: xbtc-contract })
     (ok (map-set xbtc-contracts xbtc-contract true))
   )
 )
@@ -233,6 +242,7 @@
 (define-public (set-coll-vault (coll-vault principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-coll-vault", payload: coll-vault })
     (ok (map-set coll-vaults coll-vault true))
   )
 )
@@ -240,6 +250,7 @@
 (define-public (set-cover-vault (cover-vault principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-cover-vault", payload: cover-vault })
     (ok (map-set cover-vaults cover-vault true))
   )
 )
@@ -247,6 +258,7 @@
 (define-public (set-coll-contract (coll-contract principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-coll-contract", payload: coll-contract })
     (ok (map-set coll-contracts coll-contract true))
   )
 )
@@ -254,6 +266,7 @@
 (define-public (set-payment (payment principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-payment", payload: payment })
     (ok (map-set payments payment true))
   )
 )
@@ -261,6 +274,7 @@
 (define-public (set-cover-pool-token (token principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-cover-pool-token", payload: token })
     (ok (map-set cover-pool-tokens token true))
   )
 )
@@ -268,6 +282,7 @@
 (define-public (set-cover-rewards-pool-token (token principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-cover-rewards-pool-token", payload: token })
     (ok (map-set cover-rewards-pool-tokens token true))
   )
 )
@@ -277,6 +292,7 @@
 (define-public (set-grace-period (grace-period uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { grace-period: grace-period }) })
     (ok (var-set globals (merge (var-get globals) { grace-period: grace-period })))
   )
 )
@@ -284,6 +300,7 @@
 (define-public (set-funding-period (funding-period uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { funding-period: funding-period }) })
     (ok (var-set globals (merge (var-get globals) { funding-period: funding-period })))
   )
 )
@@ -291,6 +308,7 @@
 (define-public (set-treasury-fee (treasury-fee uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { treasury-fee: treasury-fee }) })
     (ok (var-set globals (merge (var-get globals) { treasury-fee: treasury-fee })))
   )
 )
@@ -298,6 +316,7 @@
 (define-public (set-investor-fee (investor-fee uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { investor-fee: investor-fee }) })
     (ok (var-set globals (merge (var-get globals) { investor-fee: investor-fee })))
   )
 )
@@ -305,6 +324,7 @@
 (define-public (set-staker-cooldown-period (staker-cooldown-period uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { staker-cooldown-period: staker-cooldown-period }) })
     (ok (var-set globals (merge (var-get globals) { staker-cooldown-period: staker-cooldown-period })))
   )
 )
@@ -312,6 +332,7 @@
 (define-public (set-lp-cooldown-period (lp-cooldown-period uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { lp-cooldown-period: lp-cooldown-period }) })
     (ok (var-set globals (merge (var-get globals) { lp-cooldown-period: lp-cooldown-period })))
   )
 )
@@ -319,12 +340,14 @@
 (define-public (set-cover-cooldown-period (cover-cooldown-period uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { cover-cooldown-period: cover-cooldown-period }) })
     (ok (var-set globals (merge (var-get globals) { cover-cooldown-period: cover-cooldown-period })))
   )
 )
 (define-public (set-cover-unstake-window (cover-unstake-window uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { cover-unstake-window: cover-unstake-window }) })
     (ok (var-set globals (merge (var-get globals) { cover-unstake-window: cover-unstake-window })))
   )
 )
@@ -332,6 +355,7 @@
 (define-public (set-staker-unstake-window (staker-unstake-window uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { staker-unstake-window: staker-unstake-window }) })
     (ok (var-set globals (merge (var-get globals) { staker-unstake-window: staker-unstake-window })))
   )
 )
@@ -339,6 +363,7 @@
 (define-public (set-lp-unstake-window (lp-unstake-window uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { lp-unstake-window: lp-unstake-window }) })
     (ok (var-set globals (merge (var-get globals) { lp-unstake-window: lp-unstake-window })))
   )
 )
@@ -346,6 +371,7 @@
 (define-public (set-paused (paused bool))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { paused: paused }) })
     (ok (var-set globals (merge (var-get globals) { paused: paused })))
   )
 )
@@ -353,6 +379,7 @@
 (define-public (set-protocol-treasury (treasury principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { treasury: treasury }) })
     (ok (var-set globals (merge (var-get globals) { treasury: treasury })))
   )
 )
@@ -360,6 +387,7 @@
 (define-public (set-supplier-interface (supplier-interface principal))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { supplier-interface: supplier-interface }) })
     (ok (var-set globals (merge (var-get globals) { supplier-interface: supplier-interface })))
   )
 )
@@ -367,6 +395,7 @@
 (define-public (set-max-slippage (max-slippage uint))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { max-slippage: max-slippage }) })
     (ok (var-set globals (merge (var-get globals) { max-slippage: max-slippage })))
   )
 )
@@ -374,6 +403,7 @@
 (define-public (set-contingency-plan (contingency-plan bool))
   (begin
     (try! (is-contract-owner))
+    (print { type: "set-globals", payload: (merge (var-get globals) { contingency-plan: contingency-plan }) })
     (ok (var-set globals (merge (var-get globals) { contingency-plan: contingency-plan })))
   )
 )
@@ -520,7 +550,7 @@
 )
 
 (map-set rewards-calcs .rewards-calc true)
-(map-set swaps .swap-router true)
+(map-set swaps .swap-router-dummy true)
 (map-set swaps .swap-router-xbtc-xusd true)
 (map-set cps .cp-token true)
 (map-set lps .lp-token true)

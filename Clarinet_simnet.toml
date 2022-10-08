@@ -6,7 +6,9 @@ telemetry = false
 requirements = [
   "SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin",
   "SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token",
-  "SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token"
+  "SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token",
+  "SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.swap-helper-v1-03",
+  "SP3NHG9CBN9SPH68HD8HGPS7F7499KCAEC9K20NZZ.bridge",
 ]
 cache_dir = ".requirements"
 cache_location=".requirements"
@@ -17,6 +19,10 @@ path = "contracts/after-deployment.clar"
 
 [contracts.bridge]
 path = "contracts/bitcoin/magic-bridge/bridge.clar"
+
+# [contracts.swap-router-xbtc-xusd]
+# path = "contracts/swap-router-xbtc-xusd.clar"
+# depends_on = ["SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.swap-helper-v1-03"]
 
 [contracts.clarity-bitcoin]
 path = "contracts/bitcoin/test/clarity-bitcoin.clar"
@@ -148,13 +154,13 @@ path = "contracts/pool/cover-pool-data.clar"
 
 [contracts.supplier-interface]
 path = "contracts/bitcoin/supplier-interface.clar"
-depends_on = ["pool-v1-0"]
+depends_on = ["pool-v1-0", "SP3NHG9CBN9SPH68HD8HGPS7F7499KCAEC9K20NZZ.bridge"]
 
 [contracts.swap-router]
-path = "contracts/swap-router.clar"
+path = "contracts/swap-router-dummy.clar"
 
-[contracts.usda-token]
-path = "contracts/usda-token.clar"
+# [contracts.usda-token]
+# path = "contracts/usda-token.clar"
 
 [contracts.swap-router-trait]
 path = "contracts/trait/swap-router-trait.clar"
@@ -166,7 +172,7 @@ path = "contracts/bitcoin/test/test-utils.clar"
 path = "contracts/trait/vault-trait.clar"
 
 [contracts.Wrapped-Bitcoin]
-path = "contracts/token/Wrapped-Bitcoin-simnet.clar"
+path = "contracts/token/Wrapped-Bitcoin.clar"
 
 [contracts.Wrapped-USD]
 path = "contracts/token/Wrapped-USD.clar"
@@ -190,10 +196,6 @@ depends_on = ["executor-dao", "extension-trait", "zge001-proposal-voting"]
 [contracts.zge003-emergency-execute]
 path = "contracts/dao/extensions/zge003-emergency-execute.clar"
 depends_on = ["executor-dao", "extension-trait", "zge001-proposal-voting"]
-
-[contracts.zge004-onboard-borrower]
-path = "contracts/dao/extensions/zge004-onboard-borrower.clar"
-depends_on = ["executor-dao", "extension-trait"]
 
 [contracts.zgp000-bootstrap]
 path = "contracts/dao/proposals/zgp000-bootstrap-simnet.clar"

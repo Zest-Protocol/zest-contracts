@@ -144,9 +144,12 @@
 (define-public (withdraw-rewards (token-id uint) (caller principal))
   (let (
     (withdrawable-funds (withdrawable-funds-of token-id caller))
+    (total (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
   )
     (try! (is-approved-contract contract-caller))
-    (map-set withdrawn-funds { token-id: token-id , owner: caller} (+ withdrawable-funds (get-withdrawn-funds token-id caller)))
+    (map-set withdrawn-funds { token-id: token-id , owner: caller } total)
+
+    (print { type: "add-rewards-cp-rewards-token", payload: { withdrawn-funds: total, token-id: token-id, owner: caller } })
     (ok withdrawable-funds)
   )
 )
@@ -161,7 +164,7 @@
   )
     (try! (is-approved-contract contract-caller))
     (map-set points-per-share token-id total-points-shared)
-    (print { type: "added_funds", added-points: added-points })
+    (print { type: "add-rewards-cp-rewards-token", payload: { added-points: added-points, token-id: token-id } })
     (ok total-points-shared)
   )
 )

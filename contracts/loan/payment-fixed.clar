@@ -32,6 +32,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (print { type: "set-contract-owner-payment-fixed", payload: owner })
     (ok (var-set contract-owner owner))
   )
 )
@@ -43,6 +44,7 @@
 (define-public (set-late-fee (fee uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-payment-fixed", payload: { fee: fee } })
     (ok (var-set late-fee fee))
   )
 )
@@ -50,6 +52,7 @@
 (define-public (set-early-repayment-fee (fee uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-early-repayment-fee-payment-fixed", payload: { early-repayment-fee: fee } })
     (ok (var-set early-repayment-fee fee))
   )
 )
@@ -110,6 +113,7 @@
 
     ;; set to false when a payment is done always
     (map-set late-payment-switch caller false)
+    (print { type: "late-payment-switch-payment-fixed", payload: { caller: caller, switch: false } })
     
     (if (is-eq u1 (get remaining-payments loan))
       (begin
@@ -178,6 +182,7 @@
 
     ;; set to false when a payment is done always
     (map-set late-payment-switch caller false)
+    (print { type: "late-payment-switch-payment-fixed", payload: { caller: caller, switch: false } })
     
     (try! (as-contract (contract-call? xbtc transfer amount tx-sender (get liquidity-vault pool) none)))
   
@@ -201,6 +206,7 @@
     ;; Test that loan belongs to pool
     (asserts! (is-eq loan-pool-id token-id) ERR_UNAUTHORIZED)
 
+    (print { type: "trigger-late-payment-payment-fixed", payload: { borrower: (get borrower loan), switch: true } })
     (ok (map-set late-payment-switch (get borrower loan) true))
   )
 )
@@ -349,7 +355,6 @@
 
     (if (get available cover-pool) (try! (contract-call? cp-token add-rewards token-id cover-portion)) u0)
 
-    ;; TODO: move to when rewards are claimed
     ;; (try! (contract-call? .read-data add-pool-zest-rewards-earned token-id (+ delegate-portion lp-portion)))z
     (try! (contract-call? .read-data add-cover-pool-zest-rewards-earned token-id (+ cover-portion)))
     (ok true)

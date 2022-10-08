@@ -36,6 +36,7 @@
 (define-public (transfer (amount uint) (recipient principal) (ft <ft>))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "transfer-cover-vault", payload: { amount: amount, asset: ft, recipient: recipient } })
     (as-contract (contract-call? ft transfer amount tx-sender recipient none))
   )
 )

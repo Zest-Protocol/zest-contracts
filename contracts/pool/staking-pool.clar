@@ -39,6 +39,7 @@
     (asserts! (is-eq caller contract-caller) ERR_UNAUTHORIZED)
     
     (map-set funds-sent caller { withdrawal-signaled: u0, amount: u0 })
+    (print { type: "send-funds-staking-pool", payload: { withdrawal-signaled: u0, amount: u0 } })
     
     (try! (contract-call? .zge000-governance-token transfer amount caller (as-contract tx-sender) none))
     (try! (contract-call? sp-token mint u0 (to-precision amount) caller))
@@ -55,6 +56,8 @@
     (asserts! (contract-call? .globals is-sp sp-contract) ERR_INVALID_SP)
 
     (try! (contract-call? .zge000-governance-token transfer amount caller (as-contract tx-sender) none))
+
+    (print { type: "add-rewards-staking-pool", payload: { amount: amount, caller: caller } })
     (contract-call? sp-token add-rewards u0 amount)
   )
 )
@@ -67,6 +70,7 @@
     (asserts! (contract-call? .globals is-xbtc (contract-of sp-token)) ERR_INVALID_SP)
 
     (as-contract (try! (contract-call? .zge000-governance-token transfer withdrawn-funds (as-contract tx-sender) recipient none)))
+    (print { type: "withdraw-rewards-staking-pool", payload: { amount: withdrawn-funds, caller: recipient } })
     (ok withdrawn-funds)
   )
 )
@@ -78,6 +82,7 @@
     (asserts! (is-eq caller contract-caller) ERR_UNAUTHORIZED)
     
     (map-set funds-sent caller (merge funds-sent-data { withdrawal-signaled: block-height, amount: amount }))
+    (print { type: "signal-withdrawal-staking-pool", payload: { withdrawal-signaled: block-height, amount: amount, caller: caller } })
     (ok true)
   )
 )
@@ -98,8 +103,8 @@
     (asserts! (is-eq caller contract-caller) ERR_UNAUTHORIZED)
     
     (as-contract (try! (contract-call? .zge000-governance-token transfer amount (as-contract tx-sender) caller none)))
+    (print { type: "withdraw-staking-pool", payload: { amount: amount, caller: caller } })
     ;; amount transferred is checked by the amount of sp-tokens being burned
-    (print { event: "pool_withdrawal", funds-withdrawn: amount, caller: caller })
     (contract-call? sp-token burn u0 (to-precision amount) caller)
   )
 )
@@ -125,9 +130,12 @@
 (define-public (set-ready)
   (let (
     (pool-data (get-pool))
+    (data (merge pool-data { status: READY }))
   )
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (var-set pool (merge pool-data { status: READY }))
+
+    (print { type: "set-ready-staking-pool", payload: data })
+    (var-set pool data)
 
     (ok true)
   )
@@ -136,9 +144,12 @@
 (define-public (set-default)
   (let (
     (pool-data (get-pool))
+    (data (merge pool-data { status: DEFAULT }))
   )
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (var-set pool (merge pool-data { status: DEFAULT }))
+
+    (print { type: "set-default-staking-pool", payload: data })
+    (var-set pool data)
 
     (ok true)
   )
@@ -156,6 +167,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (print { type: "set-contract-owner-staking-pool", payload: owner })
     (ok (var-set contract-owner owner))
   )
 )

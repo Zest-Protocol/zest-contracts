@@ -2,9 +2,8 @@
 name = "testnet"
 
 [accounts.deployer]
-mnemonic = ""
+mnemonic = "wagon pulse winner raise busy tooth cancel pass title lazy federal violin meat equip dish beauty blossom loyal unhappy expand chalk unfold room happy"
 balance = 100_000_000_000_000
-
 # secret_key: 753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601
 # stx_address: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
 # btc_address: mqVnk6NPRdhntvfm4hh9vvjiRkFDUuSYsH

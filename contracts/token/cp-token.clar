@@ -211,12 +211,11 @@
     (end-cycle (if (>= (+ u1 last-commitment-cycle) current-cycle) current-cycle last-commitment-cycle))
     (sum (unwrap! (remove-share-cycle (+ u1 start-cycle) end-cycle token-id caller) ERR_NOT_ENOUGH_TIME_PASSED))
     (withdrawable-funds (unwrap-panic (withdraw-rewards token-id caller)))
-    ;; (passive-rewards (if (> current-cycle last-commitment-cycle) (- withdrawable-funds sum) u0))
     (passive-rewards u0)
   )
     ;; (asserts! (> end-cycle current-cycle) ERR_NOT_ENOUGH_TIME_PASSED)
     (try! (is-approved-contract contract-caller))
-    (print { current-cycle: current-cycle, last-commitment-cycle: last-commitment-cycle, end-cycle: end-cycle })
+    (print { type: "withdraw-cycle-rewards-cp-token", payload: { token-id: token-id, caller: caller } })
 
     (ok { cycle-rewards: sum, passive-rewards: passive-rewards })
   )
@@ -261,6 +260,8 @@
     (cycle-rewards (get-cycle-rewards token-id cycle))
   )
     (map-set rewards { token-id: token-id, cycle: cycle } (+ amount cycle-rewards))
+
+    (print { type: "set-rewards-cp-token", payload: { token-id: token-id, cycle: cycle, rewards: (+ amount cycle-rewards) } })
     cycle
   )
 )
