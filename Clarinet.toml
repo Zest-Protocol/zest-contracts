@@ -20,10 +20,10 @@ path = "contracts/token/Wrapped-USD.clar"
 path = "contracts/after-deployment.clar"
 
 [contracts.bridge]
-path = "contracts/bitcoin/magic-bridge/bridge.clar"
+path = "contracts/bitcoin/magic-protocol/magic-protocol.clar"
 
 [contracts.clarity-bitcoin]
-path = "contracts/bitcoin/magic-bridge/clarity-bitcoin.clar"
+path = "contracts/bitcoin/magic-protocol/clarity-bitcoin.clar"
 
 [contracts.coll-vault]
 path = "contracts/loan/coll-vault.clar"

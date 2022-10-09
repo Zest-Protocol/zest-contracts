@@ -18,7 +18,7 @@ boot_contracts = ["pox", "costs-v1", "bns"]
 path = "contracts/after-deployment.clar"
 
 [contracts.bridge]
-path = "contracts/bitcoin/magic-bridge/bridge.clar"
+path = "contracts/bitcoin/magic-protocol/magic-protocol.clar"
 
 # [contracts.swap-router-xbtc-xusd]
 # path = "contracts/swap-router-xbtc-xusd.clar"

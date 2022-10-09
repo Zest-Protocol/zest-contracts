@@ -7,7 +7,7 @@ requirements = []
 cache_dir = "/Users/fernandofoy/.clarinet/cache"
 boot_contracts = ["pox", "costs-v1", "bns"]
 [contracts.bridge]
-path = "contracts/bitcoin/magic-bridge/bridge.clar"
+path = "contracts/bitcoin/magic-protocol/magic-protocol.clar"
 depends_on = ["clarity-bitcoin", "xbtc"]
 
 [contracts.clarity-bitcoin]

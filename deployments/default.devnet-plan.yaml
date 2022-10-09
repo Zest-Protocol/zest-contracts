@@ -167,12 +167,12 @@ plan:
         - contract-publish:
             contract-name: clarity-bitcoin
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/bitcoin/magic-bridge/clarity-bitcoin.clar
+            path: contracts/bitcoin/magic-protocol/clarity-bitcoin.clar
             cost: 412540
         - contract-publish:
             contract-name: bridge
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/bitcoin/magic-bridge/bridge.clar
+            path: contracts/bitcoin/magic-protocol/bridge.clar
             cost: 292000
         - contract-publish:
             contract-name: swap-router

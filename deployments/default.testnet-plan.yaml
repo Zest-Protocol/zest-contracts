@@ -115,12 +115,12 @@ plan:
         - contract-publish:
             contract-name: clarity-bitcoin
             expected-sender: STE81YFK7JCN0EK00YZ13QPA2YFJMEWW7WFG2YHB
-            path: contracts/bitcoin/magic-bridge/clarity-bitcoin.clar
+            path: contracts/bitcoin/magic-protocol/clarity-bitcoin.clar
             cost: 412540
         - contract-publish:
             contract-name: bridge
             expected-sender: STE81YFK7JCN0EK00YZ13QPA2YFJMEWW7WFG2YHB
-            path: contracts/bitcoin/magic-bridge/bridge.clar
+            path: contracts/bitcoin/magic-protocol/bridge.clar
             cost: 316530
         - contract-publish:
             contract-name: distribution-token-cycles-trait
