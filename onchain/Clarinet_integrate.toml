@@ -162,9 +162,6 @@ path = "contracts/dao/extensions/zge002-emergency-proposals.clar"
 [contracts.zge003-emergency-execute]
 path = "contracts/dao/extensions/zge003-emergency-execute.clar"
 
-[contracts.zge004-onboard-borrower]
-path = "contracts/dao/extensions/zge004-onboard-borrower.clar"
-
 [contracts.zgp000-bootstrap]
 path = "contracts/dao/proposals/zgp000-bootstrap-simnet.clar"
 
