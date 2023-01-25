@@ -1,0 +1,39 @@
+# Diagram 9
+
+actor Lender 1
+actor Lender 2
+actor Liquidator 1
+actor Liquidator 2
+participant Liquidation Pool
+participant Protection Pool
+participant Vault Contract
+entity Public Service
+database Bitcoin API
+
+
+Bitcoin API -> Public Service: liquidate(vault_id)
+Public Service -#blue> Vault Contract: liquidate(vault_id)
+
+Vault Contract -#blue>Protection Pool: liquidate_crp_tokens(pool_id)
+Protection Pool -#blue>Liquidation Pool: transfer_crp(amount)
+
+note over Liquidation Pool: Liquidator must signal that they are\npaying for the liquidation so that they\ncan receive the tokens
+
+Liquidator 1 -#blue> Liquidation Pool: signal_liquidation_payment(pool_id, n_lots)
+
+Liquidator 1 -#yellow> Lender 1: send liquidation payment
+Liquidator 1 -#yellow> Lender 2: send liquidation payment
+
+Bitcoin API -> Public Service: tx_data
+Public Service -#blue> Liquidation Pool: verify_liquidation_payment()
+Liquidation Pool -#blue> Liquidator 1: transfer_crp(amount)
+
+== Second liquidator starts here ==
+Liquidator 2 -#blue> Liquidation Pool: signal_liquidation_payment(pool_id, m_lots)
+Bitcoin API -> Public Service: tx_data
+Public Service -#blue> Liquidation Pool: verify_liquidation_payment()
+Liquidation Pool -#blue> Liquidator 1: transfer_crp(amount)
+Liquidator 2 -#yellow> Lender 2: send liquidation payment
+
+note over Liquidation Pool: After B blocks, the remaining\ncrp tokens can be claimed\nby the Protection Pool for liquidation
+

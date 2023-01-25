@@ -1,0 +1,35 @@
+# Diagram 6
+
+actor Borrower
+actor Lender 1
+actor Lender 2
+actor New Lender 1
+actor New Lender 2
+actor Pool Delegate
+participant Vault Contract
+participant Protocol Treasury
+entity Public Service
+database Bitcoin API
+
+Borrower-->Pool Delegate: Asks for roll-over outside smart contracts ✉️
+Pool Delegate -#blue> Vault Contract: renew_loan(vault_id)
+
+note over New Lender 1: Dust reservation sent to any previous\nlender triggers a reservation. One new lender\ncan reserve lots belonging to multiple lenders
+New Lender 1 -#yellow> Lender 1: Reserve X lots with dust
+Bitcoin API -> Public Service: transaction_data_1
+Public Service -#blue> Vault Contract:verify_reservation(tx_data)
+New Lender 2 -#yellow> Lender 2: Reserve Y lots with dust
+Bitcoin API -> Public Service: transaction_data_2
+Public Service -#blue> Vault Contract:verify_reservation(tx_data)
+Vault Contract -#blue> Vault Contract: determine_lots(pool_id)
+
+
+New Lender 1 -#yellow> Lender 1 : Send (X * (btc_lot_amount + interest))
+Bitcoin API -> Public Service: transaction_data_1
+Public Service -#blue> Vault Contract:verify_payment(tx_data)
+
+New Lender 2 -#yellow> Lender 2 : Send (Y * (btc_lot_amount + interest))
+Bitcoin API -> Public Service: transaction_data_2
+Public Service -#blue> Vault Contract:verify_payment(tx_data)
+
+Vault Contract -#blue> Vault Contract: complete_loan_renewal(vault_id)

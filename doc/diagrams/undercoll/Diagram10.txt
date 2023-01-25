@@ -1,0 +1,17 @@
+# Diagram 10
+
+actor Staker
+participant Protection Pool
+participant Governance
+
+Staker -#blue>Protection Pool: stake(xBTC, gov_token)
+
+== Wait a few blocks to accumulate returns ==
+
+Staker -#blue> Protection Pool: claim()
+Protection Pool -#blue> Governance: get_return_rate()
+Protection Pool <#blue-- Governance: return_rate
+Staker <#blue-- Protection Pool: gov_tokens
+
+
+

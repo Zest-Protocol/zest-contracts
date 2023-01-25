@@ -1,0 +1,16 @@
+---
+name: Pool Data
+version: 1
+chain: stacks
+networks:
+  devnet:
+    oreo-url: 'http://localhost:20446/'
+    predicate:
+      print-event:
+        contract-identifier: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.coll-vault'
+        contains: 'store-coll-vault'
+    action:
+      http:
+        url: 'http://localhost:3000/api/v1/events'
+        method: POST
+        authorization-header: Bearer cn389ncoiwuencr

@@ -1,0 +1,22 @@
+# Diagram 7
+
+actor Borrower
+actor Lender 1
+actor Lender 2
+participant Vault Contract
+actor New Lender 1
+entity Public Service
+database Bitcoin API
+
+
+Borrower -#blue> Vault Contract: extend_loan(vault_id, maturity)
+
+note over Vault Contract: Stop accruing interest for Y blocks
+
+note over New Lender 1: Transaction can be completed in the\nsame transaction or in 2 or more. \nAs long as payments are done in \nmultiples of the (lot amount + interest)
+New Lender 1 -#yellow> Lender 1: Send (x * (btc_lot_amount + interest))
+New Lender 1 -#yellow> Lender 2: Send (y * (btc_lot_amount + interest))
+Bitcoin API -> Public Service: transaction_data_1
+Public Service -#blue> Vault Contract:verify_repayment(tx_data)
+Vault Contract -#blue> Vault Contract: update_loan_terms()
+

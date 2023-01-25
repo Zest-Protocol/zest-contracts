@@ -1,0 +1,44 @@
+# Diagram 1
+
+actor Borrower
+participant Loan Strategy Contract
+participant Oracle
+participant Vault Contract
+actor Lender 1
+actor Lender 2
+entity Public Service
+database Bitcoin API
+
+Borrower -> Loan Strategy Contract: get_borrowing_potential(asset, asset_amount)
+Loan Strategy Contract -> Oracle : get_asset_price(asset)
+Loan Strategy Contract <-- Oracle : asset_price
+Loan Strategy Contract <- Loan Strategy Contract : convert_to_btc(asset, asset_price)
+Borrower <-- Loan Strategy Contract: lots, lot_btc_amount
+
+Borrower -#blue> Vault Contract : create_vault(collateral, collateral_amount, number_lots, loan_strategy, btc_addr, maturity)
+note over Vault Contract: Reserve x + y lots
+
+Vault Contract -> Oracle: get_asset_price(collateral)
+Vault Contract <-- Oracle: collateral_price
+
+Vault Contract -> Oracle: get_asset_price(btc)
+Vault Contract <-- Oracle: btc_price
+
+Vault Contract -> Loan Strategy Contract: validate_loan(collateral_value, btc_value)
+Vault Contract <-- Loan Strategy Contract: OK
+
+Borrower <#blue-- Vault Contract : vault-id
+
+Lender 1 -#yellow> Borrower: Send dust amount to Borrower addr
+Bitcoin API -> Public Service: transaction_data_1
+Public Service -#blue> Vault Contract: verify_dust(tx_data)
+note over Vault Contract: Lock collateral for X blocks
+Vault Contract -#blue> Vault Contract: determine_lots(x_lots)
+Vault Contract --#blue> Public Service: OK
+
+Lender 2 -#yellow> Borrower: Send dust amount to Borrower addr
+Bitcoin API -> Public Service: transaction_data_2
+Public Service -#blue> Vault Contract: verify_dust(tx_data)
+Vault Contract -#blue> Vault Contract: determine_lots(y_lots)
+Vault Contract --#blue> Public Service: OK
+

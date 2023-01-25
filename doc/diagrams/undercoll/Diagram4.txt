@@ -1,0 +1,20 @@
+# Diagram 4
+
+actor Borrower
+actor Lender 1
+actor Lender 2
+participant Vault Contract
+participant Protocol Treasury
+entity Public Service
+database Bitcoin API
+
+note over Borrower: Can happen in a single transaction
+
+Borrower -#yellow> Lender 1: send (X * interest) btc
+Borrower -#yellow> Lender 2: send (Y * interest) btc
+Borrower -#yellow> Protocol Treasury: send fees
+
+Bitcoin API -> Public Service: transaction_data
+Public Service -#blue> Vault Contract:verify_interests_payment(tx_data)
+
+
