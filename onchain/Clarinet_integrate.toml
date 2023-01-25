@@ -1,0 +1,185 @@
+[project]
+name = "stacks-lending"
+authors = []
+description = ""
+telemetry = false
+requirements = []
+boot_contracts = ["pox", "costs-v1", "bns"]
+
+[project.cache_location]
+path = ".requirements"
+
+[contracts.after-deployment]
+path = "contracts/after-deployment-simnet.clar"
+
+[contracts.magic-protocol]
+path = "contracts/bitcoin/magic-protocol/magic-protocol.clar"
+
+[contracts.clarity-bitcoin]
+path = "contracts/bitcoin/magic-protocol/clarity-bitcoin.clar"
+
+[contracts.coll-vault]
+path = "contracts/loan/coll-vault.clar"
+
+[contracts.coll-vault-trait]
+path = "contracts/trait/coll-vault-trait.clar"
+
+[contracts.distribution-token-trait]
+path = "contracts/trait/distribution-token-trait.clar"
+
+[contracts.distribution-token-cycles-trait]
+path = "contracts/trait/distribution-token-cycles-trait.clar"
+
+[contracts.distribution-token-cycles-losses-trait]
+path = "contracts/trait/distribution-token-cycles-losses-trait.clar"
+
+[contracts.executor-dao]
+path = "contracts/dao/executor-dao.clar"
+
+[contracts.extension-trait]
+path = "contracts/dao/traits/extension-trait.clar"
+
+[contracts.funding-vault]
+path = "contracts/loan/funding-vault.clar"
+
+[contracts.funding-vault-trait]
+path = "contracts/trait/funding-vault-trait.clar"
+
+[contracts.globals]
+path = "contracts/globals.clar"
+
+[contracts.governance-token-trait]
+path = "contracts/dao/traits/governance-token-trait.clar"
+
+[contracts.liquidity-vault-trait]
+path = "contracts/trait/liquidity-vault-trait.clar"
+
+[contracts.liquidity-vault-v1-0]
+path = "contracts/pool/liquidity-vault-v1-0.clar"
+
+[contracts.loan-data]
+path = "contracts/loan/loan-data.clar"
+
+[contracts.loan-v1-0]
+path = "contracts/loan/loan-v1-0.clar"
+
+[contracts.lp-token]
+path = "contracts/token/lp-token.clar"
+
+[contracts.lp-token-trait]
+path = "contracts/trait/lp-token-trait.clar"
+
+[contracts.ownable-trait]
+path = "contracts/trait/ownable-trait.clar"
+
+[contracts.payment-fixed]
+path = "contracts/loan/payment-fixed.clar"
+
+[contracts.payment-trait]
+path = "contracts/trait/payment-trait.clar"
+
+[contracts.pool-v1-0]
+path = "contracts/pool/pool-v1-0.clar"
+
+[contracts.proposal-trait]
+path = "contracts/dao/traits/proposal-trait.clar"
+
+[contracts.protocol-treasury]
+path = "contracts/protocol-treasury.clar"
+
+[contracts.read-data]
+path = "contracts/read-data.clar"
+
+[contracts.restricted-token-trait]
+path = "contracts/trait/restricted-token-trait.clar"
+
+[contracts.rewards-calc]
+path = "contracts/rewards-calc.clar"
+
+[contracts.rewards-calc-trait]
+path = "contracts/trait/rewards-calc-trait.clar"
+
+[contracts.rewards-read]
+path = "contracts/rewards-read.clar"
+
+[contracts.ft-trait]
+path = "contracts/trait/ft-trait.clar"
+
+[contracts.xZest-token]
+path = "contracts/token/xZest-token.clar"
+
+[contracts.staking-pool]
+path = "contracts/pool/staking-pool.clar"
+
+[contracts.cp-token]
+path = "contracts/token/cp-token.clar"
+
+[contracts.cp-rewards-token]
+path = "contracts/token/cp-rewards-token.clar"
+
+[contracts.pool-data]
+path = "contracts/pool/pool-data.clar"
+
+[contracts.cover-pool-v1-0]
+path = "contracts/pool/cover-pool-v1-0.clar"
+
+[contracts.cover-vault]
+path = "contracts/pool/cover-vault.clar"
+
+[contracts.cover-pool-data]
+path = "contracts/pool/cover-pool-data.clar"
+
+[contracts.supplier-interface]
+path = "contracts/bitcoin/supplier-interface.clar"
+
+[contracts.swap-router]
+path = "contracts/swap-router.clar"
+
+[contracts.swap-router-trait]
+path = "contracts/trait/swap-router-trait.clar"
+
+[contracts.vault-trait]
+path = "contracts/trait/vault-trait.clar"
+
+[contracts.Wrapped-Bitcoin]
+path = "contracts/token/Wrapped-Bitcoin.clar"
+
+[contracts.Wrapped-USD]
+path = "contracts/token/Wrapped-USD.clar"
+
+[contracts.zest-reward-dist]
+path = "contracts/token/zest-reward-dist.clar"
+
+[contracts.zge000-governance-token]
+path = "contracts/dao/extensions/zge000-governance-token.clar"
+
+[contracts.zge001-proposal-voting]
+path = "contracts/dao/extensions/zge001-proposal-voting.clar"
+
+[contracts.zge002-emergency-proposals]
+path = "contracts/dao/extensions/zge002-emergency-proposals.clar"
+
+[contracts.zge003-emergency-execute]
+path = "contracts/dao/extensions/zge003-emergency-execute.clar"
+
+[contracts.zge004-onboard-borrower]
+path = "contracts/dao/extensions/zge004-onboard-borrower.clar"
+
+[contracts.zgp000-bootstrap]
+path = "contracts/dao/proposals/zgp000-bootstrap-simnet.clar"
+
+[contracts.zgp001-kill-emergency-execute]
+path = "contracts/dao/proposals/zgp001-kill-emergency-execute.clar"
+
+[repl]
+costs_version = 2
+parser_version = 2
+
+[repl.analysis]
+passes = []
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false

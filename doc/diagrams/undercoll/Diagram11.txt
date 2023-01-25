@@ -1,0 +1,25 @@
+# Diagram 11
+
+actor Borrower
+participant Protocol Treasury
+actor Staker
+participant Protection Pool
+participant Vault Contract
+entity Public Service
+database Bitcoin API
+
+note over Borrower: Fees are paid when loan starts\nand on the periodical interest payments
+Borrower -#yellow> Protocol Treasury: Pay fees
+Bitcoin API ->Public Service: tx_data
+Public Service -#blue> Vault Contract: verify_payment(tx_data)
+
+Vault Contract -#blue> Protection Pool: add_fees(amount)
+
+== Staker had already staked\n xBTC to the protection pool ==
+
+Staker -#blue> Protection Pool: claim()
+Protection Pool -#blue> Protection Pool: add fees + staking rewards
+Staker <#blue-- Protection Pool: gov-tokens()
+
+
+

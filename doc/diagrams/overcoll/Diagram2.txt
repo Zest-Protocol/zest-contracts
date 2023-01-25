@@ -1,0 +1,33 @@
+# Diagram 2
+
+actor Borrower
+actor Lender 1
+actor Lender 2
+participant Vault Contract
+entity Public Service
+database Bitcoin API
+
+Borrower -> Vault Contract : get_debt(vault_id)
+Borrower <-- Vault Contract : vault_lots
+
+Borrower -#blue> Vault Contract: signal_payment(vault_id)
+note over Vault Contract : Stop adding interest to vault for Y blocks
+Borrower <#blue-- Vault Contract: grace_period
+
+note over Borrower: send in single transaction\n to both borrowers
+alt Full repayment to lots
+Borrower -#yellow> Lender 1: Send (x * (btc_lot_amount + interest))
+Borrower -#yellow> Lender 2: Send (y * (btc_lot_amount + interest))
+Bitcoin API -> Public Service: transaction_data_1
+Public Service -#blue> Vault Contract:verify_repayment(tx_data)
+note over Vault Contract: Collateral is returned to borrower \n fees are sent to the Protocol Treasury
+else Partial repayment to losts
+Borrower -#yellow> Lender 1: Send (x * btc_lot_amount)
+Bitcoin API -> Public Service: transaction_data_1
+Public Service -#blue> Vault Contract:verify_repayment(tx_data)
+note over Vault Contract: Subtract to the number of lots owed
+
+Borrower -#blue> Vault Contract:withdraw_collateral(vault_id, collateral_amount)
+Borrower <#blue-- Vault Contract: OK
+end
+

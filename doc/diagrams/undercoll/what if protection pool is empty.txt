@@ -1,0 +1,31 @@
+title What if protection pool is empty?
+
+actor Lender
+actor Borrower 1
+actor Borrower 2
+actor Borrower 3
+participant Protection Pool
+participant Vault Contract
+participant Protocol treasury
+entity Public Service
+database Bitcoin API
+
+Bitcoin API->Public Service:liquidate(vault_id)
+Public Service-#blue>Vault Contract:liquidate(vault_id): for sake of example Borrower 1's vault
+Vault Contract-#blue>Protection Pool:liquidate_crp_tokens(amount)
+Protection Pool-#blue>Vault Contract:pool_empty(oops)
+Protocol treasury-#yellow>Lender:manual multisig to compensate lender
+
+==Protocol treasury needs to be compensated pro rata during period interest payments==
+note over Vault Contract:Vault contract knows how\nmuch Protocol treasury is owed
+Vault Contract-#blue>Vault Contract:calculate_interest_structure
+Borrower 2-#yellow>Lender:send(X * interest) * Y% btc
+Borrower 2-#yellow>Protocol treasury:send(Z * interest) *α% btc
+Borrower 3-#yellow>Lender:send(β * interest) * γ% btc
+Borrower 2-#yellow>Protocol treasury:send(ζ * interest) *η% btc
+note over Vault Contract:If more borrowers default, keep\nrecalculating interest until interest hits a\npercentage close to 0 as defined by governance
+Vault Contract-#blue>Vault Contract:calculate_interest_structure
+
+==If interest hits this number, the pool goes in default mode==
+==No new loans & roll-overs can be made, the pool is closed and we wait until all loans have been paid off==
+==If further borrower defaults happen during this period that push interest negative,\nthe protocol will auction govtokens staked in the safety module for native BTC to compensate affected lenders.==

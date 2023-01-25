@@ -1,0 +1,8 @@
+node_modules
+onchain/.cache
+onchain/artifacts
+onchain/deployments
+onchain/history.txt
+onchain/scripts
+src/clarigen
+.DS_Store
