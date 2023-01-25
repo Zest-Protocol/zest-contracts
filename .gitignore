@@ -4,5 +4,5 @@ onchain/artifacts
 onchain/deployments
 onchain/history.txt
 onchain/scripts
-src/
+src/clarigen
 .DS_Store
