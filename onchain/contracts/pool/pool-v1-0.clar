@@ -1151,6 +1151,18 @@
     
     (ok { stakers-recovery: stakers-recovery, coll-recovery: coll-recovery })))
 
+(define-public (impair-loan (token-id uint) (loan-id uint))
+  (let (
+    (pool (try! (get-pool token-id)))
+    (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id))))
+    (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
+    (asserts! (or
+      (is-eq tx-sender (get pool-delegate pool))
+      (try! (is-governor tx-sender token-id))) ERR_UNAUTHORIZED)
+
+    (try! (contract-call? .loan-v1-0 impair-loan loan-id))
+    (ok true)))
+
 ;; @desc Pool Delegate returns recovered funds to the pool and distributes losses
 ;; @restricted governor
 ;; @param loan-id: id of loan being liquidated

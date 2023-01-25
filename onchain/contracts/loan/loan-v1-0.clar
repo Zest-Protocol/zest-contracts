@@ -19,6 +19,7 @@
 (define-constant MATURED 0x05)
 (define-constant LIQUIDATED 0x06)
 (define-constant EXPIRED 0x07)
+(define-constant IMPAIRED 0x08)
 
 (define-constant ONE_DAY (contract-call? .globals get-day-length-default))
 (define-constant BP_PRC u10000)
@@ -308,10 +309,6 @@
     
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
 
-    (try! (contract-call? .read-data active-loans-plus))
-    (try! (contract-call? .read-data add-active-loan-amount token-id borrow-amount))
-    (try! (contract-call? .read-data add-delegate-btc-rewards-earned pool-delegate delegate-portion))
-
     (set-tested-amount loan-id u0)
     
     (print { type: "finalize-loan-drawdown", payload: { key: { loan-id: loan-id, token-id: token-id }, data: new-loan } })
@@ -404,10 +401,10 @@
     ;; for payment testing
     (set-tested-amount loan-id total-tested-amount)
 
-    (try! (contract-call? .read-data remove-active-loan-amount token-id amount))
     (ok total-tested-amount)))
 
-;; @desc funds are received from the supplier interface sent to the payment contract
+;; @desc funds are received from the supplier interface sent to the payment contract. If loan
+;; is impaired, set back to active.
 ;; @restricted bridge
 ;; @param loan-id: id of loan being paid for
 ;; @param height: height of the Bitcoin tx
@@ -459,9 +456,12 @@
       (new-loan
         (if (is-eq remaining-payments u1)
           (begin
-            (try! (contract-call? .read-data active-loans-minus))
-            (merge loan { next-payment: u0, remaining-payments: u0, status: MATURED}))
-          (merge loan { remaining-payments: (- remaining-payments u1), next-payment: (+ (get next-payment loan) (get payment-period loan)) })
+            (merge loan { next-payment: u0, remaining-payments: u0, status: MATURED }))
+          (merge loan
+            {
+              remaining-payments: (- remaining-payments u1),
+              next-payment: (+ (get next-payment loan) (get payment-period loan)),
+              status: ACTIVE })
         )))
       (try! (contract-call? .loan-data set-loan loan-id new-loan)))
 
@@ -469,7 +469,6 @@
     ;; for payment testing
     (set-tested-amount loan-id u0)
 
-    (try! (contract-call? .read-data remove-active-loan-amount token-id amount))
     (ok payment-response)))
 
 ;; @desc funds are received from the supplier interface and sent to the payment contract
@@ -521,9 +520,6 @@
 
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
 
-    (try! (contract-call? .read-data active-loans-minus))
-    (try! (contract-call? .read-data remove-active-loan-amount token-id amount))
-
     (set-tested-amount loan-id u0)
 
     (print { type: "make-repayment", payload: { key: { loan-id: loan-id, token-id: token-id }, data: loan, amount: amount } })
@@ -550,12 +546,16 @@
     (withdrawn-funds (if has-collateral (try! (withdraw-collateral coll-vault coll-token loan-id recipient)) u0))
     (xbtc-to-recover (if has-collateral (try! (contract-call? swap-router get-y-given-x coll-token xbtc withdrawn-funds)) u0))
     (min-xbtc-to-recover (/ (* xbtc-to-recover max-slippage) BP_PRC))
+    (status (get status loan))
     (recovered-funds (if has-collateral (try! (contract-call? swap-router swap-x-for-y recipient coll-token xbtc withdrawn-funds (some min-xbtc-to-recover))) u0)))
     (try! (caller-is-pool))
-    (asserts! (is-eq (get status loan) ACTIVE) ERR_INVALID_STATUS)
+    (asserts! (or
+      (and (is-eq status ACTIVE)
+        (> burn-block-height (+ (get grace-period globals) (get next-payment loan))))
+      (is-eq status IMPAIRED)
+      ) ERR_LOAN_IN_PROGRESS)
     (asserts! (is-eq (contract-of coll-vault) (get coll-vault loan)) ERR_INVALID_CV)
     (asserts! (is-eq (contract-of coll-token) (get coll-token loan)) ERR_INVALID_COLL)
-    (asserts! (> burn-block-height (+ (get grace-period globals) (get next-payment loan))) ERR_LOAN_IN_PROGRESS)
 
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
 
@@ -615,6 +615,15 @@
 
 (define-read-only (get-rollover-progress-optional (loan-id uint))
   (contract-call? .loan-data get-rollover-progress-optional loan-id))
+
+
+(define-public (impair-loan (loan-id uint))
+  (let (
+    (loan (get-loan-read loan-id))
+    (new-loan (merge loan { status: IMPAIRED })))
+    (try! (caller-is-pool))
+    (try! (contract-call? .loan-data set-loan loan-id new-loan))
+    (ok true)))
 
 ;; @desc borrower requests for a modification to the loan agreement
 ;; @restricted borrower
