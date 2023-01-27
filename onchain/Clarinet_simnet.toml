@@ -161,6 +161,11 @@ path = "contracts/bitcoin/test/test-utils.clar"
 [contracts.vault-trait]
 path = "contracts/trait/vault-trait.clar"
 
+[contracts.withdrawal-manager]
+path = 'contracts/pool/withdrawal-manager.clar'
+clarity_version = 1
+epoch = 2.0
+
 [contracts.Wrapped-Bitcoin]
 path = "contracts/token/Wrapped-Bitcoin-simnet.clar"
 

@@ -354,7 +354,6 @@
 
     (asserts! (>= factor (get min-cycles pool)) ERR_INVALID_LOCKUP)
 
-    (try! (contract-call? .read-data add-pool-cash token-id amount))
     (try! (contract-call? .pool-data set-funds-sent caller token-id new-funds-sent))
     
     (try! (contract-call? lv add-asset xbtc amount token-id caller))
@@ -559,7 +558,6 @@
     
     (try! (contract-call? .pool-data set-pool token-id new-pool))
 
-    (try! (contract-call? .read-data loans-funded-plus))
     (ok true)))
 
 ;; @desc reverse the effects of fund-loan, send funds from the funding vault to the liquidity vault
@@ -582,8 +580,6 @@
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (try! (caller-is (get pool-delegate pool)))
     (asserts! (is-eq token-id loan-pool-id) ERR_INVALID_LOAN_POOL_ID)
-
-    (try! (contract-call? .read-data loans-funded-minus))
 
     (print { type: "unwind", payload: { key: { token-id: token-id, loan-id: loan-id } , amount: returned-funds , new-pool: new-pool } })
     (try! (contract-call? .pool-data set-pool token-id new-pool))
@@ -675,8 +671,6 @@
     (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards caller (get factor funds-sent-data) (get cycle-rewards rewards))) u0))
     (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards-base caller (get passive-rewards rewards))) u0)))
     (try! (contract-call? .pool-data set-funds-sent caller token-id (merge funds-sent-data { last-claim-at : (unwrap-panic (get-current-cycle token-id)) })))
-    
-    (try! (contract-call? .read-data add-pool-zest-rewards-earned token-id (+ zest-base-rewards zest-cycle-rewards)))
 
     (ok { zest-base-rewards: zest-base-rewards, zest-cycle-rewards: zest-cycle-rewards })))
 
@@ -794,7 +788,6 @@
     (try! (contract-call? lv remove-asset xbtc amount token-id (as-contract tx-sender)))
     (try! (as-contract (contract-call? fv add-asset xbtc amount loan-id tx-sender)))
 
-    (try! (contract-call? .read-data loans-funded-plus))
     (ok true)))
 
 ;; @desc borrower rollsover the loan with new values when more funds
