@@ -1,0 +1,3 @@
+// @ts-ignore allowing typedoc to build
+export * from './src/delay.ts';
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImh0dHBzOi8vZGVuby5sYW5kL3gvZGVsYXlAdjAuMi4wL21vZC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJcbi8vIEB0cy1pZ25vcmUgYWxsb3dpbmcgdHlwZWRvYyB0byBidWlsZFxuZXhwb3J0ICogZnJvbSAnLi9zcmMvZGVsYXkudHMnO1xuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUNBLHVDQUF1QztBQUN2QyxjQUFjLGdCQUFnQixDQUFDIn0=
