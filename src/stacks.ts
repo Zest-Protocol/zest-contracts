@@ -28,7 +28,7 @@ import {
 } from '@stacks/transactions';
 
 import fetch from 'cross-fetch';
-import { MagicProtocolContract, CpTokenContract, GlobalsContract, LiquidityVaultV10Contract, LpTokenContract, PoolV10Contract, RewardsCalcContract, SupplierInterfaceContract, WrappedBitcoinContract, ZestRewardDistContract } from '../onchain/stacks-lending/artifacts/contracts.js';
+import { MagicProtocolContract, CpTokenContract, GlobalsContract, LiquidityVaultV10Contract, LpTokenContract, PoolV10Contract, RewardsCalcContract, SupplierInterfaceContract, WrappedBitcoinContract, ZestRewardDistContract } from '../onchain/artifacts/contracts.js';
 import { Wallet, Account, getStxAddress } from "@stacks/wallet-sdk";
 import {
   BlocksApi,
