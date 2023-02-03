@@ -11,6 +11,6 @@ networks:
         contains: 'add-asset-liquidity-vault-v1-0'
     action:
       http:
-        url: 'http://localhost:3000/api/v1/events'
+        url: 'http://localhost:8080/events'
         method: POST
         authorization-header: Bearer cn389ncoiwuencr
