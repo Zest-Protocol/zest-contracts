@@ -3,5 +3,6 @@ onchain/.cache
 onchain/deployments
 onchain/history.txt
 onchain/scripts
+onchain/settings/Testnet.toml
 src/clarigen
-.DS_Store
+*.DS_Store
