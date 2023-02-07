@@ -6,3 +6,4 @@ onchain/history.txt
 onchain/scripts
 src/clarigen
 .DS_Store
+onchain/.requirements/
