@@ -5,6 +5,7 @@
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait cv .coll-vault-trait.coll-vault-trait)
 (use-trait ft .ft-trait.ft-trait)
+(use-trait sip-010 .sip-010-trait.sip-010-trait)
 (use-trait v .vault-trait.vault-trait)
 (use-trait fv .funding-vault-trait.funding-vault-trait)
 (use-trait rewards-calc .rewards-calc-trait.rewards-calc-trait)
@@ -68,7 +69,7 @@
 ;; @returns (response uint uint)
 (define-public (send-funds-xbtc
     (factor uint)
-    (lp-token <lp-token>)
+    (lp-token <sip-010>)
     (token-id uint)
     (zp-token <dtc>)
     (lv <lv>)
@@ -79,7 +80,7 @@
     (height burn-block-height)
     (globals (contract-call? .globals get-globals)))
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
-    ;; (try! (contract-call? .pool-v2-0 send-funds lp-token token-id zp-token amount factor height lv xbtc-ft rewards-calc tx-sender))
+    (try! (contract-call? .pool-v2-0 send-funds lp-token token-id lv xbtc-ft amount tx-sender))
     (ok amount)))
 
 ;; @desc Complete the escrow in magic-protocol to commit funds to the liquidity pool
@@ -97,7 +98,7 @@
   (txid (buff 32))
   (preimage (buff 128))
   (factor uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (zp-token <dtc>)
   (lv <lv>)
@@ -110,14 +111,14 @@
     (hash (get hash swap))
     (height (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
     (swapper (get swapper-principal swap)))
-    ;; (try! (contract-call? .pool-v2-0 send-funds lp-token token-id zp-token (get sats swap) factor height lv xbtc-ft rewards-calc tx-sender))
+    (try! (contract-call? .pool-v2-0 send-funds lp-token token-id lv xbtc-ft (get sats swap) tx-sender))
     (map-delete escrowed-tx txid)
     (ok (get sats swap))))
 
 (define-public (send-funds-finalize-completed
   (txid (buff 32))
   (factor uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (zp-token <dtc>)
   (lv <lv>)
@@ -130,7 +131,7 @@
     (hash (get hash swap))
     (height (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
     (swapper (get swapper-principal swap)))
-    ;; (try! (contract-call? .pool-v2-0 send-funds lp-token token-id zp-token (get sats swap) factor height lv xbtc-ft rewards-calc tx-sender))
+    (try! (contract-call? .pool-v2-0 send-funds lp-token token-id lv xbtc-ft (get sats swap) tx-sender))
     (map-delete escrowed-tx txid)
     (ok (get sats swap))))
 
@@ -171,7 +172,7 @@
   ;; second part
   (preimage (buff 128))
   (factor uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (zp-token <dtc>)
   (lv <lv>)
@@ -185,7 +186,7 @@
       (fee (get fee swap))
       (xbtc (get xbtc swap))
       (swapper (get swapper-principal swap)))
-      ;; (try! (contract-call? .pool-v2-0 send-funds lp-token token-id zp-token (get sats swap) factor (get height block) lv xbtc-ft rewards-calc tx-sender))
+      (try! (contract-call? .pool-v2-0 send-funds lp-token token-id lv xbtc-ft (get sats swap) tx-sender))
       (ok (get sats swap)))))
 
 (define-public (make-payment-verify
@@ -193,7 +194,7 @@
   (preimage (buff 128))
   (loan-id uint)
   (payment <payment>)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -216,7 +217,7 @@
   (txid (buff 32))
   (loan-id uint)
   (payment <payment>)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -253,7 +254,7 @@
   (preimage (buff 128))
   (loan-id uint)
   (payment <payment>)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -275,7 +276,7 @@
   (txid (buff 32))
   (loan-id uint)
   (payment <payment>)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -306,7 +307,7 @@
   (txid (buff 32))
   (preimage (buff 128))
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (xbtc-ft <ft>))
@@ -323,7 +324,7 @@
 (define-public (make-residual-payment-completed
   (txid (buff 32))
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (xbtc-ft <ft>))
@@ -356,7 +357,7 @@
   (preimage (buff 128))
   (loan-id uint)
   (payment <payment>)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -378,7 +379,7 @@
   (txid (buff 32))
   (loan-id uint)
   (payment <payment>)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -413,7 +414,7 @@
   (amount uint)
   (loan-id uint)
   (payment <payment>)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -446,7 +447,7 @@
   (amount uint)
   (loan-id uint)
   (payment <payment>)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -477,7 +478,7 @@
   (btc-version (buff 1))
   (btc-hash (buff 20))
   (supplier-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (zp-token <dtc>)
   (token-id uint)
   (lv <lv>)
@@ -488,7 +489,7 @@
     (if (get open pool)
       true
       (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED))
-    (try! (contract-call? .pool-v2-0 withdraw lp-token zp-token token-id lv xbtc xbtc-ft tx-sender))
+    (try! (contract-call? .pool-v2-0 redeem lp-token token-id lv xbtc-ft xbtc tx-sender tx-sender))
     (try! (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))
     (print { btc-version: btc-version, btc-hash: btc-hash, supplier-id: supplier-id, amount: xbtc })
     (ok true)))
@@ -503,7 +504,7 @@
 ;; @returns (response true uint)
 (define-public (withdraw-xbtc
   (xbtc uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (zp-token <dtc>)
   (token-id uint)
   (lv <lv>)
@@ -513,7 +514,7 @@
     (globals (contract-call? .globals get-globals))
   )
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
-    (try! (contract-call? .pool-v2-0 withdraw lp-token zp-token token-id lv xbtc xbtc-ft tx-sender))
+    (try! (contract-call? .pool-v2-0 redeem lp-token token-id lv xbtc-ft xbtc tx-sender tx-sender))
     (ok true)))
 
 ;; @desc Initiate withdrawal process through magic protocol to withdraw rewards in liquidity-pool
@@ -525,23 +526,23 @@
 ;; @param lv: liquidity vault contract holding the liquid funds in the pool
 ;; @param xbtc: SIP-010 token to account for bitcoin sent to pools
 ;; @returns (response uint uint)
-(define-public (withdraw-rewards
-  (btc-version (buff 1))
-  (btc-hash (buff 20))
-  (supplier-id uint)
-  (lp-token <lp-token>)
-  (token-id uint)
-  (lv <lv>)
-  (xbtc <ft>))
-  (let (
-    (withdrawn-funds (try! (contract-call? .pool-v2-0 withdraw-rewards lp-token token-id lv xbtc tx-sender)))
-    (pool (try! (contract-call? .pool-v2-0 get-pool token-id))))
-    (if (get open pool)
-      true
-      (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED))
-    (print { btc-version: btc-version, btc-hash: btc-hash, supplier-id: supplier-id, amount: withdrawn-funds })
-    (try! (contract-call? .magic-protocol initiate-outbound-swap withdrawn-funds btc-version btc-hash supplier-id))
-    (ok withdrawn-funds)))
+;; (define-public (withdraw-rewards
+;;   (btc-version (buff 1))
+;;   (btc-hash (buff 20))
+;;   (supplier-id uint)
+;;   (lp-token <lp-token>)
+;;   (token-id uint)
+;;   (lv <lv>)
+;;   (xbtc <ft>))
+;;   (let (
+;;     (withdrawn-funds (try! (contract-call? .pool-v2-0 withdraw-rewards lp-token token-id lv xbtc tx-sender)))
+;;     (pool (try! (contract-call? .pool-v2-0 get-pool token-id))))
+;;     (if (get open pool)
+;;       true
+;;       (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED))
+;;     (print { btc-version: btc-version, btc-hash: btc-hash, supplier-id: supplier-id, amount: withdrawn-funds })
+;;     (try! (contract-call? .magic-protocol initiate-outbound-swap withdrawn-funds btc-version btc-hash supplier-id))
+;;     (ok withdrawn-funds)))
 
 ;; @desc Initiate withdrawal process through magic protocol to withdraw rewards in cover-pool
 ;; @param btc-version: the address version for the swapper's BTC address
@@ -598,20 +599,20 @@
 ;; @param lv: liquidity vault contract holding the liquid funds in the pool
 ;; @param xbtc: SIP-010 token to account for bitcoin sent to pools
 ;; @returns (response uint uint)
-(define-public (withdraw-rewards-xbtc
-  (lp-token <lp-token>)
-  (token-id uint)
-  (lv <lv>)
-  (xbtc <ft>))
-  (let (
-    (globals (contract-call? .globals get-globals))
-    (withdrawn-funds (try! (contract-call? .pool-v2-0 withdraw-rewards lp-token token-id lv xbtc tx-sender))))
-    (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
-    (ok withdrawn-funds)))
+;; (define-public (withdraw-rewards-xbtc
+;;   (lp-token <lp-token>)
+;;   (token-id uint)
+;;   (lv <lv>)
+;;   (xbtc <ft>))
+;;   (let (
+;;     (globals (contract-call? .globals get-globals))
+;;     (withdrawn-funds (try! (contract-call? .pool-v2-0 withdraw-rewards lp-token token-id lv xbtc tx-sender))))
+;;     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
+;;     (ok withdrawn-funds)))
 
 (define-public (drawdown-verify
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -646,7 +647,7 @@
 ;; @returns (response { swap-id: uint, sats: uint } uint)
 (define-public (drawdown
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -687,7 +688,7 @@
 ;; @returns (response uint uint)
 (define-public (finalize-drawdown
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -715,7 +716,7 @@
 ;; @returns (response { recipient: uint, sats: uint } uint)
 (define-public (drawdown-xbtc
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -745,7 +746,7 @@
 ;; @returns (response uint uint)
 (define-public (complete-rollover
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -784,7 +785,7 @@
 ;; @returns (response uint uint)
 (define-public (finalize-rollover
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -812,7 +813,7 @@
 ;; @returns (response uint uint)
 (define-public (cancel-drawdown
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -840,7 +841,7 @@
 ;; @returns (response uint uint)
 (define-public (cancel-rollover
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)

@@ -6,10 +6,11 @@
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 
 (use-trait ft .ft-trait.ft-trait)
+(use-trait sip-010 .sip-010-trait.sip-010-trait)
 
 (define-trait payment-trait
   (
-    (make-next-payment (<lp-token> <lv> uint <cp-token> <dt> <dt> <swap> uint uint uint <ft> principal) (response { reward: uint, z-reward: uint, repayment: bool } uint))
-    (make-full-payment (<lp-token> <lv> uint <cp-token> <dt> <dt> <swap> uint uint uint <ft> principal) (response { reward: uint, z-reward: uint, full-payment: uint } uint))
+    (make-next-payment (<sip-010> <lv> uint <cp-token> <dt> <dt> <swap> uint uint uint <ft> principal) (response { reward: uint, z-reward: uint, repayment: bool } uint))
+    (make-full-payment (<sip-010> <lv> uint <cp-token> <dt> <dt> <swap> uint uint uint <ft> principal) (response { reward: uint, z-reward: uint, full-payment: uint } uint))
   )
 )

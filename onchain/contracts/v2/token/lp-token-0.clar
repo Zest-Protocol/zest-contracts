@@ -50,42 +50,6 @@
       )
       error (err error))))
 
-;; (define-public (asset)
-;;   (ok .Wrapped-Bitcoin))
-
-;; ;; -- View functions
-;; ;; TODO: test when having small amount of assets remaining
-;; (define-public (convert-to-assets (shares uint))
-;;   (let (
-;;     (supply (ft-get-supply lp-token-0))
-;;     (assets (if (is-eq supply u0) shares (/ (* shares (total-assets)) supply))))
-;;     (ok assets)))
-
-;; (define-public (convert-to-shares (assets uint))
-;;   (let (
-;;     (shares-supply (ft-get-supply lp-token-0)))
-;;     (ok (/ (* shares-supply assets) (total-assets)))))
-
-;; (define-public (preview-funds-sent (assets uint))
-;;   (convert-to-shares assets))
-
-;; (define-public (preview-mint (shares uint))
-;;   (let (
-;;     (supply (ft-get-supply lp-token-0))
-;;     (assets (if (is-eq supply u0) shares (/ (* shares (total-assets)) supply))))
-;;     (ok assets)))
-
-;; (define-public (convert-to-shares-with-losses (shares uint))
-;;   (ok u0)
-;; )
-
-;; (define-public (unrealized-losses)
-;;   (ok u0)
-;; )
-
-;; (define-read-only (total-assets)
-;;   (unwrap-panic (contract-call? .Wrapped-Bitcoin get-balance (as-contract tx-sender))))
-
 (define-public (mint (amount uint) (recipient principal))
   (begin
     (asserts! true ERR_UNAUTHORIZED)

@@ -72,15 +72,18 @@
     liquidity-vault: principal,
     cp-token: principal,
     rewards-calc: principal,
+    withdrawal-manager: principal,
     cover-fee: uint,  ;; cover pool fees in BP
     delegate-fee: uint, ;; delegate fees in BP
     liquidity-cap: uint,
     principal-out: uint,
     cycle-length: uint,
+    withdrawal-window: uint,
     min-cycles: uint,
     max-maturity-length: uint,
     pool-stx-start: uint,
     pool-btc-start: uint,
+    losses: uint,
     status: (buff 1),
     open: bool }) ;; open to the public
 
@@ -117,15 +120,18 @@
     liquidity-vault: principal,
     cp-token: principal,
     rewards-calc: principal,
+    withdrawal-manager: principal,
     cover-fee: uint,  ;; staking fees in BP
     delegate-fee: uint, ;; delegate fees in BP
     liquidity-cap: uint,
     principal-out: uint,
     cycle-length: uint,
+    withdrawal-window: uint,
     min-cycles: uint,
     max-maturity-length: uint,
     pool-stx-start: uint,
     pool-btc-start: uint,
+    losses: uint,
     status: (buff 1),
     open: bool ;; open to the public
   }))
@@ -151,15 +157,18 @@
     liquidity-vault: principal,
     cp-token: principal,
     rewards-calc: principal,
+    withdrawal-manager: principal,
     cover-fee: uint,  ;; staking fees in BP
     delegate-fee: uint, ;; delegate fees in BP
     liquidity-cap: uint,
     principal-out: uint,
     cycle-length: uint,
+    withdrawal-window: uint,
     min-cycles: uint,
     max-maturity-length: uint,
     pool-stx-start: uint,
     pool-btc-start: uint,
+    losses: uint,
     status: (buff 1),
     open: bool ;; open to the public
   })

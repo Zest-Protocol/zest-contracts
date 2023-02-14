@@ -6,6 +6,7 @@
 (use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait ft .ft-trait.ft-trait)
+(use-trait sip-010 .sip-010-trait.sip-010-trait)
 (use-trait dt .distribution-token-trait.distribution-token-trait)
 (use-trait swap .swap-router-trait.swap-router-trait)
 
@@ -33,7 +34,7 @@
 ;; @param caller: principal of the user making the payment (assumes principal is validated)
 ;; @returns (respone { reward: uint, z-reward: uint, repayment: bool })
 (define-public (make-next-payment
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -101,7 +102,7 @@
 ;; @param caller: principal of the user making the payment (assumes principal is validated)
 ;; @returns (respone { reward: uint, z-reward: uint, repayment: bool })
 (define-public (make-full-payment
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (lv <lv>)
   (token-id uint)
   (cp-token <cp-token>)
@@ -222,7 +223,7 @@
 (define-private (distribute-xbtc
   (lv <lv>)
   (treasury principal)
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (cp-rewards-token <dt>)
   (token-id uint)
   (lp-portion uint)
@@ -245,7 +246,6 @@
         ;; to LPs
         (print { type: "lp-token-rewards", payload: { key: { token-id: token-id }, data: { lp-rewards-earned: lp-portion }} })
         (try! (as-contract (contract-call? lv add-asset xbtc lp-portion token-id tx-sender)))
-        (try! (contract-call? lp-token add-rewards token-id lp-portion))
         ;; to Cover
         (print { type: "cp-rewards-token-rewards", payload: { key: { token-id: token-id }, data: { cp-rewards-earned: cover-portion }} })
         (try! (contract-call? cp-rewards-token add-rewards token-id cover-portion))
@@ -254,7 +254,8 @@
         (total-portion (+ cover-portion lp-portion)))
         (print { type: "lp-token-rewards", payload: { key: { token-id: token-id }, data: { lp-rewards-earned: total-portion }} })
         (try! (as-contract (contract-call? lv add-asset xbtc total-portion token-id tx-sender)))
-        (try! (contract-call? lp-token add-rewards token-id total-portion))))
+      )
+    )
 
     ;; record read-data
     (try! (contract-call? .read-data add-pool-btc-rewards-earned token-id lp-portion))
@@ -276,7 +277,7 @@
 ;; @param delegate-portion: portion of funds going to the pool delegate
 ;; @returns (response true uint)
 (define-private (distribute-zest
-  (lp-token <lp-token>)
+  (lp-token <sip-010>)
   (token-id uint)
   (cp-token <cp-token>)
   (zd-token <dt>)
