@@ -19,6 +19,9 @@ path = "contracts/v2/after-deployment-simnet.clar"
 [contracts.magic-protocol]
 path = "contracts/v2/bitcoin/magic-protocol/magic-protocol.clar"
 
+[contracts.magic-caller-0]
+path = "contracts/v2/bitcoin/magic-caller-0.clar"
+
 [contracts.clarity-bitcoin]
 path = "contracts/v2/bitcoin/test/clarity-bitcoin.clar"
 
@@ -147,7 +150,12 @@ path = "contracts/v2/pool/cover-pool-data.clar"
 
 [contracts.supplier-interface]
 path = "contracts/v2/bitcoin/supplier-interface.clar"
-depends_on = ["pool-v1-0"]
+
+[contracts.supplier-controller]
+path = "contracts/v2/bitcoin/supplier-controller.clar"
+
+[contracts.supplier-controller-trait]
+path = "contracts/v2/trait/supplier-controller-trait.clar"
 
 [contracts.swap-router]
 path = "contracts/v2/swap-router.clar"

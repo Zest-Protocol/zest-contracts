@@ -97,4 +97,4 @@
 (define-constant ERR_INVALID_LOAN_ID (err u3001))
 
 (map-set approved-contracts .loan-v1-0 true)
-(map-set approved-contracts .pool-v1-0 true)
+(map-set approved-contracts .pool-v2-0 true)

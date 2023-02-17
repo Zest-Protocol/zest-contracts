@@ -114,7 +114,7 @@
     (try! (contract-call? .pool-data create-pool new-pool-id data))
     (try! (contract-call? .pool-data set-last-pool-id next-id))
     
-    (ok next-id)))
+    (ok new-pool-id)))
 
 ;; @desc get time left until withdrawal
 ;; @restricted contract-owner
@@ -530,7 +530,7 @@
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
     (try! (as-contract (contract-call? xbtc transfer recovered-amount tx-sender .loan-v1-0 none)))
-    (try! (contract-call? .loan-v1-0 cancel-rollover loan-id coll-token coll-vault fv (get liquidity-vault pool) lp-token token-id xbtc caller))
+    (try! (contract-call? .loan-v1-0 cancel-rollover loan-id coll-token coll-vault fv (get liquidity-vault pool) lp-token xbtc caller))
     (ok true)))
 
 ;; @desc sends funds to funding vault for the loan
@@ -586,7 +586,7 @@
     (loan (try! (contract-call? .loan-v1-0 get-loan loan-id)))
     (pool (try! (get-pool token-id)))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
-    (borrow-amount (try! (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault fv swap-router token-id xbtc caller)))
+    (borrow-amount (try! (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault fv swap-router xbtc caller)))
     (new-pool (merge pool { principal-out: (+ borrow-amount (get principal-out pool)) }))
     )
     (try! (is-supplier-interface))
@@ -630,7 +630,7 @@
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     (asserts! (>= (get loan-amount loan) (get new-amount rollover)) ERR_NEED_TO_WITHDRAW_FUNDS)
 
-    (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault fv swap-router token-id xbtc tx-sender)))
+    (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault fv swap-router xbtc tx-sender)))
 
 ;; @desc after funds are sent to borrower, set the new terms of the loan
 ;; to escrow and finalize.
@@ -650,7 +650,7 @@
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
-    (contract-call? .loan-v1-0 finalize-rollover loan-id coll-token coll-vault fv token-id xbtc)))
+    (contract-call? .loan-v1-0 finalize-rollover loan-id coll-token coll-vault fv xbtc)))
 
 ;; @desc borrower updates status on loan to make a residual payment
 ;; @param loan-id: id of loan being paid for
@@ -682,7 +682,7 @@
 
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (try! (contract-call? lv add-asset xbtc amount token-id caller))
-    (contract-call? .loan-v1-0 make-residual-payment loan-id lp-token token-id amount xbtc)))
+    (contract-call? .loan-v1-0 make-residual-payment loan-id lp-token amount xbtc)))
 
 ;; @desc Test the drawdown process by requesting a set amount of funds
 ;; @restricted supplier-interface
@@ -1250,7 +1250,7 @@
 (define-public (convert-to-shares (lp-token <sip-010>) (token-id uint) (lv <lv>) (asset <ft>) (assets uint))
   (let (
     (shares-supply (unwrap-panic (contract-call? lp-token get-total-supply))))
-    (ok (/ (* shares-supply assets) (unwrap-panic (total-assets lp-token lv token-id asset))))))
+    (ok (if (is-eq shares-supply) assets (/ (* shares-supply assets) (unwrap-panic (total-assets lp-token lv token-id asset)))))))
 
 (define-public (convert-to-exit-shares (lp-token <sip-010>) (token-id uint) (lv <lv>) (asset <ft>) (assets uint))
   (let (

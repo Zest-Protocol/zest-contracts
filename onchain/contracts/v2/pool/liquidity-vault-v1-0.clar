@@ -31,6 +31,7 @@
     (asset-amount (default-to u0 (map-get? assets token-id) )))
     (try! (is-approved-contract contract-caller))
     (try! (contract-call? asset transfer amount sender (as-contract tx-sender) none))
+    (print {sender: sender, amount: amount})
     (map-set assets token-id (+ asset-amount amount))
 
     (print { type: "add-asset-liquidity-vault-v1-0", payload: { key: token-id, data: { amount: amount }} })

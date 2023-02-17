@@ -96,6 +96,12 @@
 (define-public (get-loan (loan-id uint))
   (contract-call? .loan-data get-loan loan-id))
 
+(define-public (get-loan-pool-id (loan-id uint))
+  (contract-call? .pool-data get-loan-pool-id loan-id))
+
+(define-read-only (get-loan-pool-id-read (loan-id uint))
+  (contract-call? .pool-data get-loan-pool-id-read loan-id))
+
 (define-read-only (get-loan-read (loan-id uint))
   (contract-call? .loan-data get-loan-read loan-id))
 
@@ -378,7 +384,6 @@
   (payment <payment>)
   (lp-token <sip-010>)
   (lv <lv>)
-  (token-id uint)
   (cp-token <cp-token>)
   (cp-rewards-token <dt>)
   (zd-token <dt>)
@@ -390,6 +395,7 @@
   (let (
     (done (try! (contract-call? xbtc transfer amount caller (as-contract tx-sender) none)))
     (loan (try! (get-loan loan-id)))
+    (token-id (try! (get-loan-pool-id loan-id)))
     (total-tested-amount (+ amount (get-tested-amount loan-id)))
   )
     (try! (is-supplier-interface))
@@ -427,7 +433,6 @@
   (payment <payment>)
   (lp-token <sip-010>)
   (lv <lv>)
-  (token-id uint)
   (cp-token <cp-token>)
   (cp-rewards-token <dt>)
   (zd-token <dt>)
@@ -444,6 +449,7 @@
           (as-contract (try! (contract-call? xbtc transfer tested-amount tx-sender (contract-of payment) none)))
           true)))
     (loan (try! (get-loan loan-id)))
+    (token-id (try! (get-loan-pool-id loan-id)))
     (payment-response (try! (contract-call? payment make-next-payment lp-token lv token-id cp-token cp-rewards-token zd-token swap-router height loan-id (+ tested-amount amount) xbtc caller)))
     (amount-due (- (get reward payment-response) tested-amount))
   )
@@ -494,7 +500,6 @@
   (payment <payment>)
   (lp-token <sip-010>)
   (lv <lv>)
-  (token-id uint)
   (cp-token <cp-token>) 
   (cp-rewards-token <dt>)
   (zd-token <dt>)
@@ -511,6 +516,7 @@
           (as-contract (try! (contract-call? xbtc transfer tested-amount tx-sender (contract-of payment) none)))
           true)))
     (loan (try! (get-loan loan-id)))
+    (token-id (try! (get-loan-pool-id loan-id)))
     (payment-response (try! (contract-call? payment make-full-payment lp-token lv token-id cp-token cp-rewards-token zd-token swap-router height loan-id (+ tested-amount amount) xbtc caller)))
     (new-loan (merge loan { next-payment: u0, remaining-payments: u0, status: MATURED}))
     (amount-due (- (+ (get reward payment-response) (get full-payment payment-response)) tested-amount)))
@@ -724,7 +730,6 @@
   (cv <cv>)
   (fv <fv>)
   (swap-router <swap>)
-  (token-id uint)
   (xbtc <ft>)
   (caller principal))
   (let (
@@ -855,7 +860,6 @@
   (coll-token <ft>)
   (coll-vault <cv>)
   (fv <fv>)
-  (token-id uint)
   (xbtc <ft>))
   (let (
     (rollover (try! (get-rollover-progress loan-id)))
@@ -904,7 +908,6 @@
   (fv <fv>)
   (lv-principal principal)
   (lp-token <sip-010>)
-  (token-id uint)
   (xbtc <ft>)
   (caller principal))
   (let (
@@ -953,7 +956,6 @@
 (define-public (make-residual-payment
   (loan-id uint)
   (lp-token <sip-010>)
-  (token-id uint)
   (amount uint)
   (xbtc <ft>))
   (let (
