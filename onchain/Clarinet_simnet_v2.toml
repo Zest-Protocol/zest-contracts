@@ -19,8 +19,11 @@ path = "contracts/v2/after-deployment-simnet.clar"
 [contracts.magic-protocol]
 path = "contracts/v2/bitcoin/magic-protocol/magic-protocol.clar"
 
-[contracts.magic-caller-0]
-path = "contracts/v2/bitcoin/magic-caller-0.clar"
+[contracts.magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5]
+path = "contracts/v2/bitcoin/magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5.clar"
+
+[contracts.magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP]
+path = "contracts/v2/bitcoin/magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.clar"
 
 [contracts.clarity-bitcoin]
 path = "contracts/v2/bitcoin/test/clarity-bitcoin.clar"

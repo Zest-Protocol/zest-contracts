@@ -17,7 +17,7 @@
 (define-data-var owner principal tx-sender)
 
 ;; tx-id -> tx-height
-(define-map escrowed-tx (buff 32) { height: uint, supplier-id: uint, token-id: uint, loan-id: uint, finalized: bool })
+(define-map escrowed-tx (buff 32) { height: uint, supplier-id: uint, token-id: uint, loan-id: uint, amount: uint, finalized: bool })
 
 ;; @desc Escrows funds using the magic-protocol
 ;; @param block: a tuple containing `header` (the Bitcoin block header) and the `height` (Stacks height)
@@ -55,7 +55,7 @@
   (let (
     (tx-id (contract-call? .clarity-bitcoin get-txid tx))
   )
-    (asserts! (map-insert escrowed-tx tx-id { height: (get height block), supplier-id: supplier-id, token-id: token-id, loan-id: loan-id, finalized: false }) ERR_TX_ESCROWED)
+    (asserts! (map-insert escrowed-tx tx-id { height: (get height block), supplier-id: supplier-id, token-id: token-id, loan-id: loan-id, amount: u0, finalized: false }) ERR_TX_ESCROWED)
     (contract-call? .magic-protocol escrow-swap block prev-blocks tx proof output-index sender recipient expiration-buff hash swapper-buff supplier-id min-to-receive)
   )
 )
@@ -65,13 +65,13 @@
   (preimage (buff 128))
   (sc <sc>))
   (let (
+    (swap (try! (contract-call? sc finalize-swap txid preimage)))
     (supplier-id (unwrap! (contract-call? .magic-protocol get-supplier-id-by-controller (contract-of sc)) ERR_INVALID_SUPPLIER))
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST)))
     (asserts! (is-eq supplier-id (get supplier-id params)) ERR_INVALID_SUPPLIER)
 
-    (try! (contract-call? sc finalize-swap txid preimage))
-    (map-set escrowed-tx txid (merge params { finalized: true }))
-    (ok true)
+    (map-set escrowed-tx txid (merge params { finalized: true, amount: (get sats swap) }))
+    (ok (get sats swap))
   )
 )
 
@@ -121,15 +121,15 @@
   (xbtc-ft <ft>)
   (rewards-calc <rewards-calc>) )
   (let (
-    (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
-    (swapper (get swapper swap))
-    (sats (get sats swap)))
+    (sats (get amount params))
+    )
     (asserts! (get finalized params) ERR_UNAUTHORIZED)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v2-0 none)))
     (try! (contract-call? .pool-v2-0 send-funds lp-token (get token-id params) lv xbtc-ft sats tx-sender))
 
     (map-delete escrowed-tx txid)
-    (ok swap)
+    (ok sats)
   )
 )
 
@@ -214,7 +214,6 @@
 ;; @returns (response uint uint)
 (define-public (make-payment
   (txid (buff 32))
-  (preimage (buff 128))
   (payment <payment>)
   (lp-token <sip-010>)
   (lv <lv>)
@@ -224,14 +223,13 @@
   (swap-router <swap>)
   (xbtc-ft <ft>))
   (let (
-    (swap (try! (finalize-priv txid preimage xbtc-ft)))
-    (fee (get fee swap))
-    (xbtc (get xbtc swap))
-    (hash (get hash swap))
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
-    (swapper (get swapper-principal swap)))
+    (sats (get amount params)))
     (map-delete escrowed-tx txid)
-    (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) payment lp-token lv cp-token cp-rewards-token zp-token swap-router (get sats swap) xbtc-ft tx-sender)))))
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
+    (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) payment lp-token lv cp-token cp-rewards-token zp-token swap-router sats xbtc-ft tx-sender)))
+  )
+)
 
 (define-public (make-payment-completed
   (txid (buff 32))
@@ -329,7 +327,9 @@
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
     (swapper (get swapper-principal swap)))
     (map-delete escrowed-tx txid)
-    (ok (try! (contract-call? .loan-v1-0 make-full-payment (get loan-id params) (get height params) payment lp-token lv cp-token cp-rewards-token zp-token swap-router (get sats swap) xbtc-ft tx-sender)))))
+    (ok (try! (contract-call? .loan-v1-0 make-full-payment (get loan-id params) (get height params) payment lp-token lv cp-token cp-rewards-token zp-token swap-router (get sats swap) xbtc-ft tx-sender)))
+  )
+)
 
 (define-public (make-full-payment-completed
   (txid (buff 32))
@@ -839,6 +839,12 @@
     (asserts! (is-eq tx-sender swapper) ERR_WRONG_SWAPPER)
     (try! (as-contract (contract-call? xbtc-ft transfer fee tx-sender swapper none)))
     (ok (merge swap { fee: fee }))))
+
+(define-map supplier-controller uint principal)
+
+(define-public (initialize-swapper (controller principal))
+  (ok (map-set supplier-controller (try! (contract-call? .magic-protocol initialize-swapper)) controller))
+)
 
 ;; owner methods
 (define-public (register-supplier

@@ -25,6 +25,7 @@
   )
 )
 
+;; @desc removing locked shares from the cycle
 (define-public (remove-shares (lp-token <sip-010>) (token-id uint) (lv <lv>) (asset <ft>) (shares uint) (owner principal))
   (let (
     (current-exit-at (get-exit-at token-id owner))
@@ -59,6 +60,7 @@
   )
 )
 
+;; @desc redeem assets by claiming locked funds
 (define-public (redeem (lp-token <sip-010>) (token-id uint) (lv <lv>) (asset <ft>) (requested-shares uint) (owner principal) (recipient principal))
   (let (
     (pool (unwrap-panic (get-pool token-id)))

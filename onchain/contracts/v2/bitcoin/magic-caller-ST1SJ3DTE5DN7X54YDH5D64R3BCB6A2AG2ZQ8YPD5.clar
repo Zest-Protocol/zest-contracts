@@ -36,8 +36,10 @@
   (xbtc-ft <ft>)
   (rewards-calc <rewards-calc>)
   (sc <sc>))
-  (begin
-    (as-contract (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-finalize txid preimage sc)))
+  (let (
+    (sats (as-contract (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-finalize txid preimage sc))))
+  )
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
     (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-to-pool txid lp-token lv xbtc-ft rewards-calc)
   )
 )

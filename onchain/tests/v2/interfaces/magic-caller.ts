@@ -78,6 +78,43 @@ class MagicCaller {
         caller
       );
   }
+
+  static makePaymentLoan(
+    txid: string,
+    preimage: string,
+    payment: string,
+    lpToken: string,
+    liquidityVault: string,
+    cpToken: string,
+    cpRewardsToken: string,
+    zpToken: string,
+    swapRouter: string,
+    xbtc: string,
+    supplierController: string,
+    caller: string,
+    contractAddress: string,
+    contractName: string,
+  ) {
+    return Tx.contractCall(
+      `${contractAddress}.${contractName}`,
+      'make-payment-loan',
+        [
+          types.buff(Buffer.from(txid,"hex")),
+          types.buff(Buffer.from(preimage,"hex")),
+          types.principal(payment),
+          types.principal(lpToken),
+          types.principal(liquidityVault),
+          types.principal(cpToken),
+          types.principal(cpRewardsToken),
+          types.principal(zpToken),
+          types.principal(swapRouter),
+          types.principal(xbtc),
+          types.principal(supplierController),
+          
+        ],
+        caller
+      );
+  }
 }
 
 export { MagicCaller };

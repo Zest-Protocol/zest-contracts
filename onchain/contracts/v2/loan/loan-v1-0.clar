@@ -444,7 +444,7 @@
     (tested-amount (get-tested-amount loan-id))
     (done
       (begin
-        (try! (contract-call? xbtc transfer amount caller (contract-of payment) none))
+        (try! (as-contract (contract-call? xbtc transfer amount tx-sender (contract-of payment) none)))
         (if (> tested-amount u0)
           (as-contract (try! (contract-call? xbtc transfer tested-amount tx-sender (contract-of payment) none)))
           true)))

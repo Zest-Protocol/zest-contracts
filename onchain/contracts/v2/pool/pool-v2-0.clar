@@ -1216,8 +1216,10 @@
     (lv-balance (default-to u0 (try! (contract-call? lv get-asset token-id))))
     )
     (try! (is-supplier-interface))
+    ;; TODO: check asset is correct pool asset
+    ;; TODO: validate lv
     (asserts! (<= (+ (get principal-out pool) assets lv-balance) (get liquidity-cap pool)) ERR_LIQUIDITY_CAP_EXCESS)
-    (try! (contract-call? lv add-asset asset assets token-id owner))
+    (as-contract (try! (contract-call? lv add-asset asset assets token-id tx-sender)))
     (try! (contract-call? lp-token mint shares owner))
 
     (ok true)))
