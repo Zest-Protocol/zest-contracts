@@ -390,7 +390,7 @@
   (caller principal)
   )
   (let (
-    (done (try! (contract-call? xbtc transfer amount caller (as-contract tx-sender) none)))
+    ;; (done (try! (contract-call? xbtc transfer amount caller (as-contract tx-sender) none)))
     (loan (try! (get-loan loan-id)))
     (total-tested-amount (+ amount (get-tested-amount loan-id)))
   )
@@ -439,11 +439,12 @@
   (caller principal))
   (let (
     (tested-amount (get-tested-amount loan-id))
+    (payment-contract (contract-of payment))
     (done
       (begin
-        (try! (contract-call? xbtc transfer amount caller (contract-of payment) none))
+        (as-contract (try! (contract-call? xbtc transfer amount tx-sender payment-contract none)))
         (if (> tested-amount u0)
-          (as-contract (try! (contract-call? xbtc transfer tested-amount tx-sender (contract-of payment) none)))
+          (as-contract (try! (contract-call? xbtc transfer tested-amount tx-sender payment-contract none)))
           true)))
     (loan (try! (get-loan loan-id)))
     (payment-response (try! (contract-call? payment make-next-payment lp-token lv token-id cp-token cp-rewards-token zd-token swap-router height loan-id (+ tested-amount amount) xbtc caller)))

@@ -19,6 +19,12 @@ path = "contracts/after-deployment-simnet.clar"
 [contracts.magic-protocol]
 path = "contracts/bitcoin/magic-protocol/magic-protocol.clar"
 
+[contracts.magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5]
+path = "contracts/bitcoin/magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5.clar"
+
+[contracts.magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP]
+path = "contracts/bitcoin/magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.clar"
+
 # [contracts.swap-router-xbtc-xusd]
 # path = "contracts/swap-router-xbtc-xusd.clar"
 # depends_on = ["SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.swap-helper-v1-03"]
@@ -125,6 +131,9 @@ path = "contracts/token/xZest-token.clar"
 [contracts.staking-pool]
 path = "contracts/pool/staking-pool.clar"
 
+[contracts.sip-010-trait]
+path = "contracts/trait/sip-010-trait.clar"
+
 [contracts.cp-token]
 path = "contracts/token/cp-token.clar"
 depends_on = ["executor-dao"]
@@ -144,6 +153,12 @@ path = "contracts/pool/cover-vault.clar"
 
 [contracts.cover-pool-data]
 path = "contracts/pool/cover-pool-data.clar"
+
+[contracts.supplier-controller-0]
+path = "contracts/bitcoin/supplier-controller-0.clar"
+
+[contracts.supplier-controller-trait]
+path = "contracts/trait/supplier-controller-trait.clar"
 
 [contracts.supplier-interface]
 path = "contracts/bitcoin/supplier-interface.clar"

@@ -353,11 +353,8 @@
     (asserts! (<= (+ amount lv-balance) (get liquidity-cap pool)) ERR_LIQUIDITY_CAP_EXCESS)
 
     (asserts! (>= factor (get min-cycles pool)) ERR_INVALID_LOCKUP)
-
-    (try! (contract-call? .read-data add-pool-cash token-id amount))
-    (try! (contract-call? .pool-data set-funds-sent caller token-id new-funds-sent))
     
-    (try! (contract-call? lv add-asset xbtc amount token-id caller))
+    (as-contract (try! (contract-call? lv add-asset xbtc amount token-id tx-sender)))
     
     (try! (contract-call? lp-token mint token-id amount caller))
     (try! (contract-call? zp-token mint token-id amount caller))
@@ -908,7 +905,7 @@
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
-    (try! (contract-call? lv add-asset xbtc amount token-id caller))
+    (try! (as-contract (contract-call? lv add-asset xbtc amount token-id tx-sender)))
     (contract-call? .loan-v1-0 make-residual-payment loan-id lp-token token-id amount xbtc)))
 
 ;; @desc Test the drawdown process by requesting a set amount of funds
