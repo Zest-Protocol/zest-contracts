@@ -5,4 +5,5 @@ onchain/history.txt
 onchain/scripts
 onchain/settings/Testnet.toml
 src/clarigen
+onchain/settings/Testnet.toml
 *.DS_Store

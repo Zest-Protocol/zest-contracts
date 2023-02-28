@@ -8,6 +8,9 @@
 (define-map token-balances {token-id: uint, owner: principal} uint)
 (define-map token-supplies uint uint)
 (define-map token-uris uint (string-ascii 256))
+(define-data-var token-uri (string-utf8 256) u"")
+(define-data-var symbol (string-ascii 32) "ZPT")
+(define-data-var name (string-ascii 32) "Zest Pool Token")
 
 (define-data-var contract-owner principal tx-sender)
 (define-constant ERR_UNAUTHORIZED (err u1000))
@@ -37,13 +40,36 @@
 (define-read-only (get-decimals (token-id uint))
 	(ok u0))
 
-(define-public (set-token-uri (token-id uint) (value (string-ascii 256)))
+(define-public (set-token-uri (token-id uint) (value (string-utf8 256)))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (ok (map-set token-uris token-id value))))
+    (ok (var-set token-uri value))
+    ;; (ok (map-set token-uris token-id value))
+  )
+)
 
-(define-read-only (get-token-uri (token-id uint))
-	(ok (map-get? token-uris token-id)))
+(define-public (set-symbol (value (string-ascii 32)))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (ok (var-set symbol value))
+  )
+)
+
+(define-public (set-name (value (string-ascii 32)))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (ok (var-set name value))
+  )
+)
+
+(define-read-only (get-token-uri)
+	(ok (some (var-get token-uri))))
+
+(define-read-only (get-symbol)
+	(ok (var-get symbol)))
+
+(define-read-only (get-name)
+	(ok (var-get name)))
 
 (define-public (transfer (token-id uint) (amount uint) (sender principal) (recipient principal))
   (let (

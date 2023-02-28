@@ -25,10 +25,6 @@ path = "contracts/bitcoin/magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
 [contracts.magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP]
 path = "contracts/bitcoin/magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.clar"
 
-# [contracts.swap-router-xbtc-xusd]
-# path = "contracts/swap-router-xbtc-xusd.clar"
-# depends_on = ["SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.swap-helper-v1-03"]
-
 [contracts.clarity-bitcoin]
 path = "contracts/bitcoin/test/clarity-bitcoin.clar"
 

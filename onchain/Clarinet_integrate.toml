@@ -10,7 +10,7 @@ boot_contracts = ["pox", "costs-v1", "bns"]
 path = ".requirements"
 
 [contracts.after-deployment]
-path = "contracts/after-deployment-simnet.clar"
+path = "contracts/after-deployment-testnet.clar"
 
 [contracts.magic-protocol]
 path = "contracts/bitcoin/magic-protocol/magic-protocol.clar"
@@ -128,6 +128,12 @@ path = "contracts/pool/cover-vault.clar"
 
 [contracts.cover-pool-data]
 path = "contracts/pool/cover-pool-data.clar"
+
+[contracts.supplier-controller-0]
+path = "contracts/bitcoin/supplier-controller-0.clar"
+
+[contracts.supplier-controller-trait]
+path = "contracts/trait/supplier-controller-trait.clar"
 
 [contracts.supplier-interface]
 path = "contracts/bitcoin/supplier-interface.clar"
