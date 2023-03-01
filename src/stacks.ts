@@ -7,14 +7,14 @@ import {
   contractPrincipalCV,
   trueCV,
   uintCV,
-  stringAsciiCV,
+  // stringAsciiCV,
   intCV,
   someCV,
-  tupleCV,
+  // tupleCV,
   bufferCV,
-  listCV,
+  // listCV,
   PostConditionMode,
-  noneCV,
+  // noneCV,
   getNonce,
   StacksTransaction,
   ContractCallOptions,
@@ -28,7 +28,7 @@ import {
 } from '@stacks/transactions';
 
 import fetch from 'cross-fetch';
-import { MagicProtocolContract, CpTokenContract, GlobalsContract, LiquidityVaultV10Contract, LpTokenContract, PoolV10Contract, RewardsCalcContract, SupplierInterfaceContract, WrappedBitcoinContract, ZestRewardDistContract } from '../onchain/artifacts/contracts.js';
+import { MagicProtocolContract, CpTokenContract, GlobalsContract, LpTokenContract, PoolV10Contract, SupplierInterfaceContract, ZestRewardDistContract, SupplierController0Contract } from '../onchain/artifacts/contracts.js';
 import { Wallet, Account, getStxAddress } from "@stacks/wallet-sdk";
 import {
   BlocksApi,
@@ -43,7 +43,7 @@ import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV
 import { debuglog } from 'util';
 const debug = debuglog('1');
 
-import { Proof } from './bitcoin.js';
+// import { Proof } from './bitcoin.js';
 const network = new StacksMocknet();
 
 export async function sendTransactionCalls(
@@ -177,15 +177,39 @@ export async function setupContracts(supplierPublicKey: Buffer, deployerWallet: 
   const infoApi: InfoApiInterface = new InfoApi(apiConfig);
 
   // send funds to supplier-interface
+  // let transaction = await makeContractCall({
+  //   contractAddress: WrappedBitcoinContract.address,
+  //   contractName: WrappedBitcoinContract.name,
+  //   functionName: WrappedBitcoinContract.Functions.Transfer.name,
+  //   functionArgs: WrappedBitcoinContract.Functions.Transfer.args({
+  //     sender: principalCV(getStxAddress({ account: deployerWallet.accounts[0], transactionVersion: TransactionVersion.Testnet })),
+  //     recipient: contractPrincipalCV(getStxAddress({ account: deployerWallet.accounts[0], transactionVersion: TransactionVersion.Testnet }), "supplier-interface"),
+  //     memo: noneCV(),
+  //     amount: uintCV(1_000_000_000_000)
+  //   }),
+  //   senderKey: deployerWallet.accounts[0].stxPrivateKey,
+  //   network,
+  //   fee: 1000,
+  //   nonce: nonce + BigInt(0),
+  //   postConditionMode: PostConditionMode.Allow,
+  //   anchorMode: AnchorMode.Any,
+  // });
+
+  // let broadcastResponse = await broadcastTransaction(transaction, network);
+  // debug(JSON.stringify(broadcastResponse));
+
+  // REGISTER SUPPLIER ON STACKS
   let transaction = await makeContractCall({
-    contractAddress: WrappedBitcoinContract.address,
-    contractName: WrappedBitcoinContract.name,
-    functionName: WrappedBitcoinContract.Functions.Transfer.name,
-    functionArgs: WrappedBitcoinContract.Functions.Transfer.args({
-      sender: principalCV(getStxAddress({ account: deployerWallet.accounts[0], transactionVersion: TransactionVersion.Testnet })),
-      recipient: contractPrincipalCV(getStxAddress({ account: deployerWallet.accounts[0], transactionVersion: TransactionVersion.Testnet }), "supplier-interface"),
-      memo: noneCV(),
-      amount: uintCV(1_000_000_000_000)
+    contractAddress: SupplierController0Contract.address,
+    contractName: SupplierController0Contract.name,
+    functionName: SupplierController0Contract.Functions.RegisterSupplier.name,
+    functionArgs: SupplierController0Contract.Functions.RegisterSupplier.args({
+      publicKey: bufferCV(Buffer.from(supplierPublicKey)),
+      inboundFee: someCV(intCV(10)),
+      outboundFee: someCV(intCV(10)),
+      outboundBaseFee: intCV(500),
+      inboundBaseFee: intCV(500),
+      funds: uintCV(1_000_000_000_000),
     }),
     senderKey: deployerWallet.accounts[0].stxPrivateKey,
     network,
@@ -197,32 +221,6 @@ export async function setupContracts(supplierPublicKey: Buffer, deployerWallet: 
 
   let broadcastResponse = await broadcastTransaction(transaction, network);
   debug(JSON.stringify(broadcastResponse));
-
-  // REGISTER SUPPLIER ON STACKS
-  transaction = await makeContractCall({
-    contractAddress: SupplierInterfaceContract.address,
-    contractName: SupplierInterfaceContract.name,
-    functionName: SupplierInterfaceContract.Functions.RegisterSupplier.name,
-    functionArgs: SupplierInterfaceContract.Functions.RegisterSupplier.args({
-      publicKey: bufferCV(Buffer.from(supplierPublicKey)),
-      inboundFee: someCV(intCV(10)),
-      outboundFee: someCV(intCV(10)),
-      outboundBaseFee: intCV(500),
-      inboundBaseFee: intCV(500),
-      name: stringAsciiCV('supplier-1'),
-      funds: uintCV(1_000_000_000_000),
-    }),
-    senderKey: deployerWallet.accounts[0].stxPrivateKey,
-    network,
-    fee: 1000,
-    nonce: nonce + BigInt(1),
-    postConditionMode: PostConditionMode.Allow,
-    anchorMode: AnchorMode.Any,
-  });
-
-  broadcastResponse = await broadcastTransaction(transaction, network);
-  debug(JSON.stringify(broadcastResponse));
-
 
   transaction = await makeContractCall({
     contractAddress: MagicProtocolContract.address,
@@ -259,7 +257,7 @@ export async function setupContracts(supplierPublicKey: Buffer, deployerWallet: 
     senderKey: deployerWallet.accounts[0].stxPrivateKey,
     network,
     fee: 1000,
-    nonce: nonce + BigInt(2),
+    nonce: nonce + BigInt(1),
     postConditionMode: PostConditionMode.Allow,
     anchorMode: AnchorMode.Any,
   });
@@ -287,7 +285,7 @@ export async function setupContracts(supplierPublicKey: Buffer, deployerWallet: 
   broadcastResponse = await broadcastTransaction(transaction, network);
   debug(JSON.stringify(broadcastResponse));
 
-  return nonce + BigInt(3);
+  return nonce + BigInt(2);
 };
 
 export const getTrasactionVersion = (network: StacksNetwork) => {
@@ -429,98 +427,98 @@ export async function onboardUserAddress(contractOwner: Account, user: string, b
   return broadcastResponse;
 }
 
-export async function sendFunds(
-  proof: Proof,
-  height: number,
-  outputIndex: number,
-  senderPubKey: Uint8Array,
-  recipientPubKey: Uint8Array,
-  expirationBuff: Uint8Array,
-  hash: Uint8Array,
-  swapperBuff: Uint8Array,
-  supplierId: number,
-  minToReceive: number,
-  callerAccount: Account,
-  network: StacksNetwork,
-  nonce?: bigint 
-  ) {
-  const args = {
-    block: tupleCV({
-      header: bufferCV(Buffer.from(proof.blockHeaderHex, "hex")),
-      height: uintCV(height),
-    }),
-    prevBlocks: listCV([]),
-    tx: bufferCV(Buffer.from(proof.paymentTxHex, "hex")),
-    proof: tupleCV({
-      "tx-index": uintCV(proof.txIndex),
-      "hashes": listCV(proof.proof.map((merkle) => bufferCV(merkle))),
-      "tree-depth": uintCV(proof.depth)
-    }),
-    outputIndex: uintCV(outputIndex),                                                         // points to the out that goes to supplier
-    sender: bufferCV(Buffer.from(senderPubKey)),
-    recipient: bufferCV(Buffer.from(recipientPubKey)),
-    expirationBuff: bufferCV(Buffer.from(expirationBuff)),
-    hash: bufferCV(Buffer.from(hash)),
-    swapperBuff: bufferCV(Buffer.from(swapperBuff)),                                   // swapper is 0
-    supplierId: uintCV(supplierId),
-    minToReceive: uintCV(minToReceive),
-  };
+// export async function sendFunds(
+//   proof: Proof,
+//   height: number,
+//   outputIndex: number,
+//   senderPubKey: Uint8Array,
+//   recipientPubKey: Uint8Array,
+//   expirationBuff: Uint8Array,
+//   hash: Uint8Array,
+//   swapperBuff: Uint8Array,
+//   supplierId: number,
+//   minToReceive: number,
+//   callerAccount: Account,
+//   network: StacksNetwork,
+//   nonce?: bigint 
+//   ) {
+//   const args = {
+//     block: tupleCV({
+//       header: bufferCV(Buffer.from(proof.blockHeaderHex, "hex")),
+//       height: uintCV(height),
+//     }),
+//     prevBlocks: listCV([]),
+//     tx: bufferCV(Buffer.from(proof.paymentTxHex, "hex")),
+//     proof: tupleCV({
+//       "tx-index": uintCV(proof.txIndex),
+//       "hashes": listCV(proof.proof.map((merkle) => bufferCV(merkle))),
+//       "tree-depth": uintCV(proof.depth)
+//     }),
+//     outputIndex: uintCV(outputIndex),                                                         // points to the out that goes to supplier
+//     sender: bufferCV(Buffer.from(senderPubKey)),
+//     recipient: bufferCV(Buffer.from(recipientPubKey)),
+//     expirationBuff: bufferCV(Buffer.from(expirationBuff)),
+//     hash: bufferCV(Buffer.from(hash)),
+//     swapperBuff: bufferCV(Buffer.from(swapperBuff)),                                   // swapper is 0
+//     supplierId: uintCV(supplierId),
+//     minToReceive: uintCV(minToReceive),
+//   };
 
-  let addr = getStxAddress({ account: callerAccount, transactionVersion: getTrasactionVersion(network) });
+//   let addr = getStxAddress({ account: callerAccount, transactionVersion: getTrasactionVersion(network) });
 
-  let transaction = await makeContractCall({
-    contractAddress: SupplierInterfaceContract.address,
-    contractName: SupplierInterfaceContract.name,
-    functionName: SupplierInterfaceContract.Functions.SendFunds.name,
-    functionArgs: SupplierInterfaceContract.Functions.SendFunds.args(args),
-    senderKey: callerAccount.stxPrivateKey,
-    network,
-    fee: 1000,
-    nonce: nonce ? nonce : (await getNonce(addr, network)),
-    anchorMode: AnchorMode.Any,
-  });
+//   let transaction = await makeContractCall({
+//     contractAddress: SupplierInterfaceContract.address,
+//     contractName: SupplierInterfaceContract.name,
+//     functionName: SupplierInterfaceContract.Functions.SendFunds.name,
+//     functionArgs: SupplierInterfaceContract.Functions.SendFunds.args(args),
+//     senderKey: callerAccount.stxPrivateKey,
+//     network,
+//     fee: 1000,
+//     nonce: nonce ? nonce : (await getNonce(addr, network)),
+//     anchorMode: AnchorMode.Any,
+//   });
 
-  let broadcastResponse = await broadcastTransaction(transaction, network);
-  debug(JSON.stringify(broadcastResponse));
-};
+//   let broadcastResponse = await broadcastTransaction(transaction, network);
+//   debug(JSON.stringify(broadcastResponse));
+// };
 
-export async function sendFundsFinalize(
-  paymentTxId: Uint8Array,
-  preimage: Uint8Array,
-  commitment: number,
-  tokenId: number,
-  callerAccount: Account,
-  network: StacksNetwork,
-  nonce?: bigint,
-  ) {
-  let addr = getStxAddress({ account: callerAccount, transactionVersion: getTrasactionVersion(network) });
+// export async function sendFundsFinalize(
+//   paymentTxId: Uint8Array,
+//   preimage: Uint8Array,
+//   commitment: number,
+//   tokenId: number,
+//   callerAccount: Account,
+//   network: StacksNetwork,
+//   nonce?: bigint,
+//   ) {
+//   let addr = getStxAddress({ account: callerAccount, transactionVersion: getTrasactionVersion(network) });
 
-  let transaction = await makeContractCall({
-    contractAddress: SupplierInterfaceContract.address,
-    contractName: SupplierInterfaceContract.name,
-    functionName: SupplierInterfaceContract.Functions.SendFundsFinalize.name,
-    functionArgs: SupplierInterfaceContract.Functions.SendFundsFinalize.args({
-      txid: bufferCV(Buffer.from(paymentTxId)),
-      preimage: bufferCV(Buffer.from(preimage)),
-      factor: uintCV(commitment),
-      lpToken: contractPrincipalCV(LpTokenContract.address, LpTokenContract.name),
-      tokenId: uintCV(tokenId),
-      zpToken: contractPrincipalCV(ZestRewardDistContract.address, ZestRewardDistContract.name),
-      lv: contractPrincipalCV(LiquidityVaultV10Contract.address, LiquidityVaultV10Contract.name),
-      xbtcFt: contractPrincipalCV(WrappedBitcoinContract.address, WrappedBitcoinContract.name),
-      rewardsCalc: contractPrincipalCV(RewardsCalcContract.address, RewardsCalcContract.name),
-    }),
-    senderKey: callerAccount.stxPrivateKey,
-    network,
-    fee: 1000,
-    nonce: nonce ? nonce: (await getNonce(addr, network)),
-    postConditionMode: PostConditionMode.Allow,
-    anchorMode: AnchorMode.Any,
-  });
+//   let transaction = await makeContractCall({
+//     contractAddress: SupplierInterfaceContract.address,
+//     contractName: SupplierInterfaceContract.name,
+//     functionName: SupplierInterfaceContract.Functions.SendFundsFinalize.name,
+//     functionArgs: SupplierInterfaceContract.Functions.SendFundsFinalize.args({
+//       txid: bufferCV(Buffer.from(paymentTxId)),
+//       preimage: bufferCV(Buffer.from(preimage)),
+//       factor: uintCV(commitment),
+//       lpToken: contractPrincipalCV(LpTokenContract.address, LpTokenContract.name),
+//       tokenId: uintCV(tokenId),
+//       zpToken: contractPrincipalCV(ZestRewardDistContract.address, ZestRewardDistContract.name),
+//       lv: contractPrincipalCV(LiquidityVaultV10Contract.address, LiquidityVaultV10Contract.name),
+//       xbtcFt: contractPrincipalCV(WrappedBitcoinContract.address, WrappedBitcoinContract.name),
+//       rewardsCalc: contractPrincipalCV(RewardsCalcContract.address, RewardsCalcContract.name),
+//     }),
+//     senderKey: callerAccount.stxPrivateKey,
+//     network,
+//     fee: 1000,
+//     nonce: nonce ? nonce: (await getNonce(addr, network)),
+//     postConditionMode: PostConditionMode.Allow,
+//     anchorMode: AnchorMode.Any,
+//   });
 
-  let broadcastResponse = await broadcastTransaction(transaction, network);
-  debug(JSON.stringify(broadcastResponse));
-};
+//   let broadcastResponse = await broadcastTransaction(transaction, network);
+//   debug(JSON.stringify(broadcastResponse));
+// };
 
 export async function createLoan(
   lpToken: string,
