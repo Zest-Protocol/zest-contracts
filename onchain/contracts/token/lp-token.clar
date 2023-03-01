@@ -313,5 +313,3 @@
 (define-constant ERR_INVALID_PRINCIPAL (err u12000))
 (define-constant ERR_INSUFFICIENT_BALANCE (err u12001))
 (define-constant ERR_PANIC (err u12002))
-
-(ft-mint? lp u10000 tx-sender)
