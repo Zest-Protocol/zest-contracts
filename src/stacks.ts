@@ -278,7 +278,7 @@ export async function setupContracts(supplierPublicKey: Buffer, deployerWallet: 
     senderKey: deployerWallet.accounts[0].stxPrivateKey,
     network,
     fee: 1000,
-    nonce: nonce + BigInt(3),
+    nonce: nonce + BigInt(2),
     anchorMode: AnchorMode.Any,
   });
 
