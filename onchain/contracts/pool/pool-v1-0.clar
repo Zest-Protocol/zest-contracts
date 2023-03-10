@@ -27,7 +27,7 @@
 ;; @desc Create a pool
 ;; @restricted contract-owner
 ;; @param pool-delegate: address of the pool delegate
-;; @param lp-token: token to hold xbtc rewards for LPers
+;; @param lp: token to hold xbtc rewards for LPers
 ;; @param zp-token: token to hold zest rewards funds for LPers
 ;; @param payment: contract containing payment and rewards distribution logic
 ;; @param rewards-calc: contract containing logic for calculating zest rewards
@@ -46,10 +46,10 @@
 ;; @returns (response uint uint)
 (define-public (create-pool
   (pool-delegate principal)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (zp-token <dt>)
-  (payment <payment>)
-  (rewards-calc <rewards-calc>)
+  (pay <payment>)
+  (r-c <rewards-calc>)
   (cover-fee uint)
   (delegate-fee uint)
   (liquidity-cap uint)
@@ -57,17 +57,17 @@
   (min-cycles uint)
   (max-maturity-length uint)
   (liquidity-vault <lv>)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cover-vault <lv>)
   (cp-rewards-token <dt>)
   (cp-cover-token <ft>)
   (open bool))
   (let (
-    (lp-contract (contract-of lp-token))
-    (cp-contract (contract-of cp-token))
+    (lp-contract (contract-of lp))
+    (cp-contract (contract-of cp))
     (zp-contract (contract-of zp-token))
-    (payment-contract (contract-of payment))
-    (rewards-contract (contract-of rewards-calc))
+    (payment-contract (contract-of pay))
+    (rewards-contract (contract-of r-c))
     (lv-contract (contract-of liquidity-vault))
     (new-pool-id (contract-call? .pool-data get-last-pool-id))
     (next-id (+ new-pool-id u1))
@@ -101,7 +101,7 @@
     (asserts! (<= (+ cover-fee delegate-fee) u10000) ERR_INVALID_FEES)
     (asserts! (> min-cycles u0) ERR_INVALID_VALUES)
 
-    (try! (contract-call? .cover-pool-v1-0 create-pool cp-token cover-vault cp-rewards-token cp-cover-token cover-cap new-pool-id open (* CYCLE u1) min-cycles))
+    (try! (contract-call? .cover-pool-v1-0 create-pool cp cover-vault cp-rewards-token cp-cover-token cover-cap new-pool-id open (* CYCLE u1) min-cycles))
 
     (try! (contract-call? .pool-data set-pool-delegate pool-delegate new-pool-id))
 
@@ -151,13 +151,13 @@
 (define-read-only (is-delegate (delegate principal))
   (is-some (contract-call? .pool-data get-token-id-by-delegate delegate)))
 
-(define-public (get-sent-funds (sender principal) (lp-token <lp-token>) (token-id uint))
-  (contract-call? lp-token get-balance token-id sender))
+(define-public (get-sent-funds (sender principal) (lp <lp-token>) (token-id uint))
+  (contract-call? lp get-balance token-id sender))
 
 ;; -- pool setters
-(define-public (set-liquidity-cap (lp-token <lp-token>) (token-id uint) (liquidity-cap uint))
+(define-public (set-liquidity-cap (lp <lp-token>) (token-id uint) (liquidity-cap uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { liquidity-cap: liquidity-cap })))
     (try! (caller-is (get pool-delegate pool)))
@@ -168,9 +168,9 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-cycle-length (lp-token <lp-token>) (cp-token <cp-token>) (token-id uint) (cycle-length uint))
+(define-public (set-cycle-length (lp <lp-token>) (cp <cp-token>) (token-id uint) (cycle-length uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { cycle-length: cycle-length })))
     (try! (caller-is (get pool-delegate pool)))
@@ -178,12 +178,12 @@
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
     (asserts! (> (get cycle-length pool) cycle-length) ERR_INVALID_LOCKUP)
 
-    (try! (contract-call? .cover-pool-v1-0 set-cycle-length cp-token token-id cycle-length))
+    (try! (contract-call? .cover-pool-v1-0 set-cycle-length cp token-id cycle-length))
     (ok true)))
 
-(define-public (set-min-cycles (lp-token <lp-token>) (cp-token <cp-token>) (token-id uint) (min-cycles uint))
+(define-public (set-min-cycles (lp <lp-token>) (cp <cp-token>) (token-id uint) (min-cycles uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { min-cycles: min-cycles })))
     (try! (caller-is (get pool-delegate pool)))
@@ -191,12 +191,12 @@
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
     (asserts! (and (< min-cycles (get min-cycles pool)) (> min-cycles u0)) ERR_INVALID_LOCKUP)
 
-    (try! (contract-call? .cover-pool-v1-0 set-min-cycles cp-token token-id min-cycles))
+    (try! (contract-call? .cover-pool-v1-0 set-min-cycles cp token-id min-cycles))
     (ok true)))
 
-(define-public (set-delegate-fee (lp-token <lp-token>) (token-id uint) (delegate-fee uint))
+(define-public (set-delegate-fee (lp <lp-token>) (token-id uint) (delegate-fee uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { delegate-fee: delegate-fee })))
     (try! (caller-is (get pool-delegate pool)))
@@ -207,9 +207,9 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-cover-fee (lp-token <lp-token>) (token-id uint) (cover-fee uint))
+(define-public (set-cover-fee (lp <lp-token>) (token-id uint) (cover-fee uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { cover-fee: cover-fee })))
     (try! (caller-is (get pool-delegate pool)))
@@ -220,9 +220,9 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-max-maturity-length (lp-token <lp-token>) (token-id uint) (max-maturity-length uint))
+(define-public (set-max-maturity-length (lp <lp-token>) (token-id uint) (max-maturity-length uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { max-maturity-length: max-maturity-length }))
     (day (contract-call? .globals get-day-length-default)))
@@ -234,20 +234,20 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-open (lp-token <lp-token>) (cp-token <cp-token>) (token-id uint) (open bool))
+(define-public (set-open (lp <lp-token>) (cp <cp-token>) (token-id uint) (open bool))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { open: open })))
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (try! (contract-call? .cover-pool-v1-0 set-open cp-token token-id open))
+    (try! (contract-call? .cover-pool-v1-0 set-open cp token-id open))
     (ok true)))
 
-(define-public (set-delegate (lp-token <lp-token>) (cp-token <cp-token>) (token-id uint) (delegate principal))
+(define-public (set-delegate (lp <lp-token>) (cp <cp-token>) (token-id uint) (delegate principal))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { pool-delegate: delegate })))
     (try! (caller-is (get pool-delegate pool)))
@@ -257,45 +257,45 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (enable-cover (lp-token <lp-token>) (cp-token <cp-token>) (token-id uint))
+(define-public (enable-cover (lp <lp-token>) (cp <cp-token>) (token-id uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id))))
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
 
-    (try! (contract-call? .cover-pool-v1-0 enable-pool cp-token token-id))
+    (try! (contract-call? .cover-pool-v1-0 enable-pool cp token-id))
     (ok true)))
 
-(define-public (disable-cover (lp-token <lp-token>) (cp-token <cp-token>) (token-id uint))
+(define-public (disable-cover (lp <lp-token>) (cp <cp-token>) (token-id uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id))))
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
 
-    (try! (contract-call? .cover-pool-v1-0 disable-pool cp-token token-id))
+    (try! (contract-call? .cover-pool-v1-0 disable-pool cp token-id))
     (ok true)))
 
 ;; @desc Sets status to READY and block start
 ;; @restricted pool-delegate
-;; @param lp-token: principal of lp-token to account for xbtc rewards
+;; @param lp: principal of lp to account for xbtc rewards
 ;; @param zp-token: token to hold zest rewards funds for LPers
-;; @param cp-token: token to hold zest rewards funds for cover-providers
+;; @param cp: token to hold zest rewards funds for cover-providers
 ;; @param token-id: pool id
 ;; @returns (response true uint)
-(define-public (finalize-pool (lp-token <lp-token>) (zp-token <dtc>) (cp-token <cp-token>) (token-id uint))
+(define-public (finalize-pool (lp <lp-token>) (zp-token <dtc>) (cp <cp-token>) (token-id uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (height block-height)
     (new-pool (merge pool { status: READY, pool-stx-start: height, pool-btc-start: burn-block-height } )))
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (is-eq INIT (get status pool)) ERR_INVALID_VALUES)
-    (try! (contract-call? .cover-pool-v1-0 finalize-pool cp-token token-id))
+    (try! (contract-call? .cover-pool-v1-0 finalize-pool cp token-id))
     (try! (contract-call? zp-token set-cycle-start token-id height))
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     
@@ -309,7 +309,7 @@
 ;; @desc send the funds to the pool. if already sent funds, claim zest rewards and set
 ;; cycle of commitments based on previous commitment and new. 
 ;; @restricted supplier
-;; @param lp-token: token to hold xbtc rewards for LPers
+;; @param lp: token to hold xbtc rewards for LPers
 ;; @param token-id: send funds to the selected pool
 ;; @param zp-token: token to hold zest rewards funds for LPers
 ;; @param amount: amount being sent from the protocol
@@ -321,27 +321,27 @@
 ;; @param caller: principal of account making the payment
 ;; @returns (response true uint)
 (define-public (send-funds
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (zp-token <dtc>)
   (amount uint)
   (factor uint)
   (height uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc <ft>)
-  (rewards-calc <rewards-calc>)
+  (r-c <rewards-calc>)
   (caller principal))
   (let (
     (pool (try! (get-pool token-id)))
-    (lv-contract (contract-of lv))
+    (lv-contract (contract-of l-v))
     (zp-contract (contract-of zp-token))
-    (lv-balance (default-to u0 (try! (contract-call? lv get-asset token-id))))
+    (lv-balance (default-to u0 (try! (contract-call? l-v get-asset token-id))))
     (cycle (get cycle-length pool))
     (current-cycle (unwrap-panic (get-current-cycle token-id)))
-    (lost-dft (try! (contract-call? lp-token recognizable-losses-of token-id caller)))
-    (sent-dft (try! (contract-call? lp-token get-balance token-id caller)))
+    (lost-dft (try! (contract-call? lp recognizable-losses-of token-id caller)))
+    (sent-dft (try! (contract-call? lp get-balance token-id caller)))
     (total-amount (+ amount (- sent-dft lost-dft)))
-    (new-funds-sent (unwrap-panic (get-new-factor lp-token zp-token caller token-id total-amount factor current-cycle rewards-calc))))
+    (new-funds-sent (unwrap-panic (get-new-factor lp zp-token caller token-id total-amount factor current-cycle r-c))))
     (try! (is-paused))
     (try! (is-supplier-interface))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
@@ -349,14 +349,14 @@
     (asserts! (is-eq (get liquidity-vault pool) lv-contract) ERR_INVALID_LV)
     (asserts! (is-eq (get zp-token pool) zp-contract) ERR_INVALID_ZP)
     (asserts! (is-eq (get status pool) READY) ERR_POOL_CLOSED)
-    (asserts! (contract-call? .globals is-rewards-calc (contract-of rewards-calc)) ERR_INVALID_REWARDS_CALC)
+    (asserts! (contract-call? .globals is-rewards-calc (contract-of r-c)) ERR_INVALID_REWARDS_CALC)
     (asserts! (<= (+ amount lv-balance) (get liquidity-cap pool)) ERR_LIQUIDITY_CAP_EXCESS)
 
     (asserts! (>= factor (get min-cycles pool)) ERR_INVALID_LOCKUP)
     
-    (as-contract (try! (contract-call? lv add-asset xbtc amount token-id tx-sender)))
+    (as-contract (try! (contract-call? l-v add-asset xbtc amount token-id tx-sender)))
     
-    (try! (contract-call? lp-token mint token-id amount caller))
+    (try! (contract-call? lp mint token-id amount caller))
     (try! (contract-call? zp-token mint token-id amount caller))
     (try! (contract-call? zp-token set-share-cycles current-cycle (+ (get factor new-funds-sent) current-cycle) token-id total-amount caller))
 
@@ -365,7 +365,7 @@
 
 ;; @desc allows user to recommit funds for another number of cycles
 ;; @restricted supplier
-;; @param lp-token: token to hold xbtc rewards for LPers
+;; @param lp: token to hold xbtc rewards for LPers
 ;; @param token-id: send funds to the selected pool
 ;; @param zp-token: token to hold zest rewards funds for LPers
 ;; @param amount: amount being sent from the protocol
@@ -373,30 +373,30 @@
 ;; @param height: height of the confirmed Bitcoin tx
 ;; @param lv: contract holding the liquid funds in the pool
 ;; @param xbtc: principal of xBTC contract
-;; @param rewards-calc: principal to calculate zest rewards,
+;; @param r-c: principal to calculate zest rewards,
 ;; @param caller: principal of account sending funds
 ;; @returns (response true uint)
 (define-public (recommit-funds
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (zp-token <dtc>)
   (amount uint)
   (factor uint)
   (height uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc <ft>)
-  (rewards-calc <rewards-calc>)
+  (r-c <rewards-calc>)
   (caller principal))
   (let (
     (pool (try! (get-pool token-id)))
-    (lv-contract (contract-of lv))
+    (lv-contract (contract-of l-v))
     (zp-contract (contract-of zp-token))
     (current-cycle (unwrap-panic (get-current-cycle token-id)))
-    (lv-balance (unwrap! (try! (contract-call? lv get-asset token-id)) ERR_PANIC))
-    (lost-dft (try! (contract-call? lp-token recognizable-losses-of token-id caller)))
-    (sent-dft (try! (contract-call? lp-token get-balance token-id caller)))
+    (lv-balance (unwrap! (try! (contract-call? l-v get-asset token-id)) ERR_PANIC))
+    (lost-dft (try! (contract-call? lp recognizable-losses-of token-id caller)))
+    (sent-dft (try! (contract-call? lp get-balance token-id caller)))
     (total-amount (+ amount (- sent-dft lost-dft)))
-    (new-funds-sent (unwrap-panic (get-new-factor lp-token zp-token caller token-id total-amount factor current-cycle rewards-calc))))
+    (new-funds-sent (unwrap-panic (get-new-factor lp zp-token caller token-id total-amount factor current-cycle r-c))))
     (try! (is-paused))
     (try! (is-supplier-interface))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
@@ -404,11 +404,11 @@
     (asserts! (is-eq (get liquidity-vault pool) lv-contract) ERR_INVALID_LV)
     (asserts! (is-eq (get zp-token pool) zp-contract) ERR_INVALID_ZP)
     (asserts! (is-eq (get status pool) READY) ERR_POOL_CLOSED)
-    (asserts! (contract-call? .globals is-rewards-calc (contract-of rewards-calc)) ERR_INVALID_REWARDS_CALC)
+    (asserts! (contract-call? .globals is-rewards-calc (contract-of r-c)) ERR_INVALID_REWARDS_CALC)
     (asserts! (<= (+ (get principal-out pool) amount lv-balance) (get liquidity-cap pool)) ERR_LIQUIDITY_CAP_EXCESS)
 
     (asserts! (>= factor (get min-cycles pool)) ERR_INVALID_LOCKUP)
-    (asserts! (> (try! (get-sent-funds caller lp-token token-id)) u0) ERR_NO_FUNDS_IN_POOL)
+    (asserts! (> (try! (get-sent-funds caller lp token-id)) u0) ERR_NO_FUNDS_IN_POOL)
 
     (try! (contract-call? .pool-data set-funds-sent caller token-id new-funds-sent))
     (try! (contract-call? zp-token set-share-cycles current-cycle (+ (get factor new-funds-sent) current-cycle) token-id total-amount caller))
@@ -417,32 +417,32 @@
 
 ;; @desc gets the new commitment time based on previous commitment time and amount and 
 ;; new amount and time
-;; @param lp-token: token to hold xbtc rewards for LPers
+;; @param lp: token to hold xbtc rewards for LPers
 ;; @param zp-token: token to hold zest rewards funds for LPers
 ;; @param owner: principal of account sending funds
 ;; @param token-id: send funds to the selected pool
 ;; @param amount: amount being sent from the protocol
 ;; @param factor: multiplier to the amount of time locked
 ;; @param current-cycle: current cycle in the pool
-;; @param rewards-calc: principal to calculate zest rewards
+;; @param r-c: principal to calculate zest rewards
 ;; @returns (response { factor: uint, current-cycle: uint, sent-at-btc: uint, sent-at-stx: uint, withdrawal-signaled: uint, last-claim-at: uint, amount: uint } uint)
 (define-private (get-new-factor
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (zp-token <dtc>)
   (owner principal)
   (token-id uint)
   (amount uint)
   (factor uint)
   (current-cycle uint)
-  (rewards-calc <rewards-calc>))
+  (r-c <rewards-calc>))
   (let (
-    (prev-funds (unwrap-panic (contract-call? lp-token get-balance token-id owner))))
+    (prev-funds (unwrap-panic (contract-call? lp get-balance token-id owner))))
     (match (get-funds-sent owner token-id)
       funds-sent-data
         (let (
             (rewards (try! (contract-call? zp-token withdraw-cycle-rewards token-id owner)))
-            (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards owner (get factor funds-sent-data) (get cycle-rewards rewards))) u0))
-            (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards-base owner (get passive-rewards rewards))) u0))
+            (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? r-c mint-rewards owner (get factor funds-sent-data) (get cycle-rewards rewards))) u0))
+            (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? r-c mint-rewards-base owner (get passive-rewards rewards))) u0))
             (result (try! (contract-call? zp-token empty-commitments token-id owner))))
             (if (has-locked-funds token-id owner)
             (let (
@@ -483,7 +483,7 @@
     new-factor))
 
 ;; @desc Borrower creates a loan
-;; @param lp-token: token to hold xbtc rewards for LPers
+;; @param lp: token to hold xbtc rewards for LPers
 ;; @param token-id: related pool to loan
 ;; @param loan-amount: amount requested for the loan
 ;; @param asset: asset used in the loan
@@ -496,7 +496,7 @@
 ;; @param funding-vault: contract that holds funds before drawdown
 ;; @returns (response uint uint)
 (define-public (create-loan
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (loan-amount uint)
   (asset <ft>)
@@ -509,7 +509,7 @@
   (funding-vault principal))
   (let (
     (last-id (try! (contract-call? .loan-v1-0 create-loan loan-amount asset coll-ratio coll-token apr maturity-length payment-period coll-vault funding-vault tx-sender)))
-    (loan { lp-token: (contract-of lp-token ), token-id: token-id, funding-vault: funding-vault })
+    (loan { lp-token: (contract-of lp ), token-id: token-id, funding-vault: funding-vault })
     (pool (get-pool-read token-id)))
     (asserts! (contract-call? .globals is-xbtc (contract-of asset)) ERR_INVALID_XBTC)
     (asserts! (>= (get max-maturity-length pool) maturity-length) ERR_EXCEEDED_MATURITY_MAX)
@@ -519,7 +519,7 @@
 
 ;; @desc Pool Delegate sends funds to the funding contract in the loan.
 ;; @param loan-id: id of loan being funded
-;; @param lp-token: token contract that points to the requested pool
+;; @param lp: token contract that points to the requested pool
 ;; @param token-id: related pool to loan
 ;; @param lv: contract holding the liquid funds in the pool
 ;; @param fv: contract holding the funds for funding the loan
@@ -527,19 +527,19 @@
 ;; @returns (response true uint)
 (define-public (fund-loan
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
-  (lv <lv>)
-  (fv <fv>)
+  (l-v <lv>)
+  (f-v <fv>)
   (xbtc <ft>))
   (let (
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
-    (lp-contract (contract-of lp-token))
-    (lv-contract (contract-of lv))
-    (fv-contract (contract-of fv))
+    (lp-contract (contract-of lp))
+    (lv-contract (contract-of l-v))
+    (fv-contract (contract-of f-v))
     (pool (try! (get-pool token-id)))
     (loan (try! (contract-call? .loan-v1-0 get-loan loan-id)))
-    (lv-balance (unwrap! (try! (contract-call? lv get-asset token-id)) ERR_PANIC))
+    (lv-balance (unwrap! (try! (contract-call? l-v get-asset token-id)) ERR_PANIC))
     (amount (try! (contract-call? .loan-v1-0 fund-loan loan-id)))
     (new-pool (merge pool { principal-out: (+ amount (get principal-out pool)) })))
     (try! (caller-is (get pool-delegate pool)))
@@ -551,8 +551,8 @@
     (asserts! (>= lv-balance amount) ERR_NOT_ENOUGH_LIQUIDITY)
     (asserts! (is-eq token-id loan-pool-id) ERR_INVALID_LOAN_POOL_ID)
     
-    (try! (contract-call? lv remove-asset xbtc amount token-id (as-contract tx-sender)))
-    (try! (as-contract (contract-call? fv add-asset xbtc amount loan-id tx-sender)))
+    (try! (contract-call? l-v remove-asset xbtc amount token-id (as-contract tx-sender)))
+    (try! (as-contract (contract-call? f-v add-asset xbtc amount loan-id tx-sender)))
     
     (try! (contract-call? .pool-data set-pool token-id new-pool))
 
@@ -561,19 +561,19 @@
 
 ;; @desc reverse the effects of fund-loan, send funds from the funding vault to the liquidity vault
 ;; @param loan-id: id of loan being funded
-;; @param lp-token: token contract that points to the requested pool
+;; @param lp: token contract that points to the requested pool
 ;; @param lv: contract trait holding the liquid funds in the pool
 ;; @param amount: amount used to fund the loan request
 ;; @returns (response true uint)
-(define-public (unwind (loan-id uint) (lp-token <lp-token>) (token-id uint) (fv <fv>) (lv <lv>) (xbtc <ft>) (caller principal))
+(define-public (unwind (loan-id uint) (lp <lp-token>) (token-id uint) (f-v <fv>) (l-v <lv>) (xbtc <ft>) (caller principal))
   (let (
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
     (loan (try! (contract-call? .loan-v1-0 get-loan loan-id)))
-    (lp-contract (contract-of lp-token))
-    (fv-contract (contract-of fv))
-    (lv-contract (contract-of lv))
+    (lp-contract (contract-of lp))
+    (fv-contract (contract-of f-v))
+    (lv-contract (contract-of l-v))
     (pool (try! (get-pool token-id)))
-    (returned-funds (try! (contract-call? .loan-v1-0 unwind loan-pool-id loan-id fv lv xbtc)))
+    (returned-funds (try! (contract-call? .loan-v1-0 unwind loan-pool-id loan-id f-v l-v xbtc)))
     (new-pool (merge pool { principal-out: (- (get principal-out pool) returned-funds) })))
     (asserts! (is-eq lv-contract (get liquidity-vault pool)) ERR_INVALID_LV)
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
@@ -589,7 +589,7 @@
 
 ;; @desc is called from the suppleir interface so that it can be withdrawn through the magic protocol
 ;; xbtc funds are sent back to the user after a withdrawal cooldown period
-;; @param lp-token: token contract that points to the requested pool
+;; @param lp: token contract that points to the requested pool
 ;; @param zp-token: token to hold zest rewards funds for LPers
 ;; @param token-id: selected pool id
 ;; @param amount: amount being sent from the protocol
@@ -599,17 +599,17 @@
 ;; @param recipient: principal of account withdrawing funds
 ;; @returns (response true uint)
 (define-public (withdraw
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (zp-token <dtc>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (amount uint)
   (xbtc <ft>)
   (recipient principal))
   (let (
     (pool (try! (get-pool token-id)))
-    (lost-funds (try! (contract-call? lp-token recognize-losses token-id recipient)))
-    (lv-contract (contract-of lv))
+    (lost-funds (try! (contract-call? lp recognize-losses token-id recipient)))
+    (lv-contract (contract-of l-v))
     (funds-sent-data (try! (get-funds-sent recipient token-id)))
     (withdrawal-signaled (get withdrawal-signaled funds-sent-data))
     (globals (contract-call? .globals get-globals))
@@ -621,7 +621,7 @@
     (unlock-time (+ (* cycle-length (get factor funds-sent-data)) (get sent-at-btc funds-sent-data)))
     (cooldown-height-end (+ (get lp-cooldown-period globals) (get withdrawal-signaled funds-sent-data)))
     (new-funds-sent (merge funds-sent-data { withdrawal-signaled: u0, amount: u0 }))
-    (vault-funds (unwrap! (try! (contract-call? lv get-asset token-id)) ERR_PANIC)))
+    (vault-funds (unwrap! (try! (contract-call? l-v get-asset token-id)) ERR_PANIC)))
     (try! (is-supplier-interface))
 
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
@@ -633,20 +633,20 @@
     (asserts! (>= (get amount funds-sent-data) amount) ERR_EXCEEDED_SIGNALED_AMOUNT)
     (asserts! (>= vault-funds (- amount lost-funds)) ERR_NOT_ENOUGH_LIQUIDITY)
     
-    (try! (contract-call? lv remove-asset xbtc (- amount lost-funds) token-id recipient))
+    (try! (contract-call? l-v remove-asset xbtc (- amount lost-funds) token-id recipient))
 
-    (try! (contract-call? lp-token burn token-id amount recipient))
+    (try! (contract-call? lp burn token-id amount recipient))
     (try! (contract-call? zp-token burn token-id amount recipient))
     (try! (contract-call? .pool-data set-funds-sent recipient token-id new-funds-sent))
     (print { type: "withdraw-pool", payload: { key: { caller: recipient, token-id: token-id } , funds-withdrawn: amount } })
     (ok true)))
 
 ;; @desc caller signals at block-height the amount to withdraw
-;; @param lp-token: token contract that points to the requested pool
+;; @param lp: token contract that points to the requested pool
 ;; @param token-id: pool id
 ;; @param amount: amount caller wants to withdraw
 ;; @returns (response true uint)
-(define-public (signal-withdrawal (lp-token <lp-token>) (token-id uint) (amount uint))
+(define-public (signal-withdrawal (lp <lp-token>) (token-id uint) (amount uint))
   (let (
     (caller tx-sender)
     (pool (try! (get-pool token-id)))
@@ -660,17 +660,17 @@
 ;; @desc caller withdraws zest rewards according to rewards-calc logic
 ;; @param token-id: pool id
 ;; @param dtc: distribution-token contract to account for zest rewards
-;; @param rewards-calc: rewards calculation contract
+;; @param r-c: rewards calculation contract
 ;; @returns (response { zest-base-rewards: uint, zest-cycle-rewards: uint } uint)
-(define-public (withdraw-zest-rewards (token-id uint) (dtc <dtc>) (rewards-calc <rewards-calc>))
+(define-public (withdraw-zest-rewards (token-id uint) (zp <dtc>) (r-c <rewards-calc>))
   (let (
     (caller tx-sender)
-    (rewards (try! (contract-call? dtc withdraw-cycle-rewards token-id caller)))
+    (rewards (try! (contract-call? zp withdraw-cycle-rewards token-id caller)))
     (funds-sent-data (try! (get-funds-sent caller token-id)))
-    (is-rewards-calc (asserts! (contract-call? .globals is-rewards-calc (contract-of rewards-calc)) ERR_INVALID_REWARDS_CALC))
-    (is-zp (asserts! (contract-call? .globals is-zp (contract-of dtc)) ERR_INVALID_ZP))
-    (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards caller (get factor funds-sent-data) (get cycle-rewards rewards))) u0))
-    (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards-base caller (get passive-rewards rewards))) u0)))
+    (is-rewards-calc (asserts! (contract-call? .globals is-rewards-calc (contract-of r-c)) ERR_INVALID_REWARDS_CALC))
+    (is-zp (asserts! (contract-call? .globals is-zp (contract-of zp)) ERR_INVALID_ZP))
+    (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? r-c mint-rewards caller (get factor funds-sent-data) (get cycle-rewards rewards))) u0))
+    (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? r-c mint-rewards-base caller (get passive-rewards rewards))) u0)))
     (try! (contract-call? .pool-data set-funds-sent caller token-id (merge funds-sent-data { last-claim-at : (unwrap-panic (get-current-cycle token-id)) })))
     
     (try! (contract-call? .read-data add-pool-zest-rewards-earned token-id (+ zest-base-rewards zest-cycle-rewards)))
@@ -678,18 +678,18 @@
     (ok { zest-base-rewards: zest-base-rewards, zest-cycle-rewards: zest-cycle-rewards })))
 
 ;; @desc caller withdraws xbtc rewards
-;; @param lp-token: contract of token used to account for xbtc rewards
+;; @param lp: contract of token used to account for xbtc rewards
 ;; @param token-id: pool id
 ;; @param lv: contract of liquidity vault
 ;; @param xbtc: principal of xBTC contract
 ;; @param caller: principal of account withdrawing rewards
 ;; @returns (response { zest-base-rewards: uint, zest-cycle-rewards: uint } uint)
-(define-public (withdraw-rewards (lp-token <lp-token>) (token-id uint) (lv <lv>) (xbtc <ft>) (caller principal))
+(define-public (withdraw-rewards (lp <lp-token>) (token-id uint) (l-v <lv>) (xbtc <ft>) (caller principal))
   (let (
-    (withdrawn-funds (try! (contract-call? lp-token withdraw-rewards token-id caller))))
+    (withdrawn-funds (try! (contract-call? lp withdraw-rewards token-id caller))))
     (try! (is-supplier-interface))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
-    (try! (contract-call? lv remove-asset xbtc withdrawn-funds token-id caller))
+    (try! (contract-call? l-v remove-asset xbtc withdrawn-funds token-id caller))
 
     (print { type: "withdraw-rewards", payload: { key: { token-id: token-id, owner: caller }, data: { withdrawn-funds: withdrawn-funds } } })
     (ok withdrawn-funds)))
@@ -697,17 +697,17 @@
 ;; @desc called by the the pool delegate before completing the rollover process
 ;; @restricted pool delegate
 ;; @param loan-id: id of loan being paid for
-;; @param lp-token: contract of token used to account for xbtc rewards
+;; @param lp: contract of token used to account for xbtc rewards
 ;; @param token-id: pool id
 ;; @param lv: contract trait holding the liquid funds in the pool
 ;; @param fv: funding vault address
 ;; @returns (response true uint)
 (define-public (accept-rollover
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
-  (lv <lv>)
-  (fv <fv>)
+  (l-v <lv>)
+  (f-v <fv>)
   (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
@@ -720,11 +720,11 @@
     (try! (is-paused))
     (asserts! (is-eq token-id loan-pool-id) ERR_INVALID_TOKEN_ID)
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
-    (asserts! (is-eq (contract-of lv) (get liquidity-vault pool)) ERR_INVALID_LV)
+    (asserts! (is-eq (contract-of l-v) (get liquidity-vault pool)) ERR_INVALID_LV)
 
     (if (> req-amount current-amount)
       (begin
-        (try! (fund-rollover loan-id token-id lv fv (- req-amount current-amount) xbtc))
+        (try! (fund-rollover loan-id token-id l-v f-v (- req-amount current-amount) xbtc))
         (contract-call? .loan-v1-0 ready-rollover loan-id (to-int (- req-amount current-amount))))
       ;; if only agreeing on new terms, same loan amount
       (if (is-eq req-amount current-amount)
@@ -735,7 +735,7 @@
 ;; @desc reverts the effects of accepting a rollover
 ;; @restricted supplier interface
 ;; @param loan-id: id of loan being paid for
-;; @param lp-token: contract of token used to account for xbtc rewards
+;; @param lp: contract of token used to account for xbtc rewards
 ;; @param token-id: pool id
 ;; @param coll-token: collateral token SIP-010 token in the new agreement
 ;; @param coll-vault: collateral vault holding the collateral to be recovered
@@ -747,11 +747,11 @@
 ;; @returns (response true uint)
 (define-public (cancel-rollover
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (recovered-amount uint)
   (xbtc <ft>)
   (caller principal))
@@ -762,7 +762,7 @@
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
     (try! (as-contract (contract-call? xbtc transfer recovered-amount tx-sender .loan-v1-0 none)))
-    (try! (contract-call? .loan-v1-0 cancel-rollover loan-id coll-token coll-vault fv (get liquidity-vault pool) lp-token token-id xbtc caller))
+    (try! (contract-call? .loan-v1-0 cancel-rollover loan-id coll-token coll-vault f-v (get liquidity-vault pool) lp token-id xbtc caller))
     (ok true)))
 
 ;; @desc sends funds to funding vault for the loan
@@ -776,20 +776,20 @@
 (define-private (fund-rollover
   (loan-id uint)
   (token-id uint)
-  (lv <lv>)
-  (fv <fv>)
+  (l-v <lv>)
+  (f-v <fv>)
   (amount uint)
   (xbtc <ft>))
   (let (
     (loan (try! (contract-call? .loan-v1-0 get-loan loan-id)))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
     (pool (try! (get-pool token-id))))
-    (asserts! (is-eq (contract-of fv) (get funding-vault loan)) ERR_INVALID_FV)
-    (asserts! (is-eq (contract-of lv) (get liquidity-vault pool)) ERR_INVALID_LV)
+    (asserts! (is-eq (contract-of f-v) (get funding-vault loan)) ERR_INVALID_FV)
+    (asserts! (is-eq (contract-of l-v) (get liquidity-vault pool)) ERR_INVALID_LV)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
-    (try! (contract-call? lv remove-asset xbtc amount token-id (as-contract tx-sender)))
-    (try! (as-contract (contract-call? fv add-asset xbtc amount loan-id tx-sender)))
+    (try! (contract-call? l-v remove-asset xbtc amount token-id (as-contract tx-sender)))
+    (try! (as-contract (contract-call? f-v add-asset xbtc amount loan-id tx-sender)))
 
     (try! (contract-call? .read-data loans-funded-plus))
     (ok true)))
@@ -797,7 +797,7 @@
 ;; @desc borrower rollsover the loan with new values when more funds
 ;; are requested
 ;; @param loan-id: id of loan being paid for
-;; @param lp-token: contract of token used to account for xbtc rewards
+;; @param lp: contract of token used to account for xbtc rewards
 ;; @param token-id: pool id
 ;; @param coll-token: collateral token SIP-010 token in the new agreement
 ;; @param coll-vault: collateral vault holding the collateral to be recovered
@@ -807,11 +807,11 @@
 ;; @returns (response uint uint)
 (define-public (complete-rollover
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (swap-router <swap>)
   (xbtc <ft>)
   (caller principal))
@@ -823,14 +823,14 @@
     (try! (is-paused))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
-    (asserts! (is-eq (contract-of fv) (get funding-vault loan)) ERR_INVALID_FV)
+    (asserts! (is-eq (contract-of f-v) (get funding-vault loan)) ERR_INVALID_FV)
 
-    (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault fv swap-router token-id xbtc caller)))
+    (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault f-v swap-router token-id xbtc caller)))
 
 ;; @desc borrower rollsover the loan with new values, when there is no
 ;; need to use the magic-protocol
 ;; @param loan-id: id of loan being paid for
-;; @param lp-token: contract of token used to account for xbtc rewards
+;; @param lp: contract of token used to account for xbtc rewards
 ;; @param token-id: pool id
 ;; @param coll-token: collateral token SIP-010 token in the new agreement
 ;; @param coll-vault: collateral vault holding the collateral to be recovered
@@ -840,11 +840,11 @@
 ;; @returns (response uint uint)
 (define-public (complete-rollover-no-withdrawal
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (swap-router <swap>)
   (xbtc <ft>))
   (let (
@@ -857,7 +857,7 @@
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     (asserts! (>= (get loan-amount loan) (get new-amount rollover)) ERR_NEED_TO_WITHDRAW_FUNDS)
 
-    (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault fv swap-router token-id xbtc tx-sender)))
+    (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault f-v swap-router token-id xbtc tx-sender)))
 
 ;; @desc after funds are sent to borrower, set the new terms of the loan
 ;; to escrow and finalize.
@@ -868,7 +868,7 @@
 ;; @param token-id: pool associated to the affected loan
 ;; @param xbtc: SIP-010 xbtc token
 ;; @returns (response true uint)
-(define-public (finalize-rollover (loan-id uint) (lp-token <lp-token>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (fv <fv>) (xbtc <ft>))
+(define-public (finalize-rollover (loan-id uint) (lp <lp-token>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (f-v <fv>) (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id))))
@@ -877,11 +877,11 @@
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
-    (contract-call? .loan-v1-0 finalize-rollover loan-id coll-token coll-vault fv token-id xbtc)))
+    (contract-call? .loan-v1-0 finalize-rollover loan-id coll-token coll-vault f-v token-id xbtc)))
 
 ;; @desc borrower updates status on loan to make a residual payment
 ;; @param loan-id: id of loan being paid for
-;; @param lp-token: contract of token used to account for xbtc rewards
+;; @param lp: contract of token used to account for xbtc rewards
 ;; @param token-id: pool id
 ;; @param lv: contract trait holding the liquid funds in the pool
 ;; @param amount: amount that is being paid
@@ -890,9 +890,9 @@
 ;; @returns (response true uint)
 (define-public (make-residual-payment
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (amount uint)
   (xbtc <ft>)
   (caller principal))
@@ -905,13 +905,13 @@
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
-    (try! (as-contract (contract-call? lv add-asset xbtc amount token-id tx-sender)))
-    (contract-call? .loan-v1-0 make-residual-payment loan-id lp-token token-id amount xbtc)))
+    (try! (as-contract (contract-call? l-v add-asset xbtc amount token-id tx-sender)))
+    (contract-call? .loan-v1-0 make-residual-payment loan-id lp token-id amount xbtc)))
 
 ;; @desc Test the drawdown process by requesting a set amount of funds
 ;; @restricted supplier-interface
 ;; @param loan-id: id of loan affected
-;; @param lp-token: token that holds funds and distributes them
+;; @param lp: token that holds funds and distributes them
 ;; @param token-id: pool associated where the funds are taken from
 ;; @param coll-token: SIP-010 contract for collateral
 ;; @param coll-vault: contract that holds the collateral SIP-010
@@ -922,11 +922,11 @@
 ;; @returns the amount borrowed
 (define-public (drawdown-verify
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (swap-router <swap>)
   (xbtc <ft>)
   (sender principal))
@@ -938,12 +938,12 @@
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
 
-    (contract-call? .loan-v1-0 drawdown-verify loan-id coll-token coll-vault fv lp-token token-id (get pool-delegate pool) (get delegate-fee pool) swap-router xbtc sender)))
+    (contract-call? .loan-v1-0 drawdown-verify loan-id coll-token coll-vault f-v lp token-id (get pool-delegate pool) (get delegate-fee pool) swap-router xbtc sender)))
 
 ;; @desc drawdowns funds from the liquidity vault to the supplier-interface
 ;; @restricted supplier
 ;; @param loan-id: id of funded loan
-;; @param lp-token: token that holds funds and distributes them
+;; @param lp: token that holds funds and distributes them
 ;; @param token-id: pool id
 ;; @param coll-token: SIP-010 contract for collateral
 ;; @param coll-vault: contract that holds the collateral SIP-010
@@ -954,11 +954,11 @@
 ;; @returns (response uint uint)
 (define-public (drawdown
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (swap-router <swap>)
   (xbtc <ft>)
   (sender principal))
@@ -970,19 +970,19 @@
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
 
-    (contract-call? .loan-v1-0 drawdown loan-id coll-token coll-vault fv (get liquidity-vault pool) lp-token token-id (get pool-delegate pool) (get delegate-fee pool) swap-router xbtc sender)))
+    (contract-call? .loan-v1-0 drawdown loan-id coll-token coll-vault f-v (get liquidity-vault pool) lp token-id (get pool-delegate pool) (get delegate-fee pool) swap-router xbtc sender)))
 
 ;; @desc starts the loan after funds have been confirmed
 ;; @restricted supplier
 ;; @param loan-id: id of loan affected
-;; @param lp-token: token that holds funds and distributes them
+;; @param lp: token that holds funds and distributes them
 ;; @param token-id: pool id
 ;; @param coll-token: SIP-010 contract for collateral
 ;; @param coll-vault: contract that holds the collateral SIP-010
 ;; @param fv: funding vault address
 ;; @param xbtc: SIP-010 xbtc token
 ;; @returns (response uint uint)
-(define-public (finalize-drawdown (loan-id uint) (lp-token <lp-token>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (fv <fv>) (xbtc <ft>))
+(define-public (finalize-drawdown (loan-id uint) (lp <lp-token>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (f-v <fv>) (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id))))
@@ -991,13 +991,13 @@
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
 
-    (contract-call? .loan-v1-0 finalize-drawdown loan-id coll-token coll-vault fv (get liquidity-vault pool) lp-token token-id (get pool-delegate pool) (get delegate-fee pool) xbtc)))
+    (contract-call? .loan-v1-0 finalize-drawdown loan-id coll-token coll-vault f-v (get liquidity-vault pool) lp token-id (get pool-delegate pool) (get delegate-fee pool) xbtc)))
 
 ;; @desc when supplier-interface does not suceed in completeing drawdown,
 ;; return funds to the liquidity vault
 ;; @restricted supplier
 ;; @param loan-id: id of loan affected
-;; @param lp-token: token that holds funds and distributes them
+;; @param lp: token that holds funds and distributes them
 ;; @param token-id: pool id
 ;; @param coll-token: SIP-010 contract for collateral
 ;; @param coll-vault: contract that holds the collateral SIP-010
@@ -1007,11 +1007,11 @@
 ;; @returns (response uint uint)
 (define-public (cancel-drawdown
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (recovered-amount uint)
   (xbtc <ft>))
   (let (
@@ -1023,68 +1023,68 @@
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (try! (as-contract (contract-call? xbtc transfer recovered-amount tx-sender .loan-v1-0 none)))
-    (contract-call? .loan-v1-0 cancel-drawdown loan-id coll-token coll-vault fv (get liquidity-vault pool) lp-token token-id (get pool-delegate pool) (get delegate-fee pool) xbtc)))
+    (contract-call? .loan-v1-0 cancel-drawdown loan-id coll-token coll-vault f-v (get liquidity-vault pool) lp token-id (get pool-delegate pool) (get delegate-fee pool) xbtc)))
 
 ;; @desc Pool Delegate liquidates loans that have their grace period expired.
 ;; collateral is swapped to xbtc to recover funds
 ;; if not enough collateral, cover pool funds are withdrawn
 ;; @restricted pool delegate
 ;; @param loan-id: id of loan being liquidated
-;; @param lp-token: token that holds funds and distributes them
+;; @param lp: token that holds funds and distributes them
 ;; @param token-id: pool id
 ;; @param lv: contract trait holding the liquid funds in the pool
 ;; @param coll-vault: contract that holds the collateral SIP-010
 ;; @param coll-token: the SIP-010 token being held for collateral
 ;; @param cover-token: asset used in the cover pool
-;; @param cp-token: contract that accounts for losses and rewards on cover-providers
+;; @param cp: contract that accounts for losses and rewards on cover-providers
 ;; @param cover-vault: principal of cover vault to hold funds available for cover
 ;; @param swap-router: contract for swapping with DEX protocol
 ;; @returns (response { staking-pool-recovered: uint, collateral-recovery: uint } uint)
 (define-public (liquidate-loan
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (coll-vault <cv>)
   (coll-token <ft>)
   (cover-token <ft>)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cover-vault <lv>)
   (swap-router <swap>)
   (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
     (cover-pool (try! (contract-call? .cover-pool-v1-0 get-pool token-id)))
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
     (coll-recovery (try! (contract-call? .loan-v1-0 liquidate loan-id coll-vault coll-token swap-router xbtc (as-contract tx-sender))))
     (loan-amount (get loan-amount coll-recovery))
     (recovered-funds (get recovered-funds coll-recovery))
     (stakers-recovery
       (if (get available cover-pool)
-        (try! (contract-call? .cover-pool-v1-0 default-withdrawal cp-token token-id (- loan-amount recovered-funds) (as-contract tx-sender) cover-token cover-vault))
+        (try! (contract-call? .cover-pool-v1-0 default-withdrawal cp token-id (- loan-amount recovered-funds) (as-contract tx-sender) cover-token cover-vault))
         u0)))
     (try! (is-paused))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq tx-sender (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (asserts! (is-eq lp-contract (get lp-token pool)) ERR_INVALID_LP)
-    (asserts! (is-eq (get cp-token pool) (contract-of cp-token)) ERR_INVALID_SP)
+    (asserts! (is-eq (get cp-token pool) (contract-of cp)) ERR_INVALID_SP)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
     (if (> loan-amount (+ stakers-recovery recovered-funds)) ;; if loan-amount bigger than recovered amounts, recognize losses
       (begin
-        (as-contract (try! (contract-call? lv add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
+        (as-contract (try! (contract-call? l-v add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
         (print
           { recognized-loss:
             (try! (as-contract (contract-call?
-              cp-token
+              cp
               distribute-losses
               token-id
               (- loan-amount (+ stakers-recovery recovered-funds))))) })
         (print 
           { recognized-loss-lp:
             (try! (as-contract (contract-call?
-              lp-token
+              lp
               distribute-losses
               token-id
               (- loan-amount (+ stakers-recovery recovered-funds))))) })
@@ -1096,11 +1096,11 @@
       (begin
         (if (> recovered-funds loan-amount) ;; if collateral was enough, distribute excess as rewards
           (begin
-            (as-contract (try! (contract-call? lv add-asset xbtc loan-amount token-id tx-sender)))
-            (try! (contract-call? lp-token add-rewards token-id (- loan-amount recovered-funds))))
+            (as-contract (try! (contract-call? l-v add-asset xbtc loan-amount token-id tx-sender)))
+            (try! (contract-call? lp add-rewards token-id (- loan-amount recovered-funds))))
           (begin
-            (as-contract (try! (contract-call? lv add-asset xbtc loan-amount token-id tx-sender)))
-            (try! (contract-call? lp-token add-rewards token-id (- loan-amount (+ stakers-recovery recovered-funds))))))
+            (as-contract (try! (contract-call? l-v add-asset xbtc loan-amount token-id tx-sender)))
+            (try! (contract-call? lp add-rewards token-id (- loan-amount (+ stakers-recovery recovered-funds))))))
         (try! (contract-call? .pool-data set-pool token-id (merge pool { principal-out: (- (get principal-out pool) loan-amount) })))))
     
     (ok { staking-pool-recovered: stakers-recovery, collateral-recovery: recovered-funds })))
@@ -1110,40 +1110,40 @@
 ;; if not enough collateral, cover pool funds are withdrawn
 ;; @restricted governor
 ;; @param loan-id: id of loan being liquidated
-;; @param lp-token: token that holds funds and distributes them
+;; @param lp: token that holds funds and distributes them
 ;; @param token-id: pool id
 ;; @param coll-vault: contract that holds the collateral SIP-010
 ;; @param coll-token: the SIP-010 token being held for collateral
-;; @param cp-token: contract that accounts for losses and rewards on stakers
+;; @param cp: contract that accounts for losses and rewards on stakers
 ;; @param cover-vault: principal of cover vault to hold funds available for cover
 ;; @param cover-token: asset used in the cover pool
 ;; @param xbtc: SIP-010 xbtc token
 ;; @returns (response { staking-pool-recovered: uint, collateral-recovery: uint } uint)
 (define-public (declare-loan-liquidated
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint) 
   (coll-vault <cv>)
   (coll-token <ft>)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cover-vault <lv>)
   (cover-token <ft>)
   (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
     (cover-pool (try! (contract-call? .cover-pool-v1-0 get-pool token-id)))
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
     (coll-recovery (try! (contract-call? .loan-v1-0 liquidate-otc loan-id coll-vault coll-token xbtc tx-sender)))
     (stakers-recovery
       (if (get available cover-pool)
-        (try! (contract-call? .cover-pool-v1-0 default-withdrawal-otc cp-token cover-vault token-id tx-sender cover-token))
+        (try! (contract-call? .cover-pool-v1-0 default-withdrawal-otc cp cover-vault token-id tx-sender cover-token))
         u0)))
     (try! (is-paused))
     (try! (is-governor tx-sender token-id))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq lp-contract (get lp-token pool)) ERR_INVALID_LP)
-    (asserts! (is-eq (get cp-token pool) (contract-of cp-token)) ERR_INVALID_SP)
+    (asserts! (is-eq (get cp-token pool) (contract-of cp)) ERR_INVALID_SP)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     
     (ok { stakers-recovery: stakers-recovery, coll-recovery: coll-recovery })))
@@ -1151,34 +1151,34 @@
 ;; @desc Pool Delegate returns recovered funds to the pool and distributes losses
 ;; @restricted governor
 ;; @param loan-id: id of loan being liquidated
-;; @param lp-token: token that holds funds and distributes them
+;; @param lp: token that holds funds and distributes them
 ;; @param token-id: pool id
 ;; @param coll-vault: contract that holds the collateral SIP-010
 ;; @param coll-token: the SIP-010 token being held for collateral
 ;; @param funds-returned: amount of funds being returned to the cover pool
 ;; @param lv: contract trait holding the liquid funds in the pool
 ;; @param xbtc-recovered: amount of xbtc recovered
-;; @param cp-token: contract that accounts for losses and rewards on stakers
+;; @param cp: contract that accounts for losses and rewards on stakers
 ;; @param cover-vault: principal of cover vault to hold funds available for cover
 ;; @param cover-token: asset used in the cover pool
 ;; @param xbtc: SIP-010 xbtc token
 ;; @returns (response true uint)
 (define-public (return-otc-liquidation
   (loan-id uint)
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint) 
   (coll-vault <cv>)
   (coll-token <ft>)
   (funds-returned uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc-recovered uint)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cover-vault <lv>)
   (cover-token <ft>)
   (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
     (loan (try! (contract-call? .loan-data get-loan loan-id)))
     (loan-amount (get loan-amount loan)))
@@ -1186,27 +1186,27 @@
     (try! (is-governor tx-sender token-id))
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq lp-contract (get lp-token pool)) ERR_INVALID_LP)
-    (asserts! (is-eq (get cp-token pool) (contract-of cp-token)) ERR_INVALID_SP)
+    (asserts! (is-eq (get cp-token pool) (contract-of cp)) ERR_INVALID_SP)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
     (if (>= xbtc-recovered loan-amount)
       ;; simply send funds to liquidity vault
-      (try! (contract-call? lv add-asset xbtc xbtc-recovered token-id tx-sender))
+      (try! (contract-call? l-v add-asset xbtc xbtc-recovered token-id tx-sender))
       (begin
-        (try! (as-contract (contract-call? lp-token distribute-losses token-id (- loan-amount xbtc-recovered) )))
-        (try! (contract-call? lv add-asset xbtc xbtc-recovered token-id tx-sender))))
-    (try! (contract-call? .cover-pool-v1-0 return-withdrawal-otc cp-token token-id tx-sender funds-returned cover-token cover-vault))
+        (try! (as-contract (contract-call? lp distribute-losses token-id (- loan-amount xbtc-recovered) )))
+        (try! (contract-call? l-v add-asset xbtc xbtc-recovered token-id tx-sender))))
+    (try! (contract-call? .cover-pool-v1-0 return-withdrawal-otc cp token-id tx-sender funds-returned cover-token cover-vault))
     
     (ok true)))
 
 ;; @desc Contract owner disables activity in the pool except for withdrawals
 ;; @restricted contract-owner
-;; @param lp-token: token that holds funds and distributes them
+;; @param lp: token that holds funds and distributes them
 ;; @param token-id: pool id
 ;; @returns (response true uint)
-(define-public (trigger-default-mode (lp-token <lp-token>) (token-id uint))
+(define-public (trigger-default-mode (lp <lp-token>) (token-id uint))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
     (new-pool (merge pool { status: DEFAULT } )))
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)

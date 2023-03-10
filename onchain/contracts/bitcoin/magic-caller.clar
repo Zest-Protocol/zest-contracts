@@ -1,16 +1,16 @@
-(use-trait lp-token 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.lp-token-trait.lp-token-trait)
-(use-trait lv 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.liquidity-vault-trait.liquidity-vault-trait)
-(use-trait ft 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.ft-trait.ft-trait)
-(use-trait sip-010 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.sip-010-trait.sip-010-trait)
-(use-trait rewards-calc 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.rewards-calc-trait.rewards-calc-trait)
-(use-trait sc 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-controller-trait.supplier-controller-trait)
+(use-trait lp-token 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-token-trait.lp-token-trait)
+(use-trait lv 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.liquidity-vault-trait.liquidity-vault-trait)
+(use-trait ft 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ft-trait.ft-trait)
+(use-trait sip-010 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sip-010-trait.sip-010-trait)
+(use-trait rewards-calc 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.rewards-calc-trait.rewards-calc-trait)
+(use-trait sc 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-controller-trait.supplier-controller-trait)
 
-(use-trait payment 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.payment-trait.payment-trait)
+(use-trait payment 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.payment-trait.payment-trait)
 
-(use-trait cp-token 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
-(use-trait dt 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.distribution-token-trait.distribution-token-trait)
-(use-trait dtc 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.distribution-token-cycles-trait.distribution-token-cycles-trait)
-(use-trait swap 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.swap-router-trait.swap-router-trait)
+(use-trait cp-token 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
+(use-trait dt 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.distribution-token-trait.distribution-token-trait)
+(use-trait dtc 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.distribution-token-cycles-trait.distribution-token-cycles-trait)
+(use-trait swap 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.swap-router-trait.swap-router-trait)
 
 (define-constant DEPLOYER tx-sender)
 
@@ -34,7 +34,7 @@
   )
   (begin
     (asserts! (is-eq DEPLOYER tx-sender) ERR_UNAUTHORIZED)
-    (as-contract (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface send-funds block prev-blocks tx proof output-index sender recipient expiration-buff hash swapper-buff supplier-id min-to-receive token-id loan-id factor action DEPLOYER))
+    (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds block prev-blocks tx proof output-index sender recipient expiration-buff hash swapper-buff supplier-id min-to-receive token-id loan-id factor action DEPLOYER))
   )
 )
 
@@ -49,10 +49,10 @@
   (s-c <sc>)
   )
   (let (
-    (sats (as-contract (try! (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface send-funds-finalize txid preimage s-c))))
+    (sats (as-contract (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-finalize txid preimage s-c))))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface send-funds-to-pool txid lp zp l-v xbtc-ft r-c)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-to-pool txid lp zp l-v xbtc-ft r-c)
   )
 )
 
@@ -65,11 +65,11 @@
   (r-c <rewards-calc>)
   (s-c <sc>))
   (let (
-    (swap-ret (try! (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-controller-0 finalize-swap-completed txid)))
+    (swap-ret (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-controller-0 finalize-swap-completed txid)))
     (sats (get sats swap-ret))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (as-contract (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface send-funds-finalize-completed txid lp zp l-v xbtc-ft r-c s-c))
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-finalize-completed txid lp zp l-v xbtc-ft r-c s-c))
   )
 )
 
@@ -86,10 +86,10 @@
   (xbtc-ft <ft>)
   (s-c <sc>))
   (let (
-    (sats (as-contract (try! (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface send-funds-finalize txid preimage s-c))))
+    (sats (as-contract (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-finalize txid preimage s-c))))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface make-payment txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface make-payment txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
   )
 )
 
@@ -108,8 +108,8 @@
     (swap-ret (try! (contract-call? s-c finalize-swap-completed txid)))
     (sats (get sats swap-ret))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (as-contract (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface make-payment-completed txid pay lp l-v cp cp-rt zp swap-router xbtc-ft s-c))
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface make-payment-completed txid pay lp l-v cp cp-rt zp swap-router xbtc-ft s-c))
   )
 )
 
@@ -126,10 +126,10 @@
   (xbtc-ft <ft>)
   (s-c <sc>))
   (let (
-    (sats (as-contract (try! (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface send-funds-finalize txid preimage s-c))))
+    (sats (as-contract (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-finalize txid preimage s-c))))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface make-full-payment txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface make-full-payment txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
   )
 )
 
@@ -148,8 +148,8 @@
     (swap-ret (try! (contract-call? s-c finalize-swap-completed txid)))
     (sats (get sats swap-ret))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface make-full-payment-completed txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface make-full-payment-completed txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
   )
 )
 
@@ -166,10 +166,10 @@
   (xbtc-ft <ft>)
   (s-c <sc>))
   (let (
-    (sats (as-contract (try! (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface send-funds-finalize txid preimage s-c))))
+    (sats (as-contract (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-finalize txid preimage s-c))))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface make-payment-verify txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface make-payment-verify txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
   )
 )
 
@@ -188,8 +188,8 @@
     (swap-ret (try! (contract-call? s-c finalize-swap-completed txid)))
     (sats (get sats swap-ret))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface make-payment-verify-completed txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface make-payment-verify-completed txid pay lp l-v cp cp-rt zp swap-router xbtc-ft)
   )
 )
 
@@ -201,10 +201,10 @@
   (xbtc-ft <ft>)
   (s-c <sc>))
   (let (
-    (sats (as-contract (try! (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface send-funds-finalize txid preimage s-c))))
+    (sats (as-contract (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface send-funds-finalize txid preimage s-c))))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface make-residual-payment txid lp l-v xbtc-ft)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface make-residual-payment txid lp l-v xbtc-ft)
   )
 )
 
@@ -218,14 +218,14 @@
     (swap-ret (try! (contract-call? s-c finalize-swap-completed txid)))
     (sats (get sats swap-ret))
   )
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface none)))
-    (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.supplier-interface make-residual-payment-completed txid lp l-v xbtc-ft)
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface none)))
+    (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.supplier-interface make-residual-payment-completed txid lp l-v xbtc-ft)
   )
 )
 
 (define-read-only (get-swapper-id)
-  (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.magic-protocol get-swapper-id (as-contract tx-sender)))
+  (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.magic-protocol get-swapper-id (as-contract tx-sender)))
 
 (define-constant ERR_UNAUTHORIZED (err u1000))
 
-(as-contract (contract-call? 'STCBF5D65XRH16Q8PH44FZ888MKDFEFBYPAMAHEX.magic-protocol initialize-swapper))
+(as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.magic-protocol initialize-swapper))

@@ -53,15 +53,15 @@ Clarinet.test({
     let LP_2 = accounts.get("wallet_2") as Account; // LP_2 ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
     let coverPoolProvider = accounts.get("wallet_3") as Account; // Cover_1
     let delegate_1 = accounts.get("wallet_7") as Account; // Delegate_1
-    let borrower_1 = accounts.get("wallet_8") as Account; // borrower_1
+    let borrower_1 = accounts.get("wallet_8") as Account; // borrower_1 ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP
 
     let assetMaps = chain.getAssetsMaps();
     let pool = new Pool(chain, deployerWallet);
     let loan = new Loan(chain, deployerWallet);
     let coverPool = new CoverPool(chain, deployerWallet);
 
-    const LP_1_MAGIC_CALLER = "magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
-    const BORROWER_MAGIC_CALLER = "magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP";
+    const LP_1_MAGIC_CALLER = "magic-caller-ST1";
+    const BORROWER_MAGIC_CALLER = "magic-caller-ST3";
     
     const defaultExpiration = 500;
     const inboundFee = 10;
@@ -200,8 +200,8 @@ Clarinet.test({
     let loan = new Loan(chain, deployerWallet);
     let coverPool = new CoverPool(chain, deployerWallet);
 
-    const LP_1_MAGIC_CALLER = "magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
-    const BORROWER_MAGIC_CALLER = "magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP";
+    const LP_1_MAGIC_CALLER = "magic-caller-ST1";
+    const BORROWER_MAGIC_CALLER = "magic-caller-ST3";
     
     const defaultExpiration = 500;
     const inboundFee = 10;
@@ -334,8 +334,8 @@ Clarinet.test({
     let loan = new Loan(chain, deployerWallet);
     let coverPool = new CoverPool(chain, deployerWallet);
 
-    const LP_1_MAGIC_CALLER = "magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
-    const BORROWER_MAGIC_CALLER = "magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP";
+    const LP_1_MAGIC_CALLER = "magic-caller-ST1";
+    const BORROWER_MAGIC_CALLER = "magic-caller-ST3";
     
     const defaultExpiration = 500;
     const inboundFee = 10;
@@ -461,8 +461,8 @@ Clarinet.test({
     let loan = new Loan(chain, deployerWallet);
     let coverPool = new CoverPool(chain, deployerWallet);
 
-    const LP_1_MAGIC_CALLER = "magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
-    const BORROWER_MAGIC_CALLER = "magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP";
+    const LP_1_MAGIC_CALLER = "magic-caller-ST1";
+    const BORROWER_MAGIC_CALLER = "magic-caller-ST3";
     
     const defaultExpiration = 500;
     const inboundFee = 10;
@@ -551,7 +551,7 @@ Clarinet.test({
     ]);
     // console.log(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"]);
     block = pool.completeRolloverNoWithdrawal(0, LP_TOKEN, 0, XBTC, COLL_VAULT, FUNDING_VAULT, SWAP_ROUTER, XBTC, borrower_1.address);
-    console.log(block);
+    // console.log(block);
 
   },
 });
