@@ -104,7 +104,7 @@
   (lp <lp-token>)
   (l-v <lv>)
   (token-id uint)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zd-token <dt>)
   (swap-router <swap>)
@@ -119,7 +119,7 @@
     (pool (try! (contract-call? .pool-v1-0 get-pool token-id)))
     (cover-pool (contract-call? .cover-pool-v1-0 get-pool-read token-id))
     (delegate (get pool-delegate pool))
-    (lv (get liquidity-vault pool))
+    (lv-contract (get liquidity-vault pool))
     (apr (get apr loan))
     (amount (get loan-amount loan))
     ;; P * r * t => Amount * perc_rate * blocks
@@ -138,7 +138,7 @@
     (asserts! (contract-call? .globals is-swap (contract-of swap-router)) ERR_INVALID_SWAP)
     (asserts! (is-eq (contract-of l-v) (get liquidity-vault pool)) ERR_INVALID_LV)
     (try! (distribute-xbtc l-v .protocol-treasury lp cp-rewards-token token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
-    (try! (distribute-zest lp token-id cp-token zd-token z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
+    (try! (distribute-zest lp token-id cp zd-token z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
 
     ;; set to false when a payment is done always
     (map-set late-payment-switch caller false)
@@ -276,9 +276,9 @@
 ;; @param delegate-portion: portion of funds going to the pool delegate
 ;; @returns (response true uint)
 (define-private (distribute-zest
-  (lp-token <lp-token>)
+  (lp <lp-token>)
   (token-id uint)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (zd-token <dt>)
   (lp-portion uint)
   (staking-pool principal)
@@ -296,7 +296,7 @@
       (begin
         (print { type: "cp-token-zest-rewards", payload: { key: { token-id: token-id }, data: { rewards-earned: cover-portion }} })
         (try! (contract-call? .read-data add-cover-pool-zest-rewards-earned token-id (+ cover-portion)))
-        (try! (contract-call? cp-token add-rewards token-id cover-portion)))
+        (try! (contract-call? cp add-rewards token-id cover-portion)))
       u0)
     (ok true)))
 

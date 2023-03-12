@@ -83,15 +83,15 @@
     (lp <lp-token>)
     (token-id uint)
     (zp-token <dtc>)
-    (lv <lv>)
+    (l-v <lv>)
     (xbtc-ft <ft>)
     (amount uint)
-    (rewards-calc <rewards-calc>))
+    (r-c <rewards-calc>))
   (let (
     (height burn-block-height)
     (globals (contract-call? .globals get-globals)))
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
-    (try! (contract-call? .pool-v1-0 send-funds lp token-id zp-token amount factor height lv xbtc-ft rewards-calc tx-sender))
+    (try! (contract-call? .pool-v1-0 send-funds lp token-id zp-token amount factor height l-v xbtc-ft r-c tx-sender))
     (ok amount)))
 
 ;; @desc Complete the escrow in magic-protocol to commit funds to the liquidity pool
@@ -108,16 +108,16 @@
 (define-public (send-funds-finalize
   (txid (buff 32))
   (preimage (buff 128))
-  (sc <sc>)
+  (s-c <sc>)
   )
   (let (
-    (swap (try! (contract-call? sc finalize-swap txid preimage)))
-    (supplier-id (unwrap! (contract-call? .magic-protocol get-supplier-id-by-controller (contract-of sc)) ERR_INVALID_SUPPLIER))
+    (swap-ret (try! (contract-call? s-c finalize-swap txid preimage)))
+    (supplier-id (unwrap! (contract-call? .magic-protocol get-supplier-id-by-controller (contract-of s-c)) ERR_INVALID_SUPPLIER))
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST)))
     (asserts! (is-eq supplier-id (get supplier-id params)) ERR_INVALID_SUPPLIER)
 
-    (map-set escrowed-tx txid (merge params { finalized: true, amount: (get sats swap) }))
-    (ok (get sats swap))
+    (map-set escrowed-tx txid (merge params { finalized: true, amount: (get sats swap-ret) }))
+    (ok (get sats swap-ret))
   )
 )
 
@@ -125,9 +125,9 @@
   (txid (buff 32))
   (lp <lp-token>)
   (zp-token <dtc>)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc-ft <ft>)
-  (rewards-calc <rewards-calc>)
+  (r-c <rewards-calc>)
   )
   (let (
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
@@ -137,7 +137,7 @@
     (asserts! (is-eq FUNDS_TO_POOL (get action params)) ERR_INVALID_ACTION)
 
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v1-0 none)))
-    (try! (contract-call? .pool-v1-0 send-funds lp (get token-id params) zp-token sats (get factor params) (get height params) lv xbtc-ft rewards-calc (get controller params)))
+    (try! (contract-call? .pool-v1-0 send-funds lp (get token-id params) zp-token sats (get factor params) (get height params) l-v xbtc-ft r-c (get controller params)))
 
     (map-delete escrowed-tx txid)
     (ok sats)
@@ -148,30 +148,30 @@
   (txid (buff 32))
   (lp <lp-token>)
   (zp-token <dtc>)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc-ft <ft>)
-  (rewards-calc <rewards-calc>)
-  (sc <sc>)
+  (r-c <rewards-calc>)
+  (s-c <sc>)
   )
   (let (
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
-    (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
-    (sats (get sats swap)))
+    (swap-ret (try! (contract-call? .magic-protocol get-full-inbound txid)))
+    (sats (get sats swap-ret)))
 
     (asserts! (not (get finalized params)) ERR_UNAUTHORIZED)
     (asserts! (is-eq FUNDS_TO_POOL (get action params)) ERR_INVALID_ACTION)
 
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v1-0 none)))
-    (try! (contract-call? .pool-v1-0 send-funds lp (get token-id params) zp-token sats (get factor params) (get height params) lv xbtc-ft rewards-calc (get controller params)))
+    (try! (contract-call? .pool-v1-0 send-funds lp (get token-id params) zp-token sats (get factor params) (get height params) l-v xbtc-ft r-c (get controller params)))
     (map-delete escrowed-tx txid)
     (ok sats)))
 
 (define-public (make-payment-verify
   (txid (buff 32))
-  (payment <payment>)
+  (pay <payment>)
   (lp <lp-token>)
-  (lv <lv>)
-  (cp-token <cp-token>)
+  (l-v <lv>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zp-token <dt>)
   (swap-router <swap>)
@@ -185,31 +185,31 @@
 
     (map-delete escrowed-tx txid)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
-    (ok (try! (contract-call? .loan-v1-0 make-payment-verify (get loan-id params) (get height params) payment lp lv (get token-id params) cp-token cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
+    (ok (try! (contract-call? .loan-v1-0 make-payment-verify (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
   )
 )
 
 (define-public (make-payment-verify-completed
   (txid (buff 32))
-  (payment <payment>)
+  (pay <payment>)
   (lp <lp-token>)
-  (lv <lv>)
-  (cp-token <cp-token>)
+  (l-v <lv>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zp-token <dt>)
   (swap-router <swap>)
   (xbtc-ft <ft>))
   (let (
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
-    (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
-    (sats (get sats swap)))
+    (swap-ret (try! (contract-call? .magic-protocol get-full-inbound txid)))
+    (sats (get sats swap-ret)))
 
     (asserts! (not (get finalized params)) ERR_UNAUTHORIZED)
     (asserts! (is-eq PAYMENT_VERIFY (get action params)) ERR_INVALID_ACTION)
 
     (map-delete escrowed-tx txid)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
-    (ok (try! (contract-call? .loan-v1-0 make-payment-verify (get loan-id params) (get height params) payment lp lv (get token-id params) cp-token cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))))
+    (ok (try! (contract-call? .loan-v1-0 make-payment-verify (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))))
 
 ;; @desc Complete the escrow in magic-protocol to make a loan repayment
 ;; @param txid: the txid of the BTC tx used for this inbound swap
@@ -228,10 +228,10 @@
 ;; 
 (define-public (make-payment
   (txid (buff 32))
-  (payment <payment>)
+  (pay <payment>)
   (lp <lp-token>)
-  (lv <lv>)
-  (cp-token <cp-token>)
+  (l-v <lv>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zp-token <dt>)
   (swap-router <swap>)
@@ -245,33 +245,33 @@
 
     (map-delete escrowed-tx txid)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
-    (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) payment lp lv (get token-id params) cp-token cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
+    (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
   )
 )
 ;; 
 (define-public (make-payment-completed
   (txid (buff 32))
-  (payment <payment>)
+  (pay <payment>)
   (lp <lp-token>)
-  (lv <lv>)
-  (cp-token <cp-token>)
+  (l-v <lv>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zp-token <dt>)
   (swap-router <swap>)
   (xbtc-ft <ft>)
-  (sc <sc>)
+  (s-c <sc>)
   )
   (let (
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
-    (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
-    (sats (get sats swap)))
+    (swap-ret (try! (contract-call? .magic-protocol get-full-inbound txid)))
+    (sats (get sats swap-ret)))
 
     (asserts! (is-eq PAYMENT (get action params)) ERR_INVALID_ACTION)
     (asserts! (not (get finalized params)) ERR_UNAUTHORIZED)
 
     (map-delete escrowed-tx txid)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
-    (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) payment lp lv (get token-id params) cp-token cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
+    (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
   )
 )
 
@@ -287,7 +287,7 @@
 (define-public (make-residual-payment
   (txid (buff 32))
   (lp <lp-token>)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc-ft <ft>))
   (let (
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
@@ -298,24 +298,24 @@
 
     (map-delete escrowed-tx txid)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v1-0 none)))
-    (ok (try! (contract-call? .pool-v1-0 make-residual-payment (get loan-id params) lp (get token-id params) lv sats xbtc-ft (get controller params))))))
+    (ok (try! (contract-call? .pool-v1-0 make-residual-payment (get loan-id params) lp (get token-id params) l-v sats xbtc-ft (get controller params))))))
 
 (define-public (make-residual-payment-completed
   (txid (buff 32))
   (lp <lp-token>)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc-ft <ft>))
   (let (
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
-    (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
-    (sats (get sats swap)))
+    (swap-ret (try! (contract-call? .magic-protocol get-full-inbound txid)))
+    (sats (get sats swap-ret)))
 
     (asserts! (is-eq PAYMENT_RESIDUAL (get action params)) ERR_INVALID_ACTION)
     (asserts! (not (get finalized params)) ERR_UNAUTHORIZED)
 
     (map-delete escrowed-tx txid)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v1-0 none)))
-    (ok (try! (contract-call? .pool-v1-0 make-residual-payment (get loan-id params) lp (get token-id params) lv sats xbtc-ft (get controller params))))))
+    (ok (try! (contract-call? .pool-v1-0 make-residual-payment (get loan-id params) lp (get token-id params) l-v sats xbtc-ft (get controller params))))))
 
 ;; @desc Complete the escrow in magic-protocol to make a full repayment of the loan
 ;; @param txid: the txid of the BTC tx used for this inbound swap
@@ -333,10 +333,10 @@
 ;; @returns (response uint uint)
 (define-public (make-full-payment
   (txid (buff 32))
-  (payment <payment>)
+  (pay <payment>)
   (lp <lp-token>)
-  (lv <lv>)
-  (cp-token <cp-token>)
+  (l-v <lv>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zp-token <dt>)
   (swap-router <swap>)
@@ -350,29 +350,29 @@
 
     (map-delete escrowed-tx txid)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
-    (ok (try! (contract-call? .loan-v1-0 make-full-payment (get loan-id params) (get height params) payment lp lv (get token-id params) cp-token cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))))
+    (ok (try! (contract-call? .loan-v1-0 make-full-payment (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))))
 
 (define-public (make-full-payment-completed
   (txid (buff 32))
-  (payment <payment>)
+  (pay <payment>)
   (lp <lp-token>)
-  (lv <lv>)
-  (cp-token <cp-token>)
+  (l-v <lv>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zp-token <dt>)
   (swap-router <swap>)
   (xbtc-ft <ft>))
   (let (
     (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
-    (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
-    (sats (get sats swap)))
+    (swap-ret (try! (contract-call? .magic-protocol get-full-inbound txid)))
+    (sats (get sats swap-ret)))
 
     (asserts! (is-eq FULL_PAYMENT (get action params)) ERR_INVALID_ACTION)
     (asserts! (not (get finalized params)) ERR_UNAUTHORIZED)
     
     (map-delete escrowed-tx txid)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
-    (ok (try! (contract-call? .loan-v1-0 make-full-payment (get loan-id params) (get height params) payment lp lv (get token-id params) cp-token cp-rewards-token zp-token swap-router (get sats swap) xbtc-ft (get controller params))))))
+    (ok (try! (contract-call? .loan-v1-0 make-full-payment (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router (get sats swap-ret) xbtc-ft (get controller params))))))
 
 ;; @desc Make a loan repayment in case of contingency plan
 ;; @param amount: amount of xBTC being sent
@@ -390,11 +390,11 @@
 (define-public (make-payment-xbtc
   (amount uint)
   (loan-id uint)
-  (payment <payment>)
+  (pay <payment>)
   (lp <lp-token>)
-  (lv <lv>)
+  (l-v <lv>)
   (token-id uint)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zp-token <dt>)
   (swap-router <swap>)
@@ -405,7 +405,7 @@
     (globals (contract-call? .globals get-globals))
   )
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
-    (contract-call? .loan-v1-0 make-payment loan-id height payment lp lv token-id cp-token cp-rewards-token zp-token swap-router amount xbtc-ft tx-sender)))
+    (contract-call? .loan-v1-0 make-payment loan-id height pay lp l-v token-id cp cp-rewards-token zp-token swap-router amount xbtc-ft tx-sender)))
 
 ;; @desc Make a full loan repayment in case of contingency plan
 ;; @param amount: amount of xBTC being sent
@@ -423,11 +423,11 @@
 (define-public (make-full-payment-xbtc
   (amount uint)
   (loan-id uint)
-  (payment <payment>)
+  (pay <payment>)
   (lp <lp-token>)
-  (lv <lv>)
+  (l-v <lv>)
   (token-id uint)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zp-token <dt>)
   (swap-router <swap>)
@@ -437,7 +437,7 @@
     (globals (contract-call? .globals get-globals))
   )
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
-    (ok (try! (contract-call? .loan-v1-0 make-full-payment loan-id burn-block-height payment lp lv token-id cp-token cp-rewards-token zp-token swap-router amount xbtc-ft tx-sender)))))
+    (ok (try! (contract-call? .loan-v1-0 make-full-payment loan-id burn-block-height pay lp l-v token-id cp cp-rewards-token zp-token swap-router amount xbtc-ft tx-sender)))))
 
 ;; @desc Initiate withdrawal process through magic protocol to withdraw funds sent to liquidity-pool
 ;; @param xbtc: amount of xBTC (sats) to withdraw
@@ -458,7 +458,7 @@
   (lp <lp-token>)
   (zp-token <dtc>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc-ft <ft>)
   )
   (let (
@@ -466,7 +466,7 @@
     (if (get open pool)
       true
       (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED))
-    (try! (contract-call? .pool-v1-0 withdraw lp zp-token token-id lv xbtc xbtc-ft tx-sender))
+    (try! (contract-call? .pool-v1-0 withdraw lp zp-token token-id l-v xbtc xbtc-ft tx-sender))
     (try! (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))
     (print { btc-version: btc-version, btc-hash: btc-hash, supplier-id: supplier-id, amount: xbtc })
     (ok true)))
@@ -484,14 +484,14 @@
   (lp <lp-token>)
   (zp-token <dtc>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc-ft <ft>)
   )
   (let (
     (globals (contract-call? .globals get-globals))
   )
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
-    (try! (contract-call? .pool-v1-0 withdraw lp zp-token token-id lv xbtc xbtc-ft tx-sender))
+    (try! (contract-call? .pool-v1-0 withdraw lp zp-token token-id l-v xbtc xbtc-ft tx-sender))
     (ok true)))
 
 ;; @desc Initiate withdrawal process through magic protocol to withdraw rewards in liquidity-pool
@@ -509,10 +509,10 @@
   (supplier-id uint)
   (lp <lp-token>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc <ft>))
   (let (
-    (withdrawn-funds (try! (contract-call? .pool-v1-0 withdraw-rewards lp token-id lv xbtc tx-sender)))
+    (withdrawn-funds (try! (contract-call? .pool-v1-0 withdraw-rewards lp token-id l-v xbtc tx-sender)))
     (pool (try! (contract-call? .pool-v1-0 get-pool token-id))))
     (if (get open pool)
       true
@@ -536,10 +536,10 @@
   (supplier-id uint)
   (cp-rewards-token <dt>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc <ft>))
   (let (
-    (withdrawn-funds (try! (contract-call? .cover-pool-v1-0 withdraw-rewards cp-rewards-token token-id lv xbtc tx-sender)))
+    (withdrawn-funds (try! (contract-call? .cover-pool-v1-0 withdraw-rewards cp-rewards-token token-id l-v xbtc tx-sender)))
     (pool (try! (contract-call? .pool-v1-0 get-pool token-id))))
     (if (get open pool)
       true
@@ -562,11 +562,11 @@
   (supplier-id uint)
   (cp-rewards-token <dt>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc <ft>))
   (let (
     (globals (contract-call? .globals get-globals))
-    (withdrawn-funds (try! (contract-call? .cover-pool-v1-0 withdraw-rewards cp-rewards-token  token-id lv xbtc tx-sender))))
+    (withdrawn-funds (try! (contract-call? .cover-pool-v1-0 withdraw-rewards cp-rewards-token token-id l-v xbtc tx-sender))))
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
     (ok withdrawn-funds)))
 
@@ -579,11 +579,11 @@
 (define-public (withdraw-rewards-xbtc
   (lp <lp-token>)
   (token-id uint)
-  (lv <lv>)
+  (l-v <lv>)
   (xbtc <ft>))
   (let (
     (globals (contract-call? .globals get-globals))
-    (withdrawn-funds (try! (contract-call? .pool-v1-0 withdraw-rewards lp token-id lv xbtc tx-sender))))
+    (withdrawn-funds (try! (contract-call? .pool-v1-0 withdraw-rewards lp token-id l-v xbtc tx-sender))))
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
     (ok withdrawn-funds)))
 
@@ -593,7 +593,7 @@
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (btc-version (buff 1))
   (btc-hash (buff 20))
   (supplier-id uint)
@@ -601,7 +601,7 @@
   (xbtc-ft <ft>))
   (let (
     (pool (try! (contract-call? .pool-v1-0 get-pool token-id)))
-    (xbtc (try! (contract-call? .pool-v1-0 drawdown-verify loan-id lp token-id coll-token coll-vault fv swap-router xbtc-ft tx-sender)))
+    (xbtc (try! (contract-call? .pool-v1-0 drawdown-verify loan-id lp token-id coll-token coll-vault f-v swap-router xbtc-ft tx-sender)))
     (swap-id (try! (as-contract (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))))
     (liquidity (try! (get-current-liquidity))))
     (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED)
@@ -628,7 +628,7 @@
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (btc-version (buff 1))
   (btc-hash (buff 20))
   (supplier-id uint)
@@ -637,7 +637,7 @@
   )
   (let (
     (pool (try! (contract-call? .pool-v1-0 get-pool token-id)))
-    (xbtc (try! (contract-call? .pool-v1-0 drawdown loan-id lp token-id coll-token coll-vault fv swap-router xbtc-ft tx-sender)))
+    (xbtc (try! (contract-call? .pool-v1-0 drawdown loan-id lp token-id coll-token coll-vault f-v swap-router xbtc-ft tx-sender)))
     (swap-id (try! (as-contract (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))))
     (liquidity (try! (get-current-liquidity))))
     (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED)
@@ -672,7 +672,7 @@
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (xbtc-ft <ft>)
   (block { header: (buff 80), height: uint })
   (prev-blocks (list 10 (buff 80)))
@@ -687,7 +687,7 @@
 
     (asserts! (default-to false (map-get? magic-id swap-id)) INVALID_OUTBOUND_TX)
     (map-delete magic-id swap-id)
-    (contract-call? .pool-v1-0 finalize-drawdown loan-id lp token-id coll-token coll-vault fv xbtc-ft)))
+    (contract-call? .pool-v1-0 finalize-drawdown loan-id lp token-id coll-token coll-vault f-v xbtc-ft)))
 
 ;; @desc Borrower can drawdown funds when contingency plan is active
 ;; @param loan-id: id of the loan to which the payment is made
@@ -705,13 +705,13 @@
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (swap-router <swap>)
   (xbtc-ft <ft>))
   (let (
     (globals (contract-call? .globals get-globals))
-    (xbtc (try! (contract-call? .pool-v1-0 drawdown loan-id lp token-id coll-token coll-vault fv swap-router xbtc-ft tx-sender)))
-    (result (try! (contract-call? .pool-v1-0 finalize-drawdown loan-id lp token-id coll-token coll-vault fv xbtc-ft))))
+    (xbtc (try! (contract-call? .pool-v1-0 drawdown loan-id lp token-id coll-token coll-vault f-v swap-router xbtc-ft tx-sender)))
+    (result (try! (contract-call? .pool-v1-0 finalize-drawdown loan-id lp token-id coll-token coll-vault f-v xbtc-ft))))
     (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
     (as-contract (try! (contract-call? xbtc-ft transfer xbtc tx-sender (get borrower result) none)))
     (ok { recipient: (get borrower result), sats: xbtc })))
@@ -735,7 +735,7 @@
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (btc-version (buff 1))
   (btc-hash (buff 20))
   (supplier-id uint)
@@ -743,7 +743,7 @@
   (xbtc-ft <ft>))
   (let (
     (pool (try! (contract-call? .pool-v1-0 get-pool token-id)))
-    (xbtc (try! (contract-call? .pool-v1-0 complete-rollover loan-id lp token-id coll-token coll-vault fv swap-router xbtc-ft tx-sender)))
+    (xbtc (try! (contract-call? .pool-v1-0 complete-rollover loan-id lp token-id coll-token coll-vault f-v swap-router xbtc-ft tx-sender)))
     (swap-id (if (> xbtc u0) (try! (as-contract (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))) u0) )
     (liquidity (try! (get-current-liquidity))))
     (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED)
@@ -774,7 +774,7 @@
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (xbtc-ft <ft>)
   (block { header: (buff 80), height: uint })
   (prev-blocks (list 10 (buff 80)))
@@ -784,7 +784,7 @@
   (swap-id uint))
   (begin
     (try! (contract-call? .magic-protocol finalize-outbound-swap block prev-blocks tx proof output-index swap-id))
-    (contract-call? .pool-v1-0 finalize-rollover loan-id lp token-id coll-token coll-vault fv xbtc-ft)))
+    (contract-call? .pool-v1-0 finalize-rollover loan-id lp token-id coll-token coll-vault f-v xbtc-ft)))
 
 ;; @desc Cancel drawdown when the magic-protocol process cannot be completed
 ;; @param loan-id: id of the loan to which the payment is made
@@ -802,17 +802,17 @@
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (xbtc-ft <ft>)
   (swap-id uint)
   )
   (let (
-    (swap (try! (contract-call? .magic-protocol revoke-expired-outbound swap-id)))
-    (recovered-amount (get xbtc swap))
+    (swap-ret (try! (contract-call? .magic-protocol revoke-expired-outbound swap-id)))
+    (recovered-amount (get xbtc swap-ret))
   )
     (try! (as-contract (contract-call? xbtc-ft transfer recovered-amount tx-sender .pool-v1-0 none)))
-    (try! (contract-call? .pool-v1-0 cancel-drawdown loan-id lp token-id coll-token coll-vault fv recovered-amount xbtc-ft))
-    (ok (get xbtc swap))))
+    (try! (contract-call? .pool-v1-0 cancel-drawdown loan-id lp token-id coll-token coll-vault f-v recovered-amount xbtc-ft))
+    (ok (get xbtc swap-ret))))
 
 ;; @desc Cancel rollover when the magic-protocol process cannot be completed
 ;; @param loan-id: id of the loan to which the payment is made
@@ -830,15 +830,15 @@
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
-  (fv <fv>)
+  (f-v <fv>)
   (xbtc-ft <ft>)
   (swap-id uint))
   (let (
-    (swap (try! (contract-call? .magic-protocol revoke-expired-outbound swap-id)))
-    (recovered-amount (get xbtc swap)))
+    (swap-ret (try! (contract-call? .magic-protocol revoke-expired-outbound swap-id)))
+    (recovered-amount (get xbtc swap-ret)))
     (try! (as-contract (contract-call? xbtc-ft transfer recovered-amount tx-sender .pool-v1-0 none)))
-    (try! (contract-call? .pool-v1-0 cancel-rollover loan-id lp token-id coll-token coll-vault fv recovered-amount xbtc-ft tx-sender))
-    (ok swap)))
+    (try! (contract-call? .pool-v1-0 cancel-rollover loan-id lp token-id coll-token coll-vault f-v recovered-amount xbtc-ft tx-sender))
+    (ok swap-ret)))
 
 ;; @desc Finalize outbound swaps such as for withdrawing rewads or sent funds
 ;; @param block: a tuple containing `header` (the Bitcoin block header) and the `height` (Stacks height)
@@ -874,28 +874,28 @@
 (define-private (finalize-priv (txid (buff 32)) (preimage (buff 128)) (xbtc-ft <ft>))
   (let (
     (swap-resp (as-contract (try! (contract-call? .magic-protocol finalize-swap txid preimage))))
-    (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
-    (swapper (get swapper-principal swap))
-    (sats (get sats swap))
-    (xbtc (get xbtc swap))
+    (swap-ret (try! (contract-call? .magic-protocol get-full-inbound txid)))
+    (swapper (get swapper-principal swap-ret))
+    (sats (get sats swap-ret))
+    (xbtc (get xbtc swap-ret))
     (fee (- sats xbtc))
     (updated-funds (try! (withdraw-protocol fee))))
     (try! (as-contract (contract-call? xbtc-ft transfer fee tx-sender swapper none)))
     (asserts! (is-eq tx-sender swapper) ERR_WRONG_SWAPPER)
-    (ok (merge swap { fee: fee }))))
+    (ok (merge swap-ret { fee: fee }))))
 
 (define-private (finalize-completed (txid (buff 32)) (xbtc-ft <ft>))
   (let (
-    (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
-    (swapper (get swapper-principal swap))
-    (sats (get sats swap))
-    (xbtc (get xbtc swap))
+    (swap-ret (try! (contract-call? .magic-protocol get-full-inbound txid)))
+    (swapper (get swapper-principal swap-ret))
+    (sats (get sats swap-ret))
+    (xbtc (get xbtc swap-ret))
     (fee (- sats xbtc))
     (updated-funds (try! (withdraw-protocol fee))))
     (unwrap! (contract-call? .magic-protocol get-preimage txid) ERR_TX_DOES_NOT_EXIST)
     (asserts! (is-eq tx-sender swapper) ERR_WRONG_SWAPPER)
     (try! (as-contract (contract-call? xbtc-ft transfer fee tx-sender swapper none)))
-    (ok (merge swap { fee: fee }))))
+    (ok (merge swap-ret { fee: fee }))))
 
 ;; owner methods
 (define-public (register-supplier
