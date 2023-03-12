@@ -34,7 +34,7 @@ clarity_version = 2
 epoch = 2.1
 
 [contracts.clarity-bitcoin]
-path = "contracts/bitcoin/test/clarity-bitcoin.clar"
+path = "contracts/bitcoin/test/clarity-bitcoin-v2-1.clar"
 clarity_version = 2
 epoch = 2.1
 

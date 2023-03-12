@@ -342,15 +342,13 @@
 (define-read-only (was-tx-mined? (block { header: (buff 80), height: uint }) (tx (buff 1024)) (proof { tx-index: uint, hashes: (list 12 (buff 32)), tree-depth: uint }))
   (let
     (
-      (header-valid (verify-block-header (get header block) (get height block)))
-      (reversed-txid (get-reversed-txid tx))
-      (parsed-header (try! (parse-block-header (get header block))))
-      (merkle-root (reverse-buff32 (get merkle-root parsed-header)))
-      (merkle-valid (verify-merkle-proof reversed-txid merkle-root proof))
+      (txid (get-txid tx))
+      (was-mined (contract-call? .test-utils was-mined txid))
     )
-    (if header-valid
-      merkle-valid
-      (ok false)
+    ;; (unwrap! was-mined (err u404))
+    (match was-mined
+      good (ok good)
+      (err u404)
     )
   )
 )
@@ -358,10 +356,6 @@
 (define-read-only (was-tx-mined-compact (height uint) (tx (buff 1024)) (header (buff 80)) (proof { tx-index: uint, hashes: (list 14 (buff 32)), tree-depth: uint}))
     (let ((block (unwrap! (parse-block-header header) (err ERR-BAD-HEADER))))
       (was-tx-mined-internal height tx header (get merkle-root block) proof)))
-
-
-(define-read-only (was-tx-mined (height uint) (tx (buff 1024)) (header { version: (buff 4), parent: (buff 32), merkle-root: (buff 32), timestamp: (buff 4), nbits: (buff 4), nonce: (buff 4) }) (proof { tx-index: uint, hashes: (list 14 (buff 32)), tree-depth: uint}))
-    (was-tx-mined-internal height tx (contract-call? .clarity-bitcoin-helper concat-header header) (get merkle-root header) proof))
 
 ;; Verify block header and merkle proof
 ;; This function must only called with the merkle root of the provided header
