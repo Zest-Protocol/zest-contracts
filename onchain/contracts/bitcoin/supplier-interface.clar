@@ -63,8 +63,10 @@
   )
   (let (
     (tx-id (contract-call? .clarity-bitcoin get-txid tx))
+    (data { height: (get height block), supplier-id: supplier-id, token-id: token-id, loan-id: loan-id, factor: factor, amount: u0, finalized: false, controller: controller, action: action })
   )
-    (asserts! (map-insert escrowed-tx tx-id { height: (get height block), supplier-id: supplier-id, token-id: token-id, loan-id: loan-id, factor: factor, amount: u0, finalized: false, controller: controller, action: action }) ERR_TX_ESCROWED)
+    (asserts! (map-insert escrowed-tx tx-id data) ERR_TX_ESCROWED)
+    (print { type: "send-funds", payload: { key: { tx-id: tx-id }, data: data } })
     (try! (contract-call? .magic-protocol escrow-swap block prev-blocks tx proof output-index sender recipient expiration-buff hash swapper-buff supplier-id min-to-receive))
     (ok true)))
 
@@ -113,10 +115,12 @@
   (let (
     (swap-ret (try! (contract-call? s-c finalize-swap txid preimage)))
     (supplier-id (unwrap! (contract-call? .magic-protocol get-supplier-id-by-controller (contract-of s-c)) ERR_INVALID_SUPPLIER))
-    (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST)))
+    (params (unwrap! (map-get? escrowed-tx txid) ERR_TX_DOES_NOT_EXIST))
+    (data (merge params { finalized: true, amount: (get sats swap-ret) })))
     (asserts! (is-eq supplier-id (get supplier-id params)) ERR_INVALID_SUPPLIER)
 
-    (map-set escrowed-tx txid (merge params { finalized: true, amount: (get sats swap-ret) }))
+    (map-set escrowed-tx txid data)
+    (print { type: "send-funds-finalize", payload: { key: { tx-id: txid }, data: data } })
     (ok (get sats swap-ret))
   )
 )
@@ -140,6 +144,7 @@
     (try! (contract-call? .pool-v1-0 send-funds lp (get token-id params) zp-token sats (get factor params) (get height params) l-v xbtc-ft r-c (get controller params)))
 
     (map-delete escrowed-tx txid)
+    (print { type: "send-funds-to-pool", payload: { key: { tx-id: txid }, data: params } })
     (ok sats)
   )
 )
@@ -164,6 +169,7 @@
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v1-0 none)))
     (try! (contract-call? .pool-v1-0 send-funds lp (get token-id params) zp-token sats (get factor params) (get height params) l-v xbtc-ft r-c (get controller params)))
     (map-delete escrowed-tx txid)
+    (print { type: "send-funds-finalize-completed", payload: { key: { tx-id: txid }, data: params } })
     (ok sats)))
 
 (define-public (make-payment-verify
@@ -184,6 +190,7 @@
     (asserts! (is-eq PAYMENT_VERIFY (get action params)) ERR_INVALID_ACTION)
 
     (map-delete escrowed-tx txid)
+    (print { type: "make-payment-verify", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
     (ok (try! (contract-call? .loan-v1-0 make-payment-verify (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
   )
@@ -208,6 +215,7 @@
     (asserts! (is-eq PAYMENT_VERIFY (get action params)) ERR_INVALID_ACTION)
 
     (map-delete escrowed-tx txid)
+    (print { type: "make-payment-verify", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
     (ok (try! (contract-call? .loan-v1-0 make-payment-verify (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))))
 
@@ -244,6 +252,7 @@
     (asserts! (get finalized params) ERR_UNAUTHORIZED)
 
     (map-delete escrowed-tx txid)
+    (print { type: "make-payment", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
     (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
   )
@@ -270,6 +279,7 @@
     (asserts! (not (get finalized params)) ERR_UNAUTHORIZED)
 
     (map-delete escrowed-tx txid)
+    (print { type: "make-payment-completed", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
     (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
   )
@@ -297,6 +307,7 @@
     (asserts! (get finalized params) ERR_UNAUTHORIZED)
 
     (map-delete escrowed-tx txid)
+    (print { type: "make-residual-payment", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v1-0 none)))
     (ok (try! (contract-call? .pool-v1-0 make-residual-payment (get loan-id params) lp (get token-id params) l-v sats xbtc-ft (get controller params))))))
 
@@ -314,6 +325,7 @@
     (asserts! (not (get finalized params)) ERR_UNAUTHORIZED)
 
     (map-delete escrowed-tx txid)
+    (print { type: "make-residual-payment-completed", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v1-0 none)))
     (ok (try! (contract-call? .pool-v1-0 make-residual-payment (get loan-id params) lp (get token-id params) l-v sats xbtc-ft (get controller params))))))
 
@@ -349,6 +361,7 @@
     (asserts! (get finalized params) ERR_UNAUTHORIZED)
 
     (map-delete escrowed-tx txid)
+    (print { type: "make-full-payment", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
     (ok (try! (contract-call? .loan-v1-0 make-full-payment (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))))
 
@@ -371,6 +384,7 @@
     (asserts! (not (get finalized params)) ERR_UNAUTHORIZED)
     
     (map-delete escrowed-tx txid)
+    (print { type: "make-full-payment-completed", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
     (ok (try! (contract-call? .loan-v1-0 make-full-payment (get loan-id params) (get height params) pay lp l-v (get token-id params) cp cp-rewards-token zp-token swap-router (get sats swap-ret) xbtc-ft (get controller params))))))
 
