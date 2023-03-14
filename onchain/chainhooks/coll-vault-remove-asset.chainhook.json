@@ -1,0 +1,21 @@
+{
+  "chain": "stacks",
+  "uuid": "b8a2b5c0-5c9b-11eb-ae93-0242ac130005",
+  "name": "Pool Data",
+  "version": 1,
+  "networks": {
+    "devnet": {
+      "if_this": {
+        "scope": "print_event",
+        "contract_identifier": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.coll-vault",
+        "contains": "remove-collateral-coll-vault"
+      },
+      "then_that": {
+        "http_post": {
+          "url": "http://localhost:8080/events",
+          "authorization_header": "Bearer cn389ncoiwuencr"
+        }
+      }
+    }
+  }
+}
