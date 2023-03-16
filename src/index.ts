@@ -1,19 +1,19 @@
 // import { drawdownSteps } from "./drawdown";
-// import { sendFundsSteps } from "./send-funds.js"
 // import { generateRandomBitcoinSigner } from "./util";
+import { sendFundsSteps } from "./send-funds.js"
 import { initializePoolSteps } from "./initialize-pool.js";
 
 const deploymentScript = process.argv[2] as string;
 
 (async function () {
-  // let signers;
+  let signers;
   switch(deploymentScript) {
     case "initialize-pool":
       await initializePoolSteps();
       break;
     case "send-funds":
-      // signers = { supplierBtcSigner: await initializePoolSteps() };
-      // await sendFundsSteps(signers.supplierBtcSigner);
+      signers = { supplierBtcPrivKey: await initializePoolSteps() };
+      await sendFundsSteps(signers.supplierBtcPrivKey as Buffer);
       break;
     case "drawdown":
       // signers = await initializePoolSteps();
