@@ -58,8 +58,17 @@ Clarinet.test({
     const LP_1_MAGIC_CALLER = "magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
     const BORROWER_MAGIC_CALLER = "magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP";
 
+    
+
     let delegate_1 = accounts.get("wallet_7") as Account; // Delegate_1
     let borrower_1 = accounts.get("wallet_8") as Account; // borrower_1
+
+    // console.log(Deno.readFileSync(`../../../bitcoin/magic-caller.clar`).toString());
+    console.log(Deno.readTextFileSync(`/Users/fernandofoy/Documents/zest-v2/v2/onchain/contracts/v2/bitcoin/magic-caller.clar`).toString());
+    // console.log(Deno.readFileSync(`/Users/fernandofoy/Documents/zest-v2/v2/onchain/contracts/v2/bitcoin/magic-caller.clar`).toString());
+    // /Users/fernandofoy/Documents/zest-v2/v2/onchain/tests/v2/flows/make_payments_test.ts
+
+    // Tx.deployContract(name, code, sender)
 
     let assetMaps = chain.getAssetsMaps();
     let pool = new Pool(chain, deployerWallet);

@@ -81,11 +81,11 @@
 ;; @param recipient: recipient of the funds
 ;; @param ft: SIP-010 token contract
 ;; @returns (response true uint)
-(define-public (transfer (amount uint) (recipient principal) (ft <ft>))
+(define-public (transfer (amount uint) (recipient principal) (f-t <ft>))
   (begin
     (try! (is-approved-contract contract-caller))
-    (print { type: "transfer-liquidity-vault-v1-0", payload: { amount: amount, recipient: recipient, asset: ft } })
-    (as-contract (contract-call? ft transfer amount tx-sender recipient none))))
+    (print { type: "transfer-liquidity-vault-v1-0", payload: { amount: amount, recipient: recipient, asset: f-t } })
+    (as-contract (contract-call? f-t transfer amount tx-sender recipient none))))
 
 (define-public (get-asset (token-id uint))
   (ok (map-get? assets token-id)))

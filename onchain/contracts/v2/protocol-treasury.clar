@@ -19,10 +19,10 @@
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
     (ok (var-set contract-owner owner))))
 
-(define-public (transfer (amount uint) (recipient principal) (ft <ft>))
+(define-public (transfer (amount uint) (recipient principal) (f-t <ft>))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (as-contract (contract-call? ft transfer amount tx-sender recipient none))))
+    (as-contract (contract-call? f-t transfer amount tx-sender recipient none))))
 
 (define-read-only (is-approved-contract (contract principal))
   (if (or

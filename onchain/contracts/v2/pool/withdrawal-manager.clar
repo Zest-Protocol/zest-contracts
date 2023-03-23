@@ -3,7 +3,7 @@
 (use-trait sip-010 .sip-010-trait.sip-010-trait)
 (use-trait lp-token .lp-token-trait.lp-token-trait)
 
-(define-public (signal-redeem (lp-token <sip-010>) (token-id uint) (lv <lv>) (asset <ft>) (shares uint) (owner principal))
+(define-public (signal-redeem (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
   (let (
     (current-exit-at (get-exit-at token-id owner))
     (current-cycle (get-current-cycle token-id))
@@ -15,7 +15,7 @@
     (contract-addr (as-contract tx-sender))
   )
     ;; check contract-caller is pool
-    (try! (contract-call? lp-token transfer shares owner contract-addr none))
+    (try! (contract-call? lp transfer shares owner contract-addr none))
 
     (map-set shares-principal { token-id: token-id, user: owner } next-exit-cycle-shares-principal)
     (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } next-exit-cycle-shares)
@@ -26,7 +26,7 @@
 )
 
 ;; @desc removing locked shares from the cycle
-(define-public (remove-shares (lp-token <sip-010>) (token-id uint) (lv <lv>) (asset <ft>) (shares uint) (owner principal))
+(define-public (remove-shares (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
   (let (
     (current-exit-at (get-exit-at token-id owner))
     (current-cycle (get-current-cycle token-id))
@@ -54,17 +54,17 @@
       )
     )
 
-    (try! (as-contract (contract-call? lp-token transfer shares tx-sender owner none)))
+    (try! (as-contract (contract-call? lp transfer shares tx-sender owner none)))
 
     (ok true)
   )
 )
 
 ;; @desc redeem assets by claiming locked funds
-(define-public (redeem (lp-token <sip-010>) (token-id uint) (lv <lv>) (asset <ft>) (requested-shares uint) (owner principal) (recipient principal))
+(define-public (redeem (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal) (recipient principal))
   (let (
     (pool (unwrap-panic (get-pool token-id)))
-    (redeemeables (unwrap-panic (get-redeemeable-amounts lp-token token-id lv asset requested-shares owner)))
+    (redeemeables (unwrap-panic (get-redeemeable-amounts lp token-id l-v asset requested-shares owner)))
     (redeemeable-shares (get redeemeable-shares redeemeables))
     (current-exit-at (get-exit-at token-id owner))
     (current-cycle (get-current-cycle token-id))
@@ -95,21 +95,21 @@
       )
     )
 
-    (try! (as-contract (contract-call? lp-token transfer redeemeable-shares tx-sender recipient none)))
+    (try! (as-contract (contract-call? lp transfer redeemeable-shares tx-sender recipient none)))
     
     (ok redeemeables)
   )
 )
 
 ;; get redeemeable amount based on available liquidity
-(define-public (get-redeemeable-amounts (lp-token <sip-010>) (token-id uint) (lv <lv>) (asset <ft>) (requested-shares uint) (owner principal))
+(define-public (get-redeemeable-amounts (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))
   (let (
-    (liquidity (unwrap-panic (contract-call? asset get-balance (contract-of lp-token))))
-    (total-supply (unwrap-panic (contract-call? lp-token get-total-supply)))
+    (liquidity (unwrap-panic (contract-call? asset get-balance (contract-of lp))))
+    (total-supply (unwrap-panic (contract-call? lp get-total-supply)))
     ;; TODO: account for losses
     ;; (losses (try! (contract-call? lp-token recognize-losses token-id recipient)))
     (losses u0)
-    (assets (unwrap-panic (total-assets lp-token lv token-id asset)))
+    (assets (unwrap-panic (total-assets lp l-v token-id asset)))
     (assets-wo-losses (- assets losses))
     (exit-at (get-exit-at token-id owner))
     (cycle-shares (get-cycle-shares token-id exit-at))
@@ -133,8 +133,8 @@
   )
 )
 
-(define-public (total-assets (lp-token <sip-010>) (lv <lv>) (token-id uint) (asset <ft>))
-  (ok (default-to u0 (try! (contract-call? lv get-asset token-id))) ))
+(define-public (total-assets (lp <sip-010>) (l-v <lv>) (token-id uint) (asset <ft>))
+  (ok (default-to u0 (try! (contract-call? l-v get-asset token-id))) ))
 
 (define-map exit-at-cycle { token-id: uint, user: principal } uint)
 (define-map cycles-shares { token-id: uint, cycle: uint } uint )

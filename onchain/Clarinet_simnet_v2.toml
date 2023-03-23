@@ -19,213 +19,316 @@ path = "contracts/v2/after-deployment-simnet.clar"
 [contracts.magic-protocol]
 path = "contracts/v2/bitcoin/magic-protocol/magic-protocol.clar"
 
-[contracts.magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5]
-path = "contracts/v2/bitcoin/magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5.clar"
+# [contracts.magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5]
+# path = "contracts/v2/bitcoin/magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5.clar"
 
-[contracts.magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP]
-path = "contracts/v2/bitcoin/magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.clar"
+# [contracts.magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP]
+# path = "contracts/v2/bitcoin/magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.clar"
 
 [contracts.clarity-bitcoin]
 path = "contracts/v2/bitcoin/test/clarity-bitcoin.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.coll-vault]
 path = "contracts/v2/loan/coll-vault.clar"
-depends_on = ["executor-dao"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.coll-vault-trait]
 path = "contracts/v2/trait/coll-vault-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.distribution-token-trait]
 path = "contracts/v2/trait/distribution-token-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.distribution-token-cycles-trait]
 path = "contracts/v2/trait/distribution-token-cycles-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.distribution-token-cycles-losses-trait]
 path = "contracts/v2/trait/distribution-token-cycles-losses-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.executor-dao]
 path = "contracts/v2/dao/executor-dao.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.extension-trait]
 path = "contracts/v2/dao/traits/extension-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.funding-vault]
 path = "contracts/v2/loan/funding-vault.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.funding-vault-trait]
 path = "contracts/v2/trait/funding-vault-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.globals]
 path = "contracts/v2/globals.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.governance-token-trait]
 path = "contracts/v2/dao/traits/governance-token-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.liquidity-vault-trait]
 path = "contracts/v2/trait/liquidity-vault-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.liquidity-vault-v1-0]
 path = "contracts/v2/pool/liquidity-vault-v1-0.clar"
-depends_on = ["executor-dao"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.loan-data]
 path = "contracts/v2/loan/loan-data.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.loan-v1-0]
 path = "contracts/v2/loan/loan-v1-0.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.lp-token]
 path = "contracts/v2/token/lp-token.clar"
-depends_on = ["executor-dao"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.lp-token-0]
 path = "contracts/v2/token/lp-token-0.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.lp-token-trait]
 path = "contracts/v2/trait/lp-token-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.ownable-trait]
 path = "contracts/v2/trait/ownable-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.payment-fixed]
 path = "contracts/v2/loan/payment-fixed.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.payment-trait]
 path = "contracts/v2/trait/payment-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.pool-v2-0]
 path = "contracts/v2/pool/pool-v2-0.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.proposal-trait]
 path = "contracts/v2/dao/traits/proposal-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.protocol-treasury]
 path = "contracts/v2/protocol-treasury.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.read-data]
 path = "contracts/v2/read-data.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.restricted-token-trait]
 path = "contracts/v2/trait/restricted-token-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.rewards-calc]
 path = "contracts/v2/rewards-calc.clar"
-depends_on = ["executor-dao"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.rewards-calc-trait]
 path = "contracts/v2/trait/rewards-calc-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.rewards-read]
 path = "contracts/v2/rewards-read.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.ft-trait]
 path = "contracts/v2/trait/ft-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.xZest-token]
 path = "contracts/v2/token/xZest-token.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.sip-010-trait]
 path = "contracts/v2/trait/sip-010-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.staking-pool]
 path = "contracts/v2/pool/staking-pool.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.cp-token]
 path = "contracts/v2/token/cp-token.clar"
-depends_on = ["executor-dao"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.cp-rewards-token]
 path = "contracts/v2/token/cp-rewards-token.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.pool-data]
 path = "contracts/v2/pool/pool-data.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.cover-pool-v1-0]
 path = "contracts/v2/pool/cover-pool-v1-0.clar"
-depends_on = ["loan-v1-0", "zge000-governance-token", "read-data"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.cover-vault]
 path = "contracts/v2/pool/cover-vault.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.cover-pool-data]
 path = "contracts/v2/pool/cover-pool-data.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.supplier-interface]
 path = "contracts/v2/bitcoin/supplier-interface.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.supplier-controller]
 path = "contracts/v2/bitcoin/supplier-controller.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.supplier-controller-trait]
 path = "contracts/v2/trait/supplier-controller-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.swap-router]
 path = "contracts/v2/swap-router.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.swap-router-trait]
 path = "contracts/v2/trait/swap-router-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.test-utils]
 path = "contracts/v2/bitcoin/test/test-utils.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.vault-trait]
 path = "contracts/v2/trait/vault-trait.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.withdrawal-manager]
 path = 'contracts/v2/pool/withdrawal-manager.clar'
-clarity_version = 1
-epoch = 2.0
+clarity_version = 2
+epoch = 2.1
 
 [contracts.Wrapped-Bitcoin]
 path = "contracts/v2/token/Wrapped-Bitcoin-simnet.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.Wrapped-USD]
 path = "contracts/v2/token/Wrapped-USD.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zest-reward-dist]
 path = "contracts/v2/token/zest-reward-dist.clar"
-depends_on = ["executor-dao"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zge000-governance-token]
 path = "contracts/v2/dao/extensions/zge000-governance-token.clar"
-depends_on = ["executor-dao", "governance-token-trait", "ft-trait"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zge001-proposal-voting]
 path = "contracts/v2/dao/extensions/zge001-proposal-voting.clar"
-depends_on = ["executor-dao", "proposal-trait", "extension-trait", "governance-token-trait", "zge000-governance-token"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zge002-emergency-proposals]
 path = "contracts/v2/dao/extensions/zge002-emergency-proposals.clar"
-depends_on = ["executor-dao", "extension-trait", "zge001-proposal-voting"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zge003-emergency-execute]
 path = "contracts/v2/dao/extensions/zge003-emergency-execute.clar"
-depends_on = ["executor-dao", "extension-trait", "zge001-proposal-voting"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zgp000-bootstrap]
 path = "contracts/v2/dao/proposals/zgp000-bootstrap-simnet.clar"
-depends_on = ["executor-dao", "proposal-trait", "extension-trait", "zge000-governance-token", "zge001-proposal-voting", "zge002-emergency-proposals", "zge003-emergency-execute"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zgp001-kill-emergency-execute]
 path = "contracts/v2/dao/proposals/zgp001-kill-emergency-execute.clar"
-depends_on = ["zge003-emergency-execute", "executor-dao"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zgp002-onboard-borrower]
 path = "contracts/v2/dao/proposals/zgp002-onboard-borrower.clar"
-depends_on = ["executor-dao", "extension-trait"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zgp003-update-payment-fee]
 path = "contracts/v2/dao/proposals/zgp003-update-payment-fee.clar"
-depends_on = ["executor-dao", "extension-trait"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zgp004-add-pool-admin]
 path = "contracts/v2/dao/proposals/zgp004-add-pool-admin.clar"
-depends_on = ["executor-dao", "extension-trait"]
+clarity_version = 2
+epoch = 2.1
 
 [contracts.zgp005-create-pool-1]
 path = "contracts/v2/dao/proposals/zgp005-create-pool-1.clar"
-depends_on = ["executor-dao", "extension-trait"]
+clarity_version = 2
+epoch = 2.1
 
 [repl]
 costs_version = 1
