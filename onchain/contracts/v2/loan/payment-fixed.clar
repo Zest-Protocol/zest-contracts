@@ -34,10 +34,10 @@
 ;; @param caller: principal of the user making the payment (assumes principal is validated)
 ;; @returns (respone { reward: uint, z-reward: uint, repayment: bool })
 (define-public (make-next-payment
-  (lp-token <sip-010>)
-  (lv <lv>)
+  (lp <sip-010>)
+  (l-v <lv>)
   (token-id uint)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zd-token <dt>)
   (swap-router <swap>)
@@ -47,7 +47,7 @@
   (xbtc <ft>)
   (caller principal))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (loan (try! (contract-call? .loan-v1-0 get-loan loan-id)))
     (pool (try! (contract-call? .pool-v2-0 get-pool token-id)))
     (cover-pool (contract-call? .cover-pool-v1-0 get-pool-read token-id))
@@ -69,9 +69,9 @@
     (asserts! (<= payment paid-amount) ERR_NOT_ENOUGH_PAID)
     (asserts! (is-eq (as-contract tx-sender) (get payment pool)) ERR_INVALID_PAYMENT)
     (asserts! (contract-call? .globals is-swap (contract-of swap-router)) ERR_INVALID_SWAP)
-    (asserts! (is-eq (contract-of lv) (get liquidity-vault pool)) ERR_INVALID_LV)
-    (try! (distribute-xbtc lv .protocol-treasury lp-token cp-rewards-token token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
-    (try! (distribute-zest lp-token token-id cp-token zd-token z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
+    (asserts! (is-eq (contract-of l-v) (get liquidity-vault pool)) ERR_INVALID_LV)
+    (try! (distribute-xbtc l-v .protocol-treasury lp cp-rewards-token token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
+    (try! (distribute-zest lp token-id cp zd-token z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
 
     ;; set to false when a payment is done always
     (map-set late-payment-switch caller false)
@@ -80,7 +80,7 @@
     (if (is-eq u1 (get remaining-payments loan))
       (begin
         (asserts! (>= paid-amount (+ payment (get loan-amount loan))) ERR_NOT_ENOUGH_REPAID)
-        (try! (as-contract (contract-call? lv add-asset xbtc amount token-id tx-sender)))
+        (try! (as-contract (contract-call? l-v add-asset xbtc amount token-id tx-sender)))
         (ok { reward: payment, z-reward: zest-amount, repayment: true }))
       (ok { reward: payment, z-reward: zest-amount, repayment: false }))))
 
@@ -102,10 +102,10 @@
 ;; @param caller: principal of the user making the payment (assumes principal is validated)
 ;; @returns (respone { reward: uint, z-reward: uint, repayment: bool })
 (define-public (make-full-payment
-  (lp-token <sip-010>)
-  (lv <lv>)
+  (lp <sip-010>)
+  (l-v <lv>)
   (token-id uint)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (zd-token <dt>)
   (swap-router <swap>)
@@ -115,12 +115,12 @@
   (xbtc <ft>)
   (caller principal))
   (let (
-    (lp-contract (contract-of lp-token))
+    (lp-contract (contract-of lp))
     (loan (try! (contract-call? .loan-v1-0 get-loan loan-id)))
     (pool (try! (contract-call? .pool-v2-0 get-pool token-id)))
     (cover-pool (contract-call? .cover-pool-v1-0 get-pool-read token-id))
     (delegate (get pool-delegate pool))
-    (lv (get liquidity-vault pool))
+    (pool-lv (get liquidity-vault pool))
     (apr (get apr loan))
     (amount (get loan-amount loan))
     ;; P * r * t => Amount * perc_rate * blocks
@@ -137,15 +137,15 @@
     (try! (is-approved-contract contract-caller))
     (asserts! (is-eq (as-contract tx-sender) (get payment pool)) ERR_INVALID_PAYMENT)
     (asserts! (contract-call? .globals is-swap (contract-of swap-router)) ERR_INVALID_SWAP)
-    (asserts! (is-eq (contract-of lv) (get liquidity-vault pool)) ERR_INVALID_LV)
-    (try! (distribute-xbtc lv .protocol-treasury lp-token cp-rewards-token token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
-    (try! (distribute-zest lp-token token-id cp-token zd-token z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
+    (asserts! (is-eq (contract-of l-v) pool-lv) ERR_INVALID_LV)
+    (try! (distribute-xbtc l-v .protocol-treasury lp cp-rewards-token token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
+    (try! (distribute-zest lp token-id cp zd-token z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
 
     ;; set to false when a payment is done always
     (map-set late-payment-switch caller false)
     (print { type: "late-payment-switch-payment-fixed", payload: { key: caller, data: { switch: false }} })
     
-    (try! (as-contract (contract-call? lv add-asset xbtc amount token-id tx-sender)))
+    (try! (as-contract (contract-call? l-v add-asset xbtc amount token-id tx-sender)))
     (ok { reward: early-payment, z-reward: u0, full-payment: amount })))
 
 ;; -- late-payment-switch
@@ -221,9 +221,9 @@
 ;; @param xbtc: SIP-010 for xbtc
 ;; @returns (response true uint)
 (define-private (distribute-xbtc
-  (lv <lv>)
+  (l-v <lv>)
   (treasury principal)
-  (lp-token <sip-010>)
+  (lp <sip-010>)
   (cp-rewards-token <dt>)
   (token-id uint)
   (lp-portion uint)
@@ -245,22 +245,17 @@
       (begin
         ;; to LPs
         (print { type: "lp-token-rewards", payload: { key: { token-id: token-id }, data: { lp-rewards-earned: lp-portion }} })
-        (try! (as-contract (contract-call? lv add-asset xbtc lp-portion token-id tx-sender)))
+        (try! (as-contract (contract-call? l-v add-asset xbtc lp-portion token-id tx-sender)))
         ;; to Cover
         (print { type: "cp-rewards-token-rewards", payload: { key: { token-id: token-id }, data: { cp-rewards-earned: cover-portion }} })
         (try! (contract-call? cp-rewards-token add-rewards token-id cover-portion))
-        (try! (as-contract (contract-call? lv add-asset xbtc cover-portion token-id tx-sender))))
+        (try! (as-contract (contract-call? l-v add-asset xbtc cover-portion token-id tx-sender))))
       (let (
         (total-portion (+ cover-portion lp-portion)))
         (print { type: "lp-token-rewards", payload: { key: { token-id: token-id }, data: { lp-rewards-earned: total-portion }} })
-        (try! (as-contract (contract-call? lv add-asset xbtc total-portion token-id tx-sender)))
+        (try! (as-contract (contract-call? l-v add-asset xbtc total-portion token-id tx-sender)))
       )
     )
-
-    ;; record read-data
-    (try! (contract-call? .read-data add-pool-btc-rewards-earned token-id lp-portion))
-    (try! (contract-call? .read-data add-cover-pool-btc-rewards-earned token-id cover-portion))
-    (try! (contract-call? .read-data add-pool-cash token-id (+ cover-portion lp-portion)))
 
     (ok true)))
 
@@ -277,9 +272,9 @@
 ;; @param delegate-portion: portion of funds going to the pool delegate
 ;; @returns (response true uint)
 (define-private (distribute-zest
-  (lp-token <sip-010>)
+  (lp <sip-010>)
   (token-id uint)
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (zd-token <dt>)
   (lp-portion uint)
   (staking-pool principal)
@@ -296,8 +291,7 @@
     (if (get available cover-pool)
       (begin
         (print { type: "cp-token-zest-rewards", payload: { key: { token-id: token-id }, data: { rewards-earned: cover-portion }} })
-        (try! (contract-call? .read-data add-cover-pool-zest-rewards-earned token-id (+ cover-portion)))
-        (try! (contract-call? cp-token add-rewards token-id cover-portion)))
+        (try! (contract-call? cp add-rewards token-id cover-portion)))
       u0)
     (ok true)))
 

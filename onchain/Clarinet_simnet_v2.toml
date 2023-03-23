@@ -15,9 +15,13 @@ boot_contracts = ["pox", "costs-v1", "bns"]
 
 [contracts.after-deployment]
 path = "contracts/v2/after-deployment-simnet.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.magic-protocol]
 path = "contracts/v2/bitcoin/magic-protocol/magic-protocol.clar"
+clarity_version = 2
+epoch = 2.1
 
 # [contracts.magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5]
 # path = "contracts/v2/bitcoin/magic-caller-ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5.clar"
