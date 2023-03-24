@@ -19,6 +19,22 @@
   )
 )
 
+;; expect to return amount successfully swapped
+(define-public (finalize-swap-completed (txid (buff 32)))
+  (let
+    (
+      (swap (try! (contract-call? .magic-protocol get-full-inbound txid)))
+      (sats (get sats swap))
+      (xbtc (get xbtc swap))
+      (fee (- sats xbtc))
+      (updated-funds (try! (withdraw-funds fee)))
+      (swapper (get swapper-principal swap))
+    )
+    (try! (as-contract (contract-call? .Wrapped-Bitcoin transfer fee tx-sender swapper none)))
+    (ok { sats: sats, fee: fee, swapper: swapper })
+  )
+)
+
 ;; owner methods
 
 (define-public (register-supplier

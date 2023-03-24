@@ -1,4 +1,4 @@
-import { Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v1.0.3/index.ts';
+import { Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v1.5.4/index.ts';
 
 class EmergencyExecute {
   static executiveAction(

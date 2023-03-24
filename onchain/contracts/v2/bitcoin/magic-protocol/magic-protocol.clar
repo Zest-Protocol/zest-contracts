@@ -305,7 +305,7 @@
   )
   (let
     (
-      (was-mined-bool (unwrap! (contract-call? .clarity-bitcoin was-tx-mined-prev? block prev-blocks tx proof) ERR_TX_NOT_MINED))
+      (was-mined-bool (unwrap! (contract-call? .clarity-bitcoin was-tx-mined? block tx proof) ERR_TX_NOT_MINED))
       (was-mined (asserts! was-mined-bool ERR_TX_NOT_MINED))
       (mined-height (get height block))
       (htlc-redeem (generate-htlc-script sender recipient expiration-buff hash swapper-buff))
@@ -382,7 +382,7 @@
       )
       (map-insert inbound-preimages txid preimage)
       (try! (as-contract (transfer xbtc tx-sender swapper)))
-      (asserts! (>= (get expiration swap) block-height) ERR_ESCROW_EXPIRED)
+      (asserts! (>= (get expiration swap) burn-block-height) ERR_ESCROW_EXPIRED)
       (map-set supplier-escrow supplier-id (- escrowed xbtc))
       (update-user-inbound-volume swapper xbtc)
       (print (merge swap {
@@ -422,7 +422,7 @@
         (new-funds (+ funds xbtc))
         (new-escrow (- escrowed xbtc))
       )
-      (asserts! (<= (get expiration swap) block-height) ERR_REVOKE_INBOUND_NOT_EXPIRED)
+      (asserts! (<= (get expiration swap) burn-block-height) ERR_REVOKE_INBOUND_NOT_EXPIRED)
       (map-insert inbound-preimages txid REVOKED_INBOUND_PREIMAGE)
       (map-set supplier-escrow supplier-id new-escrow)
       (map-set supplier-funds supplier-id new-funds)
@@ -499,7 +499,7 @@
   )
   (let
     (
-      (was-mined-bool (unwrap! (contract-call? .clarity-bitcoin was-tx-mined-prev? block prev-blocks tx proof) ERR_TX_NOT_MINED))
+      (was-mined-bool (unwrap! (contract-call? .clarity-bitcoin was-tx-mined? block tx proof) ERR_TX_NOT_MINED))
       (was-mined (asserts! was-mined-bool ERR_TX_NOT_MINED))
       (swap (unwrap! (get-outbound-swap swap-id) ERR_SWAP_NOT_FOUND))
       (expected-output (generate-output (get version swap) (get hash swap)))
@@ -757,7 +757,7 @@
 ;; @param mined-height; the nearest stacks block after (or including) the Bitcoin
 ;; block where the HTLC was confirmed.
 (define-read-only (validate-expiration (expiration uint) (mined-height uint))
-  (if (> expiration (+ (- block-height mined-height) MIN_EXPIRATION))
+  (if (> expiration (+ (- burn-block-height mined-height) MIN_EXPIRATION))
     (if (< expiration MAX_HTLC_EXPIRATION) (ok true) ERR_INVALID_EXPIRATION)
     ERR_INVALID_EXPIRATION
   )
