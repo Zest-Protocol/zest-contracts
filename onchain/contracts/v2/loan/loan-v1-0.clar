@@ -164,7 +164,7 @@
 
     (ok (get loan-amount loan))))
 
-(define-constant TEST_AMOUNT u1000)
+(define-constant TEST_AMOUNT (contract-call? .globals get-test-amount))
 (define-constant MAX_TRIALS_AMOUNT (* TEST_AMOUNT u3))
 
 (define-public (drawdown-verify

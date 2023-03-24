@@ -76,6 +76,17 @@ u144)
 (define-data-var cover-pool-contract principal .cover-pool-v1-0)
 (define-data-var supplier-interface-contract principal .supplier-interface)
 
+(define-data-var test-amount uint u1000)
+
+(define-public (set-test-amount (amount uint))
+  (begin
+		(try! (is-contract-owner))
+    (print { type: "set-test-amount", payload: { key: { amount: amount }} })
+		(ok (var-set test-amount amount))))
+
+(define-read-only (get-test-amount)
+  (var-get test-amount))
+
 (define-read-only (is-pool-contract (contract principal))
   (is-eq contract (var-get pool-contract)))
 
