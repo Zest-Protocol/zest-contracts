@@ -165,6 +165,7 @@ function commitFunds(
   height: number,
   tokenId: number,
   loanId: number,
+  action: string,
   caller: string,
   contractAddress: string,
   magicCallerContract: string,
@@ -187,6 +188,7 @@ function commitFunds(
       minToReceive,
       tokenId,
       loanId,
+      action,
       caller,
       contractAddress,
       magicCallerContract,
@@ -210,7 +212,6 @@ function finalizeDrawdown(
   deployer: string,
   ) {
   const txid = getTxId(tx);
-
   return [
     TestUtils.setMinedTx(txid, deployer),
     SupplierInterface.finalizeDrawdown(
@@ -352,6 +353,7 @@ export function makePaymentToLoan(
   swapRouter: string,
   xbtc: string,
   supplierController: string,
+  action: string,
   caller: string,
   contractAddress: string,
   magicCallerContract: string) {
@@ -375,6 +377,7 @@ export function makePaymentToLoan(
       minToReceive,
       tokenId,
       loanId,
+      action,
       caller,
       contractAddress,
       magicCallerContract,
@@ -716,6 +719,13 @@ function finalizeRollover(
       stxSender
     )
   ]
+}
+
+const MAGIC_PATH = `./contracts/v2/bitcoin/magic-caller.clar`;
+
+export function createMagicCallerDeployTx(contractName: string, deployerAddress: string, ) {
+  const code = Deno.readTextFileSync(MAGIC_PATH).toString();
+  return Tx.deployContract(contractName, code, deployerAddress);
 }
 
 function bootstrapApprovedContracts(chain: Chain, deployer: Account) {

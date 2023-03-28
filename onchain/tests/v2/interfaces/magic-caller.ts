@@ -17,6 +17,7 @@ class MagicCaller {
     minToReceive: number,
     tokenId: number,
     loanId: number,
+    action: string,
     caller: string,
     contractAddress: string,
     contractName: string,
@@ -46,6 +47,7 @@ class MagicCaller {
         types.uint(minToReceive),
         types.uint(tokenId),
         types.uint(loanId),
+        types.buff(Buffer.from(action, "hex")),
       ],
       caller);
   }

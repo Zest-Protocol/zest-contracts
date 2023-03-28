@@ -600,9 +600,12 @@
     (xbtc (try! (contract-call? .pool-v2-0 drawdown loan-id lp token-id coll-token coll-vault f-v swap-router xbtc-ft tx-sender)))
     (swap-id (try! (as-contract (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))))
     (liquidity (try! (get-current-liquidity))))
+    
     (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED)
     (asserts! (>= liquidity xbtc) ERR_NOT_ENOUGH_LIQUIDITY)
+
     (print { btc-version: btc-version, btc-hash: btc-hash, supplier-id: supplier-id, amount: xbtc })
+    (map-set magic-id swap-id true)
     (ok { swap-id: swap-id, sats: xbtc })))
 
 ;; @desc Finalize drawdown process through magic protocol to update the loan status

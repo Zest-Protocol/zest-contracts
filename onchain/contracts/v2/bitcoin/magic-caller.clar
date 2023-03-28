@@ -40,7 +40,6 @@
   (txid (buff 32))
   (preimage (buff 128))
   (lp <sip-010>)
-  (zp <dtc>)
   (l-v <lv>)
   (xbtc-ft <ft>)
   (r-c <rewards-calc>)
