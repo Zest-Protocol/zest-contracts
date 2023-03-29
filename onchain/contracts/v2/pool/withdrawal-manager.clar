@@ -71,32 +71,34 @@
     (next-exit-cycle (+ current-cycle (if (get partial-liquidity redeemeables) u1 u2)))
     (current-exit-cycle-shares (get-cycle-shares token-id current-exit-at))
     (locked-shares (get-cycle-shares-by-principal token-id owner))
+    (globals (contract-call? .globals get-globals))
+    (max-window-time (+ (get-height-of-cycle token-id current-exit-at) (get withdrawal-window pool)))
     ;; get previously signaled shares
     (exit-cycle-shares (get-cycle-shares token-id next-exit-cycle))
   )
-    ;; TODO: verify correct amount of shares
+    ;; ;; TODO: verify correct amount of shares
     (asserts! (<= requested-shares locked-shares) ERR_TOO_MANY_SHARES)
-    (asserts! (<= block-height (+ (get-height-of-cycle token-id current-exit-at) (get withdrawal-window pool))) ERR_WINDOW_EXPIRED)
+    (asserts! (<= block-height max-window-time) ERR_WINDOW_EXPIRED)
+    (asserts! (>= current-cycle current-exit-at) ERR_FUNDS_LOCKED)
 
-    (if (> locked-shares redeemeable-shares)
-      ;; If there are remaining shares
-      (begin
-        ;; removed from current exit
-        (map-set cycles-shares { token-id: token-id, cycle: current-exit-at } (- current-exit-cycle-shares redeemeable-shares))
-        ;; add to next cycle
-        (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } (+ exit-cycle-shares redeemeable-shares))
-        (map-set exit-at-cycle { token-id: token-id, user: owner } next-exit-cycle)
-        (map-set shares-principal { token-id: token-id, user: owner } (- locked-shares redeemeable-shares))
-      )
-      (begin
-        (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } (- exit-cycle-shares redeemeable-shares))
-        (map-delete exit-at-cycle { token-id: token-id, user: owner })
-        (map-delete shares-principal { token-id: token-id, user: owner })
-      )
-    )
+    ;; (if (> locked-shares redeemeable-shares)
+    ;;   ;; If there are remaining shares
+    ;;   (begin
+    ;;     ;; removed from current exit
+    ;;     (map-set cycles-shares { token-id: token-id, cycle: current-exit-at } (- current-exit-cycle-shares redeemeable-shares))
+    ;;     ;; add to next cycle
+    ;;     (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } (+ exit-cycle-shares redeemeable-shares))
+    ;;     (map-set exit-at-cycle { token-id: token-id, user: owner } next-exit-cycle)
+    ;;     (map-set shares-principal { token-id: token-id, user: owner } (- locked-shares redeemeable-shares))
+    ;;   )
+    ;;   (begin
+    ;;     (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } (- exit-cycle-shares redeemeable-shares))
+    ;;     (map-delete exit-at-cycle { token-id: token-id, user: owner })
+    ;;     (map-delete shares-principal { token-id: token-id, user: owner })
+    ;;   )
+    ;; )
 
-    (try! (as-contract (contract-call? lp transfer redeemeable-shares tx-sender recipient none)))
-    
+    ;; (try! (as-contract (contract-call? lp transfer redeemeable-shares tx-sender recipient none)))
     (ok redeemeables)
   )
 )
@@ -104,7 +106,7 @@
 ;; get redeemeable amount based on available liquidity
 (define-public (get-redeemeable-amounts (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))
   (let (
-    (liquidity (unwrap-panic (contract-call? asset get-balance (contract-of lp))))
+    (liquidity (default-to u0 (try! (contract-call? l-v get-asset token-id))))
     (total-supply (unwrap-panic (contract-call? lp get-total-supply)))
     ;; TODO: account for losses
     ;; (losses (try! (contract-call? lp-token recognize-losses token-id recipient)))
@@ -118,23 +120,30 @@
     (total-reedemeable-assets (/ (* assets-wo-losses cycle-shares-principal) total-supply))
     (redeemeable-assets (/ (* liquidity requested-shares) cycle-shares))
   )
-    (if (< liquidity needed-assets)
-      ;; if not enough liquidity for all shares
-      (ok {
-        redeemeable-assets: redeemeable-assets,
-        redeemeable-shares: (/ (* requested-shares redeemeable-assets) total-reedemeable-assets),
-        partial-liquidity: true })
-      ;; if enough liquidity for all shares
-      (ok {
-        redeemeable-assets: (/ (* requested-shares assets-wo-losses) total-supply),
-        redeemeable-shares: requested-shares,
-        partial-liquidity: true })
+    (begin
+      (print { needed-assets: needed-assets, liquidity: liquidity })
+      (if (< liquidity needed-assets)
+        ;; if not enough liquidity for all shares
+        (ok {
+          redeemeable-assets: redeemeable-assets,
+          redeemeable-shares: (/ (* requested-shares redeemeable-assets) total-reedemeable-assets),
+          partial-liquidity: true })
+        ;; if enough liquidity for all shares
+        (ok {
+          redeemeable-assets: (/ (* requested-shares assets-wo-losses) total-supply),
+          redeemeable-shares: requested-shares,
+          partial-liquidity: false })
+      )
     )
   )
 )
 
 (define-public (total-assets (lp <sip-010>) (l-v <lv>) (token-id uint) (asset <ft>))
-  (ok (default-to u0 (try! (contract-call? l-v get-asset token-id))) ))
+  (let 
+    ((pool (try! (get-pool token-id))))
+    (ok (+ (get principal-out pool) (default-to u0 (try! (contract-call? l-v get-asset token-id)))) )
+  )
+)
 
 (define-map exit-at-cycle { token-id: uint, user: principal } uint)
 (define-map cycles-shares { token-id: uint, cycle: uint } uint )
@@ -202,4 +211,6 @@
 (define-constant ERR_NO_COMMITMENT (err u16001))
 (define-constant ERR_TOO_MANY_SHARES (err u16002))
 (define-constant ERR_WINDOW_EXPIRED (err u16003))
+(define-constant ERR_FUNDS_LOCKED (err u16004))
+
 
