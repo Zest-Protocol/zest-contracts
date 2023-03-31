@@ -286,24 +286,25 @@ Clarinet.test({
 
     // console.log(block.receipts[0].events);
 
-    // const requested_amount = 1_000_000;
-    // block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount, LP_1.address);
+    const requested_amount = sentAmount_1;
+    block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount, LP_1.address);
+    console.log(block);
 
     // WithdrawalManager.getCycleShares(chain, poolId_0, 5, deployerWallet.address, "withdrawal-manager", deployerWallet.address).receipts[0].result.expectUint(requested_amount);
     
-    // assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], requested_amount);
-    // chain.mineEmptyBlock(8 + (14 * 144 * 5) - chain.blockHeight);
-    
-    // // console.log(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"]);
-    // // console.log(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"]);
+    assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], requested_amount);
+    chain.mineEmptyBlock(8 + (14 * 144 * 8) - chain.blockHeight);
 
-    // block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount, LP_1.address, LP_1.address);
+    block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount, LP_1.address, LP_1.address);
+    console.log(block);
+
+    console.log(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"]);
+    console.log(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"]);
 
     // WithdrawalManager.getCycleShares(chain, poolId_0, 5, deployerWallet.address, "withdrawal-manager", deployerWallet.address).receipts[0].result.expectUint(0);
     
-    // // console.log(block);
     // block.receipts[0].result.expectOk();
-    // // console.log(block.receipts[0].events);
+    // console.log(block.receipts[0].events);
     // assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], 0);
     // assertEquals(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][`${LP_1.address}`], requested_amount + 3);
 
