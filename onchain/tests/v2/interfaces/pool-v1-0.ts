@@ -276,6 +276,25 @@ class Pool {
     ]);
   }
 
+  redeem(lpToken: string, tokenId: number, liquidityVault: string, asset: string, shares: number, owner: string, recipient: string) {
+    return this.chain.mineBlock([
+      Tx.contractCall(
+        'pool-v2-0',
+        'redeem',
+        [
+          types.principal(lpToken),
+          types.uint(tokenId),
+          types.principal(liquidityVault),
+          types.principal(asset),
+          types.uint(shares),
+          types.principal(owner),
+          types.principal(recipient),
+        ],
+        owner
+      )
+    ]);
+  }
+
   withdraw(amount: number, lender: string) {
     return this.chain.mineBlock([
       Tx.contractCall(

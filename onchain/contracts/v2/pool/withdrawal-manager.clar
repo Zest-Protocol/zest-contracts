@@ -77,26 +77,26 @@
     (exit-cycle-shares (get-cycle-shares token-id next-exit-cycle))
   )
     ;; ;; TODO: verify correct amount of shares
-    (asserts! (<= requested-shares locked-shares) ERR_TOO_MANY_SHARES)
-    (asserts! (<= block-height max-window-time) ERR_WINDOW_EXPIRED)
+    (asserts! (>= locked-shares requested-shares) ERR_TOO_MANY_SHARES)
+    (asserts! (>= max-window-time block-height ) ERR_WINDOW_EXPIRED)
     (asserts! (>= current-cycle current-exit-at) ERR_FUNDS_LOCKED)
 
-    ;; (if (> locked-shares redeemeable-shares)
-    ;;   ;; If there are remaining shares
-    ;;   (begin
-    ;;     ;; removed from current exit
-    ;;     (map-set cycles-shares { token-id: token-id, cycle: current-exit-at } (- current-exit-cycle-shares redeemeable-shares))
-    ;;     ;; add to next cycle
-    ;;     (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } (+ exit-cycle-shares redeemeable-shares))
-    ;;     (map-set exit-at-cycle { token-id: token-id, user: owner } next-exit-cycle)
-    ;;     (map-set shares-principal { token-id: token-id, user: owner } (- locked-shares redeemeable-shares))
-    ;;   )
-    ;;   (begin
-    ;;     (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } (- exit-cycle-shares redeemeable-shares))
-    ;;     (map-delete exit-at-cycle { token-id: token-id, user: owner })
-    ;;     (map-delete shares-principal { token-id: token-id, user: owner })
-    ;;   )
-    ;; )
+    (if (> locked-shares redeemeable-shares)
+      ;; If there are remaining shares
+      (begin
+        ;; remove from current exit
+        (map-delete cycles-shares { token-id: token-id, cycle: current-exit-at })
+        ;; add to next cycle
+        (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } (+ exit-cycle-shares (- current-exit-cycle-shares redeemeable-shares)))
+        (map-set exit-at-cycle { token-id: token-id, user: owner } next-exit-cycle)
+        (map-set shares-principal { token-id: token-id, user: owner } (- locked-shares redeemeable-shares))
+      )
+      (begin
+        (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } u0)
+        (map-delete exit-at-cycle { token-id: token-id, user: owner })
+        (map-delete shares-principal { token-id: token-id, user: owner })
+      )
+    )
 
     ;; (try! (as-contract (contract-call? lp transfer redeemeable-shares tx-sender recipient none)))
     (ok redeemeables)

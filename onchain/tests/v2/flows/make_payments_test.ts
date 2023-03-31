@@ -14,6 +14,7 @@ import { SupplierInterface } from '../interfaces/supplier_interface.ts';
 import { SwapRouter } from '../interfaces/swapRouter.ts';
 import { MagicCaller } from '../interfaces/magic-caller.ts';
 import { Payment } from '../interfaces/payment.ts';
+import { WithdrawalManager } from '../interfaces/withdrawal-manager.ts';
 
 import * as util from "../util.ts";
 import * as common from '../interfaces/common.ts';
@@ -266,8 +267,27 @@ Clarinet.test({
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"04",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    // block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, 1_000_000, LP_1.address);
-    // console.log(block);
+    const requested_amount = 1_000_000;
+    block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount, LP_1.address);
+
+    WithdrawalManager.getCycleShares(chain, poolId_0, 5, deployerWallet.address, "withdrawal-manager", deployerWallet.address).receipts[0].result.expectUint(requested_amount);
+    
+    assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], requested_amount);
+    chain.mineEmptyBlock(8 + (14 * 144 * 5) - chain.blockHeight);
+    // console.log(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"]);
+    block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount, LP_1.address, LP_1.address);
+    
+    WithdrawalManager.getCycleShares(chain, poolId_0, 5, deployerWallet.address, "withdrawal-manager", deployerWallet.address).receipts[0].result.expectUint(requested_amount);
+
+    console.log(block);
+    // console.log(block.receipts[0].events[0]["contract_event"]["value"]);
+    console.log(block.receipts[0].events);
+    console.log(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"]);
+
+    // console.log(WithdrawalManager.getCycleShares(chain, poolId_0, 5, deployerWallet.address, "withdrawal-manager", deployerWallet.address));
+
+    // console.log(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"]);
+    // console.log(block.receipts[0].events[1]["contract_event"]["value"]);
 
   },
 });
