@@ -92,13 +92,13 @@
         (map-set shares-principal { token-id: token-id, user: owner } (- locked-shares redeemeable-shares))
       )
       (begin
-        (map-set cycles-shares { token-id: token-id, cycle: next-exit-cycle } u0)
+        (map-set cycles-shares { token-id: token-id, cycle: current-exit-at } (- current-exit-cycle-shares redeemeable-shares))
         (map-delete exit-at-cycle { token-id: token-id, user: owner })
         (map-delete shares-principal { token-id: token-id, user: owner })
       )
     )
 
-    ;; (try! (as-contract (contract-call? lp transfer redeemeable-shares tx-sender recipient none)))
+    (try! (as-contract (contract-call? lp transfer redeemeable-shares tx-sender recipient none)))
     (ok redeemeables)
   )
 )

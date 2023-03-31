@@ -1236,8 +1236,8 @@
 (define-public (redeem (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal) (recipient principal))
   (let (
     (redeemeables (try! (contract-call? .withdrawal-manager redeem lp token-id l-v asset requested-shares owner (as-contract tx-sender)))))
-    ;; (try! (as-contract (contract-call? lp burn (get redeemeable-shares redeemeables) tx-sender)))
-    ;; (try! (contract-call? l-v remove-asset asset (get redeemeable-assets redeemeables) token-id recipient))
+    (try! (as-contract (contract-call? lp burn (get redeemeable-shares redeemeables) tx-sender)))
+    (try! (contract-call? l-v remove-asset asset (get redeemeable-assets redeemeables) token-id recipient))
     (ok true)))
 
 ;; -- View functions
