@@ -515,6 +515,7 @@
     (asserts! (>= (get max-maturity-length pool) maturity-length) ERR_EXCEEDED_MATURITY_MAX)
 
     (try! (contract-call? .pool-data set-loan-to-pool last-id token-id))
+    (print { type: "create-pool-loan", payload: { key: { token-id: token-id, loan-id: last-id }, data: (try! (contract-call? .loan-v1-0 get-loan last-id)) } })
     (ok last-id)))
 
 ;; @desc Pool Delegate sends funds to the funding contract in the loan.
