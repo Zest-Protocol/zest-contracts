@@ -452,14 +452,14 @@
     (token-id (try! (get-loan-pool-id loan-id)))
     (payment-response (try! (contract-call? pay make-next-payment lp l-v token-id cp cp-rewards-token zd-token swap-router height loan-id (+ tested-amount amount) xbtc caller)))
     (amount-due (- (get reward payment-response) tested-amount))
+    (remaining-payments (get remaining-payments loan))
   )
-    (try! (is-supplier-interface))
+    (try! (caller-is-pool))
     (asserts! (is-eq caller (get borrower loan)) ERR_UNAUTHORIZED)
     (asserts! (is-eq ACTIVE (get status loan)) ERR_INVALID_STATUS)
     (asserts! (>= amount amount-due) ERR_NOT_ENOUGH_PAID)
     ;; if repayment, assert amount being sent is greater than the total loan
     (let (
-      (remaining-payments (get remaining-payments loan))
       (new-loan
         (if (is-eq remaining-payments u1)
           (begin
@@ -476,7 +476,7 @@
     ;; for payment testing
     (set-tested-amount loan-id u0)
 
-    (ok payment-response)))
+    (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (> remaining-payments u1) }))))
 
 ;; @desc funds are received from the supplier interface and sent to the payment contract
 ;; @restricted bridge

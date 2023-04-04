@@ -136,7 +136,7 @@
     )
     (asserts! (get finalized params) ERR_UNAUTHORIZED)
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v2-0 none)))
-    (try! (contract-call? .pool-v2-0 send-funds lp (get token-id params) l-v xbtc-ft sats tx-sender))
+    (try! (contract-call? .pool-v2-0 send-funds lp (get token-id params) l-v xbtc-ft sats (get controller params)))
 
     (map-delete escrowed-tx txid)
     (ok sats)
@@ -246,8 +246,8 @@
 
     (map-delete escrowed-tx txid)
     (print { type: "make-payment", payload: { key: { tx-id: txid }, data: params } })
-    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .loan-v1-0 none)))
-    (ok (try! (contract-call? .loan-v1-0 make-payment (get loan-id params) (get height params) pay lp l-v cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
+    (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v2-0 none)))
+    (ok (try! (contract-call? .pool-v2-0 make-payment (get loan-id params) (get height params) pay lp l-v cp cp-rewards-token zp-token swap-router sats xbtc-ft (get controller params))))
   )
 )
 

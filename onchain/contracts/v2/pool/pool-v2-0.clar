@@ -652,6 +652,49 @@
 
     (contract-call? .loan-v1-0 finalize-rollover loan-id coll-token coll-vault f-v xbtc)))
 
+
+;; @desc borrower updates status on loan to make a residual payment
+;; @param loan-id: id of loan being paid for
+;; @param lp-token: contract of token used to account for xbtc rewards
+;; @param token-id: pool id
+;; @param lv: contract trait holding the liquid funds in the pool
+;; @param amount: amount that is being paid
+;; @param xbtc: SIP-010 xbtc token
+;; @param caller: principal of the caller
+;; @returns (response true uint)
+(define-public (make-payment
+  (loan-id uint)
+  (height uint)
+  (pay <payment>)
+  (lp <sip-010>)
+  (l-v <lv>)
+  (cp <cp-token>)
+  (cp-rewards-token <dt>)
+  (zd-token <dt>)
+  (swap-router <swap>)
+  (amount uint)
+  (xbtc <ft>)
+  (caller principal))
+  (let (
+    (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
+    (pool (try! (get-pool loan-pool-id)))
+    (liquidity-vault (get liquidity-vault pool))
+    (transfer-response (try! (as-contract (contract-call? xbtc transfer amount tx-sender .loan-v1-0 none))))
+    (pay-response (try! (contract-call? .loan-v1-0 make-payment loan-id height pay lp l-v cp cp-rewards-token zd-token swap-router amount xbtc caller)))
+    )
+    (try! (is-supplier-interface))
+    (try! (is-paused))
+    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+
+    (if (get has-remaining-payments pay-response)
+      false
+      (try! (contract-call? .pool-data set-pool loan-pool-id (merge pool { principal-out: (- (get principal-out pool) (get loan-amount pay-response)) })))
+    )
+    (ok pay-response)
+  )
+)
+
+
 ;; @desc borrower updates status on loan to make a residual payment
 ;; @param loan-id: id of loan being paid for
 ;; @param lp-token: contract of token used to account for xbtc rewards

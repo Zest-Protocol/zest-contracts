@@ -25,6 +25,9 @@
   )
 )
 
+(define-read-only (get-next-exit-cycle (token-id uint))
+  (+ u2 (get-current-cycle token-id)))
+
 ;; @desc removing locked shares from the cycle
 (define-public (remove-shares (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
   (let (
@@ -78,8 +81,10 @@
   )
     ;; ;; TODO: verify correct amount of shares
     (asserts! (>= locked-shares requested-shares) ERR_TOO_MANY_SHARES)
-    (asserts! (>= max-window-time block-height ) ERR_WINDOW_EXPIRED)
+    ;; (asserts! (>= max-window-time block-height ) ERR_WINDOW_EXPIRED)
     (asserts! (>= current-cycle current-exit-at) ERR_FUNDS_LOCKED)
+
+    (print { max-window-time: max-window-time })
 
     (if (> locked-shares redeemeable-shares)
       ;; If there are remaining shares
@@ -103,6 +108,7 @@
   )
 )
 
+
 ;; get redeemeable amount based on available liquidity
 (define-public (get-redeemeable-amounts (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))
   (let (
@@ -121,6 +127,7 @@
     (redeemeable-assets (/ (* liquidity requested-shares) cycle-shares))
   )
     (begin
+      (print { assets: assets, cycle-shares: cycle-shares, total-supply: total-supply })
       (print { needed-assets: needed-assets, liquidity: liquidity })
       (if (< liquidity needed-assets)
         ;; if not enough liquidity for all shares
