@@ -79,12 +79,10 @@
     ;; get previously signaled shares
     (exit-cycle-shares (get-cycle-shares token-id next-exit-cycle))
   )
-    ;; ;; TODO: verify correct amount of shares
+    ;; TODO: verify correct amount of shares
     (asserts! (>= locked-shares requested-shares) ERR_TOO_MANY_SHARES)
-    ;; (asserts! (>= max-window-time block-height ) ERR_WINDOW_EXPIRED)
     (asserts! (>= current-cycle current-exit-at) ERR_FUNDS_LOCKED)
-
-    (print { max-window-time: max-window-time })
+    (asserts! (>= max-window-time block-height) ERR_WINDOW_EXPIRED)
 
     (if (> locked-shares redeemeable-shares)
       ;; If there are remaining shares
@@ -108,6 +106,9 @@
   )
 )
 
+(define-read-only (get-funds-unlocked-at (token-id uint) (owner principal))
+  (get-height-of-cycle token-id (get-exit-at token-id owner))
+)
 
 ;; get redeemeable amount based on available liquidity
 (define-public (get-redeemeable-amounts (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))

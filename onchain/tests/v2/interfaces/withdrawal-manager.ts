@@ -25,6 +25,18 @@ class WithdrawalManager {
     );
   }
 
+  static getFundsUnlockedAt(chain: Chain, tokenId: number, user: string, contractAddress: string, contractName: string, caller: string) {
+    return chain.callReadOnlyFn(
+      `${contractAddress}.${contractName}`,
+      "get-funds-unlocked-at",
+      [
+        types.uint(tokenId),
+        types.principal(user)
+      ],
+      caller
+    );
+  }
+
   static getExitAt(chain: Chain, tokenId: number, cycle: string, contractAddress: string, contractName: string, caller: string) {
     return chain.callReadOnlyFn(
       `${contractAddress}.${contractName}`,
@@ -36,7 +48,6 @@ class WithdrawalManager {
       caller
     )
   }
-
 
 
   static getNextExitCycle(chain: Chain, tokenId: number, contractAddress: string, contractName: string, caller: string) {

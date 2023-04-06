@@ -13,7 +13,7 @@ class Loan {
   getLoanData(loanId: number) {
     return this.chain.callReadOnlyFn(`${this.deployer.address}.loan-v1-0`, "get-loan-read", [
         types.uint(loanId),
-    ], this.deployer.address);
+    ], this.deployer.address).result.expectTuple();
   }
 
   getRolloverData(loanId: number) {
@@ -21,7 +21,6 @@ class Loan {
         types.uint(loanId),
     ], this.deployer.address);
   }
-
 
   getRolloverDataOptional(loanId: number) {
     return this.chain.callReadOnlyFn(`${this.deployer.address}.loan-v1-0`, "get-rollover-progress-optional", [

@@ -890,26 +890,28 @@
     (asserts! (is-eq (get cp-token pool) (contract-of cp)) ERR_INVALID_SP)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
-    (if (> loan-amount (+ stakers-recovery recovered-funds)) ;; if loan-amount bigger than recovered amounts, recognize losses
-      (begin
-        (as-contract (try! (contract-call? l-v add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
-        (print
-          { type: "liquidate-loan",
-            payload: { key: { loan-id: loan-id , token-id: token-id }, data: { amount-lost: (- loan-amount (+ stakers-recovery recovered-funds))} } })
-
-        (try! (contract-call? .pool-data set-pool token-id (merge pool
-          { 
-            principal-out: (- (get principal-out pool) (+ stakers-recovery recovered-funds)),
-            losses: (+ (get losses pool) (- loan-amount (+ stakers-recovery recovered-funds)))
-          })))
-      )
-      (begin
-        (as-contract (try! (contract-call? l-v add-asset xbtc recovered-funds token-id tx-sender)))
-        (try! (contract-call? .pool-data set-pool token-id (merge pool { principal-out: (- (get principal-out pool) loan-amount) })))
-      )
+    (if (> (+ stakers-recovery recovered-funds) u0) ;; if we have recovered some funds
+      (if (> loan-amount (+ stakers-recovery recovered-funds)) ;; if loan-amount bigger than recovered amounts, recognize losses
+        (begin
+          (as-contract (try! (contract-call? l-v add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
+          (try! (contract-call? .pool-data set-pool token-id (merge pool
+            { 
+              principal-out: (- (get principal-out pool) loan-amount),
+              losses: (+ (get losses pool) (- loan-amount (+ stakers-recovery recovered-funds)))
+            }))))
+        (begin
+          (as-contract (try! (contract-call? l-v add-asset xbtc recovered-funds token-id tx-sender)))
+          (try! (contract-call? .pool-data set-pool token-id (merge pool { principal-out: (- (get principal-out pool) loan-amount) })))
+        ))
+      (try! (contract-call? .pool-data set-pool token-id (merge pool
+        {
+          principal-out: (- (get principal-out pool) loan-amount),
+          losses: (+ (get losses pool) loan-amount)
+        })))
     )
     
-    (ok { staking-pool-recovered: stakers-recovery, collateral-recovery: recovered-funds })))
+    (ok { staking-pool-recovered: stakers-recovery, collateral-recovery: recovered-funds })
+  ))
 
 ;; @desc Pool Delegate liquidates loans that have their grace period expired.
 ;; funds are sent to governor for OTC liquidation
