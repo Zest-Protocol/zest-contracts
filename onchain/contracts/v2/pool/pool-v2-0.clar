@@ -896,8 +896,7 @@
           (as-contract (try! (contract-call? l-v add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
           (try! (contract-call? .pool-data set-pool token-id (merge pool
             { 
-              principal-out: (- (get principal-out pool) loan-amount),
-              losses: (+ (get losses pool) (- loan-amount (+ stakers-recovery recovered-funds)))
+              principal-out: (- (get principal-out pool) loan-amount)
             }))))
         (begin
           (as-contract (try! (contract-call? l-v add-asset xbtc recovered-funds token-id tx-sender)))
@@ -905,8 +904,7 @@
         ))
       (try! (contract-call? .pool-data set-pool token-id (merge pool
         {
-          principal-out: (- (get principal-out pool) loan-amount),
-          losses: (+ (get losses pool) loan-amount)
+          principal-out: (- (get principal-out pool) loan-amount)
         })))
     )
     
@@ -1014,8 +1012,7 @@
       (try! (contract-call? l-v add-asset xbtc xbtc-recovered token-id tx-sender))
       (begin
         (try! (contract-call? .pool-data set-pool token-id (merge pool {
-          principal-out: (- (get principal-out pool) loan-amount),
-          losses: (+ (get losses pool) (- loan-amount xbtc-recovered))
+          principal-out: (- (get principal-out pool) loan-amount)
           })))
         (try! (contract-call? l-v add-asset xbtc xbtc-recovered token-id tx-sender))
       )

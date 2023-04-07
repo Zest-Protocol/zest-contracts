@@ -25,9 +25,6 @@
   )
 )
 
-(define-read-only (get-next-exit-cycle (token-id uint))
-  (+ u2 (get-current-cycle token-id)))
-
 ;; @desc removing locked shares from the cycle
 (define-public (remove-shares (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
   (let (
@@ -106,17 +103,11 @@
   )
 )
 
-(define-read-only (get-funds-unlocked-at (token-id uint) (owner principal))
-  (get-height-of-cycle token-id (get-exit-at token-id owner))
-)
-
 ;; get redeemeable amount based on available liquidity
 (define-public (get-redeemeable-amounts (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))
   (let (
     (liquidity (default-to u0 (try! (contract-call? l-v get-asset token-id))))
     (total-supply (unwrap-panic (contract-call? lp get-total-supply)))
-    ;; TODO: account for losses
-    ;; (losses (try! (contract-call? lp-token recognize-losses token-id recipient)))
     (losses u0)
     (assets (unwrap-panic (total-assets lp l-v token-id asset)))
     (assets-wo-losses (- assets losses))
@@ -128,8 +119,6 @@
     (redeemeable-assets (/ (* liquidity requested-shares) cycle-shares))
   )
     (begin
-      (print { assets: assets, cycle-shares: cycle-shares, total-supply: total-supply })
-      (print { needed-assets: needed-assets, liquidity: liquidity })
       (if (< liquidity needed-assets)
         ;; if not enough liquidity for all shares
         (ok {
@@ -183,6 +172,12 @@
 
 (define-read-only (get-exit-at (token-id uint) (user principal))
   (default-to u0 (map-get? exit-at-cycle { token-id: token-id, user: user })))
+
+(define-read-only (get-funds-unlocked-at (token-id uint) (owner principal))
+  (get-height-of-cycle token-id (get-exit-at token-id owner)))
+
+(define-read-only (get-next-exit-cycle (token-id uint))
+  (+ u2 (get-current-cycle token-id)))
 
 (define-read-only (get-current-cycle (token-id uint))
   (let (

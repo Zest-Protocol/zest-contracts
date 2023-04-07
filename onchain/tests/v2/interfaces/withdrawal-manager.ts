@@ -37,18 +37,17 @@ class WithdrawalManager {
     );
   }
 
-  static getExitAt(chain: Chain, tokenId: number, cycle: string, contractAddress: string, contractName: string, caller: string) {
+  static getExitAt(chain: Chain, tokenId: number, user: string, contractAddress: string, contractName: string, caller: string) {
     return chain.callReadOnlyFn(
       `${contractAddress}.${contractName}`,
       "get-exit-at",
       [
         types.uint(tokenId),
-        types.uint(cycle)
+        types.principal(user)
       ],
       caller
     )
   }
-
 
   static getNextExitCycle(chain: Chain, tokenId: number, contractAddress: string, contractName: string, caller: string) {
     return chain.callReadOnlyFn(

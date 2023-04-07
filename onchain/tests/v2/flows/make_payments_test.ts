@@ -174,7 +174,7 @@ Clarinet.test({
     block.receipts[1].result.expectOk().expectTuple()["borrow-amount"].expectUint(loanAmountWithoutTreasuryFee);
 
     // Payment start
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
 
     const preimagePayment1 = "00";
     let hashPayment1 = util.getHash(preimagePayment1);
@@ -186,41 +186,41 @@ Clarinet.test({
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"00",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk().expectTuple()["reward"].expectUint(payment1);
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"01",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"02",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"03",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"04",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"05",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"06",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"07",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    let loanResult = loan.getLoanData(0).result.expectTuple();
+    let loanResult = loan.getLoanData(0);
     let finalPayment = payment1 + common.consumeUint(loanResult["loan-amount"]);
     minToReceive = Math.floor(finalPayment * inboundFee / 10_000);
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"08",defaultExpiration,MagicId_Borrower,finalPayment,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    assertEquals(loan.getLoanData(0).result.expectTuple()["status"], "0x05");
+    assertEquals(loan.getLoanData(0)["status"], "0x05");
 
     const requested_amount = sentAmount_1;
     block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount, LP_1.address);
@@ -384,7 +384,7 @@ Clarinet.test({
     block.receipts[1].result.expectOk().expectTuple()["borrow-amount"].expectUint(loanAmountWithoutTreasuryFee);
 
     // Payment start
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
 
     const preimagePayment1 = "00";
     let hashPayment1 = util.getHash(preimagePayment1);
@@ -396,42 +396,42 @@ Clarinet.test({
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"00",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk().expectTuple()["reward"].expectUint(payment1);
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"01",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"02",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"03",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"04",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"05",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"06",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"07",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
 
-    let loanResult = loan.getLoanData(0).result.expectTuple();
+    let loanResult = loan.getLoanData(0);
     let finalPayment = payment1 + common.consumeUint(loanResult["loan-amount"]);
     minToReceive = Math.floor(finalPayment * inboundFee / 10_000);
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"08",defaultExpiration,MagicId_Borrower,finalPayment,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    assertEquals(loan.getLoanData(0).result.expectTuple()["status"], "0x05");
+    assertEquals(loan.getLoanData(0)["status"], "0x05");
 
     const requested_amount_1 = sentAmount_1;
     const requested_amount_2 = sentAmount_2;
@@ -607,7 +607,7 @@ Clarinet.test({
     block.receipts[1].result.expectOk().expectTuple()["borrow-amount"].expectUint(loanAmountWithoutTreasuryFee);
 
     // Payment start
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
 
     const preimagePayment1 = "00";
     let hashPayment1 = util.getHash(preimagePayment1);
@@ -619,42 +619,42 @@ Clarinet.test({
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"00",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk().expectTuple()["reward"].expectUint(payment1);
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"01",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"02",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"03",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"04",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"05",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"06",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"07",defaultExpiration,MagicId_Borrower,payment1,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
 
-    let loanResult = loan.getLoanData(0).result.expectTuple();
+    let loanResult = loan.getLoanData(0);
     let finalPayment = payment1 + common.consumeUint(loanResult["loan-amount"]);
     minToReceive = Math.floor(finalPayment * inboundFee / 10_000);
 
-    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0).result.expectTuple()["next-payment"]) - block.height - 1);
+    chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"08",defaultExpiration,MagicId_Borrower,finalPayment,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
 
-    assertEquals(loan.getLoanData(0).result.expectTuple()["status"], "0x05");
+    assertEquals(loan.getLoanData(0)["status"], "0x05");
 
     const requested_amount_1 = sentAmount_1;
     const requested_amount_2 = sentAmount_2;
