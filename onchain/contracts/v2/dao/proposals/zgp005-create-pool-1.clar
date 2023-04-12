@@ -6,6 +6,7 @@
       .pool-v2-0
       create-pool
       'ST3PF13W7Z0RRM42A8VZRVFQ75SV1K26RXEP8YGKJ
+      .Wrapped-Bitcoin
       .lp-token-0
       .zest-reward-dist
       .payment-fixed

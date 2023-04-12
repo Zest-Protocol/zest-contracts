@@ -416,7 +416,7 @@
     (pool (get-pool-read token-id)))
     (try! (is-supplier-interface))
     (asserts! (is-eq (get cp-rewards-token pool) (contract-of cp-rewards-token)) ERR_INVALID_CP_REWARDS)
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (try! (contract-call? l-v transfer withdrawn-funds caller xbtc))
     (ok withdrawn-funds)))

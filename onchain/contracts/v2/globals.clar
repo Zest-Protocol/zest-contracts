@@ -63,6 +63,8 @@ u144)
 (define-map funding-vaults principal bool)
 ;; SIP-010 xbtc contracts
 (define-map xbtc-contracts principal bool)
+;; SIP-010 assets
+(define-map assets principal bool)
 ;; SIP-010 to be used as cover
 (define-map cover-pool-tokens principal bool)
 ;; cover-pool xBTC rewards contracts
@@ -134,8 +136,8 @@ u144)
 (define-read-only (is-funding-vault (funding-vault principal))
   (default-to false (map-get? funding-vaults funding-vault)))
 
-(define-read-only (is-xbtc (xbtc principal))
-  (default-to false (map-get? xbtc-contracts xbtc)))
+(define-read-only (is-asset (asset principal))
+  (default-to false (map-get? assets asset)))
 
 (define-read-only (is-coll-vault (coll-vault principal))
   (default-to false (map-get? coll-vaults coll-vault)))
@@ -209,6 +211,12 @@ u144)
     (try! (is-contract-owner))
     (print { type: "set-xbtc-vault", payload: xbtc-contract })
     (ok (map-set xbtc-contracts xbtc-contract true))))
+
+(define-public (set-asset-contract (asset-contract principal))
+  (begin
+    (try! (is-contract-owner))
+    (print { type: "set-xbtc-vault", payload: asset-contract })
+    (ok (map-set assets asset-contract true))))
 
 (define-public (set-coll-vault (coll-vault principal))
   (begin
@@ -492,6 +500,11 @@ u144)
 (map-set xbtc-contracts .xbtc true)
 (map-set xbtc-contracts .Wrapped-Bitcoin true)
 (map-set xbtc-contracts 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin true)
+
+(map-set assets .xbtc true)
+(map-set assets .Wrapped-Bitcoin true)
+(map-set assets 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin true)
+
 (map-set coll-vaults .coll-vault true)
 (map-set cover-vaults .cover-vault true)
 (map-set coll-contracts .xbtc true)

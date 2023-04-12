@@ -99,6 +99,9 @@
 (define-public (get-loan-pool-id (loan-id uint))
   (contract-call? .pool-data get-loan-pool-id loan-id))
 
+(define-public (get-pool (token-id uint))
+  (contract-call? .pool-data get-pool token-id))
+
 (define-read-only (get-loan-pool-id-read (loan-id uint))
   (contract-call? .pool-data get-loan-pool-id-read loan-id))
 
@@ -265,7 +268,9 @@
     (try! (contract-call? f-v remove-asset xbtc borrow-amount loan-id (get supplier-interface globals)))
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
 
-    (ok borrow-amount)))
+    (ok borrow-amount)
+  )
+)
 
 ;; @desc Finalize drawdown process for a selected loan. sends treasury fee and update loan
 ;; to ACTIVE
@@ -545,6 +550,8 @@
 (define-public (liquidate (loan-id uint) (coll-vault <cv>) (coll-token <ft>) (swap-router <swap>) (xbtc <ft>) (recipient principal))
   (let (
     (loan (try! (get-loan loan-id)))
+    (pool-id (try! (get-loan-pool-id loan-id)))
+    (pool (try! (get-pool pool-id)))
     (globals (contract-call? .globals get-globals))
     (new-loan (merge loan { status: LIQUIDATED }))
     (max-slippage (get max-slippage globals))
@@ -563,6 +570,9 @@
       ) ERR_LOAN_IN_PROGRESS)
     (asserts! (is-eq (contract-of coll-vault) (get coll-vault loan)) ERR_INVALID_CV)
     (asserts! (is-eq (contract-of coll-token) (get coll-token loan)) ERR_INVALID_COLL)
+    (asserts! (is-eq (get asset pool) (contract-of xbtc)) (err u9999))
+
+    ;; (if )
 
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
 

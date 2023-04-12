@@ -66,6 +66,7 @@
 (define-map pool-data
   uint {
     pool-delegate: principal,
+    asset: principal,
     lp-token: principal,
     zp-token: principal,
     payment: principal,
@@ -114,6 +115,7 @@
   (token-id uint)
   (data {
     pool-delegate: principal,
+    asset: principal,
     lp-token: principal,
     zp-token: principal,
     payment: principal,
@@ -151,6 +153,7 @@
   (token-id uint)
   (data {
     pool-delegate: principal,
+    asset: principal,
     lp-token: principal,
     zp-token: principal,
     payment: principal,

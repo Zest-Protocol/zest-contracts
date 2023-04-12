@@ -47,6 +47,7 @@
 ;; @returns (response uint uint)
 (define-public (create-pool
   (pool-delegate principal)
+  (asset <ft>)
   (lp <sip-010>)
   (zp-token <dt>)
   (pay <payment>)
@@ -65,6 +66,7 @@
   (cp-cover-token <ft>)
   (open bool))
   (let (
+    (asset-contract (contract-of asset))
     (lp-contract (contract-of lp))
     (cp-contract (contract-of cp))
     (zp-contract (contract-of zp-token))
@@ -76,6 +78,7 @@
     (next-id (+ new-pool-id u1))
     (data {
         pool-delegate: pool-delegate,
+        asset: asset-contract,
         lp-token: lp-contract,
         zp-token: zp-contract,
         payment: payment-contract,
@@ -103,6 +106,7 @@
     (asserts! (contract-call? .globals is-rewards-calc rewards-contract) ERR_INVALID_REWARDS_CALC)
     (asserts! (contract-call? .globals is-liquidity-vault lv-contract) ERR_INVALID_LV)
     (asserts! (contract-call? .globals is-payment payment-contract) ERR_INVALID_PAYMENT)
+    (asserts! (contract-call? .globals is-asset asset-contract) ERR_INVALID_XBTC)
 
     (asserts! (<= (+ cover-fee delegate-fee) u10000) ERR_INVALID_FEES)
     (asserts! (> min-cycles u0) ERR_INVALID_VALUES)
@@ -371,7 +375,7 @@
     (last-id (try! (contract-call? .loan-v1-0 create-loan loan-amount asset coll-ratio coll-token apr maturity-length payment-period coll-vault funding-vault tx-sender)))
     (loan { lp-token: (contract-of lp ), token-id: token-id, funding-vault: funding-vault })
     (pool (get-pool-read token-id)))
-    (asserts! (contract-call? .globals is-xbtc (contract-of asset)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of asset)) ERR_INVALID_XBTC)
     (asserts! (>= (get max-maturity-length pool) maturity-length) ERR_EXCEEDED_MATURITY_MAX)
 
     (try! (contract-call? .pool-data set-loan-to-pool last-id token-id))
@@ -404,7 +408,7 @@
     (new-pool (merge pool { principal-out: (+ amount (get principal-out pool)) })))
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
     (asserts! (is-eq lv-contract (get liquidity-vault pool)) ERR_INVALID_FV)
     (asserts! (is-eq fv-contract (get funding-vault loan)) ERR_INVALID_LV)
@@ -435,7 +439,7 @@
     (returned-funds (try! (contract-call? .loan-v1-0 unwind loan-pool-id loan-id f-v l-v xbtc)))
     (new-pool (merge pool { principal-out: (- (get principal-out pool) returned-funds) })))
     (asserts! (is-eq lv-contract (get liquidity-vault pool)) ERR_INVALID_LV)
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (try! (caller-is (get pool-delegate pool)))
     (asserts! (is-eq token-id loan-pool-id) ERR_INVALID_LOAN_POOL_ID)
 
@@ -487,7 +491,7 @@
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (is-eq token-id loan-pool-id) ERR_INVALID_TOKEN_ID)
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq (contract-of l-v) (get liquidity-vault pool)) ERR_INVALID_LV)
 
     (if (> req-amount current-amount)
@@ -591,7 +595,7 @@
     )
     (try! (is-supplier-interface))
     (try! (is-paused))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     (asserts! (is-eq (contract-of f-v) (get funding-vault loan)) ERR_INVALID_FV)
 
@@ -626,7 +630,7 @@
     (loan (try! (contract-call? .loan-v1-0 get-loan loan-id)))
     (rollover (try! (contract-call? .loan-v1-0 get-rollover-progress loan-id))))
     (try! (is-paused))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     (asserts! (>= (get loan-amount loan) (get new-amount rollover)) ERR_NEED_TO_WITHDRAW_FUNDS)
 
@@ -647,7 +651,7 @@
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id))))
     (try! (is-supplier-interface))
     (try! (is-paused))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
     (contract-call? .loan-v1-0 finalize-rollover loan-id coll-token coll-vault f-v xbtc)))
@@ -684,7 +688,7 @@
     )
     (try! (is-supplier-interface))
     (try! (is-paused))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (if (get has-remaining-payments pay-response)
       false
@@ -720,7 +724,7 @@
     )
     (try! (is-supplier-interface))
     (try! (is-paused))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
     (try! (contract-call? .pool-data set-pool token-id new-pool))
@@ -755,7 +759,7 @@
     (try! (is-supplier-interface))
     (try! (is-paused))
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (contract-call? .loan-v1-0 drawdown-verify loan-id coll-token coll-vault f-v lp token-id (get pool-delegate pool) (get delegate-fee pool) swap-router xbtc sender)))
 
@@ -787,7 +791,7 @@
     (try! (is-supplier-interface))
     (try! (is-paused))
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (contract-call? .loan-v1-0 drawdown loan-id coll-token coll-vault f-v (get liquidity-vault pool) lp token-id (get pool-delegate pool) (get delegate-fee pool) swap-router xbtc sender)))
 
@@ -808,7 +812,7 @@
     (try! (is-supplier-interface))
     (try! (is-paused))
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (contract-call? .loan-v1-0 finalize-drawdown loan-id coll-token coll-vault f-v (get liquidity-vault pool) lp token-id (get pool-delegate pool) (get delegate-fee pool) xbtc)))
 
@@ -839,7 +843,7 @@
     (try! (is-supplier-interface))
     (try! (is-paused))
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (try! (as-contract (contract-call? xbtc transfer recovered-amount tx-sender .loan-v1-0 none)))
     (contract-call? .loan-v1-0 cancel-drawdown loan-id coll-token coll-vault f-v (get liquidity-vault pool) lp token-id (get pool-delegate pool) (get delegate-fee pool) xbtc)))
@@ -884,11 +888,12 @@
         (try! (contract-call? .cover-pool-v1-0 default-withdrawal cp token-id (- loan-amount recovered-funds) (as-contract tx-sender) cover-token cover-vault))
         u0)))
     (try! (is-paused))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq tx-sender (get pool-delegate pool)) ERR_UNAUTHORIZED)
     (asserts! (is-eq lp-contract (get lp-token pool)) ERR_INVALID_LP)
     (asserts! (is-eq (get cp-token pool) (contract-of cp)) ERR_INVALID_SP)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
+    (asserts! (is-eq (get asset pool) (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (if (> (+ stakers-recovery recovered-funds) u0) ;; if we have recovered some funds
       (if (> loan-amount (+ stakers-recovery recovered-funds)) ;; if loan-amount bigger than recovered amounts, recognize losses
@@ -947,7 +952,7 @@
         u0)))
     (try! (is-paused))
     (try! (is-governor tx-sender token-id))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq lp-contract (get lp-token pool)) ERR_INVALID_LP)
     (asserts! (is-eq (get cp-token pool) (contract-of cp)) ERR_INVALID_SP)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
@@ -1002,7 +1007,7 @@
     (loan-amount (get loan-amount loan)))
     (try! (is-paused))
     (try! (is-governor tx-sender token-id))
-    (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
+    (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq lp-contract (get lp-token pool)) ERR_INVALID_LP)
     (asserts! (is-eq (get cp-token pool) (contract-of cp)) ERR_INVALID_SP)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
