@@ -461,16 +461,23 @@
 ;; @returns (response uint uint)
 (define-public (default-withdrawal (cp <cp-token>) (token-id uint) (remaining-loan-amount uint) (recipient principal) (cover-token <ft>) (cover-vault <lv>))
   (let (
-    (pool (try! (get-pool token-id)))
-    (funds-in-pool (unwrap-panic (try! (contract-call? cover-vault get-asset token-id))))
-    (amount-to-send (if (> remaining-loan-amount funds-in-pool) funds-in-pool remaining-loan-amount)))
+    (pool (try! (get-pool token-id))))
     (try! (is-pool))
     (asserts! (is-eq (contract-of cover-token) (get cover-token pool)) ERR_INVALID_CP)
     (asserts! (is-eq (contract-of cover-vault) (get cover-vault pool)) ERR_INVALID_COVER_VAULT)
 
-    (try! (contract-call? cover-vault remove-asset cover-token amount-to-send token-id recipient))
-    (try! (contract-call? cp distribute-losses token-id amount-to-send))
-    (ok amount-to-send)))
+    (match (try! (contract-call? cover-vault get-asset token-id))
+      funds-in-pool
+        (let (
+          (amount-to-send (if (> remaining-loan-amount funds-in-pool) funds-in-pool remaining-loan-amount)))
+          (try! (contract-call? cover-vault remove-asset cover-token amount-to-send token-id recipient))
+          (try! (contract-call? cp distribute-losses token-id amount-to-send))
+          (ok amount-to-send)
+        )
+      (ok u0)
+    )
+  )
+)
 
 ;; @desc withdraws funds from the cover pool to cover for losses.
 ;; sets state to IN_OTC_LIQUIDATION

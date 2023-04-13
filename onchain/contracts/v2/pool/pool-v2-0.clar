@@ -896,23 +896,17 @@
     (asserts! (is-eq (get asset pool) (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (if (> (+ stakers-recovery recovered-funds) u0) ;; if we have recovered some funds
-      (if (> loan-amount (+ stakers-recovery recovered-funds)) ;; if loan-amount bigger than recovered amounts, recognize losses
-        (begin
+      (begin
+        (if (> loan-amount (+ stakers-recovery recovered-funds)) ;; if loan-amount bigger than recovered amounts, recognize losses
           (as-contract (try! (contract-call? l-v add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
-          (try! (contract-call? .pool-data set-pool token-id (merge pool
-            { 
-              principal-out: (- (get principal-out pool) loan-amount)
-            }))))
-        (begin
           (as-contract (try! (contract-call? l-v add-asset xbtc recovered-funds token-id tx-sender)))
-          (try! (contract-call? .pool-data set-pool token-id (merge pool { principal-out: (- (get principal-out pool) loan-amount) })))
-        ))
-      (try! (contract-call? .pool-data set-pool token-id (merge pool
-        {
-          principal-out: (- (get principal-out pool) loan-amount)
-        })))
+        )
+        true
+      )
+      false
     )
     
+    (try! (contract-call? .pool-data set-pool token-id (merge pool { principal-out: (- (get principal-out pool) loan-amount) })))
     (ok { staking-pool-recovered: stakers-recovery, collateral-recovery: recovered-funds })
   ))
 

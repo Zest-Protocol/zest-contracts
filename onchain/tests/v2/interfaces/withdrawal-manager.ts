@@ -60,8 +60,29 @@ class WithdrawalManager {
     )
   }
 
-  static withdrawableFundsOf(chain: Chain, contractAddress: string, contractName: string, caller: string) {
-    return chain.callReadOnlyFn(`${contractAddress}.${contractName}`, "withdrawable-funds-of", [], caller);
+  static getRedeemeableAmounts(
+    chain: Chain,
+    lpToken: string,
+    tokenId: number,
+    liquidityVault: string,
+    asset: string,
+    requestedShares: number,
+    owner: string,
+    contractAddress: string,
+    contractName: string,
+    caller: string) {
+    return chain.callReadOnlyFn(
+      `${contractAddress}.${contractName}`,
+      "get-redeemeable-amounts",
+      [
+        types.principal(lpToken),
+        types.uint(tokenId),
+        types.principal(liquidityVault),
+        types.principal(asset),
+        types.uint(requestedShares),
+        types.principal(owner)
+      ],
+      caller);
   }
 }
 

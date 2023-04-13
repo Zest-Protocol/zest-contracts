@@ -12,6 +12,7 @@ class Pool {
 
   createPool(
     delegate: string,
+    asset: string,
     lp: string,
     zp: string,
     payment: string,
@@ -36,6 +37,7 @@ class Pool {
           'create-pool',
           [
             types.principal(delegate),
+            types.principal(asset),
             types.principal(lp),
             types.principal(zp),
             types.principal(payment),

@@ -561,7 +561,7 @@
     (xbtc-to-recover (if has-collateral (try! (contract-call? swap-router get-y-given-x coll-token xbtc withdrawn-funds)) u0))
     (min-xbtc-to-recover (/ (* xbtc-to-recover max-slippage) BP_PRC))
     (status (get status loan))
-    (recovered-funds (if has-collateral (try! (contract-call? swap-router swap-x-for-y recipient coll-token xbtc withdrawn-funds (some min-xbtc-to-recover))) u0)))
+  )
     (try! (caller-is-pool))
     (asserts! (or
       (and (is-eq status ACTIVE)
@@ -570,13 +570,21 @@
       ) ERR_LOAN_IN_PROGRESS)
     (asserts! (is-eq (contract-of coll-vault) (get coll-vault loan)) ERR_INVALID_CV)
     (asserts! (is-eq (contract-of coll-token) (get coll-token loan)) ERR_INVALID_COLL)
-    (asserts! (is-eq (get asset pool) (contract-of xbtc)) (err u9999))
 
-    ;; (if )
+    (if (is-eq (get asset pool) (contract-of xbtc))
+      (begin
+        (try! (contract-call? .loan-data set-loan loan-id new-loan))
+        (ok { recovered-funds: withdrawn-funds, loan-amount: (get loan-amount loan)})
+      )
+      (let
+        ((recovered-funds (if has-collateral (try! (contract-call? swap-router swap-x-for-y recipient coll-token xbtc withdrawn-funds (some min-xbtc-to-recover))) u0)))
 
-    (try! (contract-call? .loan-data set-loan loan-id new-loan))
-
-    (ok { recovered-funds: recovered-funds, loan-amount: (get loan-amount loan)})))
+        (try! (contract-call? .loan-data set-loan loan-id new-loan))
+        (ok { recovered-funds: recovered-funds, loan-amount: (get loan-amount loan)})
+      )
+    )
+  )
+)
 
 ;; @desc Pool Delegate liquidates loans that have their grace period expired.
 ;; Values are validated here and collateral is sent to recipient.
