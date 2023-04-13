@@ -471,7 +471,6 @@
         (let (
           (amount-to-send (if (> remaining-loan-amount funds-in-pool) funds-in-pool remaining-loan-amount)))
           (try! (contract-call? cover-vault remove-asset cover-token amount-to-send token-id recipient))
-          (try! (contract-call? cp distribute-losses token-id amount-to-send))
           (ok amount-to-send)
         )
       (ok u0)

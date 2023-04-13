@@ -896,18 +896,12 @@
     (asserts! (is-eq (get asset pool) (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (if (> (+ stakers-recovery recovered-funds) u0) ;; if we have recovered some funds
-      (begin
-        (if (> loan-amount (+ stakers-recovery recovered-funds)) ;; if loan-amount bigger than recovered amounts, recognize losses
-          (as-contract (try! (contract-call? l-v add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
-          (as-contract (try! (contract-call? l-v add-asset xbtc recovered-funds token-id tx-sender)))
-        )
-        true
-      )
-      false
+      (as-contract (try! (contract-call? l-v add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
+      u0
     )
-    
+
     (try! (contract-call? .pool-data set-pool token-id (merge pool { principal-out: (- (get principal-out pool) loan-amount) })))
-    (ok { staking-pool-recovered: stakers-recovery, collateral-recovery: recovered-funds })
+    (ok { cover-pool-recovered: stakers-recovery, collateral-recovery: recovered-funds })
   ))
 
 ;; @desc Pool Delegate liquidates loans that have their grace period expired.
