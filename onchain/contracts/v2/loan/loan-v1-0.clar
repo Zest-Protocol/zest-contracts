@@ -50,6 +50,7 @@
 ;; @param borrower: principal of the borrower
 ;; @returns the id of the loan created
 (define-public (create-loan
+  (loan principal)
   (loan-amount uint)
   (xbtc <ft>)
   (coll-ratio uint)
@@ -67,6 +68,7 @@
     (globals (contract-call? .globals get-globals))
     (data {
       status: INIT,
+      loan-contract: loan,
       borrower: borrower,
       loan-amount: loan-amount,
       coll-ratio: coll-ratio,

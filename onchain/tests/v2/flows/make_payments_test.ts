@@ -43,7 +43,9 @@ import {
   XUSD_CONTRACT_SIMNET,
   USDA_CONTRACT_SIMNET,
   COVER_VAULT,
-DAYS_PER_YEAR,
+  DAYS_PER_YEAR,
+  POOL_V2_0,
+  LOAN_V1_0,
 } from "../config.ts";
 
 const MAX_MATURITY_LENGTH = 144 * 365 * 3; // 3 years
@@ -107,7 +109,7 @@ Clarinet.test({
       SupplierInterface.updateLiquidity(chain.blockHeight, 1_000_000_000_000, deployerWallet.address)
     ]);
 
-    block = pool.createPool(delegate_1.address,XBTC,LP_TOKEN_0,ZP_TOKEN,PAYMENT,REWARDS_CALC,WITHDRAWAL_MANAGER,1000,1000,100_000_000_000,100_000_000_000,1,MAX_MATURITY_LENGTH,LIQUIDITY_VAULT,CP_TOKEN,COVER_VAULT,CP_REWARDS_TOKEN,XBTC,true);
+    block = pool.createPool(delegate_1.address,XBTC,POOL_V2_0,LP_TOKEN_0,ZP_TOKEN,PAYMENT,REWARDS_CALC,WITHDRAWAL_MANAGER,1000,1000,100_000_000_000,100_000_000_000,1,MAX_MATURITY_LENGTH,LIQUIDITY_VAULT,CP_TOKEN,COVER_VAULT,CP_REWARDS_TOKEN,XBTC,true);
     block = pool.finalizePool(delegate_1.address, LP_TOKEN_0, ZP_TOKEN, CP_TOKEN, poolId_0);
 
     let MagicId_LP_1 = common.consumeUint(chain.callReadOnlyFn(`${LP_1.address}.${MAGIC_CALLER_CONTRACT_NAME}`, `get-swapper-id`, [], deployerWallet.address ).result.expectSome());
@@ -144,7 +146,7 @@ Clarinet.test({
     const apr = 300;
 
     // Borrower creates Loan 0 for Pool 0
-    block = pool.createLoan(LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
+    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
 
     const loanId = common.consumeUint(block.receipts[0].result.expectOk());
     // Loan is funded by Pool Delegate
@@ -306,7 +308,7 @@ Clarinet.test({
       SupplierInterface.updateLiquidity(chain.blockHeight, 1_000_000_000_000, deployerWallet.address)
     ]);
 
-    block = pool.createPool(delegate_1.address,XBTC,LP_TOKEN_0,ZP_TOKEN,PAYMENT,REWARDS_CALC,WITHDRAWAL_MANAGER,1000,1000,300_000_000_000,300_000_000_000,1,MAX_MATURITY_LENGTH,LIQUIDITY_VAULT,CP_TOKEN,COVER_VAULT,CP_REWARDS_TOKEN,XBTC,true);
+    block = pool.createPool(delegate_1.address,XBTC,POOL_V2_0,LP_TOKEN_0,ZP_TOKEN,PAYMENT,REWARDS_CALC,WITHDRAWAL_MANAGER,1000,1000,300_000_000_000,300_000_000_000,1,MAX_MATURITY_LENGTH,LIQUIDITY_VAULT,CP_TOKEN,COVER_VAULT,CP_REWARDS_TOKEN,XBTC,true);
     block = pool.finalizePool(delegate_1.address, LP_TOKEN_0, ZP_TOKEN, CP_TOKEN, poolId_0);
 
     let MagicId_LP_1 = common.consumeUint(chain.callReadOnlyFn(`${LP_1.address}.${MAGIC_CALLER_CONTRACT_NAME}`, `get-swapper-id`, [], deployerWallet.address ).result.expectSome());
@@ -354,7 +356,7 @@ Clarinet.test({
     const apr = 300;
 
     // Borrower creates Loan 0 for Pool 0
-    block = pool.createLoan(LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
+    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
 
     const loanId = common.consumeUint(block.receipts[0].result.expectOk());
     // Loan is funded by Pool Delegate
@@ -529,7 +531,7 @@ Clarinet.test({
       SupplierInterface.updateLiquidity(chain.blockHeight, 1_000_000_000_000, deployerWallet.address)
     ]);
 
-    block = pool.createPool(delegate_1.address,XBTC,LP_TOKEN_0,ZP_TOKEN,PAYMENT,REWARDS_CALC,WITHDRAWAL_MANAGER,1000,1000,300_000_000_000,300_000_000_000,1,MAX_MATURITY_LENGTH,LIQUIDITY_VAULT,CP_TOKEN,COVER_VAULT,CP_REWARDS_TOKEN,XBTC,true);
+    block = pool.createPool(delegate_1.address,XBTC,POOL_V2_0,LP_TOKEN_0,ZP_TOKEN,PAYMENT,REWARDS_CALC,WITHDRAWAL_MANAGER,1000,1000,300_000_000_000,300_000_000_000,1,MAX_MATURITY_LENGTH,LIQUIDITY_VAULT,CP_TOKEN,COVER_VAULT,CP_REWARDS_TOKEN,XBTC,true);
     block = pool.finalizePool(delegate_1.address, LP_TOKEN_0, ZP_TOKEN, CP_TOKEN, poolId_0);
 
     let MagicId_LP_1 = common.consumeUint(chain.callReadOnlyFn(`${LP_1.address}.${MAGIC_CALLER_CONTRACT_NAME}`, `get-swapper-id`, [], deployerWallet.address ).result.expectSome());
@@ -577,7 +579,7 @@ Clarinet.test({
     const apr = 300;
 
     // Borrower creates Loan 0 for Pool 0
-    block = pool.createLoan(LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
+    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
 
     const loanId = common.consumeUint(block.receipts[0].result.expectOk());
     // Loan is funded by Pool Delegate

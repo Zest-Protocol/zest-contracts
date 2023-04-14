@@ -67,6 +67,7 @@
   uint {
     pool-delegate: principal,
     asset: principal,
+    pool-contract: principal,
     lp-token: principal,
     zp-token: principal,
     payment: principal,
@@ -116,6 +117,7 @@
   (data {
     pool-delegate: principal,
     asset: principal,
+    pool-contract: principal,
     lp-token: principal,
     zp-token: principal,
     payment: principal,
@@ -154,6 +156,7 @@
   (data {
     pool-delegate: principal,
     asset: principal,
+    pool-contract: principal,
     lp-token: principal,
     zp-token: principal,
     payment: principal,

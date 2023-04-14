@@ -28,6 +28,9 @@ export const XUSD_CONTRACT_SIMNET = `ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.W
 export const COVER_VAULT = `${DEPLOYER}.cover-vault`;
 export const DAO = `${DEPLOYER}.executor-dao`;
 export const SUPPLIER_CONTROLLER_0 = `${DEPLOYER}.supplier-controller`;
+export const POOL_V2_0 = `${DEPLOYER}.pool-v2-0`;
+export const LOAN_V1_0 = `${DEPLOYER}.loan-v1-0`;
+
 
 // export const ONE_DAY = 36;
 export const ONE_DAY = 144;

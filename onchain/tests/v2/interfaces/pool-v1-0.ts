@@ -13,6 +13,7 @@ class Pool {
   createPool(
     delegate: string,
     asset: string,
+    poolContract: string,
     lp: string,
     zp: string,
     payment: string,
@@ -38,6 +39,7 @@ class Pool {
           [
             types.principal(delegate),
             types.principal(asset),
+            types.principal(poolContract),
             types.principal(lp),
             types.principal(zp),
             types.principal(payment),
@@ -84,6 +86,7 @@ class Pool {
   }
 
   createLoan(
+    loanContract: string,
     lp: string,
     tokenId: number,
     amount: number,
@@ -102,6 +105,7 @@ class Pool {
         `pool-v2-0`,
         "create-loan",
         [
+          types.principal(loanContract),
           types.principal(lp),
           types.uint(tokenId),
           types.uint(amount),

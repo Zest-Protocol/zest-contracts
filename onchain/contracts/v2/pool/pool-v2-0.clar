@@ -48,6 +48,7 @@
 (define-public (create-pool
   (pool-delegate principal)
   (asset <ft>)
+  (pool principal)
   (lp <sip-010>)
   (zp-token <dt>)
   (pay <payment>)
@@ -79,6 +80,7 @@
     (data {
         pool-delegate: pool-delegate,
         asset: asset-contract,
+        pool-contract: pool,
         lp-token: lp-contract,
         zp-token: zp-contract,
         payment: payment-contract,
@@ -360,6 +362,7 @@
 ;; @param funding-vault: contract that holds funds before drawdown
 ;; @returns (response uint uint)
 (define-public (create-loan
+  (loan-contract principal)
   (lp <sip-010>)
   (token-id uint)
   (loan-amount uint)
@@ -372,7 +375,7 @@
   (coll-vault principal)
   (funding-vault principal))
   (let (
-    (last-id (try! (contract-call? .loan-v1-0 create-loan loan-amount asset coll-ratio coll-token apr maturity-length payment-period coll-vault funding-vault tx-sender)))
+    (last-id (try! (contract-call? .loan-v1-0 create-loan loan-contract loan-amount asset coll-ratio coll-token apr maturity-length payment-period coll-vault funding-vault tx-sender)))
     (loan { lp-token: (contract-of lp ), token-id: token-id, funding-vault: funding-vault })
     (pool (get-pool-read token-id)))
     (asserts! (contract-call? .globals is-asset (contract-of asset)) ERR_INVALID_XBTC)
@@ -1046,7 +1049,7 @@
 
 ;; @desc sanity checks for liquidity cap
 (define-read-only (lc-check (new-lc uint) (previous-lc uint))
-  (and (> new-lc previous-lc)))
+  (and (> new-lc u0)))
 
 (define-read-only (get-cycle-start (token-id uint))
   (get pool-stx-start (get-pool-read token-id)))

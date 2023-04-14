@@ -30,6 +30,7 @@
 (define-map loan uint
   {
     status: (buff 1),
+    loan-contract: principal,
     borrower: principal,
     loan-amount: uint,
     coll-ratio: uint, ;; ratio in BP
@@ -65,6 +66,7 @@
   (loan-id uint)
   (data {
   status: (buff 1),
+  loan-contract: principal,
   borrower: principal,
   loan-amount: uint,
   coll-ratio: uint,
@@ -90,6 +92,7 @@
   (loan-id uint)
   (data {
   status: (buff 1),
+  loan-contract: principal,
   borrower: principal,
   loan-amount: uint,
   coll-ratio: uint, ;; ratio in BP
