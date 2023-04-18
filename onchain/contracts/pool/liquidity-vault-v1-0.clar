@@ -89,6 +89,10 @@
 (define-public (get-asset (token-id uint))
   (ok (map-get? assets token-id)))
 
+
+(define-read-only (get-asset-read (token-id uint))
+  (unwrap-panic (map-get? assets token-id)))
+
 ;; --- approved contracts
 
 (define-map approved-contracts principal bool)

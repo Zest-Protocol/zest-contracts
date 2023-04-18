@@ -163,7 +163,6 @@
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (lc-check liquidity-cap (get liquidity-cap pool)) ERR_INVALID_LIQ)
 
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
@@ -1260,6 +1259,14 @@
         (some (- unstake-window (- time-delta cooldown-period)))
         none)
       none)))
+
+(define-read-only (get-available-capacity (token-id uint))
+  (let (
+    (pool (get-pool-read token-id))
+    (cash (contract-call? .liquidity-vault-v1-0 get-asset-read token-id)))
+    (- (get liquidity-cap pool) (+ cash (get principal-out pool)))
+  )
+)
 
 (define-read-only (has-committed-funds (token-id uint) (owner principal))
   (let (
