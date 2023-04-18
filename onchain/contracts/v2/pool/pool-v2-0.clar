@@ -887,7 +887,7 @@
     (loan-amount (get loan-amount coll-recovery))
     (recovered-funds (get recovered-funds coll-recovery))
     (stakers-recovery
-      (if (get available cover-pool)
+      (if (and (get available cover-pool) (< recovered-funds loan-amount))
         (try! (contract-call? .cover-pool-v1-0 default-withdrawal cp token-id (- loan-amount recovered-funds) (as-contract tx-sender) cover-token cover-vault))
         u0)))
     (try! (is-paused))
