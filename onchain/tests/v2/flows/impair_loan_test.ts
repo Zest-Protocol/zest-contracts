@@ -151,7 +151,7 @@ Clarinet.test({
     const apr = 300;
 
     // Borrower creates Loan 0 for Pool 0
-    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
+    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, false, borrower_1.address);
     
     const loanId = common.consumeUint(block.receipts[0].result.expectOk());
     // Loan is funded by Pool Delegate
@@ -335,7 +335,7 @@ Clarinet.test({
     const apr = 300;
 
     // Borrower creates Loan 0 for Pool 0
-    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
+    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, false, borrower_1.address);
     
     const loanId = common.consumeUint(block.receipts[0].result.expectOk());
     // Loan is funded by Pool Delegate
@@ -560,7 +560,7 @@ Clarinet.test({
     const apr = 300;
 
     // Borrower creates Loan 0 for Pool 0
-    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, borrower_1.address);
+    block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, payment_period * num_payments, payment_period, COLL_VAULT, FUNDING_VAULT, false, borrower_1.address);
     
     const loanId = common.consumeUint(block.receipts[0].result.expectOk());
     // Loan is funded by Pool Delegate
@@ -690,4 +690,4 @@ Clarinet.test({
 });
 
 
-// punish users who withdraw before impairment is resolved
+// TODO: punish users who withdraw before impairment is resolved

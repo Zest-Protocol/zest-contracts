@@ -43,7 +43,8 @@
     coll-vault: principal,
     funding-vault: principal,
     created: uint, ;; time in blocks (10 minutes)
-    asset: principal })
+    asset: principal,
+    open-term: bool })
 
 ;; @desc creates loan
 ;; @restricted loan
@@ -80,7 +81,8 @@
   coll-vault: principal,
   funding-vault: principal,
   created: uint,
-  asset: principal }))
+  asset: principal,
+  open-term: bool }))
   (begin
     (try! (is-loan-contract))
     (asserts! (map-insert loan loan-id data) ERR_LOAN_ALREADY_EXISTS)
@@ -107,7 +109,8 @@
   coll-vault: principal,
   funding-vault: principal,
   created: uint,
-  asset: principal }))
+  asset: principal,
+  open-term: bool }))
   (begin
     (try! (is-loan-contract))
     (map-set loan loan-id data)

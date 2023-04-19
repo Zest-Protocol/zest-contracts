@@ -98,6 +98,7 @@ class Pool {
     paymentPeriod: number,
     collVault: string,
     fundingVault: string,
+    openTerm: boolean,
     borrower: string
     ) {
     return this.chain.mineBlock([
@@ -117,6 +118,7 @@ class Pool {
           types.uint(paymentPeriod),
           types.principal(collVault),
           types.principal(fundingVault),
+          types.bool(openTerm),
         ],
         borrower
       )

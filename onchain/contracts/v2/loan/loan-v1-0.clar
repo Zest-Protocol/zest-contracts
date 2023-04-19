@@ -60,6 +60,7 @@
   (payment-period uint)
   (coll-vault principal)
   (funding-vault principal)
+  (open-term bool)
   (borrower principal))
   (let (
     (last-id (get-last-loan-id))
@@ -81,7 +82,8 @@
       coll-vault: coll-vault,
       funding-vault: funding-vault,
       created: burn-block-height,
-      asset: asset-contract
+      asset: asset-contract,
+      open-term: open-term
       }))
     (try! (caller-is-pool))
     (try! (can-borrow borrower))
