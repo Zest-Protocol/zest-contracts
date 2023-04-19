@@ -36,6 +36,7 @@
     coll-ratio: uint, ;; ratio in BP
     coll-token: principal,
     next-payment: uint,
+    original-next-payment: uint,
     apr: uint, ;; apr in basis points, 1 BP = 1 / 10_000
     payment-period: uint,
     remaining-payments: uint,
@@ -72,6 +73,7 @@
   coll-ratio: uint,
   coll-token: principal,
   next-payment: uint,
+  original-next-payment: uint,
   apr: uint,
   payment-period: uint,
   remaining-payments: uint,
@@ -98,6 +100,7 @@
   coll-ratio: uint, ;; ratio in BP
   coll-token: principal,
   next-payment: uint,
+  original-next-payment: uint,
   apr: uint, ;; apr in basis points, 1 BP = 1 / 10_000
   payment-period: uint,
   remaining-payments: uint,

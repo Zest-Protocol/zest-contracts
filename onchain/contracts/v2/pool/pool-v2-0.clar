@@ -688,14 +688,16 @@
     (liquidity-vault (get liquidity-vault pool))
     (transfer-response (try! (as-contract (contract-call? xbtc transfer amount tx-sender .loan-v1-0 none))))
     (pay-response (try! (contract-call? .loan-v1-0 make-payment loan-id height pay lp l-v cp cp-rewards-token zd-token swap-router amount xbtc caller)))
+    (is-impaired (get is-impaired pay-response))
+    (losses (if is-impaired (- (get losses pool) (get loan-amount pay-response)) (get losses pool)))
     )
     (try! (is-supplier-interface))
     (try! (is-paused))
     (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
 
     (if (get has-remaining-payments pay-response)
-      false
-      (try! (contract-call? .pool-data set-pool loan-pool-id (merge pool { principal-out: (- (get principal-out pool) (get loan-amount pay-response)) })))
+      (try! (contract-call? .pool-data set-pool loan-pool-id (merge pool { losses: losses })))
+      (try! (contract-call? .pool-data set-pool loan-pool-id (merge pool { principal-out: (- (get principal-out pool) (get loan-amount pay-response)), losses: losses })))
     )
     (ok pay-response)
   )
@@ -902,8 +904,15 @@
       (as-contract (try! (contract-call? l-v add-asset xbtc (+ stakers-recovery recovered-funds) token-id tx-sender)))
       u0
     )
-
-    (try! (contract-call? .pool-data set-pool token-id (merge pool { principal-out: (- (get principal-out pool) loan-amount) })))
+    
+    (if (get impaired coll-recovery)
+      (try! (contract-call? .pool-data set-pool token-id (merge pool {
+        principal-out: (- (get principal-out pool) loan-amount),
+        losses: (- (get losses pool) loan-amount) }))
+      )
+      (try! (contract-call? .pool-data set-pool token-id (merge pool { principal-out: (- (get principal-out pool) loan-amount) })))
+    )
+    
     (ok { cover-pool-recovered: stakers-recovery, collateral-recovery: recovered-funds })
   ))
 
@@ -950,16 +959,40 @@
     
     (ok { stakers-recovery: stakers-recovery, coll-recovery: coll-recovery })))
 
+;; Impair a loan, so that losses are accounted for in the pool
+;; 3 options:
+;; - reverse impairment
+;; - If Borrower makes a payment, reverse impairment
+;; - Loan default, recover funds from collateral and cover
 (define-public (impair-loan (token-id uint) (loan-id uint))
   (let (
     (pool (try! (get-pool token-id)))
-    (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id))))
+    (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
+    (loan (try! (contract-call? .loan-v1-0 impair-loan loan-id)))
+    (losses (get losses pool))
+    )
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
     (asserts! (or
       (is-eq tx-sender (get pool-delegate pool))
       (try! (is-governor tx-sender token-id))) ERR_UNAUTHORIZED)
 
-    (try! (contract-call? .loan-v1-0 impair-loan loan-id))
+    (try! (contract-call? .pool-data set-pool token-id (merge pool { losses: (+ losses (get loan-amount loan)) })))
+    (ok true)))
+
+
+(define-public (reverse-impaired-loan (token-id uint) (loan-id uint))
+  (let (
+    (pool (try! (get-pool token-id)))
+    (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
+    (loan (try! (contract-call? .loan-v1-0 reverse-impaired-loan loan-id)))
+    (new-pool (merge pool { losses: (- (get losses pool) (get loan-amount loan)) }))
+    )
+    (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
+    (asserts! (or
+      (is-eq tx-sender (get pool-delegate pool))
+      (try! (is-governor tx-sender token-id))) ERR_UNAUTHORIZED)
+
+    (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
 ;; @desc Pool Delegate returns recovered funds to the pool and distributes losses

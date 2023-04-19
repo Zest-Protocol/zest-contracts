@@ -74,6 +74,7 @@
       coll-ratio: coll-ratio,
       coll-token: (contract-of coll-token),
       next-payment: u0,
+      original-next-payment: u0,
       apr: apr,
       payment-period: payment-period,
       remaining-payments: (/ maturity-length payment-period),
@@ -460,30 +461,34 @@
     (payment-response (try! (contract-call? pay make-next-payment lp l-v token-id cp cp-rewards-token zd-token swap-router height loan-id (+ tested-amount amount) xbtc caller)))
     (amount-due (- (get reward payment-response) tested-amount))
     (remaining-payments (get remaining-payments loan))
+    (impaired (is-eq IMPAIRED (get status loan)))
   )
     (try! (caller-is-pool))
     (asserts! (is-eq caller (get borrower loan)) ERR_UNAUTHORIZED)
-    (asserts! (is-eq ACTIVE (get status loan)) ERR_INVALID_STATUS)
+    (asserts! (or (is-eq ACTIVE (get status loan)) impaired) ERR_INVALID_STATUS)
     (asserts! (>= amount amount-due) ERR_NOT_ENOUGH_PAID)
     ;; if repayment, assert amount being sent is greater than the total loan
     (let (
       (new-loan
         (if (is-eq remaining-payments u1)
           (begin
-            (merge loan { next-payment: u0, remaining-payments: u0, status: MATURED }))
+            (merge loan { next-payment: u0, remaining-payments: u0, original-next-payment: u0, status: MATURED }))
           (merge loan
             {
               remaining-payments: (- remaining-payments u1),
               next-payment: (+ (get next-payment loan) (get payment-period loan)),
+              original-next-payment: u0,
               status: ACTIVE })
         )))
-      (try! (contract-call? .loan-data set-loan loan-id new-loan)))
+      (try! (contract-call? .loan-data set-loan loan-id new-loan))
 
-    (print { type: "make-payment", payload: { key: { loan-id: loan-id, token-id: token-id }, data: loan, amount: amount } })
-    ;; for payment testing
-    (set-tested-amount loan-id u0)
+      (print { type: "make-payment", payload: { key: { loan-id: loan-id, token-id: token-id }, data: new-loan, amount: amount } })
+      ;; for payment testing
+      (set-tested-amount loan-id u0)
 
-    (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (> remaining-payments u1) }))))
+      (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (> remaining-payments u1), is-impaired: impaired }))))
+    )
+
 
 ;; @desc funds are received from the supplier interface and sent to the payment contract
 ;; @restricted bridge
@@ -529,7 +534,7 @@
     (amount-due (- (+ (get reward payment-response) (get full-payment payment-response)) tested-amount)))
     (try! (is-supplier-interface))
     (asserts! (is-eq caller (get borrower loan)) ERR_UNAUTHORIZED)
-    (asserts! (is-eq ACTIVE (get status loan)) ERR_INVALID_STATUS)
+    (asserts! (or (is-eq ACTIVE (get status loan)) (is-eq IMPAIRED (get status loan))) ERR_INVALID_STATUS)
     (asserts! (>= amount amount-due) ERR_NOT_ENOUGH_PAID)
 
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
@@ -563,26 +568,26 @@
     (xbtc-to-recover (if has-collateral (try! (contract-call? swap-router get-y-given-x coll-token xbtc withdrawn-funds)) u0))
     (min-xbtc-to-recover (/ (* xbtc-to-recover max-slippage) BP_PRC))
     (status (get status loan))
+    (impaired (is-eq (get status loan) IMPAIRED))
   )
     (try! (caller-is-pool))
-    (asserts! (or
-      (and (is-eq status ACTIVE)
-        (> burn-block-height (+ (get grace-period globals) (get next-payment loan))))
-      (is-eq status IMPAIRED)
-      ) ERR_LOAN_IN_PROGRESS)
+    (asserts!  (and
+      (or (is-eq status ACTIVE) (is-eq status IMPAIRED))
+      (> burn-block-height (+ (get grace-period globals) (get next-payment loan))))
+      ERR_LOAN_IN_PROGRESS)
     (asserts! (is-eq (contract-of coll-vault) (get coll-vault loan)) ERR_INVALID_CV)
     (asserts! (is-eq (contract-of coll-token) (get coll-token loan)) ERR_INVALID_COLL)
 
     (if (is-eq (get asset pool) (contract-of xbtc))
       (begin
         (try! (contract-call? .loan-data set-loan loan-id new-loan))
-        (ok { recovered-funds: withdrawn-funds, loan-amount: (get loan-amount loan)})
+        (ok { recovered-funds: withdrawn-funds, loan-amount: (get loan-amount loan), impaired: impaired })
       )
       (let
         ((recovered-funds (if has-collateral (try! (contract-call? swap-router swap-x-for-y recipient coll-token xbtc withdrawn-funds (some min-xbtc-to-recover))) u0)))
 
         (try! (contract-call? .loan-data set-loan loan-id new-loan))
-        (ok { recovered-funds: recovered-funds, loan-amount: (get loan-amount loan)})
+        (ok { recovered-funds: recovered-funds, loan-amount: (get loan-amount loan), impaired: impaired })
       )
     )
   )
@@ -647,10 +652,24 @@
 (define-public (impair-loan (loan-id uint))
   (let (
     (loan (get-loan-read loan-id))
-    (new-loan (merge loan { status: IMPAIRED })))
+    (new-loan (merge loan { status: IMPAIRED, next-payment: block-height, original-next-payment: (get next-payment loan) })))
+    (try! (caller-is-pool))
+    (asserts! (is-eq (get status loan) ACTIVE) ERR_INVALID_STATUS)
+    (try! (contract-call? .loan-data set-loan loan-id new-loan))
+    (ok new-loan)))
+
+(define-public (reverse-impaired-loan (loan-id uint))
+  (let (
+    (loan (get-loan-read loan-id))
+    (new-loan (merge loan { status: ACTIVE, next-payment: (get original-next-payment loan), original-next-payment: u0 })))
+    (asserts! (> (get original-next-payment loan) u0) ERR_INVALID_STATUS)
+    (asserts! (is-eq (get status loan) IMPAIRED) ERR_INVALID_STATUS)
+
     (try! (caller-is-pool))
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
-    (ok true)))
+    (ok new-loan)
+  )
+)
 
 ;; @desc borrower requests for a modification to the loan agreement
 ;; @restricted borrower
