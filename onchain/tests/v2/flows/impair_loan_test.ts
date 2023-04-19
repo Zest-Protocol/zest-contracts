@@ -691,3 +691,4 @@ Clarinet.test({
 
 
 // TODO: punish users who withdraw before impairment is resolved
+// TODO: ALLOW TO CANCEL IMPAIRMENT BY ROLLING OVER
