@@ -961,8 +961,8 @@
 
 ;; Impair a loan, so that losses are accounted for in the pool
 ;; 3 options:
-;; - reverse impairment
-;; - If Borrower makes a payment, reverse impairment
+;; - reverse impairment .
+;; - If Borrower makes a payment, reverse impairment .
 ;; - Loan default, recover funds from collateral and cover
 (define-public (impair-loan (token-id uint) (loan-id uint))
   (let (

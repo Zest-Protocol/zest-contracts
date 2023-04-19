@@ -603,6 +603,22 @@ class Pool {
     ]);
   }
 
+  reverseImpairedLoan(
+    tokenId: number,
+    loanId: number,
+    caller: string) {
+    return this.chain.mineBlock([
+      Tx.contractCall(
+        `pool-v2-0`,
+        "reverse-impaired-loan",
+        [
+          types.uint(tokenId),
+          types.uint(loanId)
+        ],
+        caller)
+    ]);
+  }
+
   hasLockedFunds(tokenId: number, owner: string, deployer: string) {
     return this.chain.callReadOnlyFn(`${deployer}.pool-v2-0`, "has-locked-funds", [
       types.uint(tokenId),
