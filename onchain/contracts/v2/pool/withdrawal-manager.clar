@@ -106,9 +106,10 @@
 ;; get redeemeable amount based on available liquidity
 (define-public (get-redeemeable-amounts (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))
   (let (
+    (pool (unwrap-panic (get-pool token-id)))
     (liquidity (default-to u0 (try! (contract-call? l-v get-asset token-id))))
     (total-supply (unwrap-panic (contract-call? lp get-total-supply)))
-    (losses u0)
+    (losses (get losses pool))
     (assets (unwrap-panic (total-assets lp l-v token-id asset)))
     (assets-wo-losses (- assets losses))
     (exit-at (get-exit-at token-id owner))
