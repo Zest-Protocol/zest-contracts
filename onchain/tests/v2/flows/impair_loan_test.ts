@@ -375,8 +375,12 @@ Clarinet.test({
 
     const coll_amount = common.consumeUint(CollVault.getLoanColl(chain, COLL_VAULT, 0, deployerWallet.address).expectOk().expectTuple()["amount"]);
 
+    const height_impairment = block.height;
+    const previous_due_payment_height =  common.consumeUint(loan.getLoanData(0)["next-payment"]);
     block = pool.impairLoan(poolId_0, loanId, delegate_1.address);
     const next_payment = common.consumeUint(loan.getLoanData(0)["next-payment"]) + payment_period;
+    
+    const height_delta =  previous_due_payment_height - height_impairment;
 
     pool.getPool(0)["losses"].expectUint(loan_amount);
     assertEquals(loan.getLoanData(0)["status"], "0x08");
@@ -422,32 +426,36 @@ Clarinet.test({
     chain.mineEmptyBlock(common.consumeUint(loan.getLoanData(0)["next-payment"]) - block.height - 1);
     block = chain.mineBlock([...common.makePaymentToLoan(deployerWallet.address,"08",defaultExpiration,MagicId_Borrower,finalPayment,sender,recipient,outputIndex,supplierId,minToReceive,chain.blockHeight - 1,poolId_0,loan_0,PAYMENT,LP_TOKEN_0,LIQUIDITY_VAULT,CP_TOKEN,CP_REWARDS_TOKEN,ZP_TOKEN,SWAP_ROUTER,XBTC,SUPPLIER_CONTROLLER_0,"01",borrower_1.address,borrower_1.address,MAGIC_CALLER_CONTRACT_NAME)]);
     block.receipts[2].result.expectOk();
-    
+
     assertEquals(loan.getLoanData(0)["status"], "0x05");
-    // pool.getPool(0)["principal-out"].expectUint(0);
-    // pool.getPool(0)["losses"].expectUint(0);
+    pool.getPool(0)["principal-out"].expectUint(0);
 
-    // // LP_1 and LP_2 withdraw
+    // LP_1 and LP_2 withdraw
+    const requested_amount_1 = sentAmount_1;
+    const requested_amount_2 = sentAmount_2;
 
-    // const requested_amount_1 = sentAmount_1;
-    // const requested_amount_2 = sentAmount_2;
+    block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address);
+    block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_2, LP_2.address);
 
-    // block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address);
-    // block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_2, LP_2.address);
+    // console.log(WithdrawalManager.getRedeemeableAmounts(chain, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address, deployerWallet.address,"withdrawal-manager", deployerWallet.address));
 
-    // // console.log(WithdrawalManager.getRedeemeableAmounts(chain, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address, deployerWallet.address,"withdrawal-manager", deployerWallet.address));
+    assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`],  requested_amount_1 + requested_amount_2);
 
-    // assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`],  requested_amount_1 + requested_amount_2);
+    chain.mineEmptyBlockUntil(common.consumeUint(WithdrawalManager.getFundsUnlockedAt(chain, poolId_0, LP_1.address, deployerWallet.address, "withdrawal-manager", deployerWallet.address).result));
+    block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address, LP_1.address);
 
-    // chain.mineEmptyBlockUntil(common.consumeUint(WithdrawalManager.getFundsUnlockedAt(chain, poolId_0, LP_1.address, deployerWallet.address, "withdrawal-manager", deployerWallet.address).result));
-    // block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address, LP_1.address);
+    assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], requested_amount_2);
 
-    // assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], requested_amount_2);
-    // assertEquals(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][LP_1.address], sentAmount_1 - (loan_amount / 2) + (coll_amount / 2));
+    block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_2, LP_2.address, LP_2.address);
 
-    // block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_2, LP_2.address, LP_2.address);
+    const lp_1_amount_plus_rewards = (chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][LP_1.address]);
+    const lp_2_amount_plus_rewards = (chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][LP_2.address]);
+    const final_delegate_rewards = chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][delegate_1.address];
+    const total_rewards = num_payments * Math.floor(payment_period * (apr * loan_amount) / 10000 / ((DAYS_PER_YEAR * ONE_DAY)));
+    const lp_rewards = total_rewards - final_delegate_rewards;
 
-    // assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], 0);
-    // assertEquals(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][LP_2.address], sentAmount_2 - (loan_amount / 2) + (coll_amount / 2));
+    assertEquals(lp_1_amount_plus_rewards - (lp_rewards / 2), sentAmount_1);
+    assertEquals(lp_2_amount_plus_rewards - (lp_rewards / 2), sentAmount_2);
+    assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], 0);
   },
 });
