@@ -374,10 +374,9 @@
   (payment-period uint)
   (coll-vault principal)
   (funding-vault principal)
-  (open-term bool)
   )
   (let (
-    (last-id (try! (contract-call? .loan-v1-0 create-loan loan-contract loan-amount asset coll-ratio coll-token apr maturity-length payment-period coll-vault funding-vault open-term tx-sender)))
+    (last-id (try! (contract-call? .loan-v1-0 create-loan loan-contract loan-amount asset coll-ratio coll-token apr maturity-length payment-period coll-vault funding-vault tx-sender)))
     (loan { lp-token: (contract-of lp ), token-id: token-id, funding-vault: funding-vault })
     (pool (get-pool-read token-id)))
     (asserts! (contract-call? .globals is-asset (contract-of asset)) ERR_INVALID_XBTC)

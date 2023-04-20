@@ -60,7 +60,6 @@
   (payment-period uint)
   (coll-vault principal)
   (funding-vault principal)
-  (open-term bool)
   (borrower principal))
   (let (
     (last-id (get-last-loan-id))
@@ -83,7 +82,7 @@
       funding-vault: funding-vault,
       created: burn-block-height,
       asset: asset-contract,
-      open-term: open-term
+      open-term: (is-eq maturity-length u0)
       }))
     (try! (caller-is-pool))
     (try! (can-borrow borrower))
@@ -668,7 +667,7 @@
     (loan (get-loan-read loan-id))
     (prev-next-payment (get next-payment loan))
     (next-payment (if (> block-height prev-next-payment) prev-next-payment block-height))
-    (new-loan (merge loan { status: IMPAIRED, next-payment: next-payment, original-next-payment: prev-next-payment })))
+    (new-loan (merge loan { status: IMPAIRED, next-payment: next-payment, original-next-payment: prev-next-payment, remaining-payments: u1 })))
     (try! (caller-is-pool))
     (asserts! (is-eq (get status loan) ACTIVE) ERR_INVALID_STATUS)
     (asserts! (is-eq (get remaining-payments loan) u0) ERR_NOT_OPEN_TERM_LOAN)

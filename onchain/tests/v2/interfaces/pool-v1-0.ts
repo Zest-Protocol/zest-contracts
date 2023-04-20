@@ -98,7 +98,6 @@ class Pool {
     paymentPeriod: number,
     collVault: string,
     fundingVault: string,
-    openTerm: boolean,
     borrower: string
     ) {
     return this.chain.mineBlock([
@@ -118,7 +117,6 @@ class Pool {
           types.uint(paymentPeriod),
           types.principal(collVault),
           types.principal(fundingVault),
-          types.bool(openTerm),
         ],
         borrower
       )
@@ -597,6 +595,22 @@ class Pool {
       Tx.contractCall(
         `pool-v2-0`,
         "impair-loan",
+        [
+          types.uint(tokenId),
+          types.uint(loanId)
+        ],
+        caller)
+    ]);
+  }
+
+  callLoan(
+    tokenId: number,
+    loanId: number,
+    caller: string) {
+    return this.chain.mineBlock([
+      Tx.contractCall(
+        `pool-v2-0`,
+        "call-loan",
         [
           types.uint(tokenId),
           types.uint(loanId)
