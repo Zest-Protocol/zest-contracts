@@ -735,7 +735,7 @@
     (asserts! (is-eq tx-sender (get borrower loan)) ERR_UNAUTHORIZED)
     (asserts! can-create ERR_UNABLE_TO_REQUEST)
     (asserts! (contract-call? .globals is-coll-contract (contract-of coll-type)) ERR_INVALID_COLL)
-    (asserts! (is-eq ACTIVE (get status loan)) ERR_INVALID_STATUS)
+    (asserts! (or (is-eq ACTIVE (get status loan)) (is-eq IMPAIRED (get status loan))) ERR_INVALID_STATUS)
 
     (asserts! (is-eq u0 (mod (get maturity-length new-rollover-progress) (get payment-period new-rollover-progress))) ERR_INVALID_TIME)
     ;; If Coll -> Coll
