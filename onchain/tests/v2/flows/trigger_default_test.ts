@@ -152,7 +152,6 @@ Clarinet.test({
 
     // Borrower creates Loan 0 for Pool 0
     block = pool.createLoan(LOAN_V1_0,LP_TOKEN_0, poolId_0, loan_amount, XBTC, coll_ratio, XBTC, apr, 0, payment_period, COLL_VAULT, FUNDING_VAULT, false, borrower_1.address);
-    console.log(loan.getLoanData(0));
     loan.getLoanData(0)["remaining-payments"].expectUint(0);
 
     const loanId = common.consumeUint(block.receipts[0].result.expectOk());
@@ -194,48 +193,34 @@ Clarinet.test({
     const coll_amount = common.consumeUint(CollVault.getLoanColl(chain, COLL_VAULT, 0, deployerWallet.address).expectOk().expectTuple()["amount"]);
 
     block = pool.impairLoan(poolId_0, loanId, delegate_1.address);
-    console.log(block);
 
-    // block = pool.impairLoan(poolId_0, loanId, delegate_1.address);
-    // pool.getPool(0)["losses"].expectUint(loan_amount);
-    // assertEquals(loan.getLoanData(0)["status"], "0x08");
+    chain.mineEmptyBlock(common.consumeUint(globals["grace-period"]));
+    chain.mineEmptyBlock(1);
+    block = pool.liquidateLoan(0, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, COLL_VAULT, XBTC, XBTC, CP_TOKEN,COVER_VAULT, SWAP_ROUTER, XBTC, delegate_1.address);
+    block.receipts[0].result.expectOk().expectTuple()["collateral-recovery"].expectUint(coll_amount);
+    pool.getPool(0)["principal-out"].expectUint(0);
+    pool.getPool(0)["losses"].expectUint(0);
 
-    // block = pool.liquidateLoan(0, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, COLL_VAULT, XBTC, XBTC, CP_TOKEN,COVER_VAULT, SWAP_ROUTER, XBTC, delegate_1.address);
-    // block.receipts[0].result.expectErr().expectUint(4012);
+    // LP_1 and LP_2 withdraw
+    const requested_amount_1 = sentAmount_1;
+    const requested_amount_2 = sentAmount_2;
 
-    // chain.mineEmptyBlock(common.consumeUint(globals["grace-period"]) - 2);
+    block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address);
+    block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_2, LP_2.address);
 
-    // block = pool.liquidateLoan(0, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, COLL_VAULT, XBTC, XBTC, CP_TOKEN,COVER_VAULT, SWAP_ROUTER, XBTC, delegate_1.address);
-    // block.receipts[0].result.expectErr(4012);
+    // console.log(WithdrawalManager.getRedeemeableAmounts(chain, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address, deployerWallet.address,"withdrawal-manager", deployerWallet.address));
 
-    // chain.mineEmptyBlock(1);
+    assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`],  requested_amount_1 + requested_amount_2);
 
-    // block = pool.liquidateLoan(0, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, COLL_VAULT, XBTC, XBTC, CP_TOKEN,COVER_VAULT, SWAP_ROUTER, XBTC, delegate_1.address);
-    // block.receipts[0].result.expectOk().expectTuple()["collateral-recovery"].expectUint(coll_amount);
-    // pool.getPool(0)["principal-out"].expectUint(0);
-    // pool.getPool(0)["losses"].expectUint(0);
+    chain.mineEmptyBlockUntil(common.consumeUint(WithdrawalManager.getFundsUnlockedAt(chain, poolId_0, LP_1.address, deployerWallet.address, "withdrawal-manager", deployerWallet.address).result));
+    block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address, LP_1.address);
 
-    // // LP_1 and LP_2 withdraw
+    assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], requested_amount_2);
+    assertEquals(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][LP_1.address], sentAmount_1 - (loan_amount / 2) + (coll_amount / 2));
 
-    // const requested_amount_1 = sentAmount_1;
-    // const requested_amount_2 = sentAmount_2;
+    block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_2, LP_2.address, LP_2.address);
 
-    // block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address);
-    // block = pool.signalRedeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_2, LP_2.address);
-
-    // // console.log(WithdrawalManager.getRedeemeableAmounts(chain, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address, deployerWallet.address,"withdrawal-manager", deployerWallet.address));
-
-    // assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`],  requested_amount_1 + requested_amount_2);
-
-    // chain.mineEmptyBlockUntil(common.consumeUint(WithdrawalManager.getFundsUnlockedAt(chain, poolId_0, LP_1.address, deployerWallet.address, "withdrawal-manager", deployerWallet.address).result));
-    // block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_1, LP_1.address, LP_1.address);
-
-    // assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], requested_amount_2);
-    // assertEquals(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][LP_1.address], sentAmount_1 - (loan_amount / 2) + (coll_amount / 2));
-
-    // block = pool.redeem(LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, XBTC, requested_amount_2, LP_2.address, LP_2.address);
-
-    // assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], 0);
-    // assertEquals(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][LP_2.address], sentAmount_2 - (loan_amount / 2) + (coll_amount / 2));
+    assertEquals(chain.getAssetsMaps().assets[".lp-token-0.lp-token-0"][`${deployerWallet.address}.withdrawal-manager`], 0);
+    assertEquals(chain.getAssetsMaps().assets[".Wrapped-Bitcoin.wrapped-bitcoin"][LP_2.address], sentAmount_2 - (loan_amount / 2) + (coll_amount / 2));
   },
 });

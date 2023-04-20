@@ -981,6 +981,21 @@
     (try! (contract-call? .pool-data set-pool token-id (merge pool { losses: (+ losses (get loan-amount loan)) })))
     (ok true)))
 
+;; for calling an open term loan
+(define-public (call-loan (token-id uint) (loan-id uint))
+  (let (
+    (pool (try! (get-pool token-id)))
+    (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
+    (loan (try! (contract-call? .loan-v1-0 call-loan loan-id)))
+    (losses (get losses pool))
+    )
+    (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
+    (asserts! (or
+      (is-eq tx-sender (get pool-delegate pool))
+      (try! (is-governor tx-sender token-id))) ERR_UNAUTHORIZED)
+
+    (try! (contract-call? .pool-data set-pool token-id (merge pool { losses: (+ losses (get loan-amount loan)) })))
+    (ok true)))
 
 (define-public (reverse-impaired-loan (token-id uint) (loan-id uint))
   (let (

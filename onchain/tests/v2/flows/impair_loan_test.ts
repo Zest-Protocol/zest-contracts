@@ -187,18 +187,18 @@ Clarinet.test({
     
     // Payment start
     const GRACE_PERIOD = (ONE_DAY * 5);
-    chain.mineEmptyBlockUntil(common.consumeUint(loan.getLoanData(0)["next-payment"]) +  + GRACE_PERIOD + 2);
 
     const coll_amount = common.consumeUint(CollVault.getLoanColl(chain, COLL_VAULT, 0, deployerWallet.address).expectOk().expectTuple()["amount"]);
 
     block = pool.impairLoan(poolId_0, loanId, delegate_1.address);
+
     pool.getPool(0)["losses"].expectUint(loan_amount);
     assertEquals(loan.getLoanData(0)["status"], "0x08");
 
     block = pool.liquidateLoan(0, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, COLL_VAULT, XBTC, XBTC, CP_TOKEN,COVER_VAULT, SWAP_ROUTER, XBTC, delegate_1.address);
     block.receipts[0].result.expectErr().expectUint(4012);
 
-    chain.mineEmptyBlock(common.consumeUint(globals["grace-period"]) - 2);
+    chain.mineEmptyBlockUntil(common.consumeUint(loan.getLoanData(0)["next-payment"]) + GRACE_PERIOD);
 
     block = pool.liquidateLoan(0, LP_TOKEN_0, poolId_0, LIQUIDITY_VAULT, COLL_VAULT, XBTC, XBTC, CP_TOKEN,COVER_VAULT, SWAP_ROUTER, XBTC, delegate_1.address);
     block.receipts[0].result.expectErr(4012);

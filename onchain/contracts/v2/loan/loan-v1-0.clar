@@ -654,9 +654,25 @@
 (define-public (impair-loan (loan-id uint))
   (let (
     (loan (get-loan-read loan-id))
-    (new-loan (merge loan { status: IMPAIRED, next-payment: block-height, original-next-payment: (get next-payment loan) })))
+    (prev-next-payment (get next-payment loan))
+    (next-payment (if (> block-height prev-next-payment) prev-next-payment block-height))
+    (new-loan (merge loan { status: IMPAIRED, next-payment: next-payment, original-next-payment: prev-next-payment })))
     (try! (caller-is-pool))
     (asserts! (is-eq (get status loan) ACTIVE) ERR_INVALID_STATUS)
+    (try! (contract-call? .loan-data set-loan loan-id new-loan))
+    (ok new-loan)))
+
+;; impairing an open term loan
+(define-public (call-loan (loan-id uint))
+  (let (
+    (loan (get-loan-read loan-id))
+    (prev-next-payment (get next-payment loan))
+    (next-payment (if (> block-height prev-next-payment) prev-next-payment block-height))
+    (new-loan (merge loan { status: IMPAIRED, next-payment: next-payment, original-next-payment: prev-next-payment })))
+    (try! (caller-is-pool))
+    (asserts! (is-eq (get status loan) ACTIVE) ERR_INVALID_STATUS)
+    (asserts! (is-eq (get remaining-payments loan) u0) ERR_NOT_OPEN_TERM_LOAN)
+
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
     (ok new-loan)))
 
@@ -1152,3 +1168,4 @@
 (define-constant ERR_UNDERFLOW (err u4024))
 (define-constant ERR_TOO_MANY_TRIALS (err u4025))
 (define-constant ERR_INVALID_VERIFICATION_PAYMENT (err u4026))
+(define-constant ERR_NOT_OPEN_TERM_LOAN (err u4027))
