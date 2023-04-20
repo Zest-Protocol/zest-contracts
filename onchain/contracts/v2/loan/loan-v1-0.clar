@@ -895,9 +895,12 @@
           coll-ratio: (get coll-ratio rollover),
           coll-token: (get coll-type rollover),
           next-payment: (+ burn-block-height (get payment-period rollover)),
+          original-next-payment: u0,
           apr: (get apr rollover),
           payment-period: (get payment-period rollover),
-          remaining-payments: (/ (get maturity-length rollover) (get payment-period rollover)) })))
+          remaining-payments: (/ (get maturity-length rollover) (get payment-period rollover)),
+          status: ACTIVE,
+          loan-amount: (get new-amount rollover) })))
         (try! (contract-call? .loan-data set-loan loan-id new-terms))
         (try! (contract-call? .loan-data delete-rollover-progress loan-id))
         (ok u0)))))

@@ -301,7 +301,9 @@
     (map-delete escrowed-tx txid)
     (print { type: "make-residual-payment", payload: { key: { tx-id: txid }, data: params } })
     (try! (as-contract (contract-call? xbtc-ft transfer sats tx-sender .pool-v2-0 none)))
-    (ok (try! (contract-call? .pool-v2-0 make-residual-payment (get loan-id params) lp (get token-id params) l-v sats xbtc-ft (get controller params))))))
+    (ok (try! (contract-call? .pool-v2-0 make-residual-payment (get loan-id params) lp (get token-id params) l-v sats xbtc-ft (get controller params))))
+  )
+)
 
 (define-public (make-residual-payment-completed
   (txid (buff 32))

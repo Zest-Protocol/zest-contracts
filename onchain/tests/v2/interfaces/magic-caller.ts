@@ -117,6 +117,33 @@ class MagicCaller {
         caller
       );
   }
+
+  static makeResidualPayment(
+    txid: string,
+    preimage: string,
+    lpToken: string,
+    lv: string,
+    xbtc: string,
+    supplierController: string,
+    caller: string,
+    contractAddress: string,
+    contractName: string,
+  ) {
+    return Tx.contractCall(
+      `${contractAddress}.${contractName}`,
+      'make-residual-payment',
+        [
+          types.buff(Buffer.from(txid,"hex")),
+          types.buff(Buffer.from(preimage,"hex")),
+          types.principal(lpToken),
+          types.principal(lv),
+          types.principal(xbtc),
+          types.principal(supplierController),
+        ],
+        caller
+      );
+  }
+
 }
 
 export { MagicCaller };

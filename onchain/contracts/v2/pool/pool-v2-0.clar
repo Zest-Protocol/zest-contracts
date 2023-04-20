@@ -595,8 +595,7 @@
     (pool (try! (get-pool token-id)))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
     (borrow-amount (try! (contract-call? .loan-v1-0 complete-rollover loan-id coll-token coll-vault f-v swap-router xbtc caller)))
-    (new-pool (merge pool { principal-out: (+ borrow-amount (get principal-out pool)) }))
-    )
+    (new-pool (merge pool { principal-out: (+ borrow-amount (get principal-out pool)) })))
     (try! (is-supplier-interface))
     (try! (is-paused))
     (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
@@ -733,9 +732,12 @@
     (asserts! (contract-call? .globals is-asset (contract-of xbtc)) ERR_INVALID_XBTC)
     (asserts! (is-eq loan-pool-id token-id) ERR_INVALID_TOKEN_ID)
 
+
     (try! (contract-call? .pool-data set-pool token-id new-pool))
-    (try! (contract-call? l-v add-asset xbtc amount token-id caller))
-    (contract-call? .loan-v1-0 make-residual-payment loan-id lp amount xbtc)))
+    (try! (as-contract (contract-call? l-v add-asset xbtc amount token-id tx-sender)))
+    (contract-call? .loan-v1-0 make-residual-payment loan-id lp amount xbtc)
+  )
+)
 
 ;; @desc Test the drawdown process by requesting a set amount of funds
 ;; @restricted supplier-interface
