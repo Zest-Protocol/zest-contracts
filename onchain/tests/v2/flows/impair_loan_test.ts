@@ -574,6 +574,7 @@ Clarinet.test({
     // Loan drawdown funds from Pool 0 and send bitcoin to the address
     block = chain.mineBlock([SupplierInterface.drawdown(loanId, LP_TOKEN_0, poolId_0, XBTC, COLL_VAULT, FUNDING_VAULT, P2PKH_VERSION, HASH, supplierId, SWAP_ROUTER, XBTC, borrower_1.address)]);
     
+    console.log(loan.getLoanData(0));
     // first outbound swap Id
     let swapId = common.consumeUint(block.receipts[0].result.expectOk().expectTuple()["swap-id"]);
     chain.mineEmptyBlock(10);

@@ -476,7 +476,7 @@
             (merge loan { next-payment: u0, remaining-payments: u0, original-next-payment: u0, status: MATURED }))
           (merge loan
             {
-              remaining-payments: (- remaining-payments u1),
+              remaining-payments: (if (get open-term loan) u0 (- remaining-payments u1)),
               next-payment: (+ (get next-payment loan) (get payment-period loan)),
               original-next-payment: u0,
               status: ACTIVE })
@@ -487,7 +487,7 @@
       ;; for payment testing
       (set-tested-amount loan-id u0)
 
-      (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (> remaining-payments u1), is-impaired: impaired }))))
+      (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (or (> remaining-payments u1) (get open-term loan)), is-impaired: impaired }))))
     )
 
 
@@ -689,6 +689,8 @@
 )
 
 ;; @desc borrower requests for a modification to the loan agreement
+;; Can go from open term loan to regular maturing loan
+;; Can go from maturing loan to open term loan
 ;; @restricted borrower
 ;; @param loan-id: id of loan being paid for
 ;; @param apr: new apr in BPS
@@ -708,9 +710,11 @@
   (coll-type <ft>))
   (let (
     (loan (try! (get-loan loan-id)))
-    (remaining-length (* (get payment-period loan) (get remaining-payments loan)))
+    (remaining-payments (if (and (get open-term loan) (is-none maturity-length)) u0 (get remaining-payments loan)))
+    (remaining-length (* (get payment-period loan) remaining-payments))
     (loan-amount (get loan-amount loan))
     (new-amount-final (default-to (get loan-amount loan) new-amount))
+    ;; TODO: handle open term loan to maturing loan
     (new-rollover-progress {
       status: REQUESTED,
       apr: (default-to (get apr loan) apr),
