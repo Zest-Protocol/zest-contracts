@@ -136,6 +136,41 @@
   )
 )
 
+;; get redeemeable amount based on available liquidity
+(define-public (get-redeemeable-amounts-1 (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))
+  (let (
+    (pool (unwrap-panic (get-pool token-id)))
+    (liquidity (default-to u0 (try! (contract-call? l-v get-asset token-id))))
+    (total-supply (unwrap-panic (contract-call? lp get-total-supply)))
+    (losses (get losses pool))
+    (assets (unwrap-panic (total-assets lp l-v token-id asset)))
+    (assets-wo-losses (- assets losses))
+    (exit-at (get-exit-at token-id owner))
+    (cycle-shares (get-cycle-shares token-id exit-at))
+    (cycle-shares-principal (get-cycle-shares-by-principal token-id owner))
+    ;; (needed-assets (/ (* assets-wo-losses cycle-shares) total-supply))
+    ;; (total-reedemeable-assets (/ (* assets-wo-losses cycle-shares-principal) total-supply))
+    ;; (redeemeable-assets (/ (* liquidity requested-shares) cycle-shares))
+  )
+  ;;   (begin
+  ;;     (if (< liquidity needed-assets)
+  ;;       ;; if not enough liquidity for all shares
+  ;;       (ok {
+  ;;         redeemeable-assets: redeemeable-assets,
+  ;;         redeemeable-shares: (/ (* requested-shares redeemeable-assets) total-reedemeable-assets),
+  ;;         partial-liquidity: true })
+  ;;       ;; if enough liquidity for all shares
+  ;;       (ok {
+  ;;         redeemeable-assets: (/ (* requested-shares assets-wo-losses) total-supply),
+  ;;         redeemeable-shares: requested-shares,
+  ;;         partial-liquidity: false })
+  ;;     )
+  ;;   )
+  ;; )
+    (ok assets)
+  )
+)
+
 (define-public (total-assets (lp <sip-010>) (l-v <lv>) (token-id uint) (asset <ft>))
   (let 
     ((pool (try! (get-pool token-id))))

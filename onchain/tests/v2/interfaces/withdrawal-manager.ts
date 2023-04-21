@@ -73,7 +73,7 @@ class WithdrawalManager {
     caller: string) {
     return chain.callReadOnlyFn(
       `${contractAddress}.${contractName}`,
-      "get-redeemeable-amounts",
+      "get-redeemeable-amounts-1",
       [
         types.principal(lpToken),
         types.uint(tokenId),

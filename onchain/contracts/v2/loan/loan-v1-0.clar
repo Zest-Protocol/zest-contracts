@@ -463,6 +463,7 @@
     (amount-due (- (get reward payment-response) tested-amount))
     (remaining-payments (get remaining-payments loan))
     (impaired (is-eq IMPAIRED (get status loan)))
+    (is-last-payment (or (and (is-eq (get status loan) IMPAIRED) (get open-term loan)) (is-eq remaining-payments u1)))
   )
     (try! (caller-is-pool))
     (asserts! (is-eq caller (get borrower loan)) ERR_UNAUTHORIZED)
@@ -471,7 +472,7 @@
     ;; if repayment, assert amount being sent is greater than the total loan
     (let (
       (new-loan
-        (if (is-eq remaining-payments u1)
+        (if is-last-payment
           (begin
             (merge loan { next-payment: u0, remaining-payments: u0, original-next-payment: u0, status: MATURED }))
           (merge loan
@@ -487,7 +488,7 @@
       ;; for payment testing
       (set-tested-amount loan-id u0)
 
-      (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (or (> remaining-payments u1) (get open-term loan)), is-impaired: impaired }))))
+      (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (not is-last-payment), is-impaired: impaired }))))
     )
 
 
