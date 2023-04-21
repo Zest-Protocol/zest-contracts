@@ -74,6 +74,7 @@ u144)
 ;; SIP-010 to be used as collateral
 (define-map coll-contracts principal bool)
 (define-map payments principal bool)
+(define-map withdrawal-contracts principal bool)
 
 (define-data-var pool-contract principal .pool-v2-0)
 (define-data-var loan-contract principal .loan-v1-0)
@@ -150,6 +151,9 @@ u144)
 
 (define-read-only (is-payment (payment principal))
   (default-to false (map-get? payments payment)))
+
+(define-read-only (is-withdrawal-contract (contract principal))
+  (default-to false (map-get? withdrawal-contracts contract)))
 
 (define-read-only (is-cover-pool-token (token principal))
   (default-to false (map-get? cover-pool-tokens token)))
@@ -241,6 +245,12 @@ u144)
     (try! (is-contract-owner))
     (print { type: "set-payment", payload: payment })
     (ok (map-set payments payment true))))
+
+(define-public (set-withdrawal-contract (contract principal))
+  (begin
+    (try! (is-contract-owner))
+    (print { type: "set-withdrawal", payload: contract })
+    (ok (map-set withdrawal-contracts contract true))))
 
 (define-public (set-cover-pool-token (token principal))
   (begin
