@@ -11,83 +11,27 @@
 (use-trait payment .payment-trait.payment-trait)
 (use-trait rewards-calc .rewards-calc-trait.rewards-calc-trait)
 
-(define-constant ONE_DAY (contract-call? .globals get-day-length-default))
-(define-constant CYCLE (contract-call? .globals get-cycle-length-default))
+;; (define-constant INIT 0x00)
 
-(define-constant INIT 0x00)
-(define-constant READY 0x01)
-(define-constant CLOSED 0x02)
-(define-constant DEFAULT 0x03)
-
-;; -- pool governor
-(define-map governors { governor: principal, token-id: uint } bool)
-
-;; @desc adding pool governor
-;; @restricted pool
-;; @param governor: principal of the governor
-;; @param token-id: pool id of the associated governor
-;; @returns (response true uint)
-(define-public (add-pool-governor (governor principal) (token-id uint))
-  (begin
-    (try! (is-pool-contract))
-    (print { type: "add-pool-governor", payload: { governor: governor, token-id: token-id } })
-    (ok (map-set governors { governor: governor, token-id: token-id } true))))
-
-;; @desc removing pool governor
-;; @restricted pool
-;; @param governor: principal of the governor
-;; @param token-id: pool id of the associated governor
-;; @returns (response true uint)
-(define-public (remove-pool-governor (governor principal) (token-id uint))
-  (begin
-    (try! (is-pool-contract))
-    (print { type: "remove-pool-governor", payload: { governor: governor, token-id: token-id } })
-    (ok (map-delete governors { governor: governor, token-id: token-id }))))
-
-;; -- pool-delegates
-;; principal -> token-id
-(define-map delegates principal uint)
-;; token-id -> principal
-(define-map pool-delegate uint principal)
-
-;; @desc adding pool delegate
-;; @restricted pool
-;; @param delegate: principal of the delegate
-;; @param token-id: pool id of the associated delegate
-;; @returns (response true uint)
-(define-public (set-pool-delegate (delegate principal) (token-id uint))
-  (begin
-    (try! (is-pool-contract))
-    (map-set pool-delegate token-id delegate)
-    (print { type: "set-pool-delegate", payload: { token-id: token-id, delegate: delegate } })
-    (ok (map-set delegates delegate token-id))))
-
-;; -- pool
-(define-map pool-data
-  uint {
-    withdrawal-manager: principal,
-    withdrawal-window: uint,})
+;; -- withdrawal
+(define-map withdrawal-data uint { withdrawal-manager: principal, withdrawal-window: uint, updated-at: uint })
+(define-map withdrawal-data-future uint { withdrawal-manager: principal, withdrawal-window: uint })
 
 (define-public (set-withdrawal-data
   (token-id uint)
-  (data {
-    withdrawal-manager: principal,
-    withdrawal-window: uint,
-  })
-  )
+  (data { withdrawal-manager: principal, withdrawal-window: uint, updated-at: uint }))
   (begin
     (try! (is-withdrawal-contract))
-    (map-set pool-data token-id data)
+    (map-set withdrawal-data token-id data)
 
     (print { type: "set-withdrawal-data", payload: { key: token-id, data: data } })
     (ok true)))
 
-;; -- pool getters
-
+;; -- withdrawal getters
 (define-public (get-withdrawal-data (token-id uint))
   (ok (unwrap! (map-get? withdrawal-data token-id) ERR_INVALID_TOKEN_ID)))
 
-(define-read-only (get-withdrawal-data (token-id uint))
+(define-read-only (get-withdrawal-data-read (token-id uint))
   (unwrap-panic (map-get? withdrawal-data token-id)))
 
 ;; -- ownable-trait

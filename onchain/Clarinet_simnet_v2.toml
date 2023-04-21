@@ -266,6 +266,11 @@ path = "contracts/v2/trait/vault-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.withdrawal-data]
+path = 'contracts/v2/pool/withdrawal-data.clar'
+clarity_version = 2
+epoch = 2.1
+
 [contracts.withdrawal-manager]
 path = 'contracts/v2/pool/withdrawal-manager.clar'
 clarity_version = 2
