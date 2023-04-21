@@ -7,6 +7,8 @@
 (define-data-var token-name (string-ascii 32) "LP Token 0")
 (define-data-var token-symbol (string-ascii 32) "LP0")
 
+(define-constant pool-id u0)
+
 (define-read-only (get-total-supply)
   (ok (ft-get-supply lp-token-0)))
 
@@ -41,8 +43,12 @@
     ERR_UNAUTHORIZED))
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (begin
+  (let (
+    (pool (try! (contract-call? .pool-data get-pool pool-id)))
+  )
     (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
+    (asserts! (or (get open pool) (contract-call? .pool-data is-liquidity-provider pool-id recipient)) ERR_UNAUTHORIZED)
+    
     (match (ft-transfer? lp-token-0 amount sender recipient)
       response (begin
         (print memo)
