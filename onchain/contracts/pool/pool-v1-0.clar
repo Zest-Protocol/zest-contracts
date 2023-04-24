@@ -175,7 +175,7 @@
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (> (get cycle-length pool) cycle-length) ERR_INVALID_LOCKUP)
+    ;; (asserts! (> (get cycle-length pool) cycle-length) ERR_INVALID_LOCKUP)
 
     (try! (contract-call? .cover-pool-v1-0 set-cycle-length cp token-id cycle-length))
     (ok true)))
@@ -188,7 +188,7 @@
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (and (< min-cycles (get min-cycles pool)) (> min-cycles u0)) ERR_INVALID_LOCKUP)
+    ;; (asserts! (and (< min-cycles (get min-cycles pool)) (> min-cycles u0)) ERR_INVALID_LOCKUP)
 
     (try! (contract-call? .cover-pool-v1-0 set-min-cycles cp token-id min-cycles))
     (ok true)))
@@ -201,7 +201,7 @@
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (<= (+ delegate-fee (get cover-fee pool)) u10000) ERR_INVALID_FEES)
+    ;; (asserts! (<= (+ delegate-fee (get cover-fee pool)) u10000) ERR_INVALID_FEES)
 
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
@@ -214,7 +214,7 @@
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (<= (+ cover-fee (get delegate-fee pool)) u10000) ERR_INVALID_FEES)
+    ;; (asserts! (<= (+ cover-fee (get delegate-fee pool)) u10000) ERR_INVALID_FEES)
 
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
@@ -228,7 +228,7 @@
     (try! (caller-is (get pool-delegate pool)))
     (try! (is-paused))
     (asserts! (not (is-eq (get status pool) DEFAULT)) ERR_POOL_DEFAULT)
-    (asserts! (> max-maturity-length day) ERR_INVALID_MAX_MATURITY_LENGTH)
+    ;; (asserts! (> max-maturity-length day) ERR_INVALID_MAX_MATURITY_LENGTH)
 
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
