@@ -1,4 +1,4 @@
-// import { drawdownSteps } from "./drawdown";
+import { drawdownSteps } from "./drawdown.js";
 // import { generateRandomBitcoinSigner } from "./util";
 import { sendFundsSteps } from "./send-funds.js"
 import { initializePoolSteps } from "./initialize-pool.js";
@@ -12,13 +12,13 @@ const deploymentScript = process.argv[2] as string;
       await initializePoolSteps();
       break;
     case "send-funds":
-      signers = { supplierBtcPrivKey: await initializePoolSteps() };
-      await sendFundsSteps(signers.supplierBtcPrivKey as Buffer);
+      signers = await initializePoolSteps();
+      signers = await sendFundsSteps(signers?.supplierBtcPrivKey as Buffer);
       break;
     case "drawdown":
-      // signers = await initializePoolSteps();
-      // await sendFundsSteps(signers.supplierBtcSigner, signers.lp1BtcSigner);
-      // await drawdownSteps(signers.supplierBtcSigner, signers.lp1BtcSigner);
+      signers = await initializePoolSteps();
+      signers = await sendFundsSteps(signers?.supplierBtcPrivKey as Buffer);
+      await drawdownSteps(signers?.supplierBtcPrivKey as Buffer, signers?.lp1BtcPrivKey as Buffer);
       break;
     default:
       console.error("Invalid deployment script");

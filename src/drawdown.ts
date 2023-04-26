@@ -47,7 +47,7 @@ import {
   SwapRouterContract,
   WrappedBitcoinContract,
   ZestRewardDistContract,
-} from '../onchain/stacks-lending/artifacts/contracts';
+} from '../onchain/artifacts/contracts.js';
 import {
   generateNewAccount,
   generateSecretKey,
@@ -71,21 +71,17 @@ import {
 
 import fetch from 'cross-fetch';
 import { BlocksApi } from '@stacks/blockchain-api-client';
-import { optionalCVOf } from '@stacks/transactions/dist/clarity/types/optionalCV';
 import wif from 'wif';
-import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV';
 
-import { blockchainRequest, generateHTLCAddress, generateRandomHexString, sendToAddress, setupBitcoinAddresses, walletRequest, numberToLE, getHash, reverseBuffer, generateHTLCScript, getScriptHash, parseBtcAddress, waitForTxConfirmation, getProof } from './bitcoin';
-import { setupContracts, makeContractCalls, broadcastTransactions, sendTransactionCalls, waitForStacksBlock, onboardUserAddress, createLoan } from './stacks';
+import { blockchainRequest, generateHTLCAddress, generateRandomHexString, sendToAddress, setupBitcoinAddresses, walletRequest, numberToLE, getHash, reverseBuffer, generateHTLCScript, getScriptHash, parseBtcAddress, waitForTxConfirmation, getProof } from './bitcoin.js';
+import { setupContracts, makeContractCalls, broadcastTransactions, sendTransactionCalls, waitForStacksBlock, onboardUserAddress, createLoan } from './stacks.js';
 
 import MerkleTree from 'merkletreejs';
 import { hashSha256Sync } from '@stacks/encryption';
-import sha256 from 'crypto-js/sha256';
 import { debuglog } from 'util';
-import { stringCV } from '@stacks/transactions/dist/clarity/types/stringCV';
-import { getWallets } from './accounts';
-import { generateRandomBitcoinSigner, generateBitcoinSignerFromStxPrivKey } from './util';
-import { numberToHex } from './bitcoin';
+import { getWallets } from './accounts.js';
+import { generateRandomBitcoinSigner, generateBitcoinSignerFromStxPrivKey } from './util.js';
+import { numberToHex } from './bitcoin.js';
 
 const debug = debuglog('1');
 
@@ -95,7 +91,7 @@ const btcNetwork = networks.regtest;
 const DEPLOYER = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
 const LP1 = 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5';
 
-export async function drawdownSteps(supplierBtcSigner: any, lp1BtcSigner: any) {
+export async function drawdownSteps(supplierBtcPrivKey: Buffer, lp1BtcPrivKey: Buffer) {
   let wallets = await getWallets();
 
   const deployerWallet = wallets["deployer"];
@@ -111,6 +107,8 @@ export async function drawdownSteps(supplierBtcSigner: any, lp1BtcSigner: any) {
   const blocksApi: BlocksApiInterface = new BlocksApi(apiConfig);
   const infoApi: InfoApiInterface = new InfoApi(apiConfig);
   // // REGISTERING SUPPLIER INTERFACE
+  const lp1BtcSigner = ECPair.fromPrivateKey(lp1BtcPrivKey);
+  const supplierBtcSigner = ECPair.fromPrivateKey(supplierBtcPrivKey);
   const borrower1Signer = generateRandomBitcoinSigner(btcNetwork);
   const minerBtcSigner = generateBitcoinSignerFromStxPrivKey(btcNetwork, wallets["miner"].accounts[0].stxPrivateKey);
 
@@ -128,33 +126,6 @@ export async function drawdownSteps(supplierBtcSigner: any, lp1BtcSigner: any) {
     network);
 
   await waitForStacksBlock();
-
-  let transaction = await makeContractCall({
-    contractAddress: PoolV10Contract.address,
-    contractName: PoolV10Contract.name,
-    functionName: PoolV10Contract.Functions.CreateLoan.name,
-    functionArgs: PoolV10Contract.Functions.CreateLoan.args({
-      lpToken: contractPrincipalCV(LpTokenContract.address, LpTokenContract.name),
-      tokenId: uintCV(0),
-      loanAmount: uintCV(10000000),
-      asset: contractPrincipalCV(WrappedBitcoinContract.address, WrappedBitcoinContract.name),
-      collRatio: uintCV(0),
-      collToken: contractPrincipalCV(WrappedBitcoinContract.address, WrappedBitcoinContract.name),
-      apr: uintCV(300),
-      maturityLength: uintCV(1296),
-      paymentPeriod: uintCV(144),
-      collVault: contractPrincipalCV(CollVaultContract.address, CollVaultContract.name),
-      fundingVault: contractPrincipalCV(FundingVaultContract.address, FundingVaultContract.name),
-    }),
-    senderKey: wallets["borrower"].accounts[0].stxPrivateKey,
-    network,
-    fee: 1000,
-    // nonce: 54,
-    anchorMode: AnchorMode.Any,
-  });
-
-  let broadcastResponse = await broadcastTransaction(transaction, network);
-  debug(JSON.stringify(broadcastResponse));
 
   await createLoan(
     `${DEPLOYER}.lp-token`,
@@ -174,7 +145,7 @@ export async function drawdownSteps(supplierBtcSigner: any, lp1BtcSigner: any) {
 
   await waitForStacksBlock();
 
-  transaction = await makeContractCall({
+  let transaction = await makeContractCall({
     contractAddress: PoolV10Contract.address,
     contractName: PoolV10Contract.name,
     functionName: PoolV10Contract.Functions.FundLoan.name,
@@ -194,7 +165,7 @@ export async function drawdownSteps(supplierBtcSigner: any, lp1BtcSigner: any) {
     anchorMode: AnchorMode.Any,
   });
 
-  broadcastResponse = await broadcastTransaction(transaction, network);
+  let broadcastResponse = await broadcastTransaction(transaction, network);
   debug(JSON.stringify(broadcastResponse));
 
   await waitForStacksBlock();

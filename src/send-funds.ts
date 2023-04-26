@@ -140,8 +140,8 @@ export async function sendFundsSteps(supplierBtcPrivKey: Buffer) {
     console.log('Sending funds finalized.');
 
     return {
-      supplierBtcSigner,
-      lp1BtcSigner,
+      supplierBtcPrivKey: supplierBtcSigner.privateKey,
+      lp1BtcPrivKey: lp1BtcSigner.privateKey,
     };
   } catch (err) {
     console.log(err);
