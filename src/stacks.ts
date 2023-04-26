@@ -29,7 +29,19 @@ import {
 } from '@stacks/transactions';
 
 import fetch from 'cross-fetch';
-import { MagicProtocolContract, CpTokenContract, GlobalsContract, LpTokenContract, PoolV10Contract, SupplierInterfaceContract, ZestRewardDistContract, SupplierController0Contract } from '../onchain/artifacts/contracts.js';
+import {
+  MagicProtocolContract,
+  CpTokenContract,
+  GlobalsContract,
+  LpTokenContract,
+  PoolV10Contract,
+  SupplierInterfaceContract,
+  ZestRewardDistContract,
+  SupplierController0Contract,
+  LiquidityVaultV10Contract,
+  WrappedBitcoinContract,
+  RewardsCalcContract
+} from '../onchain/artifacts/contracts.js';
 import { Wallet, Account, getStxAddress } from "@stacks/wallet-sdk";
 import {
   BlocksApi,
@@ -481,31 +493,30 @@ export async function sendFundsFinalize(
   ) {
   let addr = getStxAddress({ account: callerAccount, transactionVersion: getTrasactionVersion(network) });
 
-  // let transaction = await makeContractCall({
-  //   contractAddress: SupplierInterfaceContract.address,
-  //   contractName: SupplierInterfaceContract.name,
-  //   functionName: SupplierInterfaceContract.Functions.SendFundsFinalize.name,
-  //   functionArgs: SupplierInterfaceContract.Functions.SendFundsFinalize.args({
-  //     txid: bufferCV(Buffer.from(paymentTxId)),
-  //     preimage: bufferCV(Buffer.from(preimage)),
-  //     factor: uintCV(commitment),
-  //     lpToken: contractPrincipalCV(LpTokenContract.address, LpTokenContract.name),
-  //     tokenId: uintCV(tokenId),
-  //     zpToken: contractPrincipalCV(ZestRewardDistContract.address, ZestRewardDistContract.name),
-  //     lv: contractPrincipalCV(LiquidityVaultV10Contract.address, LiquidityVaultV10Contract.name),
-  //     xbtcFt: contractPrincipalCV(WrappedBitcoinContract.address, WrappedBitcoinContract.name),
-  //     rewardsCalc: contractPrincipalCV(RewardsCalcContract.address, RewardsCalcContract.name),
-  //   }),
-  //   senderKey: callerAccount.stxPrivateKey,
-  //   network,
-  //   fee: 1000,
-  //   nonce: nonce ? nonce: (await getNonce(addr, network)),
-  //   postConditionMode: PostConditionMode.Allow,
-  //   anchorMode: AnchorMode.Any,
-  // });
+  let transaction = await makeContractCall({
+    contractAddress: addr,
+    contractName: "magic-caller",
+    functionName: "send-funds-to-pool",
+    functionArgs: [
+      bufferCV(Buffer.from(paymentTxId)),
+      bufferCV(Buffer.from(preimage)),
+      contractPrincipalCV(LpTokenContract.address, LpTokenContract.name),
+      contractPrincipalCV(ZestRewardDistContract.address, ZestRewardDistContract.name),
+      contractPrincipalCV(LiquidityVaultV10Contract.address, LiquidityVaultV10Contract.name),
+      contractPrincipalCV(WrappedBitcoinContract.address, WrappedBitcoinContract.name),
+      contractPrincipalCV(RewardsCalcContract.address, RewardsCalcContract.name),
+      contractPrincipalCV(SupplierController0Contract.address, SupplierController0Contract.name),
+    ],
+    senderKey: callerAccount.stxPrivateKey,
+    network,
+    fee: 1000,
+    nonce: nonce ? nonce : (await getNonce(addr, network)),
+    anchorMode: AnchorMode.Any,
+    postConditionMode: PostConditionMode.Allow,
+  });
 
-  // let broadcastResponse = await broadcastTransaction(transaction, network);
-  // debug(JSON.stringify(broadcastResponse));
+  let broadcastResponse = await broadcastTransaction(transaction, network);
+  debug(JSON.stringify(broadcastResponse));
   debug(addr);
 };
 

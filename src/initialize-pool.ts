@@ -56,7 +56,7 @@ export async function initializePoolSteps() {
     await waitForStacksTransaction(createPooltxId);
     await finalizePool(delegate.accounts[0], deployerWallet.accounts[0], 0, network);
 
-    return  supplierBtcSigner.privateKey!;
+    return  { supplierBtcPrivKey: supplierBtcSigner.privateKey!};
   } catch (err) {
     console.log(err);
   }
