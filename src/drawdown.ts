@@ -204,7 +204,9 @@ export async function drawdownSteps(supplierBtcPrivKey: Buffer, lp1BtcPrivKey: B
   let inputTxHash = inputBlock.tx[0];
 
   let drawdownTxId = await sendToAddress(inputTxHash, minerBtcSigner, minerAddress as string, 0, borrower1Address as string, 5000000000, 100000000);
+  debug(`DRAWDOWN TXID: ${drawdownTxId}`);
   await waitForTxConfirmation(drawdownTxId);
+  await waitForStacksBlock();
   await waitForStacksBlock();
 
   let drawdownProof = await getProof(drawdownTxId);
@@ -220,14 +222,14 @@ export async function drawdownSteps(supplierBtcPrivKey: Buffer, lp1BtcPrivKey: B
     fv: contractPrincipalCV(FundingVaultContract.address, FundingVaultContract.name),
     xbtcFt: contractPrincipalCV(WrappedBitcoinContract.address, WrappedBitcoinContract.name),
     block: {
-      header: Buffer.from(drawdownProof.blockHeaderHex, "hex"),
-      height: height,
+      header: Buffer.from(drawdownProof.blockHeaderHex, "hex").toString("hex"),
+      height: drawdownProof.height,
     },
     prevBlocks: [],
-    tx: Buffer.from(drawdownProof.paymentTxHex, "hex"),
+    tx: Buffer.from(drawdownProof.paymentTxHex, "hex").toString("hex"),
     proof: {
       "tx-index": drawdownProof.txIndex,
-      "hashes": drawdownProof.proof.map((merkle) => bufferCV(merkle)),
+      "hashes": drawdownProof.proof.map((merkle) => merkle.toString("hex")),
       "tree-depth": drawdownProof.depth
     },
     outputIndex: 0, // points to the out that goes to supplier
@@ -248,7 +250,7 @@ export async function drawdownSteps(supplierBtcPrivKey: Buffer, lp1BtcPrivKey: B
       xbtcFt: contractPrincipalCV(WrappedBitcoinContract.address, WrappedBitcoinContract.name),
       block: tupleCV({
         header: bufferCV(Buffer.from(drawdownProof.blockHeaderHex, "hex")),
-        height: uintCV(height),
+        height: uintCV(drawdownProof.height),
       }),
       prevBlocks: listCV([]),
       tx: bufferCV(Buffer.from(drawdownProof.paymentTxHex, "hex")),
