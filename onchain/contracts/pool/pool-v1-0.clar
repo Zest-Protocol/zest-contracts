@@ -352,6 +352,8 @@
     (asserts! (<= (+ amount lv-balance) (get liquidity-cap pool)) ERR_LIQUIDITY_CAP_EXCESS)
 
     (asserts! (>= factor (get min-cycles pool)) ERR_INVALID_LOCKUP)
+
+    (try! (contract-call? .pool-data set-funds-sent caller token-id new-funds-sent))
     
     (as-contract (try! (contract-call? l-v add-asset xbtc amount token-id tx-sender)))
     

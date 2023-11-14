@@ -7,10 +7,10 @@ requirements = [
   "SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin",
   "SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token",
   "SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token",
-  "SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.swap-helper-v1-03"
+  "SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.swap-helper-v1-03",
 ]
 cache_dir = ".requirements"
-cache_location=".requirements"
+cache_location = ".requirements"
 boot_contracts = ["pox", "costs-v1", "bns"]
 
 [contracts.after-deployment]
@@ -20,6 +20,16 @@ epoch = 2.1
 
 [contracts.magic-protocol]
 path = "contracts/bitcoin/magic-protocol/magic-protocol.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.sbtc-controller]
+path = "contracts/bitcoin/sbtc-controller.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.magic-caller]
+path = "contracts/bitcoin/magic-caller.clar"
 clarity_version = 2
 epoch = 2.1
 
