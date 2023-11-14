@@ -25,11 +25,11 @@
 ;; @param recipient: recipient of the funds
 ;; @param ft: SIP-010 token contract
 ;; @returns (response true uint)
-(define-public (transfer (amount uint) (recipient principal) (ft <ft>))
+(define-public (transfer (amount uint) (recipient principal) (f-t <ft>))
   (begin
     (try! (is-approved-contract contract-caller))
-    (print { type: "transfer-cover-vault", payload: { amount: amount, asset: ft, recipient: recipient } })
-    (as-contract (contract-call? ft transfer amount tx-sender recipient none))))
+    (print { type: "transfer-cover-vault", payload: { amount: amount, asset: f-t, recipient: recipient } })
+    (as-contract (contract-call? f-t transfer amount tx-sender recipient none))))
 
 ;; @desc adds asset into the vault for a pool id
 ;; @restricted pool, loan, cover-pool, payment-contract
@@ -88,6 +88,9 @@
 
 (define-public (get-asset (token-id uint))
   (ok (map-get? assets token-id)))
+
+(define-read-only (get-asset-read (token-id uint))
+  (map-get? assets token-id))
 
 ;; --- approved contracts
 (define-map approved-contracts principal bool)

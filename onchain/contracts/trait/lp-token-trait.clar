@@ -18,7 +18,10 @@
 		(get-decimals (uint) (response uint uint))
 
 		;; Get an optional token URI that represents metadata for a specific token.
-		(get-token-uri (uint) (response (optional (string-ascii 256)) uint))
+		;; (get-token-uri (uint) (response (optional (string-ascii 256)) uint))
+		(get-token-uri () (response (optional (string-utf8 256)) uint))
+		(get-symbol () (response (string-ascii 32) uint))
+		(get-name () (response (string-ascii 32) uint))
 
 		;; Transfer from one principal to another.
 		(transfer (uint uint principal principal) (response bool uint))

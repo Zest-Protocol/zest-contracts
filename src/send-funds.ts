@@ -3,12 +3,14 @@ import { TransactionVersion, getNonce } from '@stacks/transactions';
 
 import { getStxAddress } from '@stacks/wallet-sdk';
 import { getPublicKeyFromPrivate } from '@stacks/encryption';
-import { networks, payments, script } from 'bitcoinjs-lib';
+import { networks, payments, script, ECPair } from 'bitcoinjs-lib';
 
-import { BlocksApiInterface, Configuration } from '@stacks/blockchain-api-client';
+// import {
+  // BlocksApiInterface,
+  // Configuration } from '@stacks/blockchain-api-client';
 
-import fetch from 'cross-fetch';
-import { BlocksApi } from '@stacks/blockchain-api-client';
+// import fetch from 'cross-fetch';
+// import { BlocksApi } from '@stacks/blockchain-api-client';
 
 import {
   blockchainRequest,
@@ -32,7 +34,7 @@ const debug = debuglog('1');
 const network = new StacksMocknet();
 const btcNetwork = networks.regtest;
 
-export async function sendFundsSteps(supplierBtcSigner: any) {
+export async function sendFundsSteps(supplierBtcPrivKey: Buffer) {
   try {
     let wallets = await getWallets();
 
@@ -40,6 +42,7 @@ export async function sendFundsSteps(supplierBtcSigner: any) {
     const minerWallet = wallets['miner'];
 
     const lp1BtcSigner = generateRandomBitcoinSigner(btcNetwork);
+    const supplierBtcSigner = ECPair.fromPrivateKey(supplierBtcPrivKey);
 
     const lp1Account = lp1Wallet.accounts[0];
     const lp1Address = getStxAddress({
@@ -47,11 +50,11 @@ export async function sendFundsSteps(supplierBtcSigner: any) {
       transactionVersion: TransactionVersion.Testnet,
     });
 
-    const apiConfig: Configuration = new Configuration({
-      fetchApi: fetch,
-      basePath: 'http://localhost:3999',
-    });
-    const blocksApi: BlocksApiInterface = new BlocksApi(apiConfig);
+    // const apiConfig: Configuration = new Configuration({
+    //   fetchApi: fetch,
+    //   basePath: 'http://localhost:3999',
+    // });
+    // const blocksApi: BlocksApiInterface = new BlocksApi(apiConfig);
     // // REGISTERING SUPPLIER INTERFACE
 
     const lp1Payment = payments.p2pkh({ pubkey: lp1BtcSigner.publicKey, network: btcNetwork });
@@ -64,6 +67,7 @@ export async function sendFundsSteps(supplierBtcSigner: any) {
     const minerPayment = payments.p2pkh({ pubkey: minerBtcSigner.publicKey, network: btcNetwork });
     console.log('Miner P2PKH address: ', minerPayment.address);
 
+    
     // initializing LP_1 as swapper in the Magic Protocol
     await initializeSwapper(lp1Wallet.accounts[0], network);
 
@@ -99,15 +103,14 @@ export async function sendFundsSteps(supplierBtcSigner: any) {
     debug('Payment TXID', paymentTxId);
     await waitForTxConfirmation(paymentTxId);
     await waitForStacksBlock();
+    await waitForStacksBlock();
 
     let paymentTransaction = await blockchainRequest('getrawtransaction', [paymentTxId, true]);
     let blockHeaderObj = await blockchainRequest('getblockheader', [
       paymentTransaction.blockhash,
       true,
     ]);
-    let height = (
-      await blocksApi.getBlockByBurnBlockHeight({ burnBlockHeight: blockHeaderObj.height })
-    ).height;
+    let height = blockHeaderObj.height;
     let fundsProof = await getProof(paymentTxId);
 
     let nonce = await getNonce(lp1Address, network);
@@ -122,6 +125,10 @@ export async function sendFundsSteps(supplierBtcSigner: any) {
       Buffer.from(numberToLE(0), 'hex'),
       0,
       (10000000 * 10) / 10_000,
+      0,
+      0,
+      1,
+      "00",
       lp1Account,
       network,
       nonce
@@ -133,8 +140,8 @@ export async function sendFundsSteps(supplierBtcSigner: any) {
     console.log('Sending funds finalized.');
 
     return {
-      supplierBtcSigner,
-      lp1BtcSigner,
+      supplierBtcPrivKey: supplierBtcSigner.privateKey,
+      lp1BtcPrivKey: lp1BtcSigner.privateKey,
     };
   } catch (err) {
     console.log(err);

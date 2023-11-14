@@ -29,6 +29,7 @@
     "@stacks/wallet-sdk": "6.0.0",
     "bitcoinjs-lib": "5.2.0",
     "cross-fetch": "^3.1.5",
+    "crypto-js": "^4.1.1",
     "merkletreejs": "0.3.9",
     "node-fetch": "^3.2.10",
     "wif": "^2.0.6"

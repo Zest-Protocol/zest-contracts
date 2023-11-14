@@ -3,6 +3,7 @@ import { Buffer } from "https://deno.land/std@0.159.0/node/buffer.ts";
 import { SupplierInterface } from '../interfaces/supplier_interface.ts';
 import { TestUtils } from '../interfaces/test-utils.ts';
 import { Magic } from '../interfaces/magic_real.ts';
+import { MagicCaller } from '../interfaces/magic-caller.ts';
 
 import { 
   getHash,
@@ -147,6 +148,128 @@ function registerSupplierTxs(
         deployer
       ),
     ];
+}
+
+function commitFunds(
+  deployer: string,
+  preimage: string,
+  tx: string,
+  txid: string,
+  senderPubkey: string,
+  recipientPubkey: string,
+  expiration: number,
+  outputIndex: number,
+  swapperId: number,
+  supplierId: number,
+  minToReceive: number,
+  height: number,
+  tokenId: number,
+  loanId: number,
+  factor: number,
+  action: string,
+  caller: string,
+  contractAddress: string,
+  magicCallerContract: string,
+) {
+  const hash = getHash(preimage);
+  return [
+    TestUtils.setMinedTx(txid, deployer),
+    MagicCaller.commitFunds(
+      { header: "", height },
+      [],
+      tx,
+      { "tx-index": 0, "hashes": [], "tree-depth": 0 },
+      outputIndex,
+      senderPubkey,
+      recipientPubkey,
+      getExpiration(expiration),
+      hash,
+      swapperBuff(swapperId),
+      supplierId,
+      minToReceive,
+      tokenId,
+      loanId,
+      factor,
+      action,
+      caller,
+      contractAddress,
+      magicCallerContract,
+    )
+  ];
+}
+
+export function makePaymentToLoan(
+  deployer: string,
+  preimage: string,
+  expiration: number,
+  swapperId: number,
+  outputValue: number,
+  senderPubkey: string,
+  recipientPubkey: string,
+  outputIndex: number,
+  supplierId: number,
+  minToReceive: number,
+  height: number,
+  tokenId: number,
+  loanId: number,
+  factor: number,
+  action: string,
+  payment: string,
+  lpToken: string,
+  liquidityVault: string,
+  cpToken: string,
+  cpRewardsToken: string,
+  zpToken: string,
+  swapRouter: string,
+  xbtc: string,
+  supplierController: string,
+  caller: string,
+  confirmAddress: string,
+  contractAddress: string,
+  magicCallerContract: string) {
+  const hash = getHash(preimage);
+  const tx = generateP2SHTx(senderPubkey, recipientPubkey, expiration, hash, swapperId, outputValue);
+  const txid = getTxId(tx);
+  return [
+    TestUtils.setMinedTx(txid, deployer),
+    MagicCaller.commitFunds(
+      { header: "", height },
+      [],
+      tx,
+      { "tx-index": 0, "hashes": [], "tree-depth": 0 },
+      outputIndex,
+      senderPubkey,
+      recipientPubkey,
+      getExpiration(expiration),
+      hash,
+      swapperBuff(swapperId),
+      supplierId,
+      minToReceive,
+      tokenId,
+      loanId,
+      factor,
+      action,
+      caller,
+      contractAddress,
+      magicCallerContract,
+    ),
+    MagicCaller.makePaymentLoan(
+      txid,
+      preimage,
+      payment,
+      lpToken,
+      liquidityVault,
+      cpToken,
+      cpRewardsToken,
+      zpToken,
+      swapRouter,
+      xbtc,
+      supplierController,
+      confirmAddress,
+      contractAddress,
+      magicCallerContract
+    )
+  ];
 }
 
 function sendFundsP2SHTxs(
@@ -652,4 +775,5 @@ export {
   makeFullPaymentTxs,
   makeResidualPayment,
   makePaymentVerifyTxs,
+  commitFunds,
 };

@@ -32,7 +32,7 @@
 ;; @param min-cycles: minimum commitment cycles to cover pool
 ;; @returns (response true uint)
 (define-public (create-pool
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cover-vault <lv>)
   (cp-rewards-token <dt>)
   (cover-token <ft>)
@@ -42,7 +42,7 @@
   (cycle-length uint)
   (min-cycles uint))
   (let (
-    (cp-contract (contract-of cp-token))
+    (cp-contract (contract-of cp))
     (cp-rewards-contract (contract-of cp-rewards-token))
     (cover-token-contract (contract-of cover-token))
     (cover-vault-contract (contract-of cover-vault))
@@ -73,7 +73,7 @@
 ;; @param cp-token: token to hold zest rewards funds for cover-providers
 ;; @param token-id: pool id
 ;; @returns (response true uint)
-(define-public (finalize-pool (cp-token <cp-token>) (token-id uint))
+(define-public (finalize-pool (cp <cp-token>) (token-id uint))
   (let (
     (pool (try! (get-pool token-id)))
     (data (merge pool { status: READY })))
@@ -96,7 +96,7 @@
 (define-read-only (get-sent-funds-optional (staker principal) (token-id uint))
   (contract-call? .cover-pool-data get-sent-funds-optional staker token-id))
 
-(define-public (set-open (cp-token <cp-token>) (token-id uint) (open bool))
+(define-public (set-open (cp <cp-token>) (token-id uint) (open bool))
   (let (
     (pool (try! (get-pool token-id)))
     (data (merge pool { open: open })))
@@ -104,7 +104,7 @@
     (try! (contract-call? .cover-pool-data set-pool token-id data))
     (ok true)))
 
-(define-public (enable-pool (cp-token <cp-token>) (token-id uint))
+(define-public (enable-pool (cp <cp-token>) (token-id uint))
   (let (
     (pool (try! (get-pool token-id)))
     (height block-height)
@@ -112,13 +112,13 @@
     (try! (is-pool))
 
     (try! (contract-call? .cover-pool-data set-pool token-id data))
-    (try! (contract-call? cp-token set-cycle-start token-id height))
+    (try! (contract-call? cp set-cycle-start token-id height))
 
     (ok true)))
 
-(define-public (disable-pool (cp-token <cp-token>) (token-id uint))
+(define-public (disable-pool (cp <cp-token>) (token-id uint))
   (let (
-    (cp-contract (contract-of cp-token))
+    (cp-contract (contract-of cp))
     (pool (try! (get-pool token-id)))
     (data (merge pool (merge pool { available: false }))))
     (try! (is-pool))
@@ -127,9 +127,9 @@
 
     (ok true)))
 
-(define-public (set-cycle-length (cp-token <cp-token>) (token-id uint) (cycle-length uint))
+(define-public (set-cycle-length (cp <cp-token>) (token-id uint) (cycle-length uint))
   (let (
-    (cp-contract (contract-of cp-token))
+    (cp-contract (contract-of cp))
     (pool (try! (get-pool token-id)))
     (data (merge pool (merge pool { cycle-length: cycle-length }))))
     (try! (is-pool))
@@ -137,9 +137,9 @@
     (try! (contract-call? .cover-pool-data set-pool token-id data))
     (ok true)))
 
-(define-public (set-min-cycles (cp-token <cp-token>) (token-id uint) (min-cycles uint))
+(define-public (set-min-cycles (cp <cp-token>) (token-id uint) (min-cycles uint))
   (let (
-    (cp-contract (contract-of cp-token))
+    (cp-contract (contract-of cp))
     (pool (try! (get-pool token-id)))
     (data (merge pool { min-cycles: min-cycles })))
     (try! (is-pool))
@@ -160,22 +160,22 @@
 ;; @param sender: principal of account sending funds
 ;; @returns (response true uint)
 (define-public (send-funds
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cover-vault <lv>)
   (cp-rewards-token <dt>)
   (cover-token <ft>)
   (token-id uint)
   (amount uint)
   (cycles uint)
-  (rewards-calc <rewards-calc>)
+  (r-c <rewards-calc>)
   (sender principal))
   (let (
     (pool (try! (get-pool token-id)))
-    (cp-contract (contract-of cp-token))
+    (cp-contract (contract-of cp))
     (current-cycle (unwrap-panic (get-current-cycle token-id)))
     (cp-rewards-contract (contract-of cp-rewards-token))
     (cover-token-contract (contract-of cover-token))
-    (new-funds-sent (unwrap-panic (generate-new-cycle-length cp-token cp-rewards-token sender token-id amount cycles current-cycle rewards-calc))))
+    (new-funds-sent (unwrap-panic (generate-new-cycle-length cp cp-rewards-token sender token-id amount cycles current-cycle r-c))))
     (try! (is-paused))
 
     (asserts! (is-eq sender tx-sender) ERR_UNAUTHORIZED)
@@ -190,13 +190,13 @@
     (try! (contract-call? .cover-pool-data set-sent-funds sender token-id new-funds-sent))
     (try! (contract-call? cover-vault add-asset cover-token amount token-id sender))
     
-    (try! (contract-call? cp-token mint token-id amount sender))
+    (try! (contract-call? cp mint token-id amount sender))
     (try! (contract-call? cp-rewards-token mint token-id amount sender))
 
     (try! (contract-call? .read-data add-cover-pool-balance token-id amount))
 
     (print { type: "send-funds-cover-pool", payload: { key: { owner: sender, token-id: token-id }, new-funds-sent: new-funds-sent, amount-sent: amount } })
-    (try! (contract-call? cp-token set-share-cycles current-cycle (+ (get cycles new-funds-sent) current-cycle) token-id amount sender))
+    (try! (contract-call? cp set-share-cycles current-cycle (+ (get cycles new-funds-sent) current-cycle) token-id amount sender))
     (ok new-funds-sent)))
 
 ;; @desc gets the new cycle length based on previous commitment time and amount and
@@ -208,26 +208,26 @@
 ;; @param amount: amount being sent from the protocol
 ;; @param factor: multiplier to the amount of time locked
 ;; @param current-cycle: current cycle in the pool
-;; @param rewards-calc: principal to calculate zest rewards
+;; @param r-c: principal to calculate zest rewards
 ;; @returns (response { start: uint, cycles: uint, withdrawal-signaled: uint, amount: uint } uint)
 (define-private (generate-new-cycle-length
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cp-rewards-token <dt>)
   (caller principal)
   (token-id uint)
   (amount uint)
   (factor uint)
   (current-cycle uint)
-  (rewards-calc <rewards-calc>))
+  (r-c <rewards-calc>))
   (let (
     (prev-funds (unwrap-panic (contract-call? cp-rewards-token get-balance token-id caller))))
     (match (get-sent-funds-optional caller token-id)
       funds-sent-data
       (let (
-          (rewards (try! (contract-call? cp-token withdraw-cycle-rewards token-id caller)))
-          (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards caller (get cycles funds-sent-data) (get cycle-rewards rewards))) u0))
-          (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards-base caller (get passive-rewards rewards))) u0))
-          (result (try! (contract-call? cp-token empty-commitments token-id caller))))
+          (rewards (try! (contract-call? cp withdraw-cycle-rewards token-id caller)))
+          (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? r-c mint-rewards caller (get cycles funds-sent-data) (get cycle-rewards rewards))) u0))
+          (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? r-c mint-rewards-base caller (get passive-rewards rewards))) u0))
+          (result (try! (contract-call? cp empty-commitments token-id caller))))
           (if (has-committed-funds token-id caller)
           (let (
             (prev-factor (get cycles funds-sent-data))
@@ -347,7 +347,7 @@
 ;; @param token-id: pool id
 ;; @param amount: amount caller wants to withdraw
 ;; @returns (response true uint)
-(define-public (signal-withdrawal (cp-token <cp-token>) (token-id uint) (amount uint))
+(define-public (signal-withdrawal (cp <cp-token>) (token-id uint) (amount uint))
   (let (
     (caller tx-sender)
     (pool (try! (get-pool token-id)))
@@ -363,13 +363,13 @@
 ;; @param amount: amount being sent from the protocol
 ;; @param cover-vault: cover vault used to hold cover pool funds
 ;; @returns (response true uint)
-(define-public (withdraw (cp-token <cp-token>) (cp-rewards-token <dt>) (cover-token <ft>) (token-id uint) (amount uint) (cover-vault <lv>))
+(define-public (withdraw (cp <cp-token>) (cp-rewards-token <dt>) (cover-token <ft>) (token-id uint) (amount uint) (cover-vault <lv>))
   (let (
     (recipient tx-sender)
     (pool (try! (get-pool token-id)))
     (sent-funds-data (try! (get-sent-funds recipient token-id)))
-    (lost-funds (try! (contract-call? cp-token recognize-losses token-id recipient)))
-    (cp-contract (contract-of cp-token))
+    (lost-funds (try! (contract-call? cp recognize-losses token-id recipient)))
+    (cp-contract (contract-of cp))
     (withdrawal-time-delta (- block-height (get withdrawal-signaled sent-funds-data)))
     (globals (contract-call? .globals get-globals))
     (unlock-time (+ (* (get cycle-length pool) (get cycles sent-funds-data)) (get start sent-funds-data))))
@@ -384,7 +384,7 @@
     (try! (contract-call? cover-vault remove-asset cover-token amount token-id recipient))
     (try! (contract-call? .cover-pool-data set-sent-funds recipient token-id (merge sent-funds-data { withdrawal-signaled: u0, amount: u0 })))
 
-    (try! (contract-call? cp-token burn token-id amount recipient))
+    (try! (contract-call? cp burn token-id amount recipient))
     (try! (contract-call? cp-rewards-token burn token-id amount recipient))
 
     (print { type: "withdraw-cover-pool", payload: { key: { caller: recipient, token-id: token-id } , funds-withdrawn: amount } })
@@ -395,15 +395,15 @@
 ;; @param token-id: pool id
 ;; @param rewards-calc: rewards calculation contract
 ;; @returns (response { zest-cycle-rewards: uint, zest-base-rewards: uint } uint)
-(define-public (withdraw-zest-rewards (cp-token <cp-token>) (token-id uint) (rewards-calc <rewards-calc>))
+(define-public (withdraw-zest-rewards (cp <cp-token>) (token-id uint) (r-c <rewards-calc>))
   (let (
     (caller tx-sender)
-    (rewards (try! (contract-call? cp-token withdraw-cycle-rewards token-id caller)))
+    (rewards (try! (contract-call? cp withdraw-cycle-rewards token-id caller)))
     (sent-funds-data (try! (get-sent-funds caller token-id)))
-    (is-rewards-calc (asserts! (contract-call? .globals is-rewards-calc (contract-of rewards-calc)) ERR_INVALID_REWARDS_CALC))
-    (is-cp (asserts! (contract-call? .globals is-cp (contract-of cp-token)) ERR_INVALID_ZP))
-    (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards caller (get cycles sent-funds-data) (get cycle-rewards rewards))) u0))
-    (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? rewards-calc mint-rewards-base caller (get passive-rewards rewards))) u0)))
+    (is-rewards-calc (asserts! (contract-call? .globals is-rewards-calc (contract-of r-c)) ERR_INVALID_REWARDS_CALC))
+    (is-cp (asserts! (contract-call? .globals is-cp (contract-of cp)) ERR_INVALID_ZP))
+    (zest-cycle-rewards (if (> (get cycle-rewards rewards) u0) (try! (contract-call? r-c mint-rewards caller (get cycles sent-funds-data) (get cycle-rewards rewards))) u0))
+    (zest-base-rewards (if (> (get passive-rewards rewards) u0) (try! (contract-call? r-c mint-rewards-base caller (get passive-rewards rewards))) u0)))
     (try! (contract-call? .read-data add-cover-pool-zest-rewards-earned token-id (+ zest-base-rewards zest-cycle-rewards)))
 
     (ok { zest-cycle-rewards: zest-cycle-rewards, zest-base-rewards: zest-base-rewards })))
@@ -415,7 +415,7 @@
 ;; @param xbtc: principal of xBTC contract
 ;; @param caller: principal of account withdrawing rewards
 ;; @returns (response uint uint)
-(define-public (withdraw-rewards (cp-rewards-token <dt>) (token-id uint) (lv <lv>) (xbtc <ft>) (caller principal))
+(define-public (withdraw-rewards (cp-rewards-token <dt>) (token-id uint) (l-v <lv>) (xbtc <ft>) (caller principal))
   (let (
     (withdrawn-funds (try! (contract-call? cp-rewards-token withdraw-rewards token-id caller)))
     (pool (get-pool-read token-id)))
@@ -423,7 +423,7 @@
     (asserts! (is-eq (get cp-rewards-token pool) (contract-of cp-rewards-token)) ERR_INVALID_CP_REWARDS)
     (asserts! (contract-call? .globals is-xbtc (contract-of xbtc)) ERR_INVALID_XBTC)
 
-    (try! (contract-call? lv transfer withdrawn-funds caller xbtc))
+    (try! (contract-call? l-v transfer withdrawn-funds caller xbtc))
     (ok withdrawn-funds)))
 
 ;; -- ownable-trait
@@ -464,7 +464,7 @@
 ;; @param cover-token: asset used in the cover pool
 ;; @param cover-vault: contract that holds the cover funds
 ;; @returns (response uint uint)
-(define-public (default-withdrawal (cp-token <cp-token>) (token-id uint) (remaining-loan-amount uint) (recipient principal) (cover-token <ft>) (cover-vault <lv>))
+(define-public (default-withdrawal (cp <cp-token>) (token-id uint) (remaining-loan-amount uint) (recipient principal) (cover-token <ft>) (cover-vault <lv>))
   (let (
     (pool (try! (get-pool token-id)))
     (funds-in-pool (unwrap-panic (try! (contract-call? cover-vault get-asset token-id))))
@@ -474,7 +474,7 @@
     (asserts! (is-eq (contract-of cover-vault) (get cover-vault pool)) ERR_INVALID_COVER_VAULT)
 
     (try! (contract-call? cover-vault remove-asset cover-token amount-to-send token-id recipient))
-    (try! (contract-call? cp-token distribute-losses token-id amount-to-send))
+    (try! (contract-call? cp distribute-losses token-id amount-to-send))
     (ok amount-to-send)))
 
 ;; @desc withdraws funds from the cover pool to cover for losses.
@@ -487,7 +487,7 @@
 ;; @param cover-token: asset used in the cover pool
 ;; @returns (response uint uint)
 (define-public (default-withdrawal-otc
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (cover-vault <lv>)
   (token-id uint)
   (recipient principal)
@@ -517,7 +517,7 @@
 ;; @param cover-vault: contract that holds the cover funds
 ;; @returns (response uint uint)
 (define-public (return-withdrawal-otc
-  (cp-token <cp-token>)
+  (cp <cp-token>)
   (token-id uint)
   (caller principal)
   (funds-returned uint)
@@ -531,7 +531,7 @@
     (asserts! (is-eq (get status pool) IN_OTC_LIQUIDATION) ERR_INVALID_STATUS)
     (asserts! (is-eq (contract-of cover-token) (get cover-token pool)) ERR_INVALID_COVER_TOKEN)
     (asserts! (is-eq (contract-of cover-vault) (get cover-vault pool)) ERR_INVALID_COVER_VAULT)
-    (asserts! (is-eq (contract-of cp-token) (get cp-token pool)) ERR_INVALID_CP)
+    (asserts! (is-eq (contract-of cp) (get cp-token pool)) ERR_INVALID_CP)
 
     ;; if the amount of funds being returned is bigger than the liquidated amount, just return the amout liquidated
     ;; else return what was recovered and distribute losses
@@ -539,7 +539,7 @@
       (begin
         (try! (contract-call? cover-vault add-asset cover-token amount-liquidated token-id caller)))
       (begin
-        (try! (contract-call? cp-token distribute-losses token-id (- amount-liquidated funds-returned)))
+        (try! (contract-call? cp distribute-losses token-id (- amount-liquidated funds-returned)))
         (try! (contract-call? cover-vault add-asset cover-token funds-returned token-id caller))))
     
     (try! (contract-call? .cover-pool-data set-pool token-id data))

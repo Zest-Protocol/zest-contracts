@@ -334,8 +334,7 @@ export async function getProof(txId: string): Promise<Proof> {
 
   let tree = new MerkleTree(blockTxs, sha256, { isBitcoinTree: true });
   let depth = tree.getDepth();
-  let proof = tree.getProof(txId, depth);
-  proof = proof.map((merkle: any) => Buffer.from(reverseBuffer(merkle.data)));
+  let proof = tree.getProof(txId, depth).map((merkle: any) => Buffer.from(reverseBuffer(merkle.data)));
 
   let txIndex = blockTxs.findIndex((compare: string) => compare === txId);
 
