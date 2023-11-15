@@ -466,7 +466,6 @@
     (is-last-payment (or (and (is-eq (get status loan) IMPAIRED) (get open-term loan)) (is-eq remaining-payments u1)))
   )
     (try! (caller-is-pool))
-    (asserts! (is-eq caller (get borrower loan)) ERR_UNAUTHORIZED)
     (asserts! (or (is-eq ACTIVE (get status loan)) impaired) ERR_INVALID_STATUS)
     (asserts! (>= amount amount-due) ERR_NOT_ENOUGH_PAID)
     ;; if repayment, assert amount being sent is greater than the total loan

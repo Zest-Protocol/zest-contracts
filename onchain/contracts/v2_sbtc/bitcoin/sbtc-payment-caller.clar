@@ -15,7 +15,6 @@
 ;; (define-constant owner owner-address)
 (define-constant loan-id u0)
 (define-constant token-id u0)
-(define-constant factor u1)
 
 (define-public (make-payment
   (pay <payment>)
@@ -30,7 +29,7 @@
     (sats (unwrap! (contract-call? xbtc-ft get-balance (as-contract tx-sender)) ERR_UNABLE_TO_GET_BALANCE))
   )
     (as-contract (try! (contract-call? xbtc-ft transfer sats tx-sender .supplier-interface none)))
-    ;; (as-contract (try! (contract-call? .supplier-interface make-payment-xbtc sats factor lp token-id zp-token l-v xbtc-ft sats r-c)))
+    (as-contract (try! (contract-call? .supplier-interface make-payment-xbtc sats loan-id burn-block-height pay lp l-v token-id cp cp-rewards-token zp-token swap-router xbtc-ft)))
     (ok sats)
   )
 )

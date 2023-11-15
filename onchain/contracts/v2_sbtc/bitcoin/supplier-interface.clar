@@ -400,6 +400,7 @@
 (define-public (make-payment-xbtc
   (amount uint)
   (loan-id uint)
+  (height uint)
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
@@ -410,12 +411,16 @@
   (swap-router <swap>)
   (xbtc-ft <ft>)
   )
-  (let (
-    (height burn-block-height)
-    (globals (contract-call? .globals get-globals))
+  (begin
+    ;; let (
+    ;; (height burn-block-height)
+    ;; (globals (contract-call? .globals get-globals)))
+    ;; (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
+    (try! (as-contract (contract-call? xbtc-ft transfer amount tx-sender .pool-v2-0 none)))
+    (contract-call? .pool-v2-0 make-payment loan-id height pay lp l-v cp cp-rewards-token zp-token swap-router amount xbtc-ft tx-sender)
+    ;; (ok u0)
   )
-    (asserts! (get contingency-plan globals) ERR_CONTINGENCY_PLAN_DISABLED)
-    (contract-call? .loan-v1-0 make-payment loan-id height pay lp l-v cp cp-rewards-token zp-token swap-router amount xbtc-ft tx-sender)))
+)
 
 ;; @desc Make a full loan repayment in case of contingency plan
 ;; @param amount: amount of xBTC being sent
@@ -640,19 +645,20 @@
   (coll-vault <cv>)
   (f-v <fv>)
   (xbtc-ft <ft>)
-  (block { header: (buff 80), height: uint })
-  (prev-blocks (list 10 (buff 80)))
-  (tx (buff 1024))
-  (proof { tx-index: uint, hashes: (list 12 (buff 32)), tree-depth: uint })
-  (output-index uint)
-  (swap-id uint))
+  ;; (block { header: (buff 80), height: uint })
+  ;; (prev-blocks (list 10 (buff 80)))
+  ;; (tx (buff 1024))
+  ;; (proof { tx-index: uint, hashes: (list 12 (buff 32)), tree-depth: uint })
+  ;; (output-index uint)
+  ;; (swap-id uint)
+  )
   (begin
-    (match (contract-call? .magic-protocol get-completed-outbound-swap-txid swap-id)
-      exists true
-      (try! (contract-call? .magic-protocol finalize-outbound-swap block prev-blocks tx proof output-index swap-id)))
+    ;; (match (contract-call? .magic-protocol get-completed-outbound-swap-txid swap-id)
+    ;;   exists true
+    ;;   (try! (contract-call? .magic-protocol finalize-outbound-swap block prev-blocks tx proof output-index swap-id)))
 
-    (asserts! (default-to false (map-get? magic-id swap-id)) INVALID_OUTBOUND_TX)
-    (map-delete magic-id swap-id)
+    ;; (asserts! (default-to false (map-get? magic-id swap-id)) INVALID_OUTBOUND_TX)
+    ;; (map-delete magic-id swap-id)
     (contract-call? .pool-v2-0 finalize-drawdown loan-id lp token-id coll-token coll-vault f-v xbtc-ft)))
 
 ;; @desc Borrower can drawdown funds when contingency plan is active

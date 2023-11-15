@@ -71,6 +71,8 @@
 (map-set lp { token-x: xbtc, token-y: governance-token } u1000000000)
 (map-set lp { token-x: Wrapped-Bitcoin, token-y: Wrapped-Bitcoin } PRECISION)
 (map-set lp { token-x: Wrapped-Bitcoin, token-y: Wrapped-USD } u1972690000000)
+(map-set lp { token-x: sBTC, token-y: governance-token } u1000000000)
+
 (map-set lp { token-x: Wrapped-Bitcoin, token-y: governance-token } u1000000000)
 
 (map-set lp { token-x: Wrapped-USD, token-y: Wrapped-USD } PRECISION)
@@ -89,6 +91,7 @@
 
 (define-constant xbtc .xbtc)
 (define-constant Wrapped-Bitcoin .Wrapped-Bitcoin)
+(define-constant sBTC .sBTC)
 (define-constant governance-token .zge000-governance-token)
 
 (define-constant Wrapped-Bitcoin-mainnet 'SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin)
