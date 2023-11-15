@@ -8,6 +8,8 @@ const simnet = await initSimnet()
 const accounts = simnet.getAccounts()
 const deployerAddress = accounts.get("deployer")!
 const LP_1 = accounts.get("wallet_1")!
+const Borrower_1 = accounts.get("wallet_2")!
+const Delegate_1 = accounts.get("wallet_3")!
 
 const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`)
@@ -20,7 +22,7 @@ describe("example tests", () => {
       "globals",
       "onboard-user-address",
       [
-        Cl.standardPrincipal(deployerAddress),
+        Cl.standardPrincipal(Borrower_1),
         Cl.bufferFromHex("00"),
         Cl.bufferFromHex("0000000000000000000000000000000000000000")
       ],
@@ -31,7 +33,7 @@ describe("example tests", () => {
       "pool-v2-0",
       "create-pool",
       [
-        Cl.standardPrincipal(deployerAddress),
+        Cl.standardPrincipal(Delegate_1),
         Cl.contractPrincipal(deployerAddress, "sBTC"),
         Cl.contractPrincipal(deployerAddress, "pool-v2-0"),
         Cl.contractPrincipal(deployerAddress, "lp-token-0"),
@@ -64,11 +66,12 @@ describe("example tests", () => {
       "sBTC",
       "mint",
       [
-        Cl.uint(1_000_000),
+        Cl.uint(100_000_000),
         Cl.contractPrincipal(deployerAddress, "sbtc-deposit-caller-001"),
       ],
       deployerAddress
     )
+
     // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
     // console.log(simnet.getContractsInterfaces().get(`${deployerAddress}.sbtc-deposit-caller-001`))
@@ -85,14 +88,72 @@ describe("example tests", () => {
       ],
       deployerAddress
     )
+    // console.log(simnet.getAssetsMap().get(".sBTC.sBTC"))
+    // console.log(Cl.prettyPrint(callResponse.result))
 
-    // console.log(callResponse)
+    const payment_period = 1440;
+    const num_payments = 9;
+
+    callResponse = simnet.callPublicFn(
+      `${deployerAddress}.pool-v2-0`,
+      "create-loan",
+      [
+        Cl.contractPrincipal(deployerAddress, "loan-v1-0"),
+        Cl.contractPrincipal(deployerAddress, "lp-token-0"),
+        Cl.uint(0),
+        Cl.uint(100_000_000),
+        Cl.contractPrincipal(deployerAddress, "sBTC"),
+        Cl.uint(0),
+        Cl.contractPrincipal(deployerAddress, "sBTC"),
+        Cl.uint(300),
+        Cl.uint(payment_period * num_payments),
+        Cl.uint(payment_period),
+        Cl.contractPrincipal(deployerAddress, "coll-vault"),
+        Cl.contractPrincipal(deployerAddress, "funding-vault"),
+      ],
+      Borrower_1
+    )
+
+    callResponse = simnet.callPublicFn(
+      `${deployerAddress}.pool-v2-0`,
+      "fund-loan",
+      [
+        Cl.uint(0),
+        Cl.contractPrincipal(deployerAddress, "lp-token-0"),
+        Cl.uint(0),
+        Cl.contractPrincipal(deployerAddress, "liquidity-vault-v1-0"),
+        Cl.contractPrincipal(deployerAddress, "funding-vault"),
+        Cl.contractPrincipal(deployerAddress, "sBTC"),
+      ],
+      Delegate_1
+    )
+
+    callResponse = simnet.callPublicFn(
+      `${deployerAddress}.supplier-interface`,
+      "drawdown",
+      [
+        Cl.uint(0),
+        Cl.contractPrincipal(deployerAddress, "lp-token-0"),
+        Cl.uint(0),
+        Cl.contractPrincipal(deployerAddress, "sBTC"),
+        Cl.contractPrincipal(deployerAddress, "coll-vault"),
+        Cl.contractPrincipal(deployerAddress, "funding-vault"),
+
+        Cl.bufferFromHex("00"),
+        Cl.bufferFromHex("0000000000000000000000000000000000000000"),
+
+        Cl.contractPrincipal(deployerAddress, "swap-router"),
+        Cl.contractPrincipal(deployerAddress, "sBTC"),
+      ],
+      Borrower_1
+    )
+
     console.log(Cl.prettyPrint(callResponse.result))
-    console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
+    // console.log(callResponse)
+    console.log(simnet.getAssetsMap().get(".sBTC.sBTC"))
+    // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"))
+
     // console.log(Cl.prettyPrint(callResponse.events[1].data.value!))
 
-
-    // SEND FUNDS NOW
-
-  });
-});
+  })
+})

@@ -13,20 +13,24 @@
 
 (define-constant deployer tx-sender)
 ;; (define-constant owner owner-address)
+(define-constant loan-id u0)
 (define-constant token-id u0)
 (define-constant factor u1)
 
-(define-public (send-funds
+(define-public (make-payment
+  (pay <payment>)
   (lp <sip-010>)
-  (zp-token <dtc>)
   (l-v <lv>)
-  (xbtc-ft <ft>)
-  (r-c <rewards-calc>))
+  (cp <cp-token>)
+  (cp-rewards-token <dt>)
+  (zp-token <dt>)
+  (swap-router <swap>)
+  (xbtc-ft <ft>))
   (let (
     (sats (unwrap! (contract-call? xbtc-ft get-balance (as-contract tx-sender)) ERR_UNABLE_TO_GET_BALANCE))
   )
     (as-contract (try! (contract-call? xbtc-ft transfer sats tx-sender .supplier-interface none)))
-    (as-contract (try! (contract-call? .supplier-interface send-funds-xbtc factor lp token-id zp-token l-v xbtc-ft sats r-c)))
+    ;; (as-contract (try! (contract-call? .supplier-interface make-payment-xbtc sats factor lp token-id zp-token l-v xbtc-ft sats r-c)))
     (ok sats)
   )
 )

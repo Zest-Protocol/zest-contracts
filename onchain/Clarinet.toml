@@ -23,10 +23,10 @@ path = "contracts/v2_sbtc/bitcoin/magic-protocol/magic-protocol.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.magic-caller]
-path = "contracts/v2_sbtc/bitcoin/magic-caller.clar"
-clarity_version = 2
-epoch = 2.1
+# [contracts.magic-caller]
+# path = "contracts/v2_sbtc/bitcoin/magic-caller.clar"
+# clarity_version = 2
+# epoch = 2.1
 
 # [contracts.magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP]
 # path = "contracts/v2_sbtc/bitcoin/magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.clar"

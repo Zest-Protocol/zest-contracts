@@ -567,9 +567,10 @@
     (pool (try! (contract-call? .pool-v2-0 get-pool token-id)))
     (xbtc (try! (contract-call? .pool-v2-0 drawdown-verify loan-id lp token-id coll-token coll-vault f-v swap-router xbtc-ft tx-sender)))
     (swap-id (try! (as-contract (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))))
-    (liquidity (try! (get-current-liquidity))))
+    ;; (liquidity (try! (get-current-liquidity)))
+    )
     (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED)
-    (asserts! (>= liquidity xbtc) ERR_NOT_ENOUGH_LIQUIDITY)
+    ;; (asserts! (>= liquidity xbtc) ERR_NOT_ENOUGH_LIQUIDITY)
     (print { btc-version: btc-version, btc-hash: btc-hash, supplier-id: supplier-id, amount: xbtc })
     (ok { swap-id: swap-id, sats: xbtc })))
 
@@ -595,22 +596,23 @@
   (f-v <fv>)
   (btc-version (buff 1))
   (btc-hash (buff 20))
-  (supplier-id uint)
   (swap-router <swap>)
   (xbtc-ft <ft>)
   )
   (let (
     (pool (try! (contract-call? .pool-v2-0 get-pool token-id)))
     (xbtc (try! (contract-call? .pool-v2-0 drawdown loan-id lp token-id coll-token coll-vault f-v swap-router xbtc-ft tx-sender)))
-    (swap-id (try! (as-contract (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))))
-    (liquidity (try! (get-current-liquidity))))
-    
+    ;; (swap-id (try! (as-contract (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))))
+    ;; (liquidity (try! (get-current-liquidity)))
+    )
     (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED)
-    (asserts! (>= liquidity xbtc) ERR_NOT_ENOUGH_LIQUIDITY)
 
-    (print { btc-version: btc-version, btc-hash: btc-hash, supplier-id: supplier-id, amount: xbtc })
-    (map-set magic-id swap-id true)
-    (ok { swap-id: swap-id, sats: xbtc })))
+    ;; (as-contract (try! (contract-call? xbtc-ft transfer xbtc tx-sender  none)))
+
+    ;; Burn sBTC
+    (try! (as-contract (contract-call? xbtc-ft transfer xbtc tx-sender 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR none)))
+    (ok { sats: xbtc }))
+)
 
 ;; @desc Finalize drawdown process through magic protocol to update the loan status
 ;; @param loan-id: id of the loan to which the payment is made
@@ -709,9 +711,10 @@
     (pool (try! (contract-call? .pool-v2-0 get-pool token-id)))
     (xbtc (try! (contract-call? .pool-v2-0 complete-rollover loan-id lp token-id coll-token coll-vault f-v swap-router xbtc-ft tx-sender)))
     (swap-id (if (> xbtc u0) (try! (as-contract (contract-call? .magic-protocol initiate-outbound-swap xbtc btc-version btc-hash supplier-id))) u0) )
-    (liquidity (try! (get-current-liquidity))))
+    ;; (liquidity (try! (get-current-liquidity)))
+    )
     (asserts! (contract-call? .globals is-onboarded-address-read tx-sender btc-version btc-hash) ERR_ADDRESS_NOT_ALLOWED)
-    (asserts! (>= liquidity xbtc) ERR_NOT_ENOUGH_LIQUIDITY)
+    ;; (asserts! (>= liquidity xbtc) ERR_NOT_ENOUGH_LIQUIDITY)
     (ok swap-id)))
 
 ;; @desc Finalize rollover magic protocol to update the loan and rollover status
