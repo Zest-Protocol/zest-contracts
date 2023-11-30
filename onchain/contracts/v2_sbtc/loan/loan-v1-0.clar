@@ -2,9 +2,10 @@
 
 (use-trait lp-token .lp-token-trait.lp-token-trait)
 (use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
+
 (use-trait ft .ft-trait.ft-trait)
 (use-trait sip-010 .sip-010-trait.sip-010-trait)
-(use-trait dt .distribution-token-trait.distribution-token-trait)
+
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait v .vault-trait.vault-trait)
 (use-trait fv .funding-vault-trait.funding-vault-trait)
@@ -385,7 +386,9 @@
     (try! (as-contract (contract-call? f-v add-asset xbtc borrow-amount loan-id tx-sender)))
 
     (try! (contract-call? .loan-data set-loan loan-id new-loan))
-    (ok borrow-amount)))
+    (ok borrow-amount)
+  )
+)
 
 (define-public (make-payment-verify
   (loan-id uint)
@@ -393,9 +396,6 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>)
-  (cp-rewards-token <dt>)
-  (zd-token <dt>)
   (swap-router <swap>)
   (amount uint)
   (xbtc <ft>)
@@ -417,7 +417,9 @@
     ;; for payment testing
     (set-tested-amount loan-id total-tested-amount)
 
-    (ok total-tested-amount)))
+    (ok total-tested-amount)
+  )
+)
 
 ;; @desc funds are received from the supplier interface sent to the payment contract. If loan
 ;; is impaired, set back to active.
@@ -443,8 +445,6 @@
   (lp <sip-010>)
   (l-v <lv>)
   (cp <cp-token>)
-  (cp-rewards-token <dt>)
-  (zd-token <dt>)
   (swap-router <swap>)
   (amount uint)
   (xbtc <ft>)
@@ -456,10 +456,11 @@
         (try! (as-contract (contract-call? xbtc transfer amount tx-sender (contract-of pay) none)))
         (if (> tested-amount u0)
           (as-contract (try! (contract-call? xbtc transfer tested-amount tx-sender (contract-of pay) none)))
-          true)))
+          true
+        )))
     (loan (try! (get-loan loan-id)))
     (token-id (try! (get-loan-pool-id loan-id)))
-    (payment-response (try! (contract-call? pay make-next-payment lp l-v token-id cp cp-rewards-token zd-token swap-router height loan-id (+ tested-amount amount) xbtc caller)))
+    (payment-response (try! (contract-call? pay make-next-payment lp l-v token-id cp swap-router height loan-id (+ tested-amount amount) xbtc caller)))
     (amount-due (- (get reward payment-response) tested-amount))
     (remaining-payments (get remaining-payments loan))
     (impaired (is-eq IMPAIRED (get status loan)))
@@ -487,8 +488,10 @@
       ;; for payment testing
       (set-tested-amount loan-id u0)
 
-      (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (not is-last-payment), is-impaired: impaired }))))
+      (ok (merge payment-response { loan-amount: (get loan-amount loan), has-remaining-payments: (not is-last-payment), is-impaired: impaired }))
     )
+  )
+)
 
 
 ;; @desc funds are received from the supplier interface and sent to the payment contract
@@ -513,9 +516,7 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>) 
-  (cp-rewards-token <dt>)
-  (zd-token <dt>)
+  (cp <cp-token>)
   (swap-router <swap>)
   (amount uint)
   (xbtc <ft>)
@@ -530,7 +531,7 @@
           true)))
     (loan (try! (get-loan loan-id)))
     (token-id (try! (get-loan-pool-id loan-id)))
-    (payment-response (try! (contract-call? pay make-full-payment lp l-v token-id cp cp-rewards-token zd-token swap-router height loan-id (+ tested-amount amount) xbtc caller)))
+    (payment-response (try! (contract-call? pay make-full-payment lp l-v token-id cp swap-router height loan-id (+ tested-amount amount) xbtc caller)))
     (new-loan (merge loan { next-payment: u0, remaining-payments: u0, status: MATURED}))
     (amount-due (- (+ (get reward payment-response) (get full-payment payment-response)) tested-amount)))
     (try! (is-supplier-interface))
@@ -579,7 +580,7 @@
     (asserts! (is-eq (contract-of coll-vault) (get coll-vault loan)) ERR_INVALID_CV)
     (asserts! (is-eq (contract-of coll-token) (get coll-token loan)) ERR_INVALID_COLL)
 
-    (if (is-eq (get asset pool) (contract-of xbtc))
+    (if (is-eq (unwrap-panic (element-at? (get assets pool) u0)) (contract-of xbtc))
       (begin
         (try! (contract-call? .loan-data set-loan loan-id new-loan))
         (ok { recovered-funds: withdrawn-funds, loan-amount: (get loan-amount loan), impaired: impaired })
@@ -595,7 +596,7 @@
 )
 
 ;; @desc Pool Delegate liquidates loans that have their grace period expired.
-;; Values are validated here and collateral is sent to recipient.
+;;  Values are validated here and collateral is sent to recipient.
 ;; @restricted pool
 ;; @param loan-id: id of loan being paid for
 ;; @param coll-vault: collateral vault holding the collateral to be recovered
@@ -1018,7 +1019,7 @@
 ;; @returns (response uint uint)
 (define-public (make-residual-payment
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft>)
   (amount uint)
   (xbtc <ft>))
   (let (

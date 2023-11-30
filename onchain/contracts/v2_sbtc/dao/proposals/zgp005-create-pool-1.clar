@@ -6,10 +6,9 @@
       .pool-v2-0
       create-pool
       'ST3PF13W7Z0RRM42A8VZRVFQ75SV1K26RXEP8YGKJ
-      .Wrapped-Bitcoin
+      (list .Wrapped-Bitcoin)
       .pool-v2-0
       .lp-token-0
-      .zest-reward-dist
       .payment-fixed
       .rewards-calc
       .withdrawal-manager
@@ -22,9 +21,9 @@
       .liquidity-vault-v1-0
       .cp-token
       .cover-vault
-      .cp-rewards-token
       .Wrapped-Bitcoin
       true
+      0x00
     ))
     (ok true)
   )

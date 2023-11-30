@@ -2,8 +2,6 @@
 
 (use-trait lp-token .lp-token-trait.lp-token-trait)
 (use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
-(use-trait dt .distribution-token-trait.distribution-token-trait)
-(use-trait dtc .distribution-token-cycles-trait.distribution-token-cycles-trait)
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait v .vault-trait.vault-trait)
 (use-trait cv .coll-vault-trait.coll-vault-trait)
@@ -66,10 +64,9 @@
 (define-map pool-data
   uint {
     pool-delegate: principal,
-    asset: principal,
+    assets: (list 128 principal),
     pool-contract: principal,
     lp-token: principal,
-    zp-token: principal,
     payment: principal,
     liquidity-vault: principal,
     cp-token: principal,
@@ -87,7 +84,10 @@
     pool-btc-start: uint,
     losses: uint,
     status: (buff 1),
-    open: bool }) ;; open to the public
+    open: bool, ;; open to the public
+    pool-type: (buff 1)
+  }
+)
 
 ;; @desc creates pool
 ;; @restricted pool
@@ -95,7 +95,6 @@
 ;; @param data:
 ;;  pool-delegate: pool delegate principal,
 ;;  lp-token: principal of the token used to account for xbtc rewards,
-;;  zp-token: principal of the token used to account for zest rewards,
 ;;  payment: principal of contract for payments logic,
 ;;  liquidity-vault: principal of liquidity vault to hold funds available for loans,
 ;;  cp-token: principal of the token used to account for zest rewards in cover pool,
@@ -116,10 +115,9 @@
   (token-id uint)
   (data {
     pool-delegate: principal,
-    asset: principal,
+    assets: (list 128 principal),
     pool-contract: principal,
     lp-token: principal,
-    zp-token: principal,
     payment: principal,
     liquidity-vault: principal,
     cp-token: principal,
@@ -137,7 +135,8 @@
     pool-btc-start: uint,
     losses: uint,
     status: (buff 1),
-    open: bool ;; open to the public
+    open: bool, ;; open to the public
+    pool-type: (buff 1)
   }))
   (begin
     (try! (is-pool-contract))
@@ -155,10 +154,9 @@
   (token-id uint)
   (data {
     pool-delegate: principal,
-    asset: principal,
+    assets: (list 128 principal),
     pool-contract: principal,
     lp-token: principal,
-    zp-token: principal,
     payment: principal,
     liquidity-vault: principal,
     cp-token: principal,
@@ -176,7 +174,8 @@
     pool-btc-start: uint,
     losses: uint,
     status: (buff 1),
-    open: bool ;; open to the public
+    open: bool, ;; open to the public
+    pool-type: (buff 1)
   })
   )
   (begin

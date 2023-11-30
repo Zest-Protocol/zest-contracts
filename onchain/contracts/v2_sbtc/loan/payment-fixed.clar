@@ -6,8 +6,7 @@
 (use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait ft .ft-trait.ft-trait)
-(use-trait sip-010 .sip-010-trait.sip-010-trait)
-(use-trait dt .distribution-token-trait.distribution-token-trait)
+
 (use-trait swap .swap-router-trait.swap-router-trait)
 
 (define-constant ONE_DAY (contract-call? .globals get-day-length-default))
@@ -34,12 +33,10 @@
 ;; @param caller: principal of the user making the payment (assumes principal is validated)
 ;; @returns (respone { reward: uint, z-reward: uint, repayment: bool })
 (define-public (make-next-payment
-  (lp <sip-010>)
+  (lp <ft>)
   (l-v <lv>)
   (token-id uint)
   (cp <cp-token>)
-  (cp-rewards-token <dt>)
-  (zd-token <dt>)
   (swap-router <swap>)
   (height uint)
   (loan-id uint)
@@ -70,8 +67,8 @@
     (asserts! (is-eq (as-contract tx-sender) (get payment pool)) ERR_INVALID_PAYMENT)
     (asserts! (contract-call? .globals is-swap (contract-of swap-router)) ERR_INVALID_SWAP)
     (asserts! (is-eq (contract-of l-v) (get liquidity-vault pool)) ERR_INVALID_LV)
-    (try! (distribute-xbtc l-v .protocol-treasury lp cp-rewards-token token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
-    (try! (distribute-zest lp token-id cp zd-token z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
+    (try! (distribute-xbtc l-v .protocol-treasury lp token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
+    (try! (distribute-zest lp token-id cp z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
 
     ;; set to false when a payment is done always
     (map-set late-payment-switch caller false)
@@ -102,12 +99,10 @@
 ;; @param caller: principal of the user making the payment (assumes principal is validated)
 ;; @returns (respone { reward: uint, z-reward: uint, repayment: bool })
 (define-public (make-full-payment
-  (lp <sip-010>)
+  (lp <ft>)
   (l-v <lv>)
   (token-id uint)
   (cp <cp-token>)
-  (cp-rewards-token <dt>)
-  (zd-token <dt>)
   (swap-router <swap>)
   (height uint)
   (loan-id uint)
@@ -138,8 +133,8 @@
     (asserts! (is-eq (as-contract tx-sender) (get payment pool)) ERR_INVALID_PAYMENT)
     (asserts! (contract-call? .globals is-swap (contract-of swap-router)) ERR_INVALID_SWAP)
     (asserts! (is-eq (contract-of l-v) pool-lv) ERR_INVALID_LV)
-    (try! (distribute-xbtc l-v .protocol-treasury lp cp-rewards-token token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
-    (try! (distribute-zest lp token-id cp zd-token z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
+    (try! (distribute-xbtc l-v .protocol-treasury lp token-id xbtc-lp-portion .cover-pool-v1-0 (get available cover-pool) xbtc-staker-portion xbtc-delegate-portion (get pool-delegate pool) xbtc))
+    (try! (distribute-zest lp token-id cp z-lp-portion .cover-pool-v1-0 z-staker-portion delegate z-delegate-portion))
 
     ;; set to false when a payment is done always
     (map-set late-payment-switch caller false)
@@ -223,8 +218,7 @@
 (define-private (distribute-xbtc
   (l-v <lv>)
   (treasury principal)
-  (lp <sip-010>)
-  (cp-rewards-token <dt>)
+  (lp <ft>)
   (token-id uint)
   (lp-portion uint)
   (cover-pool principal)
@@ -248,7 +242,6 @@
         (try! (as-contract (contract-call? l-v add-asset xbtc lp-portion token-id tx-sender)))
         ;; to Cover
         (print { type: "cp-rewards-token-rewards", payload: { key: { token-id: token-id }, data: { cp-rewards-earned: cover-portion }} })
-        (try! (contract-call? cp-rewards-token add-rewards token-id cover-portion))
         (try! (as-contract (contract-call? l-v add-asset xbtc cover-portion token-id tx-sender))))
       (let (
         (total-portion (+ cover-portion lp-portion)))
@@ -272,10 +265,9 @@
 ;; @param delegate-portion: portion of funds going to the pool delegate
 ;; @returns (response true uint)
 (define-private (distribute-zest
-  (lp <sip-010>)
+  (lp <ft>)
   (token-id uint)
   (cp <cp-token>)
-  (zd-token <dt>)
   (lp-portion uint)
   (staking-pool principal)
   (cover-portion uint)
@@ -286,7 +278,6 @@
     (try! (contract-call? .zge000-governance-token edg-mint-many (list { amount: delegate-portion, recipient: delegate })))
     (print { type: "delegate-zest-rewards", payload: { key: { delegate: delegate, token-id: token-id }, data: { rewards-earned: delegate-portion }} })
     (print { type: "zd-token-zest-rewards", payload: { key: { token-id: token-id }, data: { rewards-earned: lp-portion }} })
-    (try! (contract-call? zd-token add-rewards token-id lp-portion))
 
     (if (get available cover-pool)
       (begin

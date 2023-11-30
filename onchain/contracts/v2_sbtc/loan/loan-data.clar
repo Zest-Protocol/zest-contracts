@@ -1,9 +1,7 @@
 (impl-trait .ownable-trait.ownable-trait)
 
 (use-trait lp-token .lp-token-trait.lp-token-trait)
-(use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
 (use-trait ft .ft-trait.ft-trait)
-(use-trait dt .distribution-token-trait.distribution-token-trait)
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait v .vault-trait.vault-trait)
 (use-trait cv .coll-vault-trait.coll-vault-trait)
