@@ -126,6 +126,11 @@ path = "contracts/v2_sbtc/token/lp-token-0.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.debt-token-0]
+path = "contracts/v2_sbtc/token/debt-token-0.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.lp-token-trait]
 path = "contracts/v2_sbtc/trait/lp-token-trait.clar"
 clarity_version = 2
