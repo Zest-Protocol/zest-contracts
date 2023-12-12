@@ -1324,7 +1324,7 @@
     ;; TODO: Add Liquidity cap per pool
     ;; (asserts! (<= (+ current-liquidity assets) (get liquidity-cap pool)) ERR_LIQUIDITY_CAP_EXCESS)
 
-    
+
 
     ;; transfer assets to liquidity vault
     (as-contract (try! (contract-call? l-v add-asset asset amount pool-id tx-sender)))
@@ -1524,20 +1524,57 @@
   )
 )
 
-(define-public (get-current-liquidity-rate (pool-id uint)  (liquidity-vault <lv>))
+(define-public (get-current-liquidity-rate
+  (pool-id uint)
+  (liquidity-vault <lv>)
+  )
   (let (
     ;; overall borrow-rate is obtained by adding stuff up
-    (borrow-rate (try! (get-overall-borrow-rate pool-id)))
+    (borrow-rate (try! (get-overall-borrow-rate-1 pool-id)))
     (utilization-rate (try! (get-utilization-rate pool-id liquidity-vault)))
   )
     (ok (* borrow-rate utilization-rate))
   )
 )
 
-(define-public (get-overall-borrow-rate (pool-id uint))
+(define-public (calculate-interest-rates
+  (available-liquidity uint)
+  
+  (total-borrows-stable uint)
+  (total-borrows-variable uint)
+  (current-average-stable-borrow-rate uint)
+  (current-variable-borrow-rate uint)
+  )
+  (let (
+    (jjj u0)
+  )
+    (ok u0)
+  )
+)
+
+(define-public (get-overall-borrow-rate-1 (pool-id uint))
   (begin
     (asserts! true (err u0))
     (ok u0)
+  )
+)
+
+(define-public (get-overall-borrow-rate
+  (total-borrows-stable uint)
+  (total-borrows-variable uint)
+  (current-variable-borrow-rate uint)
+  (current-average-stable-borrow-rate uint)
+  )
+  (if (is-eq (+ total-borrows-stable total-borrows-variable) u0)
+    (ok u0)
+    (let (
+      (total-borrows (+ total-borrows-stable total-borrows-variable))
+      (weighted-variable-rate (mul total-borrows-variable current-variable-borrow-rate))
+      (weighted-stable-rate (mul total-borrows-stable current-average-stable-borrow-rate))
+      (overall-borrow-rate (div (+ weighted-variable-rate weighted-stable-rate) total-borrows))
+    )
+      (ok overall-borrow-rate)
+    )
   )
 )
 
@@ -1706,6 +1743,81 @@
 
 (define-public (total-assets (lp <sip-010>) (l-v <lv>) (token-id uint) (asset <ft>))
   (ok (default-to u0 (try! (contract-call? l-v get-asset token-id))) ))
+
+
+(define-constant one-8 u100000000)
+
+(define-read-only (mul (x uint) (y uint))
+  (/ (+ (* x y) (/ one-8 u2)) one-8)
+)
+
+(define-read-only (div (x uint) (y uint))
+  (/ (+ (* x one-8) (/ y u2)) y)
+)
+
+(define-constant seconds-in-year (* u144 u365 u10 u60))
+
+(define-read-only (calculate-linear-interest-1
+  (principal uint)
+  (annual-rate uint)
+  (duration-seconds uint)
+)
+  (let (
+    (immediate-rate (mul annual-rate (div duration-seconds seconds-in-year)))
+  )
+    (mul principal immediate-rate)
+  )
+)
+
+(define-read-only (calculate-continous-compounded-interest
+  (principal uint)
+  (annual-rate uint)
+  (duration-seconds uint)
+)
+  (let (
+    (immediate-rate (mul annual-rate (div duration-seconds seconds-in-year)))
+    (e-rt (taylor-6 immediate-rate))
+  )
+    (mul principal e-rt)
+  )
+)
+
+(define-read-only (is-odd (x uint))
+  (not (is-even x))
+)
+
+(define-read-only (is-even (x uint))
+  (is-eq (mod x u2) u0)
+)
+
+(define-constant e 271828182)
+
+(define-read-only (test-this)
+  (mul (* one-8 u1000) (taylor-6 (mul u5000000 u300000000)))
+)
+
+(define-constant fact_2 u200000000)
+(define-constant fact_3 (mul u300000000 u200000000))
+(define-constant fact_4 (mul u400000000 (mul u300000000 u200000000)))
+(define-constant fact_5 (mul u500000000 (mul u400000000 (mul u300000000 u200000000))))
+(define-constant fact_6 (mul u600000000 (mul u500000000 (mul u400000000 (mul u300000000 u200000000)))))
+
+(define-read-only (x_2 (x uint)) (mul x x))
+(define-read-only (x_3 (x uint)) (mul x (mul x x)))
+(define-read-only (x_4 (x uint)) (mul x (mul x (mul x x))))
+(define-read-only (x_5 (x uint)) (mul x (mul x (mul x (mul x x)))))
+(define-read-only (x_6 (x uint)) (mul x (mul x (mul x (mul x (mul x x))))))
+
+(define-read-only (taylor-6 (x uint))
+  (+
+    one-8 x
+    (div (x_2 x) fact_2)
+    (div (x_3 x) fact_3)
+    (div (x_4 x) fact_4)
+    (div (x_5 x) fact_5)
+    (div (x_6 x) fact_6)
+  )
+)
 
 ;; ERROR START 8000
 (define-constant ERR_UNAUTHORIZED (err u8000))

@@ -148,10 +148,17 @@ describe("example tests", () => {
         [],
         deployerAddress
       ),
+      simnet.callReadOnlyFn(
+        "pool-v2-0",
+        "calculate-linear-interest-1",
+        [Cl.uint(100_000_000_000), Cl.uint(5_000_000), Cl.uint(3600)],
+        deployerAddress
+      ),
     ];
 
     // expect(callResponse[0].result);
-    console.log(Cl.prettyPrint(callResponse[0].result));
+    // console.log(Cl.prettyPrint(callResponse[1].result));
+    console.log(Cl.prettyPrint(callResponse[1].result));
     // console.log(Cl.prettyPrint(callResponse[2].result));
 
     // expect(callResponse[1].result).toBeUint(100_000_000);
