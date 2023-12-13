@@ -1,8 +1,10 @@
 node_modules
 onchain/.cache
 onchain/deployments
+onchain/settings
 onchain/history.txt
 onchain/scripts
 onchain/settings/Testnet.toml
 src/clarigen
-*.DS_Store
+.DS_Store
+onchain/.requirements/
