@@ -3,7 +3,7 @@
 (impl-trait .extension-trait.extension-trait)
 
 (use-trait lp-token .lp-token-trait.lp-token-trait)
-(use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
+;; (use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait ft .ft-trait.ft-trait)
 
@@ -36,7 +36,7 @@
   (lp <ft>)
   (l-v <lv>)
   (token-id uint)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (height uint)
   (loan-id uint)
@@ -102,7 +102,7 @@
   (lp <ft>)
   (l-v <lv>)
   (token-id uint)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (height uint)
   (loan-id uint)
@@ -267,7 +267,7 @@
 (define-private (distribute-zest
   (lp <ft>)
   (token-id uint)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (lp-portion uint)
   (staking-pool principal)
   (cover-portion uint)

@@ -1,7 +1,7 @@
 (impl-trait .ownable-trait.ownable-trait)
 
 (use-trait lp-token .lp-token-trait.lp-token-trait)
-(use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
+;; (use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait v .vault-trait.vault-trait)
 (use-trait fv .funding-vault-trait.funding-vault-trait)
@@ -59,7 +59,7 @@
   (min-cycles uint)
   (max-maturity-length uint)
   (liquidity-vault <lv>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (cover-vault <lv>)
   (cp-cover-token <ft>)
   (open bool)
@@ -177,7 +177,7 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-cycle-length (lp <sip-010>) (cp <cp-token>) (token-id uint) (cycle-length uint))
+(define-public (set-cycle-length (lp <sip-010>) (cp <lp-token>) (token-id uint) (cycle-length uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -190,7 +190,7 @@
     (try! (contract-call? .cover-pool-v1-0 set-cycle-length cp token-id cycle-length))
     (ok true)))
 
-(define-public (set-withdrawal-window (lp <sip-010>) (cp <cp-token>) (token-id uint) (withdrawal-window uint))
+(define-public (set-withdrawal-window (lp <sip-010>) (cp <lp-token>) (token-id uint) (withdrawal-window uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -202,7 +202,7 @@
 
     (ok true)))
 
-(define-public (set-min-cycles (lp <sip-010>) (cp <cp-token>) (token-id uint) (min-cycles uint))
+(define-public (set-min-cycles (lp <sip-010>) (cp <lp-token>) (token-id uint) (min-cycles uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -255,7 +255,7 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-open (lp <sip-010>) (cp <cp-token>) (token-id uint) (open bool))
+(define-public (set-open (lp <sip-010>) (cp <lp-token>) (token-id uint) (open bool))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -266,7 +266,7 @@
     (try! (contract-call? .cover-pool-v1-0 set-open cp token-id open))
     (ok true)))
 
-(define-public (set-delegate (lp <sip-010>) (cp <cp-token>) (token-id uint) (delegate principal))
+(define-public (set-delegate (lp <sip-010>) (cp <lp-token>) (token-id uint) (delegate principal))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -278,7 +278,7 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (enable-cover (lp <sip-010>) (cp <cp-token>) (token-id uint))
+(define-public (enable-cover (lp <sip-010>) (cp <lp-token>) (token-id uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id))))
@@ -289,7 +289,7 @@
     (try! (contract-call? .cover-pool-v1-0 enable-pool cp token-id))
     (ok true)))
 
-(define-public (disable-cover (lp <sip-010>) (cp <cp-token>) (token-id uint))
+(define-public (disable-cover (lp <sip-010>) (cp <lp-token>) (token-id uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id))))
@@ -307,7 +307,7 @@
 ;; @param cp-token: token to hold zest rewards funds for cover-providers
 ;; @param token-id: pool id
 ;; @returns (response true uint)
-(define-public (finalize-pool (lp <sip-010>) (cp <cp-token>) (token-id uint))
+(define-public (finalize-pool (lp <sip-010>) (cp <lp-token>) (token-id uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -680,7 +680,7 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (amount uint)
   (xbtc <ft>)
@@ -881,7 +881,7 @@
   (coll-vault <cv>)
   (coll-token <ft>)
   (cover-token <ft>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (cover-vault <lv>)
   (swap-router <swap>)
   (xbtc <ft>))
@@ -942,7 +942,7 @@
   (token-id uint) 
   (coll-vault <cv>)
   (coll-token <ft>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (cover-vault <lv>)
   (cover-token <ft>)
   (xbtc <ft>))
@@ -1045,7 +1045,7 @@
   (funds-returned uint)
   (l-v <lv>)
   (xbtc-recovered uint)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (cover-vault <lv>)
   (cover-token <ft>)
   (xbtc <ft>))

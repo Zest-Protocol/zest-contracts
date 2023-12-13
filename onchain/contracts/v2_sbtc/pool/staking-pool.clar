@@ -1,5 +1,5 @@
 (impl-trait .ownable-trait.ownable-trait)
-(use-trait dt .distribution-token-trait.distribution-token-trait)
+(use-trait lp-token .lp-token-trait.lp-token-trait)
 
 (define-constant INIT 0x00)
 (define-constant READY 0x01)
@@ -16,7 +16,7 @@
   principal
   { withdrawal-signaled: uint, amount: uint})
 
-(define-public (send-funds (sp-token <dt>) (amount uint) (caller principal))
+(define-public (send-funds (sp-token <lp-token>) (amount uint) (caller principal))
   (let (
     (pool-data (var-get pool))
     (sp-contract (contract-of sp-token)))
@@ -33,7 +33,7 @@
     (try! (contract-call? sp-token mint u0 (to-precision amount) caller))
     (ok true)))
 
-(define-public (add-rewards (sp-token <dt>) (amount uint) (caller principal))
+(define-public (add-rewards (sp-token <lp-token>) (amount uint) (caller principal))
   (let (
     (sp-contract (contract-of sp-token)))
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
@@ -45,7 +45,7 @@
     (print { type: "add-rewards-staking-pool", payload: { amount: amount, caller: caller } })
     (contract-call? sp-token add-rewards u0 amount)))
 
-(define-public (withdraw-rewards (sp-token <dt>) (token-id uint) (recipient principal))
+(define-public (withdraw-rewards (sp-token <lp-token>) (token-id uint) (recipient principal))
   (let (
     (withdrawn-funds (try! (contract-call? sp-token withdraw-rewards token-id recipient))))
     (asserts! (is-eq recipient tx-sender) ERR_UNAUTHORIZED)
@@ -64,7 +64,7 @@
     (print { type: "signal-withdrawal-staking-pool", payload: { key: caller, new-funds-sent : { withdrawal-signaled: block-height, amount: amount }} })
     (ok true)))
 
-(define-public (withdraw (sp-token <dt>) (amount uint) (caller principal))
+(define-public (withdraw (sp-token <lp-token>) (amount uint) (caller principal))
   (let (
     (pool-data (get-pool))
     (funds-sent-data (unwrap! (map-get? funds-sent caller) ERR_INVALID_PRINCIPAL))

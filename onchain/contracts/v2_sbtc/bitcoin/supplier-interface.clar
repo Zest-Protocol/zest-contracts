@@ -1,5 +1,4 @@
 (use-trait lp-token .lp-token-trait.lp-token-trait)
-(use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
 
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
 (use-trait cv .coll-vault-trait.coll-vault-trait)
@@ -10,7 +9,6 @@
 (use-trait v .vault-trait.vault-trait)
 (use-trait fv .funding-vault-trait.funding-vault-trait)
 (use-trait rewards-calc .rewards-calc-trait.rewards-calc-trait)
-;; (use-trait sc .supplier-controller-trait.supplier-controller-trait)
 
 (use-trait payment .payment-trait.payment-trait)
 (use-trait swap .swap-router-trait.swap-router-trait)
@@ -92,7 +90,7 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (xbtc-ft <ft>))
   (let (
@@ -129,7 +127,7 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (xbtc-ft <ft>))
   (let (
@@ -193,7 +191,7 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (xbtc-ft <ft>))
   (let (
@@ -231,7 +229,7 @@
   (lp <sip-010>)
   (l-v <lv>)
   (token-id uint)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (xbtc-ft <ft>)
   )
@@ -265,7 +263,7 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (xbtc-ft <ft>)
   )

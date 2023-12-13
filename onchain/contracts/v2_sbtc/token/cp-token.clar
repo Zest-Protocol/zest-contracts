@@ -1,6 +1,6 @@
 ;; holds Zest rewards to stakers
 
-(impl-trait .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
+(impl-trait .lp-token-trait.lp-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
 (use-trait ft .ft-trait.ft-trait)

@@ -1,7 +1,7 @@
 (impl-trait .ownable-trait.ownable-trait)
 
 (use-trait lp-token .lp-token-trait.lp-token-trait)
-(use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
+;; (use-trait cp-token .distribution-token-cycles-losses-trait.distribution-token-cycles-losses-trait)
 
 (use-trait ft .ft-trait.ft-trait)
 (use-trait sip-010 .sip-010-trait.sip-010-trait)
@@ -444,7 +444,7 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (amount uint)
   (xbtc <ft>)
@@ -516,7 +516,7 @@
   (pay <payment>)
   (lp <sip-010>)
   (l-v <lv>)
-  (cp <cp-token>)
+  (cp <lp-token>)
   (swap-router <swap>)
   (amount uint)
   (xbtc <ft>)

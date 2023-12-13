@@ -23,21 +23,6 @@ path = "contracts/v2_sbtc/trait/coll-vault-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.distribution-token-trait]
-path = "contracts/v2_sbtc/trait/distribution-token-trait.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.distribution-token-cycles-trait]
-path = "contracts/v2_sbtc/trait/distribution-token-cycles-trait.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.distribution-token-cycles-losses-trait]
-path = "contracts/v2_sbtc/trait/distribution-token-cycles-losses-trait.clar"
-clarity_version = 2
-epoch = 2.1
-
 [contracts.executor-dao]
 path = "contracts/v2_sbtc/dao/executor-dao.clar"
 clarity_version = 2
