@@ -3,36 +3,13 @@ name = "stacks-lending"
 authors = []
 description = ""
 telemetry = false
-requirements = [
-  "SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin",
-  "SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token",
-  "SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token",
-  "SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.swap-helper-v1-03",
-]
+requirements = []
 cache_dir = ".requirements"
 cache_location = ".requirements"
 boot_contracts = ["pox", "costs-v1", "bns"]
 
 [contracts.after-deployment]
 path = "contracts/v2_sbtc/after-deployment-simnet.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.magic-protocol]
-path = "contracts/v2_sbtc/bitcoin/magic-protocol/magic-protocol.clar"
-clarity_version = 2
-epoch = 2.1
-
-# [contracts.magic-caller]
-# path = "contracts/v2_sbtc/bitcoin/magic-caller.clar"
-# clarity_version = 2
-# epoch = 2.1
-
-# [contracts.magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP]
-# path = "contracts/v2_sbtc/bitcoin/magic-caller-ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.clar"
-
-[contracts.clarity-bitcoin]
-path = "contracts/v2_sbtc/bitcoin/test/clarity-bitcoin-v2-1.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -116,11 +93,6 @@ path = "contracts/v2_sbtc/loan/loan-v1-0.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.lp-token]
-path = "contracts/v2_sbtc/token/lp-token.clar"
-clarity_version = 2
-epoch = 2.1
-
 [contracts.lp-token-0]
 path = "contracts/v2_sbtc/token/lp-token-0.clar"
 clarity_version = 2
@@ -166,15 +138,10 @@ path = "contracts/v2_sbtc/protocol-treasury.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.read-data]
-path = "contracts/v2_sbtc/read-data.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.restricted-token-trait]
-path = "contracts/v2_sbtc/trait/restricted-token-trait.clar"
-clarity_version = 2
-epoch = 2.1
+# [contracts.restricted-token-trait]
+# path = "contracts/v2_sbtc/trait/restricted-token-trait.clar"
+# clarity_version = 2
+# epoch = 2.1
 
 [contracts.rewards-calc]
 path = "contracts/v2_sbtc/rewards-calc.clar"
@@ -186,18 +153,8 @@ path = "contracts/v2_sbtc/trait/rewards-calc-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.rewards-read]
-path = "contracts/v2_sbtc/rewards-read.clar"
-clarity_version = 2
-epoch = 2.1
-
 [contracts.ft-trait]
 path = "contracts/v2_sbtc/trait/ft-trait.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.xZest-token]
-path = "contracts/v2_sbtc/token/xZest-token.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -226,11 +183,6 @@ path = "contracts/v2_sbtc/token/cp-token.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.cp-rewards-token]
-path = "contracts/v2_sbtc/token/cp-rewards-token.clar"
-clarity_version = 2
-epoch = 2.1
-
 [contracts.pool-data]
 path = "contracts/v2_sbtc/pool/pool-data.clar"
 clarity_version = 2
@@ -256,16 +208,6 @@ path = "contracts/v2_sbtc/bitcoin/supplier-interface.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.supplier-controller]
-path = "contracts/v2_sbtc/bitcoin/supplier-controller.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.supplier-controller-trait]
-path = "contracts/v2_sbtc/trait/supplier-controller-trait.clar"
-clarity_version = 2
-epoch = 2.1
-
 [contracts.swap-router]
 path = "contracts/v2_sbtc/swap-router.clar"
 clarity_version = 2
@@ -273,11 +215,6 @@ epoch = 2.1
 
 [contracts.swap-router-trait]
 path = "contracts/v2_sbtc/trait/swap-router-trait.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.test-utils]
-path = "contracts/v2_sbtc/bitcoin/test/test-utils.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -293,21 +230,6 @@ epoch = 2.1
 
 [contracts.withdrawal-manager]
 path = 'contracts/v2_sbtc/pool/withdrawal-manager.clar'
-clarity_version = 2
-epoch = 2.1
-
-[contracts.Wrapped-Bitcoin]
-path = "contracts/v2_sbtc/token/Wrapped-Bitcoin-simnet.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.Wrapped-USD]
-path = "contracts/v2_sbtc/token/Wrapped-USD.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.zest-reward-dist]
-path = "contracts/v2_sbtc/token/zest-reward-dist.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -332,32 +254,7 @@ clarity_version = 2
 epoch = 2.1
 
 [contracts.zgp000-bootstrap]
-path = "contracts/v2_sbtc/dao/proposals/zgp000-bootstrap-simnet.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.zgp001-kill-emergency-execute]
-path = "contracts/v2_sbtc/dao/proposals/zgp001-kill-emergency-execute.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.zgp002-onboard-borrower]
-path = "contracts/v2_sbtc/dao/proposals/zgp002-onboard-borrower.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.zgp003-update-payment-fee]
-path = "contracts/v2_sbtc/dao/proposals/zgp003-update-payment-fee.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.zgp004-add-pool-admin]
-path = "contracts/v2_sbtc/dao/proposals/zgp004-add-pool-admin.clar"
-clarity_version = 2
-epoch = 2.1
-
-[contracts.zgp005-create-pool-1]
-path = "contracts/v2_sbtc/dao/proposals/zgp005-create-pool-1.clar"
+path = "contracts/v2_sbtc/dao/proposals/zgp000-bootstrap.clar"
 clarity_version = 2
 epoch = 2.1
 

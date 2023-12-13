@@ -9,6 +9,5 @@
     (remove-asset (<ft> uint uint principal) (response uint uint))
     (draw (<ft> uint principal) (response uint uint))
     (get-asset (uint) (response (optional uint) uint))
-    ;; (add-funds (uint uint <ft>) (response bool uint))
   )
 )
