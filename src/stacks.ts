@@ -28,7 +28,7 @@ import {
 } from '@stacks/transactions';
 
 import fetch from 'cross-fetch';
-import { MagicProtocolContract, CpTokenContract, GlobalsContract, LiquidityVaultV10Contract, LpTokenContract, PoolV10Contract, RewardsCalcContract, SupplierInterfaceContract, WrappedBitcoinContract, ZestRewardDistContract } from '../onchain/stacks-lending/artifacts/contracts.js';
+import { MagicProtocolContract, CpTokenContract, GlobalsContract, LiquidityVaultV10Contract, LpTokenContract, PoolV10Contract, RewardsCalcContract, SupplierInterfaceContract, WrappedBitcoinContract, ZestRewardDistContract } from '../onchain/artifacts/contracts.js';
 import { Wallet, Account, getStxAddress } from "@stacks/wallet-sdk";
 import {
   BlocksApi,
@@ -117,13 +117,18 @@ export async function waitForStacksTransaction(txId: string) {
     basePath: 'http://localhost:3999',
   });
   const transactionApi = new TransactionsApi(apiConfig);
-  const transactionStatus = (await transactionApi.getTransactionById({ txId }) as any).tx_status;
 
+  let pending = true
   console.log(`Waiting for Transaction #${txId} to be confirmed...`);
-  while (transactionStatus == (await transactionApi.getTransactionById({ txId }) as any).tx_status) {
+  while (pending) {
     await new Promise(f => setTimeout(f, 1_000));
+    pending = (await
+      transactionApi.getTransactionById({ txId })
+        .then((val) => { console.log((val as any).tx_status); return (val as any).tx_status === "pending" })
+        .catch(() => false)
+    );
     debug('Checking...');
-  }
+  };
 }
 
 export declare enum cvTypes {

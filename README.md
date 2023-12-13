@@ -2,7 +2,8 @@
 
 | Date | Report | Repo Link |
 | ----------- | ------ | --------- |
-| 08/08/2022 | [Coinfabrik report](https://github.com/Trust-Machines/zest-contracts/blob/main/docs/2022-08%20Zest%20Full%20Audit.pdf) | [Link](https://github.com/Trust-Machines/zestAudit/tree/5ad4a24192e2976aa8c590c793a8ca15bf574777)
+| 08/08/2022 | [Coinfabrik report](https://drive.google.com/file/d/1_rg3N6_Ee-ktVNOiEbQvUe2SXeWRGkMr/view?usp=sharing) | [Link](https://github.com/Trust-Machines/zest-contracts/tree/244e3b2c0aa156afc04a844f67ad2e781b651075)
+| 16/03/2023 | [Least Authority report](https://drive.google.com/file/d/1Ke9gfapTdDmYuZnrTEhut1_AEiB-2_OE/view?usp=sharing) | [Link](https://github.com/Trust-Machines/Zest-Audit/tree/f4c3e22ec671db17722200814d69b025653aa354)
 
 
 The audit was done in 2 iterations and 1 review.

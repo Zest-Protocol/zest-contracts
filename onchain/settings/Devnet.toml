@@ -72,33 +72,34 @@ balance = 100_000_000_000_000
 # btc_address: mjSrB3wS4xab3kYqFktwBzfTdPg367ZJ2d
 
 [accounts.wallet_10]
-mnemonic = "grit outer true bottom notice razor news pretty gravity lizard mansion swim canvas funny rail inherit daughter blade glare runway promote answer athlete bonus"
+mnemonic = "valve grape snake sun travel rotate execute one talent cry own chimney live aware swarm fresh half amateur close unfold purchase credit know hope"
 balance = 100_000_000_000_000
-# stx_address: STBRX00DFHKCJ680PRDX3NR85N1Q7A49Y5ZTTY4H
+# stx_address: ST33T6JKENC89W5AEP7GHCDDBEFB6SJJ6Q965YZKQ
 
 [accounts.wallet_11]
-mnemonic = "north swim broom surface easy gasp street sibling pond slab electric endorse comfort bargain valley news drive siege fatal sort current blur cover random"
+mnemonic = "tree job borrow feature lens blame heart put ordinary erupt recipe before group prosper entry state panic captain alpha warfare honey quiz mouse chair"
 balance = 100_000_000_000_000
-# stx_address: ST31ZZ4171KDEGZ7RDMDG8W76XTS07W9MVRASC0KH
+# stx_address: ST3G4E6P735YT0SD4DPQMMADMS5K6TV7A5NDSGNK0
 
 [accounts.wallet_12]
-mnemonic = "woman museum fox method mention cereal vessel board august swap penalty display order valid dentist pause fire mimic desk initial once brother degree step"
+mnemonic = "wrong collect agent quiz eye reopen avocado village surprise patch amount step cover proof short drip outer jelly wall issue circle favorite raw chimney"
 balance = 100_000_000_000_000
-# stx_address: ST3EWEA30DJVG33V8FZ1S1CNB96Z1W818K7FA8D4A
+# stx_address: ST2SHFYGVZDX82FSS2AH25H2DAH12TBWQ7NF3MQE0
 
 [accounts.wallet_13]
-mnemonic = "east approve abstract eagle gap rigid clown have alley salon lottery sort business unveil credit copper update hamster zoo hard census slush nominee curious"
+mnemonic = "bulk shield purity noble trade famous bitter fork hawk farm chicken afraid breeze spare luxury soda market eagle wrap mixture motor setup sketch scale"
 balance = 100_000_000_000_000
-# stx_address: STQHJFTCFJAW1NDTE1QXF1HDGV314A4M7ZSM8Q1H
+# stx_address: ST2AH7VXPHHT68TZNGT8QNN8MG8PEHF0R2CZYRKMG
 
 [accounts.wallet_14]
-mnemonic = "antenna toddler because bleak teach weapon praise slice smile airport lucky estate oblige major river retire museum inmate drop weekend beyond elegant immense section"
+mnemonic = "pistol dwarf another canal village evil misery they satoshi trade local grass thank until cotton cloud post disease sustain mimic fabric moment armed match"
 balance = 100_000_000_000_000
-# stx_address: STKJ85BBN9589J4PNMPFMM6TQQDE7K0M4QXSAXZB
+# stx_address: ST33RGY1G97N0DYY0SFDVNXMEHYK7PA8Z8CKHZGY1
 
 [accounts.wallet_15]
-mnemonic = "pretty magic kiwi force problem decline road again material grant slight attack segment page unit differ suffer barely near motor buddy tone robot top"
+mnemonic = "peace canal problem birth mushroom damp seat issue wink rail joy fiscal dove angle wrong few few setup copper fresh elephant weapon cheese divide"
 balance = 100_000_000_000_000
+# stx_address: ST2ZW2EKBWATT2Z7FZ2XY9KYYVFBYBDCZBRZMFNR9
 
 [devnet]
 disable_stacks_explorer = false

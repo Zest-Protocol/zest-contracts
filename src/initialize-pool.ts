@@ -2,9 +2,14 @@ import { StacksMocknet } from '@stacks/network';
 import { TransactionVersion, getNonce } from '@stacks/transactions';
 
 import { getStxAddress } from '@stacks/wallet-sdk';
-import { networks } from 'bitcoinjs-lib';
+import { networks } from "bitcoinjs-lib";
 
-import { createPool, finalizePool, setupContracts, waitForStacksTransaction } from './stacks.js';
+import {
+  createPool,
+  finalizePool,
+  setupContracts,
+  waitForStacksTransaction
+} from './stacks.js';
 import { getWallets } from './accounts.js';
 import { generateRandomBitcoinSigner } from './util.js';
 
