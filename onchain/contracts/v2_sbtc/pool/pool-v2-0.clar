@@ -1537,20 +1537,6 @@
   )
 )
 
-(define-public (calculate-interest-rates
-  (available-liquidity uint)
-  
-  (total-borrows-stable uint)
-  (total-borrows-variable uint)
-  (current-average-stable-borrow-rate uint)
-  (current-variable-borrow-rate uint)
-  )
-  (let (
-    (jjj u0)
-  )
-    (ok u0)
-  )
-)
 
 (define-public (get-overall-borrow-rate-1 (pool-id uint))
   (begin

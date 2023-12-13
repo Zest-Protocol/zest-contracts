@@ -1,21 +1,36 @@
 
 ;; 0.8 Ur
-(define-constant optimal-utilization-rate u8000)
-(define-constant excess-utilization-rate (- u10000 optimal-utilization-rate))
+(define-constant optimal-utilization-rate u80000000)
+(define-constant excess-utilization-rate (- u100000000 optimal-utilization-rate))
 
+
+(define-constant one-percent u1000000)
+(define-constant five-percent u5000000)
+(define-constant ten-percent u10000000)
 
 ;; when Ur = 0
-(define-data-var base-variable-borrow-rate uint u0)
+(define-data-var base-variable-borrow-rate uint one-percent)
 
 ;; when Ur < optimal-utilization-rate
-(define-data-var variable-rate-slope-1 uint u0)
+(define-data-var variable-rate-slope-1 uint five-percent)
 ;; when Ur > optimal-utilization-rate
-(define-data-var variable-rate-slope-2 uint u0)
+(define-data-var variable-rate-slope-2 uint ten-percent)
 
 ;; when Ur < optimal-utilization-rate
-(define-data-var stable-rate-slope-1 uint u0)
+(define-data-var stable-rate-slope-1 uint five-percent)
 ;; when Ur > optimal-utilization-rate
-(define-data-var stable-rate-slope-2 uint u0)
+(define-data-var stable-rate-slope-2 uint ten-percent)
+
+
+(define-constant one-8 u100000000)
+
+(define-read-only (mul (x uint) (y uint))
+  (/ (+ (* x y) (/ one-8 u2)) one-8)
+)
+
+(define-read-only (div (x uint) (y uint))
+  (/ (+ (* x one-8) (/ y u2)) y)
+)
 
 ;; returns current liquidity rate
 (define-read-only (calculate-interest-rates
@@ -27,42 +42,33 @@
   (let (
     (total-borrows (+ total-borrows-stable total-borrows-variable))
     (utilization-rate
-      (if (and (is-eq u0 total-borrows-stable) (is-eq u0 total-borrows-variable))
+      (if (and (is-eq total-borrows-stable u0) (is-eq total-borrows-variable u0))
         u0
-        (/
-          (* u10000 total-borrows)
-          (+ total-borrows available-liquidity)
-          u10000
-        )
+        (div total-borrows (+ total-borrows available-liquidity))
       )
     )
     ;; TODO: should get this from an oracle, but might not exist
-    (current-stable-borrow-rate u500)
+    (current-stable-borrow-rate u0)
   )
     (if (> utilization-rate optimal-utilization-rate)
       (let (
-          (excess-utilization-rate-ratio
-            (*
-              (/
-                (* u10000 (- utilization-rate optimal-utilization-rate))
-                excess-utilization-rate)
-              u10000))
-          (new-stable-borrow-rate
-            (+
-              (+ current-stable-borrow-rate (var-get stable-rate-slope-1))
-              (/
-                (*
-                  (* (var-get stable-rate-slope-2) u10000)
-                  excess-utilization-rate-ratio)
-                u10000)))
-          (new-variable-borrow-rate
-            (+
-              (+ (var-get base-variable-borrow-rate) (var-get variable-rate-slope-1))
-              (/
-                (*
-                  (* u10000 (var-get variable-rate-slope-2))
-                  excess-utilization-rate-ratio)
-                u10000))))
+        (excess-utilization-rate-ratio (div (- utilization-rate optimal-utilization-rate) excess-utilization-rate))
+        (new-stable-borrow-rate
+          (+
+            (+ current-stable-borrow-rate (var-get stable-rate-slope-1))
+            (/
+              (*
+                (* (var-get stable-rate-slope-2) u10000)
+                excess-utilization-rate-ratio)
+              u10000)))
+        (new-variable-borrow-rate
+          (+
+            (+ (var-get base-variable-borrow-rate) (var-get variable-rate-slope-1))
+            (/
+              (*
+                (* u10000 (var-get variable-rate-slope-2))
+                excess-utilization-rate-ratio)
+              u10000))))
         (ok
           (*
             (get-overall-borrow-rate-internal
@@ -79,26 +85,18 @@
         (new-stable-borrow-rate
           (+
             current-stable-borrow-rate
-            (/
-              (*
-                (var-get stable-rate-slope-1)
-                (/
-                  (* u10000 utilization-rate)
-                  optimal-utilization-rate ))
-              u10000)
-          ))
+            (mul
+              (var-get stable-rate-slope-1)
+              (div utilization-rate optimal-utilization-rate)
+            )
+          )
+        )
         (new-variable-borrow-rate
           (+
             (var-get base-variable-borrow-rate)
-            (/
-              (*
-                (var-get variable-rate-slope-1)
-                (/ 
-                  (* u1000 utilization-rate)
-                  optimal-utilization-rate
-                )
-              )
-              u10000
+            (mul
+              (var-get variable-rate-slope-1)
+              (div utilization-rate optimal-utilization-rate)
             )
           )
         )
@@ -111,7 +109,6 @@
               new-variable-borrow-rate
               average-stable-borrow-rate
             )
-            utilization-rate
           )
         )
       )
@@ -131,18 +128,23 @@
     (if (is-eq total-borrows u0)
       u0
       (let (
-        (weighted-variable-rate
-          (* total-borrows-variable current-variable-borrow-rate))
-        (weighted-stable-rate
-          (* total-borrows-stable current-average-stable-borrow-rate))
         (overall-borrow-rate
-           (/
-            (/
-              (* u10000 (+ weighted-variable-rate weighted-stable-rate))
-              total-borrows)
-            u10000)))
-          overall-borrow-rate
-      ))))
+          (div
+            (+
+              ;; weighted-variable-rate
+              (mul total-borrows-variable current-variable-borrow-rate)
+              ;; weighted-stable-rate
+              (mul total-borrows-stable current-average-stable-borrow-rate)
+            )
+            total-borrows
+          )
+        )
+      )
+        overall-borrow-rate
+      )
+    )
+  )
+)
 
 (define-read-only (get-utilization-rate
   (total-borrows-stable uint)
@@ -157,17 +159,6 @@
       u10000
     )
   )
-)
-
-
-(define-constant one-8 u100000000)
-
-(define-read-only (mul (x uint) (y uint))
-  (/ (+ (* x y) (/ one-8 u2)) one-8)
-)
-
-(define-read-only (div (x uint) (y uint))
-  (/ (+ (* x one-8) (/ y u2)) y)
 )
 
 (define-constant seconds-in-year (* u144 u365 u10 u60))
