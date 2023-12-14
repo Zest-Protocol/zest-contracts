@@ -148,6 +148,11 @@ path = "contracts/v2_sbtc/token/sBTC.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.stSTX]
+path = "contracts/v2_sbtc/token/stSTX.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.sbtc-deposit-caller]
 path = "contracts/v2_sbtc/bitcoin/sbtc-deposit-caller.clar"
 clarity_version = 2

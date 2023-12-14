@@ -21,7 +21,6 @@
 ;; when Ur > optimal-utilization-rate
 (define-data-var stable-rate-slope-2 uint ten-percent)
 
-
 (define-constant one-8 u100000000)
 
 (define-read-only (mul (x uint) (y uint))
@@ -56,21 +55,24 @@
         (new-stable-borrow-rate
           (+
             (+ current-stable-borrow-rate (var-get stable-rate-slope-1))
-            (/
-              (*
-                (* (var-get stable-rate-slope-2) u10000)
-                excess-utilization-rate-ratio)
-              u10000)))
+            (mul
+              (var-get stable-rate-slope-2)
+              excess-utilization-rate-ratio
+            )
+          )
+        )
         (new-variable-borrow-rate
           (+
             (+ (var-get base-variable-borrow-rate) (var-get variable-rate-slope-1))
-            (/
-              (*
-                (* u10000 (var-get variable-rate-slope-2))
-                excess-utilization-rate-ratio)
-              u10000))))
+              (mul
+                (var-get variable-rate-slope-2)
+                excess-utilization-rate-ratio
+              )
+          )
+        )
+      )
         (ok
-          (*
+          (mul
             (get-overall-borrow-rate-internal
               total-borrows-stable
               total-borrows-variable
