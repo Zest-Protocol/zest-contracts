@@ -1566,10 +1566,10 @@
 
 (define-public (get-utilization-rate (pool-id uint) (liquidity-vault <lv>))
   (let (
-    (borrows (* u10000 (try! (get-borrows pool-id))))
+    (borrows (try! (get-borrows pool-id)))
     (total-liquidity (try! (get-current-liquidity liquidity-vault pool-id)))
   )
-    (ok (/ borrows total-liquidity))
+    (ok (div borrows total-liquidity))
   )
 )
 
