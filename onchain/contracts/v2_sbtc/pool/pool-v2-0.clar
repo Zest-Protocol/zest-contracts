@@ -7,7 +7,7 @@
 (use-trait fv .funding-vault-trait.funding-vault-trait)
 (use-trait cv .coll-vault-trait.coll-vault-trait)
 (use-trait ft .ft-trait.ft-trait)
-(use-trait sip-010 .sip-010-trait.sip-010-trait)
+(use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 
 (use-trait payment .payment-trait.payment-trait)
 (use-trait rewards-calc .rewards-calc-trait.rewards-calc-trait)
@@ -48,7 +48,7 @@
   (pool-delegate principal)
   (assets (list 128 principal))
   (pool principal)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (pay <payment>)
   (r-c <rewards-calc>)
   (withdrawal-manager principal)
@@ -164,7 +164,7 @@
   (is-some (contract-call? .pool-data get-token-id-by-delegate delegate)))
 
 ;; -- pool setters
-(define-public (set-liquidity-cap (lp <sip-010>) (token-id uint) (liquidity-cap uint))
+(define-public (set-liquidity-cap (lp <ft-mint-trait>) (token-id uint) (liquidity-cap uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -177,7 +177,7 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-cycle-length (lp <sip-010>) (cp <lp-token>) (token-id uint) (cycle-length uint))
+(define-public (set-cycle-length (lp <ft-mint-trait>) (cp <lp-token>) (token-id uint) (cycle-length uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -190,7 +190,7 @@
     (try! (contract-call? .cover-pool-v1-0 set-cycle-length cp token-id cycle-length))
     (ok true)))
 
-(define-public (set-withdrawal-window (lp <sip-010>) (cp <lp-token>) (token-id uint) (withdrawal-window uint))
+(define-public (set-withdrawal-window (lp <ft-mint-trait>) (cp <lp-token>) (token-id uint) (withdrawal-window uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -202,7 +202,7 @@
 
     (ok true)))
 
-(define-public (set-min-cycles (lp <sip-010>) (cp <lp-token>) (token-id uint) (min-cycles uint))
+(define-public (set-min-cycles (lp <ft-mint-trait>) (cp <lp-token>) (token-id uint) (min-cycles uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -215,7 +215,7 @@
     (try! (contract-call? .cover-pool-v1-0 set-min-cycles cp token-id min-cycles))
     (ok true)))
 
-(define-public (set-delegate-fee (lp <sip-010>) (token-id uint) (delegate-fee uint))
+(define-public (set-delegate-fee (lp <ft-mint-trait>) (token-id uint) (delegate-fee uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -228,7 +228,7 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-cover-fee (lp <sip-010>) (token-id uint) (cover-fee uint))
+(define-public (set-cover-fee (lp <ft-mint-trait>) (token-id uint) (cover-fee uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -241,7 +241,7 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-max-maturity-length (lp <sip-010>) (token-id uint) (max-maturity-length uint))
+(define-public (set-max-maturity-length (lp <ft-mint-trait>) (token-id uint) (max-maturity-length uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -255,7 +255,7 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (set-open (lp <sip-010>) (cp <lp-token>) (token-id uint) (open bool))
+(define-public (set-open (lp <ft-mint-trait>) (cp <lp-token>) (token-id uint) (open bool))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -266,7 +266,7 @@
     (try! (contract-call? .cover-pool-v1-0 set-open cp token-id open))
     (ok true)))
 
-(define-public (set-delegate (lp <sip-010>) (cp <lp-token>) (token-id uint) (delegate principal))
+(define-public (set-delegate (lp <ft-mint-trait>) (cp <lp-token>) (token-id uint) (delegate principal))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -278,7 +278,7 @@
     (try! (contract-call? .pool-data set-pool token-id new-pool))
     (ok true)))
 
-(define-public (enable-cover (lp <sip-010>) (cp <lp-token>) (token-id uint))
+(define-public (enable-cover (lp <ft-mint-trait>) (cp <lp-token>) (token-id uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id))))
@@ -289,7 +289,7 @@
     (try! (contract-call? .cover-pool-v1-0 enable-pool cp token-id))
     (ok true)))
 
-(define-public (disable-cover (lp <sip-010>) (cp <lp-token>) (token-id uint))
+(define-public (disable-cover (lp <ft-mint-trait>) (cp <lp-token>) (token-id uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id))))
@@ -307,7 +307,7 @@
 ;; @param cp-token: token to hold zest rewards funds for cover-providers
 ;; @param token-id: pool id
 ;; @returns (response true uint)
-(define-public (finalize-pool (lp <sip-010>) (cp <lp-token>) (token-id uint))
+(define-public (finalize-pool (lp <ft-mint-trait>) (cp <lp-token>) (token-id uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -365,7 +365,7 @@
 ;; @returns (response uint uint)
 (define-public (create-loan
   (loan-contract principal)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (loan-amount uint)
   (asset <ft>)
@@ -400,7 +400,7 @@
 ;; @returns (response true uint)
 (define-public (fund-loan
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (l-v <lv>)
   (f-v <fv>)
@@ -437,7 +437,7 @@
 ;; @param lv: contract trait holding the liquid funds in the pool
 ;; @param amount: amount used to fund the loan request
 ;; @returns (response true uint)
-(define-public (unwind (loan-id uint) (lp <sip-010>) (token-id uint) (f-v <fv>) (l-v <lv>) (xbtc <ft>) (caller principal))
+(define-public (unwind (loan-id uint) (lp <ft-mint-trait>) (token-id uint) (f-v <fv>) (l-v <lv>) (xbtc <ft>) (caller principal))
   (let (
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id)))
     (loan (try! (contract-call? .loan-v1-0 get-loan loan-id)))
@@ -486,7 +486,7 @@
 ;; @returns (response true uint)
 (define-public (accept-rollover
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (l-v <lv>)
   (f-v <fv>)
@@ -529,7 +529,7 @@
 ;; @returns (response true uint)
 (define-public (cancel-rollover
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -588,7 +588,7 @@
 ;; @returns (response uint uint)
 (define-public (complete-rollover
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -626,7 +626,7 @@
 ;; @returns (response uint uint)
 (define-public (complete-rollover-no-withdrawal
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -654,7 +654,7 @@
 ;; @param token-id: pool associated to the affected loan
 ;; @param xbtc: SIP-010 xbtc token
 ;; @returns (response true uint)
-(define-public (finalize-rollover (loan-id uint) (lp <sip-010>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (f-v <fv>) (xbtc <ft>))
+(define-public (finalize-rollover (loan-id uint) (lp <ft-mint-trait>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (f-v <fv>) (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id))))
@@ -678,7 +678,7 @@
   (loan-id uint)
   (height uint)
   (pay <payment>)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (cp <lp-token>)
   (swap-router <swap>)
@@ -717,7 +717,7 @@
 ;; @returns (response true uint)
 (define-public (make-residual-payment
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (l-v <lv>)
   (amount uint)
@@ -755,7 +755,7 @@
 ;; @returns the amount borrowed
 (define-public (drawdown-verify
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -787,7 +787,7 @@
 ;; @returns (response uint uint)
 (define-public (drawdown
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -815,7 +815,7 @@
 ;; @param fv: funding vault address
 ;; @param xbtc: SIP-010 xbtc token
 ;; @returns (response uint uint)
-(define-public (finalize-drawdown (loan-id uint) (lp <sip-010>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (f-v <fv>) (xbtc <ft>))
+(define-public (finalize-drawdown (loan-id uint) (lp <ft-mint-trait>) (token-id uint) (coll-token <ft>) (coll-vault <cv>) (f-v <fv>) (xbtc <ft>))
   (let (
     (pool (try! (get-pool token-id)))
     (loan-pool-id (try! (contract-call? .pool-data get-loan-pool-id loan-id))))
@@ -840,7 +840,7 @@
 ;; @returns (response uint uint)
 (define-public (cancel-drawdown
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -875,7 +875,7 @@
 ;; @returns (response { staking-pool-recovered: uint, collateral-recovery: uint } uint)
 (define-public (liquidate-loan
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (l-v <lv>)
   (coll-vault <cv>)
@@ -938,7 +938,7 @@
 ;; @returns (response { staking-pool-recovered: uint, collateral-recovery: uint } uint)
 (define-public (declare-loan-liquidated
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint) 
   (coll-vault <cv>)
   (coll-token <ft>)
@@ -1038,7 +1038,7 @@
 ;; @returns (response true uint)
 (define-public (return-otc-liquidation
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint) 
   (coll-vault <cv>)
   (coll-token <ft>)
@@ -1081,7 +1081,7 @@
 ;; @param lp-token: token that holds funds and distributes them
 ;; @param token-id: pool id
 ;; @returns (response true uint)
-(define-public (trigger-default-mode (lp <sip-010>) (token-id uint))
+(define-public (trigger-default-mode (lp <ft-mint-trait>) (token-id uint))
   (let (
     (lp-contract (contract-of lp))
     (pool (try! (get-pool token-id)))
@@ -1305,7 +1305,7 @@
     (contract-call? .pool-data is-liquidity-provider token-id liquidity-provider)))
 
 (define-public (supply
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (pool-id uint)
   (l-v <lv>)
   (asset <ft>)
@@ -1413,7 +1413,7 @@
 )
 
 (define-public (withdraw
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (pool-id uint)
   (l-v <lv>)
   (asset <ft>)
@@ -1439,7 +1439,7 @@
 )
 
 (define-public (borrow
-  (debt <sip-010>)
+  (debt <ft-mint-trait>)
   (pool-id uint)
   (l-v <lv>)
   (asset <ft>)
@@ -1462,7 +1462,7 @@
 )
 
 (define-public (repay
-  (debt <sip-010>)
+  (debt <ft-mint-trait>)
   (pool-id uint)
   (l-v <lv>)
   (asset <ft>)
@@ -1488,7 +1488,7 @@
 
 ;; calculate user-accumulated interest based on balance, total income generated by reserves
 ;; and last index to which the user was given
-(define-public (calculate-cumulated-balance (user principal) (lp <sip-010>) (pool-id uint) (liquidity-vault <lv>) (asset principal))
+(define-public (calculate-cumulated-balance (user principal) (lp <ft-mint-trait>) (pool-id uint) (liquidity-vault <lv>) (asset principal))
   (let (
     ;; TODO: account for redirected balance
     (balance (try! (contract-call? lp get-balance user)))
@@ -1652,7 +1652,7 @@
 )
 
 (define-public (send-funds
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (pool-id uint)
   (l-v <lv>)
   (asset <ft>)
@@ -1674,19 +1674,19 @@
 )
 
 ;; redeem shares
-(define-public (signal-redeem (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
+(define-public (signal-redeem (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
   (begin
     (contract-call? .withdrawal-manager signal-redeem lp token-id l-v asset shares owner)
   )
 )
 
-(define-public (remove-shares (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
+(define-public (remove-shares (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
   (begin
     (contract-call? .withdrawal-manager remove-shares lp token-id l-v asset shares owner)
   )
 )
 
-(define-public (redeem (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal) (recipient principal))
+(define-public (redeem (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal) (recipient principal))
   (let (
     (redeemeables (try! (contract-call? .withdrawal-manager redeem lp token-id l-v asset requested-shares owner (as-contract tx-sender))))
     )
@@ -1698,18 +1698,18 @@
 
 ;; -- View functions
 ;; TODO: test when having small amount of assets remaining
-(define-public (convert-to-assets (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint))
+(define-public (convert-to-assets (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint))
   (let (
     (shares-supply (unwrap-panic (contract-call? lp get-total-supply)))
     (assets (if (is-eq shares-supply u0) shares (/ (* shares (unwrap-panic (total-assets lp l-v token-id asset))) shares-supply))))
     (ok assets)))
 
-(define-public (convert-to-shares (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (assets uint))
+(define-public (convert-to-shares (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (assets uint))
   (let (
     (shares-supply (unwrap-panic (contract-call? lp get-total-supply))))
     (ok (if (is-eq shares-supply) assets (/ (* shares-supply assets) (unwrap-panic (total-assets lp l-v token-id asset)))))))
 
-(define-public (convert-to-exit-shares (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (assets uint))
+(define-public (convert-to-exit-shares (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (assets uint))
   (let (
     (shares-supply (unwrap-panic (contract-call? lp get-total-supply)))
     ;; (losses (try! (contract-call? lp-token recognize-losses token-id recipient)))
@@ -1718,16 +1718,16 @@
     (ok (/ (* shares-supply assets) (- (unwrap-panic (total-assets lp l-v token-id asset)) losses))))
 )
 
-(define-public (preview-funds-sent (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (assets uint))
+(define-public (preview-funds-sent (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (assets uint))
   (convert-to-shares lp token-id l-v asset assets))
 
-(define-public (preview-mint (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint))
+(define-public (preview-mint (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint))
   (let (
     (shares-supply (unwrap-panic (contract-call? lp get-total-supply)))
     (assets (if (is-eq shares-supply u0) shares (/ (* shares (unwrap-panic (total-assets lp l-v token-id asset))) shares-supply))))
     (ok assets)))
 
-(define-public (total-assets (lp <sip-010>) (l-v <lv>) (token-id uint) (asset <ft>))
+(define-public (total-assets (lp <ft-mint-trait>) (l-v <lv>) (token-id uint) (asset <ft>))
   (ok (default-to u0 (try! (contract-call? l-v get-asset token-id))) ))
 
 

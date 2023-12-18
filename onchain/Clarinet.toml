@@ -53,8 +53,8 @@ path = "contracts/v2_sbtc/dao/traits/governance-token-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.interest-rate-strategy]
-path = "contracts/v2_sbtc/pool/interest-rate-strategy.clar"
+[contracts.interest-rate-strategy-default]
+path = "contracts/v2_sbtc/pool/interest-rate-strategy-default.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -80,6 +80,11 @@ epoch = 2.1
 
 [contracts.lp-token-0]
 path = "contracts/v2_sbtc/token/lp-token-0.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-token-0-reserve]
+path = "contracts/borrow/vaults/lp-token-0-reserve.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -158,8 +163,8 @@ path = "contracts/v2_sbtc/bitcoin/sbtc-deposit-caller.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.sip-010-trait]
-path = "contracts/v2_sbtc/trait/sip-010-trait.clar"
+[contracts.ft-mint-trait]
+path = "contracts/v2_sbtc/trait/ft-mint-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -175,6 +180,11 @@ epoch = 2.1
 
 [contracts.pool-data]
 path = "contracts/v2_sbtc/pool/pool-data.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.math]
+path = "contracts/borrow/math/math.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -245,6 +255,13 @@ epoch = 2.1
 
 [contracts.zgp000-bootstrap]
 path = "contracts/v2_sbtc/dao/proposals/zgp000-bootstrap.clar"
+clarity_version = 2
+epoch = 2.1
+
+
+# BORROW SECTION
+[contracts.pool-borrow]
+path = "contracts/borrow/pool/pool-borrow.clar"
 clarity_version = 2
 epoch = 2.1
 

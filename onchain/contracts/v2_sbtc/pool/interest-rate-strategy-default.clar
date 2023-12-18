@@ -155,10 +155,9 @@
   (let (
     (total-borrows (+ total-borrows-stable total-borrows-variable))
   )
-    (/
-      (* u10000 total-borrows)
-      (+ total-borrows available-liquidity)
-      u10000
+    (if (is-eq total-borrows u0)
+      u0
+      (div total-borrows (+ total-borrows available-liquidity))
     )
   )
 )

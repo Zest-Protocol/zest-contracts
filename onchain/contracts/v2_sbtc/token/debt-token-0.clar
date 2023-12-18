@@ -1,4 +1,4 @@
-(use-trait ft .sip-010-trait.sip-010-trait)
+(use-trait ft .ft-mint-trait.ft-mint-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
 (define-fungible-token lp-token-0)

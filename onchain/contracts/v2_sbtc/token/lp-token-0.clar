@@ -1,4 +1,4 @@
-(use-trait ft .sip-010-trait.sip-010-trait)
+(use-trait ft .ft-mint-trait.ft-mint-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
 (define-fungible-token lp-token-0)
@@ -19,13 +19,14 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u0))
+  (ok u8))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
 
 (define-read-only (get-balance (account principal))
-  (ok (ft-get-balance lp-token-0 account)))
+  (ok (ft-get-balance lp-token-0 account))
+)
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
@@ -43,28 +44,31 @@
     ERR_UNAUTHORIZED))
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (let (
-    (pool (try! (contract-call? .pool-data get-pool pool-id)))
-  )
+  (begin
     (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (asserts! (or (get open pool) (contract-call? .pool-data is-liquidity-provider pool-id recipient)) ERR_UNAUTHORIZED)
-    
     (match (ft-transfer? lp-token-0 amount sender recipient)
       response (begin
         (print memo)
         (ok response)
       )
-      error (err error))))
+      error (err error)
+    )
+  )
+)
 
 (define-public (mint (amount uint) (recipient principal))
   (begin
     (asserts! true ERR_UNAUTHORIZED)
-    (ft-mint? lp-token-0 amount recipient)))
+    (ft-mint? lp-token-0 amount recipient)
+  )
+)
 
 (define-public (burn (amount uint) (owner principal))
   (begin
     (asserts! true ERR_UNAUTHORIZED)
-    (ft-burn? lp-token-0 amount owner)))
+    (ft-burn? lp-token-0 amount owner)
+  )
+)
 
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)

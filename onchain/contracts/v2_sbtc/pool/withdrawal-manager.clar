@@ -1,9 +1,9 @@
 (use-trait ft .ft-trait.ft-trait)
 (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
-(use-trait sip-010 .sip-010-trait.sip-010-trait)
+(use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 (use-trait lp-token .lp-token-trait.lp-token-trait)
 
-(define-public (signal-redeem (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
+(define-public (signal-redeem (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
   (let (
     (current-exit-at (get-exit-at token-id owner))
     (current-cycle (get-current-cycle token-id))
@@ -26,7 +26,7 @@
 )
 
 ;; @desc removing locked shares from the cycle
-(define-public (remove-shares (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
+(define-public (remove-shares (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (shares uint) (owner principal))
   (let (
     (current-exit-at (get-exit-at token-id owner))
     (current-cycle (get-current-cycle token-id))
@@ -61,7 +61,7 @@
 )
 
 ;; @desc redeem assets by claiming locked funds
-(define-public (redeem (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal) (recipient principal))
+(define-public (redeem (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal) (recipient principal))
   (let (
     (pool (unwrap-panic (get-pool token-id)))
     (redeemeables (unwrap-panic (get-redeemeable-amounts lp token-id l-v asset requested-shares owner)))
@@ -104,7 +104,7 @@
 )
 
 ;; get redeemeable amount based on available liquidity
-(define-public (get-redeemeable-amounts (lp <sip-010>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))
+(define-public (get-redeemeable-amounts (lp <ft-mint-trait>) (token-id uint) (l-v <lv>) (asset <ft>) (requested-shares uint) (owner principal))
   (let (
     (pool (unwrap-panic (get-pool token-id)))
     (liquidity (default-to u0 (try! (contract-call? l-v get-asset token-id))))
@@ -144,7 +144,7 @@
   )
 )
 
-(define-public (total-assets (lp <sip-010>) (l-v <lv>) (token-id uint) (asset <ft>))
+(define-public (total-assets (lp <ft-mint-trait>) (l-v <lv>) (token-id uint) (asset <ft>))
   (let 
     ((pool (try! (get-pool token-id))))
     (ok (+ (get principal-out pool) (default-to u0 (try! (contract-call? l-v get-asset token-id)))) )
