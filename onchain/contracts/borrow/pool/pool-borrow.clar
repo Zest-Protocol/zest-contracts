@@ -61,5 +61,85 @@
   )
 )
 
+(define-public (repay
+  (debt-token <ft-mint-trait>)
+  (asset <ft>)
+  (amount-to-repay uint)
+  (on-behalf-of principal)
+  )
+  (let (
+    (ret (try! (contract-call? .lp-token-0-reserve get-user-borrow-balance on-behalf-of asset)))
+    (origination-fee (contract-call? .lp-token-0-reserve get-user-origination-fee on-behalf-of asset))
+    (amount-due (+ (get compounded-balance ret) origination-fee))
+    ;; default to max repayment
+    (payback-amount
+      (if (< amount-to-repay amount-due)
+        amount-to-repay
+        amount-due
+      )
+    )
+  )
+    ;; if payback-amount is smaller than fees, just pay fees
+    (if (< payback-amount origination-fee)
+      (begin
+        (try!
+          (contract-call? .lp-token-0-reserve update-state-on-repay
+            asset
+            on-behalf-of
+            u0
+            payback-amount
+            (get balance-increase ret)
+            false
+          )
+        )
+        (try!
+          (contract-call? .lp-token-0-reserve transfer-fee-to-collection
+            asset
+            on-behalf-of
+            payback-amount
+            (get-collection-address)
+          )
+        )
+        (ok u0)
+      )
+      ;; paying back the balance
+      (let (
+        (payback-amount-minus-fees (- payback-amount origination-fee))
+      )
+        (try!
+          (contract-call? .lp-token-0-reserve update-state-on-repay
+            asset
+            on-behalf-of
+            payback-amount-minus-fees
+            origination-fee
+            (get balance-increase ret)
+            false
+          )
+        )
+        (if (> origination-fee u0)
+          (begin
+            (try!
+              (contract-call? .lp-token-0-reserve transfer-fee-to-collection
+                asset
+                tx-sender
+                origination-fee
+                (get-collection-address)
+              )
+            )
+            u0
+          )
+          u0
+        )
+        (contract-call? .lp-token-0-reserve transfer-to-reserve asset tx-sender payback-amount-minus-fees)
+      )
+    )
+
+  )
+)
+
+(define-read-only (get-collection-address)
+  .protocol-treasury
+)
+
 ;; (define-public (get-pool (token-id uint))
 ;;   (contract-call? .pool-data get-pool token-id))
