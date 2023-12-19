@@ -1,7 +1,7 @@
 (use-trait lv 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.liquidity-vault-trait.liquidity-vault-trait)
 
 (use-trait ft 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ft-trait.ft-trait)
-(use-trait sip-010 .sip-010-trait.sip-010-trait)
+(use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 
 (use-trait rewards-calc 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.rewards-calc-trait.rewards-calc-trait)
 
@@ -16,7 +16,7 @@
 (define-constant factor u1)
 
 (define-public (send-funds
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (xbtc-ft <ft>)
   (r-c <rewards-calc>))

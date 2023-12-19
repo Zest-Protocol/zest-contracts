@@ -4,7 +4,7 @@
 (use-trait cv .coll-vault-trait.coll-vault-trait)
 
 (use-trait ft .ft-trait.ft-trait)
-(use-trait sip-010 .sip-010-trait.sip-010-trait)
+(use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 
 (use-trait v .vault-trait.vault-trait)
 (use-trait fv .funding-vault-trait.funding-vault-trait)
@@ -37,7 +37,7 @@
 ;; @returns (response uint uint)
 (define-public (send-funds-xbtc
     (factor uint)
-    (lp <sip-010>)
+    (lp <ft-mint-trait>)
     (token-id uint)
     (l-v <lv>)
     (xbtc-ft <ft>)
@@ -68,7 +68,7 @@
 ;; @returns (response uint uint)
 (define-public (send-funds-to-pool
   (txid (buff 32))
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (xbtc-ft <ft>)
   (r-c <rewards-calc>) )
@@ -88,7 +88,7 @@
 (define-public (make-payment-verify
   (txid (buff 32))
   (pay <payment>)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (cp <lp-token>)
   (swap-router <swap>)
@@ -125,7 +125,7 @@
 (define-public (make-payment
   (txid (buff 32))
   (pay <payment>)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (cp <lp-token>)
   (swap-router <swap>)
@@ -155,7 +155,7 @@
 ;; @returns (response uint uint)
 (define-public (make-residual-payment
   (txid (buff 32))
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (xbtc-ft <ft>))
   (let (
@@ -189,7 +189,7 @@
 (define-public (make-full-payment
   (txid (buff 32))
   (pay <payment>)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (cp <lp-token>)
   (swap-router <swap>)
@@ -226,7 +226,7 @@
   (loan-id uint)
   (height uint)
   (pay <payment>)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (token-id uint)
   (cp <lp-token>)
@@ -261,7 +261,7 @@
   (amount uint)
   (loan-id uint)
   (pay <payment>)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (l-v <lv>)
   (cp <lp-token>)
   (swap-router <swap>)
@@ -291,7 +291,7 @@
   (btc-version (buff 1))
   (btc-hash (buff 20))
   (supplier-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (l-v <lv>)
   (xbtc-ft <ft>)
@@ -320,7 +320,7 @@
 ;; @returns (response true uint)
 (define-public (withdraw-xbtc
   (xbtc uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (l-v <lv>)
   (xbtc-ft <ft>)
@@ -390,7 +390,7 @@
 
 (define-public (drawdown-verify
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -425,7 +425,7 @@
 ;; @returns (response { swap-id: uint, sats: uint } uint)
 (define-public (drawdown
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -465,7 +465,7 @@
 ;; @returns (response uint uint)
 (define-public (finalize-drawdown
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -486,7 +486,7 @@
 ;; @returns (response { recipient: uint, sats: uint } uint)
 (define-public (drawdown-xbtc
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -516,7 +516,7 @@
 ;; @returns (response uint uint)
 (define-public (complete-rollover
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -557,7 +557,7 @@
 ;; @returns (response uint uint)
 (define-public (finalize-rollover
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -586,7 +586,7 @@
 ;; @returns (response uint uint)
 (define-public (cancel-drawdown
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)
@@ -615,7 +615,7 @@
 ;; @returns (response uint uint)
 (define-public (cancel-rollover
   (loan-id uint)
-  (lp <sip-010>)
+  (lp <ft-mint-trait>)
   (token-id uint)
   (coll-token <ft>)
   (coll-vault <cv>)

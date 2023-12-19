@@ -49,6 +49,7 @@
     ;; TODO: should get this from an oracle, but might not exist
     (current-stable-borrow-rate u0)
   )
+    (asserts! true (err u0))
     (if (> utilization-rate optimal-utilization-rate)
       (let (
         (excess-utilization-rate-ratio (div (- utilization-rate optimal-utilization-rate) excess-utilization-rate))
@@ -72,15 +73,19 @@
         )
       )
         (ok
-          (mul
-            (get-overall-borrow-rate-internal
-              total-borrows-stable
-              total-borrows-variable
-              new-variable-borrow-rate
-              average-stable-borrow-rate
-            )
-            utilization-rate
-          )
+          {
+            current-liquidity-rate: (mul
+              (get-overall-borrow-rate-internal
+                total-borrows-stable
+                total-borrows-variable
+                new-variable-borrow-rate
+                average-stable-borrow-rate
+              )
+              utilization-rate
+            ),
+            current-stable-borrow-rate: new-stable-borrow-rate,
+            current-variable-borrow-rate: new-variable-borrow-rate
+          }
         )
       )
       (let (
@@ -104,20 +109,27 @@
         )
       )
         (ok
-          (*
-            (get-overall-borrow-rate-internal
-              total-borrows-stable
-              total-borrows-variable
-              new-variable-borrow-rate
-              average-stable-borrow-rate
-            )
-          )
+          {
+            current-liquidity-rate:
+              (mul 
+                (get-overall-borrow-rate-internal
+                total-borrows-stable
+                total-borrows-variable
+                new-variable-borrow-rate
+                average-stable-borrow-rate
+                )
+                utilization-rate
+              ),
+            current-stable-borrow-rate: new-stable-borrow-rate,
+            current-variable-borrow-rate: new-variable-borrow-rate
+          }
         )
       )
     )
   )
 )
 
+;; TODO: DOUBLE CHECK
 (define-private (get-overall-borrow-rate-internal
     (total-borrows-stable uint)
     (total-borrows-variable uint)
@@ -155,10 +167,9 @@
   (let (
     (total-borrows (+ total-borrows-stable total-borrows-variable))
   )
-    (/
-      (* u10000 total-borrows)
-      (+ total-borrows available-liquidity)
-      u10000
+    (if (is-eq total-borrows u0)
+      u0
+      (div total-borrows (+ total-borrows available-liquidity))
     )
   )
 )
