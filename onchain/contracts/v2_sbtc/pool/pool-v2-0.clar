@@ -1732,6 +1732,7 @@
 
 
 (define-constant one-8 u100000000)
+(define-constant one-3 u1000)
 
 (define-read-only (mul (x uint) (y uint))
   (/ (+ (* x y) (/ one-8 u2)) one-8)
@@ -1741,7 +1742,21 @@
   (/ (+ (* x one-8) (/ y u2)) y)
 )
 
-(define-constant seconds-in-year (* u144 u365 u10 u60))
+(define-constant seconds-in-year u31536000
+  ;; (* u144 u365 u10 u60)
+)
+
+(define-constant seconds-in-block u600
+  ;; (* 10 60)
+)
+
+(define-read-only (fixed-to-exp (fixed uint))
+  (* fixed one-3)
+)
+
+(define-read-only (exp-to-fixed (fixed uint))
+  (/ one-3 fixed)
+)
 
 (define-read-only (calculate-linear-interest-1
   (principal uint)

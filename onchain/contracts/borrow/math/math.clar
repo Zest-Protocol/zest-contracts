@@ -16,7 +16,25 @@
   (is-eq (mod x u2) u0)
 )
 
+(define-read-only (get-e)
+  e
+)
+
 (define-constant e 271828182)
+(define-constant seconds-in-year u31536000
+  ;; (* u144 u365 u10 u60)
+)
+(define-constant seconds-in-block u600
+  ;; (* 10 60)
+)
+
+(define-read-only (get-seconds-in-year)
+  seconds-in-year
+)
+
+(define-read-only (get-seconds-in-block)
+  seconds-in-block
+)
 
 (define-read-only (test-this)
   (mul (* one-8 u1000) (taylor-6 (mul u5000000 u300000000)))
