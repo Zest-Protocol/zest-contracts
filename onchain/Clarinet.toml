@@ -79,7 +79,12 @@ clarity_version = 2
 epoch = 2.1
 
 [contracts.lp-token-0]
-path = "contracts/v2_sbtc/token/lp-token-0.clar"
+path = "contracts/borrow/token/lp-token-0.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-token-1]
+path = "contracts/borrow/token/lp-token-1.clar"
 clarity_version = 2
 epoch = 2.1
 

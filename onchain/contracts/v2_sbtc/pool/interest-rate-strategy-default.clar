@@ -113,10 +113,10 @@
             current-liquidity-rate:
               (mul 
                 (get-overall-borrow-rate-internal
-                total-borrows-stable
-                total-borrows-variable
-                new-variable-borrow-rate
-                average-stable-borrow-rate
+                  total-borrows-stable
+                  total-borrows-variable
+                  new-variable-borrow-rate
+                  average-stable-borrow-rate
                 )
                 utilization-rate
               ),

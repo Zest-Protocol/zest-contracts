@@ -83,7 +83,9 @@
   }
 )
 
-(define-data-var reserve-state
+(define-map
+  reserve-state
+  principal
   (tuple
     (last-liquidity-cumulative-index uint)
     (current-liquidity-rate uint)
@@ -106,51 +108,54 @@
     (is-active bool)
     (is-freezed bool)
   )
-  {
-    last-liquidity-cumulative-index: u0,
-    current-liquidity-rate: u0,
-    total-borrows-stable: u0,
-    total-borrows-variable: u0,
-    current-variable-borrow-rate: u0,
-    current-stable-borrow-rate: u0,
-    current-average-stable-borrow-rate: u0,
-    last-variable-borrow-cumulative-index: u0,
-    base-ltvas-collateral: u0,
-    liquidation-threshold: u0,
-    liquidation-bonus: u0,
-    decimals: u0,
-    a-token-address: tx-sender,
-    interest-rate-strategy-address: tx-sender,
-    last-updated-block: u0,
-    borrowing-enabled: false,
-    usage-as-collateral-enabled: false,
-    is-stable-borrow-rate-enabled: false,
-    is-active: false,
-    is-freezed: false
-  }
 )
 
 (define-map user-index principal uint)
 
 (define-public (init
   (a-token-address principal)
+  (asset principal)
   (decimals uint)
   (interest-rate-strategy-address principal)
 )
   (ok
-    (var-set reserve-state
-      (merge
-        (var-get reserve-state)
-        {
-          last-liquidity-cumulative-index: one-8,
-          last-variable-borrow-cumulative-index: one-8,
-          a-token-address: a-token-address,
-          decimals: decimals,
-          interest-rate-strategy-address: interest-rate-strategy-address,
-          is-active: true,
-          is-freezed: false
-        }
-      )
+    (map-set
+      reserve-state
+      asset
+      {
+        last-liquidity-cumulative-index: one-8,
+        current-liquidity-rate: u0,
+        total-borrows-stable: u0,
+        total-borrows-variable: u0,
+        current-variable-borrow-rate: u0,
+        current-stable-borrow-rate: u0,
+        current-average-stable-borrow-rate: u0,
+        last-variable-borrow-cumulative-index: one-8,
+        base-ltvas-collateral: u0,
+        liquidation-threshold: u0,
+        liquidation-bonus: u0,
+        decimals: decimals,
+        a-token-address: a-token-address,
+        interest-rate-strategy-address: interest-rate-strategy-address,
+        last-updated-block: u0,
+        borrowing-enabled: false,
+        usage-as-collateral-enabled: false,
+        is-stable-borrow-rate-enabled: false,
+        is-active: true,
+        is-freezed: false
+      }
+      ;; (merge
+      ;;   (var-get reserve-state)
+      ;;   {
+      ;;     last-liquidity-cumulative-index: one-8,
+      ;;     last-variable-borrow-cumulative-index: one-8,
+      ;;     a-token-address: a-token-address,
+      ;;     decimals: decimals,
+      ;;     interest-rate-strategy-address: interest-rate-strategy-address,
+      ;;     is-active: true,
+      ;;     is-freezed: false
+      ;;   }
+      ;; )
     )
   )
 )
@@ -177,8 +182,10 @@
   (begin
     (asserts! true (err u0))
 
-    (try! (update-cumulative-indexes))
+    (try! (update-cumulative-indexes (contract-of asset)))
     (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
+    
+    (print { deposited-state: (get-reserve-state (contract-of asset)) })
 
     (if is-first-deposit
       (set-user-reserve-as-collateral who asset true)
@@ -216,7 +223,7 @@
   (repaid-whole-loan bool)
   )
   (let (
-    (reserve-data (var-get reserve-state))
+    (reserve-data (get-reserve-state (contract-of asset)))
     (user-data (get-user-reserve-data who asset))
     (principal-borrow-balance
       (-
@@ -268,12 +275,13 @@
   (asset <ft>)
   )
   (let (
-    (reserve-data (var-get reserve-state))
+    (reserve-data (get-reserve-state (contract-of asset)))
     (user-data (get-user-reserve-data who asset))
   )
-    (try! (update-cumulative-indexes))
-    (var-set
+    (try! (update-cumulative-indexes (contract-of asset)))
+    (map-set
       reserve-state
+      (contract-of asset)
       (merge
         reserve-data
         {
@@ -281,6 +289,17 @@
         }
       )
     )
+    ;; (print
+    ;;   { 
+    ;;     oh-man:
+    ;;       (merge
+    ;;         reserve-data
+    ;;         {
+    ;;           total-borrows-variable: (- (+ (get total-borrows-variable reserve-data) balance-increase) payback-amount-minus-fees)
+    ;;         }
+    ;;       )
+    ;;   }
+    ;; )
     (ok u0)
   )
 )
@@ -300,7 +319,7 @@
   (user-redeemed-everything bool)
   )
   (begin
-    (try! (update-cumulative-indexes))
+    (try! (update-cumulative-indexes (contract-of asset)))
     (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
 
     (if user-redeemed-everything
@@ -324,6 +343,7 @@
         (get principal ret)
         (get balance-increase ret)
         amount-borrowed
+        (contract-of asset)
       )
     )
     (try!
@@ -349,7 +369,7 @@
   (asset <ft>)
   )
   (let (
-    (reserve-data (var-get reserve-state))
+    (reserve-data (get-reserve-state (contract-of asset)))
     (user-data (get-user-reserve-data who asset))
   )
     (get current-variable-borrow-rate reserve-data)
@@ -375,7 +395,7 @@
   (fee uint)
   )
   (let (
-    (reserve-data (var-get reserve-state))
+    (reserve-data (get-reserve-state (contract-of asset)))
     (user-data (get-user-reserve-data who asset))
     (new-user-data {
       stable-borrow-rate: u0,
@@ -402,13 +422,15 @@
   (principal-borrow-balance uint)
   (balance-increase uint)
   (amount-borrowed uint)
+  (asset principal)
   )
   (begin
-    (try! (update-cumulative-indexes))
+    (try! (update-cumulative-indexes asset))
     (try! (update-reserve-total-borrows-by-rate-mode
       principal-borrow-balance
       balance-increase
       amount-borrowed
+      asset
     ))
     (ok u0)
   )
@@ -418,15 +440,23 @@
   (principal-balance uint)
   (balance-increase uint)
   (amount-borrowed uint)
+  (asset principal)
   )
   (let (
-    (reserve-data (var-get reserve-state))
+    (reserve-data (get-reserve-state asset))
     (new-principal-amount (+ principal-balance balance-increase amount-borrowed))
   )
     ;; TODO: increase borrow amount
     (asserts! true (err u0))
-    (var-set
+    ;; (print { BIRD: (merge
+    ;;     reserve-data
+    ;;     {
+    ;;       total-borrows-variable: (+ (get total-borrows-variable reserve-data) balance-increase amount-borrowed)
+    ;;     }
+    ;;   ) })
+    (map-set
       reserve-state
+      asset
       (merge
         reserve-data
         {
@@ -444,7 +474,7 @@
 )
   (let (
     (user-data (get-user-reserve-data who asset))
-    (reserve-data (var-get reserve-state))
+    (reserve-data (get-reserve-state (contract-of asset)))
   )
     (asserts! true (err u0))
     (if (is-eq (get principal-borrow-balance user-data) u0)
@@ -565,8 +595,8 @@
   (liquidity-taken uint)
   )
   (let (
-    (reserve-data (var-get reserve-state))
-    (ret 
+    (reserve-data (get-reserve-state (contract-of asset)))
+    (ret
       (try!
         (contract-call? .interest-rate-strategy-default
           calculate-interest-rates
@@ -581,29 +611,40 @@
       (merge
         reserve-data
         (merge
-          ret
           {
+            ;; current-liquidity-rate: (get current-liquidity-rate ret),
+            ;; current-stable-borrow-rate: (get current-stable-borrow-rate ret),
+            ;; current-variable-borrow-rate: (get current-variable-borrow-rate ret),
             last-updated-block: block-height
           }
+          ret
         )
       )
     )
   )
     (asserts! true (err u0))
 
-    (var-set reserve-state new-reserve-state)
+    ;; (print { new-reserve-state: new-reserve-state })
+    ;; (print { new-reserve-state: new-reserve-state })
+    ;; (print { ret: ret })
+
+    (map-set reserve-state (contract-of asset) new-reserve-state)
     (ok u0)
   )
 )
 
-(define-public (mint-on-deposit (who principal) (amount uint) (lp <ft-mint-trait>))
+(define-public (mint-on-deposit
+  (who principal)
+  (amount uint)
+  (lp <ft-mint-trait>)
+  (asset principal)
+  )
   (let (
-    (ret (try! (cumulate-balance who lp)))
+    (ret (try! (cumulate-balance who lp asset)))
   )
     (asserts! true (err u0))
 
     (try! (contract-call? lp mint (+ (get balance-increase ret) amount) who))
-    
     
     (ok u0)
   )
@@ -620,11 +661,15 @@
   )
 )
 
-(define-public (cumulate-balance (who principal) (lp <ft-mint-trait>))
+(define-public (cumulate-balance
+  (who principal)
+  (lp <ft-mint-trait>)
+  (asset principal)
+  )
   (let (
     (previous-balance (try! (contract-call? lp get-balance who)))
-    (balance-increase (- (try! (get-balance lp who)) previous-balance))
-    (reserve-data (var-get reserve-state))
+    (balance-increase (- (try! (get-balance lp asset who)) previous-balance))
+    (reserve-data (get-reserve-state asset))
     (new-user-index
       (get-normalized-income
         (get current-liquidity-rate reserve-data)
@@ -635,6 +680,9 @@
   )
     ;; TOOD: update user index
     (map-set user-index who new-user-index)
+    ;; (print { carnival: reserve-data })
+
+    ;; (print { cumulated-balance: (try! (get-balance lp asset who)) })
 
     (ok {
       previous-user-balance: previous-balance,
@@ -652,10 +700,10 @@
   (contract-call? asset get-balance (as-contract tx-sender))
 )
 
-(define-public (update-cumulative-indexes)
+(define-public (update-cumulative-indexes (asset principal))
   (let (
-    (reserve-data (var-get reserve-state))
-    (total-borrows (get-total-borrows))
+    (reserve-data (get-reserve-state asset))
+    (total-borrows (get-total-borrows asset))
   )
     ;; TODO: add permissions
     (asserts! true (err u0))
@@ -688,8 +736,9 @@
         )
       )
         (ok
-          (var-set
+          (map-set
             reserve-state
+            asset
             (merge
               reserve-data
               {
@@ -705,23 +754,26 @@
   )
 )
 
-(define-read-only (get-total-borrows)
+(define-read-only (get-total-borrows (asset principal))
   (let (
-    (reserve-data (var-get reserve-state))
+    (reserve-data (get-reserve-state asset))
   )
     (+ (get total-borrows-stable reserve-data) (get total-borrows-variable reserve-data))
   )
 )
 
+(define-read-only (get-reserve-state (asset principal))
+  (unwrap-panic (map-get? reserve-state asset))
+)
 
-(define-public (get-balance (lp-token <ft>) (who principal))
+(define-public (get-balance (lp-token <ft>) (asset principal) (who principal))
   (let (
     (balance (try! (contract-call? lp-token get-balance who)))
   )
     (if (is-eq balance u0)
       (ok u0)
       (let (
-        (cumulated-balance (try! (get-cumulated-balance who balance)))
+        (cumulated-balance (try! (get-cumulated-balance who balance asset)))
       )
         (ok cumulated-balance)
       )
@@ -731,17 +783,26 @@
 
 (define-public (get-cumulated-balance
   (who principal)
-  (balance uint))
+  (balance uint)
+  (asset principal)
+  )
   (let (
-    (current-user-index (get-user-index who))
-    (reserve-data (var-get reserve-state))
+    (current-user-index (get-user-index who asset))
+    (reserve-data (get-reserve-state asset))
     (normalized-income
       (get-normalized-income
-      (get current-liquidity-rate reserve-data)
-      (get last-updated-block reserve-data)
-      (get last-liquidity-cumulative-index reserve-data)))
+        (get current-liquidity-rate reserve-data)
+        (get last-updated-block reserve-data)
+        (get last-liquidity-cumulative-index reserve-data)))
     )
     (asserts! true (err u0))
+    ;; (print {
+    ;;   normalized-income: normalized-income,
+    ;;   current-liquidity-rate: (get current-liquidity-rate reserve-data),
+    ;;   last-updated-block: (get last-updated-block reserve-data),
+    ;;   last-liquidity-cumulative-index: (get last-liquidity-cumulative-index reserve-data)
+    ;;   })
+
     ;; TODO: update user index
     (ok
       (div
@@ -754,10 +815,9 @@
   )
 )
 
-(define-read-only (get-user-index (who principal))
-  (default-to (get last-liquidity-cumulative-index (var-get reserve-state)) (map-get? user-index who))
+(define-read-only (get-user-index (who principal) (asset principal))
+  (default-to (get last-liquidity-cumulative-index (get-reserve-state asset)) (map-get? user-index who))
 )
-
 
 (define-read-only (get-normalized-income
   (current-liquidity-rate uint)

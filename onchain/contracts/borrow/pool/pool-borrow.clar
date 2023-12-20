@@ -10,11 +10,11 @@
   (owner principal)
   )
   (let (
-    (current-balance (try! (contract-call? .pool-0-reserve get-balance lp owner)))
+    (current-balance (try! (contract-call? .pool-0-reserve get-balance lp (contract-of asset) owner)))
     )
     ;; (print { current-balance: current-balance })
     (try! (contract-call? .pool-0-reserve update-state-on-deposit asset owner amount (> current-balance u0)))
-    (try! (contract-call? .pool-0-reserve mint-on-deposit owner amount lp))
+    (try! (contract-call? .pool-0-reserve mint-on-deposit owner amount lp (contract-of asset)))
     (try! (contract-call? .pool-0-reserve transfer-to-reserve asset owner amount))
 
     (ok true)
@@ -26,21 +26,28 @@
   (pool-reserve principal)
   (asset <ft>)
   (amount uint)
-  (atoken-balance-after-redeem uint)
+  ;; (atoken-balance-after-redeem uint)
   (owner principal)
 )
   (let (
+    (ret (try! (contract-call? .pool-0-reserve cumulate-balance owner lp (contract-of asset))))
     (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
+    (amount-to-redeem amount)
   )
-    (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount (is-eq atoken-balance-after-redeem u0)))
-    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
+
+    ;; (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount (is-eq amount-to-redeem u0)))
+    ;; (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
+
+    (print { THIS: ret })
+
+    ;; (try! (contract-call? lp burn amount owner))
 
     (ok current-available-liquidity)
   )
 )
 
 (define-public (borrow
-  (debt-token <ft-mint-trait>)
+  ;; (debt-token <ft-mint-trait>)
   (pool-reserve principal)
   (asset <ft>)
   (amount-to-be-borrowed uint)
@@ -60,7 +67,7 @@
 )
 
 (define-public (repay
-  (debt-token <ft-mint-trait>)
+  ;; (debt-token <ft-mint-trait>)
   (asset <ft>)
   (amount-to-repay uint)
   (on-behalf-of principal)
@@ -77,6 +84,7 @@
       )
     )
   )
+    ;; (print { PAY: amount-due })
     ;; if payback-amount is smaller than fees, just pay fees
     (if (< payback-amount origination-fee)
       (begin
@@ -131,7 +139,6 @@
         (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount-minus-fees)
       )
     )
-
   )
 )
 
