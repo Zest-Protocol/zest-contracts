@@ -8,7 +8,7 @@
 (define-data-var token-name (string-ascii 32) "stSTX")
 (define-data-var token-symbol (string-ascii 10) "stSTX")
 (define-data-var token-uri (optional (string-utf8 256)) none)
-(define-data-var token-decimals uint u8)
+(define-data-var token-decimals uint u6)
 
 ;; --- Public functions
 

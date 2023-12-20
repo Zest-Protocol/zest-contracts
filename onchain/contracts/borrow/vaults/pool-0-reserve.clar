@@ -69,14 +69,18 @@
     (last-updated-block uint)
     (use-as-collateral bool)
   )
-  ;; {
-  ;;   principal-borrow-balance: u0,
-  ;;   last-variable-borrow-cumulative-index: u0,
-  ;;   origination-fee: u0,
-  ;;   stable-borrow-rate: u0,
-  ;;   last-update-timestamp: u0,
-  ;;   use-as-collateral: false
-  ;; }
+)
+
+(define-constant
+  default-user-reserve-data
+  {
+    principal-borrow-balance: u0,
+    last-variable-borrow-cumulative-index: u0,
+    origination-fee: u0,
+    stable-borrow-rate: u0,
+    last-updated-block: u0,
+    use-as-collateral: false
+  }
 )
 
 (define-data-var reserve-state
@@ -164,7 +168,6 @@
 ;;     (print { type: "set-contract-owner-liquidity-vault-v1-0", payload: owner })
 ;;     (ok (var-set contract-owner owner))))
 
-
 (define-public (update-state-on-deposit
   (asset <ft>)
   (who principal)
@@ -204,8 +207,6 @@
   )
 )
 
-
-
 (define-public (update-user-state-on-repay
   (asset <ft>)
   (who principal)
@@ -216,7 +217,7 @@
   )
   (let (
     (reserve-data (var-get reserve-state))
-    (user-data (unwrap-panic (map-get? user-reserve-data { user: who, reserve: (contract-of asset) })))
+    (user-data (get-user-reserve-data who asset))
     (principal-borrow-balance
       (-
         (+
@@ -268,7 +269,7 @@
   )
   (let (
     (reserve-data (var-get reserve-state))
-    (user-data (unwrap-panic (map-get? user-reserve-data { user: who, reserve: (contract-of asset) })))
+    (user-data (get-user-reserve-data who asset))
   )
     (try! (update-cumulative-indexes))
     (var-set
@@ -280,11 +281,16 @@
         }
       )
     )
-
     (ok u0)
   )
 )
 
+(define-read-only (get-user-reserve-data
+  (who principal)
+  (reserve <ft>)
+  )
+  (default-to default-user-reserve-data (map-get? user-reserve-data { user: who, reserve: (contract-of reserve) }))
+)
 
 
 (define-public (update-state-on-redeem
@@ -313,7 +319,7 @@
   (let (
     (ret (try! (get-user-borrow-balance who asset)))
   )
-    (try! 
+    (try!
       (update-reserve-state-on-borrow
         (get principal ret)
         (get balance-increase ret)
@@ -344,7 +350,7 @@
   )
   (let (
     (reserve-data (var-get reserve-state))
-    (user-data (unwrap-panic (map-get? user-reserve-data { user: who, reserve: (contract-of asset) })))
+    (user-data (get-user-reserve-data who asset))
   )
     (get current-variable-borrow-rate reserve-data)
   )
@@ -355,7 +361,7 @@
   (asset <ft>)
   )
   (let (
-    (user-data (unwrap-panic (map-get? user-reserve-data { user: who, reserve: (contract-of asset) })))
+    (user-data (get-user-reserve-data who asset))
   )
     (get origination-fee user-data)
   )
@@ -370,7 +376,7 @@
   )
   (let (
     (reserve-data (var-get reserve-state))
-    (user-data (unwrap-panic (map-get? user-reserve-data { user: who, reserve: (contract-of asset) })))
+    (user-data (get-user-reserve-data who asset))
     (new-user-data {
       stable-borrow-rate: u0,
       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
@@ -437,7 +443,7 @@
   (asset <ft>)
 )
   (let (
-    (user-data (unwrap-panic (map-get? user-reserve-data { user: who, reserve: (contract-of asset) })))
+    (user-data (get-user-reserve-data who asset))
     (reserve-data (var-get reserve-state))
   )
     (asserts! true (err u0))
@@ -540,7 +546,8 @@
 
 (define-public (set-user-reserve-as-collateral (user principal) (asset <ft>) (use-as-collateral bool))
   (let (
-    (user-data (unwrap-panic (map-get? user-reserve-data { user: user, reserve: (contract-of asset)})))
+    (user-data (get-user-reserve-data user asset))
+    (data u0)
   )
     (asserts! true (err u0))
     (map-set
@@ -726,7 +733,7 @@
   (who principal)
   (balance uint))
   (let (
-    (current-user-index (unwrap-panic (map-get? user-index who)))
+    (current-user-index (get-user-index who))
     (reserve-data (var-get reserve-state))
     (normalized-income
       (get-normalized-income
@@ -745,6 +752,10 @@
       )
     )
   )
+)
+
+(define-read-only (get-user-index (who principal))
+  (default-to (get last-liquidity-cumulative-index (var-get reserve-state)) (map-get? user-index who))
 )
 
 
