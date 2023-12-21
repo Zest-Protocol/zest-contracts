@@ -111,6 +111,7 @@
 )
 
 (define-map user-index principal uint)
+(define-data-var reserves (list 100 principal) (list))
 
 (define-public (init
   (a-token-address principal)
@@ -118,44 +119,47 @@
   (decimals uint)
   (interest-rate-strategy-address principal)
 )
-  (ok
-    (map-set
-      reserve-state
-      asset
-      {
-        last-liquidity-cumulative-index: one-8,
-        current-liquidity-rate: u0,
-        total-borrows-stable: u0,
-        total-borrows-variable: u0,
-        current-variable-borrow-rate: u0,
-        current-stable-borrow-rate: u0,
-        current-average-stable-borrow-rate: u0,
-        last-variable-borrow-cumulative-index: one-8,
-        base-ltvas-collateral: u0,
-        liquidation-threshold: u0,
-        liquidation-bonus: u0,
-        decimals: decimals,
-        a-token-address: a-token-address,
-        interest-rate-strategy-address: interest-rate-strategy-address,
-        last-updated-block: u0,
-        borrowing-enabled: false,
-        usage-as-collateral-enabled: false,
-        is-stable-borrow-rate-enabled: false,
-        is-active: true,
-        is-freezed: false
-      }
-      ;; (merge
-      ;;   (var-get reserve-state)
-      ;;   {
-      ;;     last-liquidity-cumulative-index: one-8,
-      ;;     last-variable-borrow-cumulative-index: one-8,
-      ;;     a-token-address: a-token-address,
-      ;;     decimals: decimals,
-      ;;     interest-rate-strategy-address: interest-rate-strategy-address,
-      ;;     is-active: true,
-      ;;     is-freezed: false
-      ;;   }
-      ;; )
+  (begin
+    (var-set reserves (unwrap-panic (as-max-len? (append (var-get reserves) asset) u100)))
+    (ok
+      (map-set
+        reserve-state
+        asset
+        {
+          last-liquidity-cumulative-index: one-8,
+          current-liquidity-rate: u0,
+          total-borrows-stable: u0,
+          total-borrows-variable: u0,
+          current-variable-borrow-rate: u0,
+          current-stable-borrow-rate: u0,
+          current-average-stable-borrow-rate: u0,
+          last-variable-borrow-cumulative-index: one-8,
+          base-ltvas-collateral: u0,
+          liquidation-threshold: u0,
+          liquidation-bonus: u0,
+          decimals: decimals,
+          a-token-address: a-token-address,
+          interest-rate-strategy-address: interest-rate-strategy-address,
+          last-updated-block: u0,
+          borrowing-enabled: false,
+          usage-as-collateral-enabled: false,
+          is-stable-borrow-rate-enabled: false,
+          is-active: true,
+          is-freezed: false
+        }
+        ;; (merge
+        ;;   (var-get reserve-state)
+        ;;   {
+        ;;     last-liquidity-cumulative-index: one-8,
+        ;;     last-variable-borrow-cumulative-index: one-8,
+        ;;     a-token-address: a-token-address,
+        ;;     decimals: decimals,
+        ;;     interest-rate-strategy-address: interest-rate-strategy-address,
+        ;;     is-active: true,
+        ;;     is-freezed: false
+        ;;   }
+        ;; )
+      )
     )
   )
 )
@@ -250,6 +254,7 @@
     (last-updated-block block-height)
   )
   (asserts! true (err u0))
+  (print { last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index })
   (map-set
     user-reserve-data
     { user: who, reserve: (contract-of asset) }
@@ -406,6 +411,7 @@
     })
   )
     (asserts! true (err u0))
+    
     (map-set
       user-reserve-data
       { user: who, reserve: (contract-of asset) }
@@ -414,6 +420,7 @@
         new-user-data
       )
     )
+    ;; (print {HEY1: { user: who, reserve: (contract-of asset) } })
     (ok u0)
   )
 )
@@ -498,6 +505,19 @@
           )
         )
       )
+        ;; (print {
+        ;;   compounded-balance: compounded-balance,
+        ;;   principal-borrow-balance: (get principal-borrow-balance user-data),
+        ;;   current-variable-borrow-rate: (get current-variable-borrow-rate reserve-data),
+        ;;   last-updated-block-reserve: (get last-updated-block reserve-data),
+        ;;   last-variable-borrow-cumulative-index-reserve: (get last-variable-borrow-cumulative-index reserve-data),
+        ;;   last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index user-data)
+        ;; })
+        ;; (print {
+        ;;     principal: principal,
+        ;;     compounded-balance: compounded-balance,
+        ;;     balance-increase: (- compounded-balance principal),
+        ;;   })
         (ok {
             principal: principal,
             compounded-balance: compounded-balance,

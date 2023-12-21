@@ -8,6 +8,8 @@ const simnet = await initSimnet();
 const accounts = simnet.getAccounts();
 const deployerAddress = accounts.get("deployer")!;
 const LP_1 = accounts.get("wallet_1")!;
+const LP_2 = accounts.get("wallet_4")!;
+const LP_3 = accounts.get("wallet_5")!;
 const Borrower_1 = accounts.get("wallet_2")!;
 const Delegate_1 = accounts.get("wallet_3")!;
 
@@ -104,19 +106,8 @@ describe("example tests", () => {
       ],
       LP_1
     );
-
-    callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "supply",
-      [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
-        Cl.contractPrincipal(deployerAddress, pool0Reserve),
-        Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.uint(1_000_000_000),
-        Cl.standardPrincipal(LP_1),
-      ],
-      LP_1
-    );
+    // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
+    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -145,14 +136,118 @@ describe("example tests", () => {
       Borrower_1
     );
 
+    // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
+    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
+
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
     // console.log(callResponse.events);
 
     simnet.mineEmptyBlocks(10);
 
+    let lp_1_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(LP_1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      LP_1
+    );
+    let borrower_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      Borrower_1
+    );
+
+    // console.log(Cl.prettyPrint(lp_1_data.result));
+    // console.log(Cl.prettyPrint(borrower_data.result));
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_2),
+      ],
+      LP_2
+    );
+
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_3),
+      ],
+      LP_3
+    );
+
+    // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
+    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
+
+    // console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
+    // console.log(callResponse.events);
+
+    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
+
+    simnet.mineEmptyBlocks(10);
+
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "repay",
+      [
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(200_681_524),
+        Cl.standardPrincipal(Borrower_1),
+      ],
+      Borrower_1
+    );
+
+    // console.log(callResponse.events);
+    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
+    // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
+    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
+
+    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
+
+    lp_1_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(LP_1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      deployerAddress
+    );
+    borrower_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      deployerAddress
+    );
+
+    // console.log(Cl.prettyPrint(lp_1_data.result));
+    // console.log(Cl.prettyPrint(borrower_data.result));
+
+    simnet.mineEmptyBlocks(10);
+
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "redeem-underlying",
       [
         Cl.contractPrincipal(deployerAddress, lpToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -163,24 +258,15 @@ describe("example tests", () => {
       LP_1
     );
 
-    // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
+    // { THIS: { balance-increase: u940, index: u100000094, new-user-balance: u1000000940, previous-user-balance: u1000000000 } }
+
+    // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
+    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
+
+    // console.log(Cl.prettyPrint(callResponse.events[1]["data"].value!));
     // console.log(callResponse.events);
-
-    simnet.mineEmptyBlocks(10);
-
-    callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "repay",
-      [
-        Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.uint(201_364_986),
-        Cl.standardPrincipal(Borrower_1),
-      ],
-      Borrower_1
-    );
-
-    // console.log(callResponse.events);
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -189,23 +275,34 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, lpToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.uint(2_001_364_986),
-        // Cl.uint(0),
-        Cl.standardPrincipal(LP_1),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_2),
       ],
-      LP_1
+      LP_2
     );
 
-    console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.events[1]["data"].value!));
+    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
+
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "redeem-underlying",
+      [
+        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_3),
+      ],
+      LP_3
+    );
 
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
     // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    // console.log(Borrower_1);
+    // console.log(LP_2);
 
-    console.log(simnet.getAssetsMap());
+    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
   });
 });

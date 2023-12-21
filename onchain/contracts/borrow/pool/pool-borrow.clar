@@ -21,6 +21,9 @@
   )
 )
 
+
+(define-constant max-value u340282366920938463463374607431768211455)
+
 (define-public (redeem-underlying
   (lp <ft-mint-trait>)
   (pool-reserve principal)
@@ -32,15 +35,15 @@
   (let (
     (ret (try! (contract-call? .pool-0-reserve cumulate-balance owner lp (contract-of asset))))
     (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
-    (amount-to-redeem amount)
+    (amount-to-redeem (if (is-eq amount max-value) (get new-user-balance ret) amount))
   )
+    (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount (is-eq amount-to-redeem u0)))
+    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-redeem))
 
-    ;; (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount (is-eq amount-to-redeem u0)))
-    ;; (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
-
+    ;; (print { THIS: amount })
     (print { THIS: ret })
 
-    ;; (try! (contract-call? lp burn amount owner))
+    (try! (contract-call? lp burn amount-to-redeem owner))
 
     (ok current-available-liquidity)
   )
@@ -61,6 +64,8 @@
     ;; TODO: asset borrowing enabled
     ;; TODO: check amount is smaller than available liquidity
     ;; TODO: add oracle checks
+    ;; (print { siph: (contract-call? .pool-0-reserve get-user-reserve-data owner asset) })
+    ;; (print { siph: owner, asset: asset })
     (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-be-borrowed))
     (ok u0)
   )
@@ -119,7 +124,7 @@
             payback-amount-minus-fees
             origination-fee
             (get balance-increase ret)
-            false
+            (is-eq (get compounded-balance ret) payback-amount-minus-fees)
           )
         )
         (if (> origination-fee u0)
@@ -141,6 +146,20 @@
     )
   )
 )
+
+
+(define-public (liquidation-call
+  (collateral <ft>)
+  (reserve principal)
+  (user principal)
+  (purchase-amount uint)
+  (to-receive-underlying bool)
+  )
+  (begin
+    (ok u0)
+  )
+)
+
 
 (define-read-only (get-collection-address)
   .protocol-treasury
