@@ -113,6 +113,10 @@
 (define-map user-index principal uint)
 (define-data-var reserves (list 100 principal) (list))
 
+(define-read-only (get-reserves)
+  (var-get reserves)
+)
+
 (define-public (init
   (a-token-address principal)
   (asset principal)
@@ -854,6 +858,30 @@
   )
 )
 
+(define-public (get-user-basic-reserve-data
+  (lp-token <ft>)
+  (asset <ft>)
+  (user principal)
+  )
+  (let (
+    (user-data (get-user-reserve-data user asset))
+    (reserve-data (get-reserve-state (contract-of asset)))
+  )
+
+    (ok u0)
+  )
+)
+
+(define-public (get-user-underlying-asset-balance
+  (lp-token <ft>)
+  (asset <ft>)
+  (user principal)
+  )
+  (begin
+    (try! (get-balance lp-token (contract-of asset) user))
+    (ok u0)
+  )
+)
 
 (define-read-only (calculate-compounded-interest
   (current-liquidity-rate uint)
