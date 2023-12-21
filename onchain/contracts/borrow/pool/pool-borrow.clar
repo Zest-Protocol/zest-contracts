@@ -149,6 +149,7 @@
 
 
 (define-public (liquidation-call
+  (lp-token <ft>)
   (collateral <ft>)
   (reserve principal)
   (user principal)
@@ -156,7 +157,7 @@
   (to-receive-underlying bool)
   )
   (begin
-    (ok u0)
+    (contract-call? .liquidation-manager liquidation-call lp-token collateral reserve user purchase-amount to-receive-underlying)
   )
 )
 
