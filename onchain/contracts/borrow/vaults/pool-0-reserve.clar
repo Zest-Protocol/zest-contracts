@@ -866,9 +866,32 @@
   (let (
     (user-data (get-user-reserve-data user asset))
     (reserve-data (get-reserve-state (contract-of asset)))
-  )
+    (underlying-balance (try! (get-user-underlying-asset-balance lp-token asset user)))
+    (compounded-borrow-balance (get-compounded-borrow-balance
+      (get principal-borrow-balance user-data)
+      (get stable-borrow-rate user-data)
+      (get last-updated-block user-data)
+      (get last-variable-borrow-cumulative-index user-data)
 
-    (ok u0)
+      (get current-variable-borrow-rate reserve-data)
+      (get last-variable-borrow-cumulative-index reserve-data)
+      (get last-updated-block reserve-data)
+    ))
+  )
+    (if (is-eq (get principal-borrow-balance user-data) u0)
+      (ok {
+        underlying-balance: underlying-balance,
+        compounded-borrow-balance: u0,
+        origination-fee: u0,
+        use-as-collateral: (get use-as-collateral user-data)
+      })
+      (ok {
+        underlying-balance: underlying-balance,
+        compounded-borrow-balance: compounded-borrow-balance,
+        origination-fee: (get origination-fee user-data),
+        use-as-collateral: (get use-as-collateral user-data)
+      })
+    )
   )
 )
 
@@ -877,11 +900,15 @@
   (asset <ft>)
   (user principal)
   )
-  (begin
-    (try! (get-balance lp-token (contract-of asset) user))
-    (ok u0)
+  (let (
+    (user-data (get-user-reserve-data user asset))
+    (reserve-data (get-reserve-state (contract-of asset)))
+    (underlying-balance (try! (get-balance lp-token (contract-of asset) user)))
+  )
+    (ok underlying-balance)
   )
 )
+
 
 (define-read-only (calculate-compounded-interest
   (current-liquidity-rate uint)
