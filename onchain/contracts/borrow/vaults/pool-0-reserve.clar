@@ -70,6 +70,18 @@
   )
 )
 
+(define-constant
+  default-user-reserve-data
+  {
+    principal-borrow-balance: u0,
+    last-variable-borrow-cumulative-index: u0,
+    origination-fee: u0,
+    stable-borrow-rate: u0,
+    last-updated-block: u0,
+    use-as-collateral: false,
+  }
+)
+
 (define-map
   user-assets
   principal
@@ -127,18 +139,6 @@
 
 (define-read-only (get-user-assets (who principal))
   (default-to { assets-supplied: (list), assets-borrowed: (list) } (map-get? user-assets who))
-)
-
-(define-constant
-  default-user-reserve-data
-  {
-    principal-borrow-balance: u0,
-    last-variable-borrow-cumulative-index: u0,
-    origination-fee: u0,
-    stable-borrow-rate: u0,
-    last-updated-block: u0,
-    use-as-collateral: false,
-  }
 )
 
 (define-read-only (get-user-reserve-data
@@ -224,8 +224,13 @@
   )
 )
 
+(define-map user-isolated principal (optional principal))
 (define-map user-index principal uint)
 (define-data-var assets (list 100 principal) (list))
+
+(define-read-only (get-user-isolated (who principal))
+  (default-to none (map-get? user-isolated who))
+)
 
 (define-read-only (get-assets)
   (var-get assets)
@@ -325,14 +330,6 @@
   )
   (/ value u2)
 )
-
-;; (define-public (add-user-asset (who principal) (asset principal))
-;;   (ok (map-set user-assets who (unwrap-panic (as-max-len? (append (get-user-assets who) asset) u100))))
-;; )
-
-;; (define-read-only (get-user-assets (who principal))
-;;   (default-to (list) (map-get? user-assets who))
-;; )
 
 (define-public (update-state-on-repay
   (asset <ft>)

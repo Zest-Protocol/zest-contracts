@@ -15,6 +15,16 @@
 )
 
 
+(define-read-only (is-isolated (who principal))
+  (begin
+    (contract-call? .pool-0-reserve get-user-isolated who)
+  )
+)
+
+(define-read-only (can-be-used-as-collateral (asset principal))
+  (get usage-as-collateral-enabled (contract-call? .pool-0-reserve get-reserve-state asset))
+)
+
 
 (define-read-only (get-asset-supply-apy
     (reserve principal)
@@ -72,6 +82,19 @@
     (map token-to-available-collateral assets)
     ;; (mul (get amount item) (contract-call? .oracle get-unit-price (get asset item) ))
     ;; (contract-call? .pool-0-reserve get-collateral-available assets oracle)
+  )
+)
+
+(define-read-only (get-borrow-balance-amount (who principal) (asset <ft>))
+  (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who asset))
+)
+
+(define-read-only (get-borrow-balance-value (who principal) (asset <ft>) (oracle principal))
+  (token-to-usd
+    who
+    asset
+    oracle
+    (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who asset))
   )
 )
 
