@@ -9,7 +9,7 @@
 
 (define-constant one-8 u100000000)
 
-(define-map assets uint uint)
+;; (define-map assets uint uint)
 (define-data-var contract-owner principal tx-sender)
 
 
@@ -57,7 +57,6 @@
   (contract-call? .math taylor-6 x)
 )
 
-
 (define-map
   user-reserve-data
   { user: principal, reserve: principal}
@@ -71,6 +70,65 @@
   )
 )
 
+(define-map
+  user-assets
+  principal
+  {
+    assets-supplied: (list 100 principal),
+    assets-borrowed: (list 100 principal)
+  }
+)
+
+(define-private (add-supplied-asset (who principal) (asset principal))
+  (let (
+    (assets-data (get-user-assets who))
+  )
+    (map-set
+      user-assets
+      who
+      {
+        assets-supplied: (unwrap-panic (as-max-len? (append (get assets-supplied assets-data) asset) u100)),
+        assets-borrowed: (get assets-borrowed assets-data)
+      }
+    )
+  )
+)
+
+(define-private (remove-supplied-asset (who principal) (asset principal))
+  (let (
+    (assets-data (get-user-assets who))
+  )
+    ;; (map-set
+    ;;   user-assets
+    ;;   who
+    ;;   {
+    ;;     assets-supplied: (unwrap-panic (as-max-len? (append (get assets-supplied assets-data) asset) u100)),
+    ;;     assets-borrowed: (get assets-borrowed assets-data)
+    ;;   }
+    ;; )
+    u0
+  )
+)
+
+(define-private (add-borrowed-asset (who principal) (asset principal))
+  (let (
+    (assets-data (get-user-assets who))
+  )
+    (map-set
+      user-assets
+      who
+      {
+        assets-supplied: (get assets-supplied assets-data),
+        assets-borrowed: (unwrap-panic (as-max-len? (append (get assets-borrowed assets-data) asset) u100)),
+      }
+    )
+  )
+)
+
+(define-read-only (get-user-assets (who principal))
+  (default-to { assets-supplied: (list), assets-borrowed: (list) } (map-get? user-assets who))
+)
+
 (define-constant
   default-user-reserve-data
   {
@@ -79,8 +137,64 @@
     origination-fee: u0,
     stable-borrow-rate: u0,
     last-updated-block: u0,
-    use-as-collateral: false
+    use-as-collateral: false,
   }
+)
+
+(define-read-only (get-user-reserve-data
+  (who principal)
+  (reserve <ft>)
+  )
+  (default-to default-user-reserve-data (map-get? user-reserve-data { user: who, reserve: (contract-of reserve) }))
+)
+
+
+(define-read-only (get-user-state-c
+  (user principal)
+  (asset principal)
+  )
+  (map-get? user-reserve-data { user: user, reserve: asset })
+)
+
+(define-read-only (get-user-current-borrow-rate
+  (who principal)
+  (asset <ft>)
+  )
+  (let (
+    (reserve-data (get-reserve-state (contract-of asset)))
+    (user-data (get-user-reserve-data who asset))
+  )
+    (get current-variable-borrow-rate reserve-data)
+  )
+)
+
+(define-read-only (get-user-origination-fee
+  (who principal)
+  (asset <ft>)
+  )
+  (let (
+    (user-data (get-user-reserve-data who asset))
+  )
+    (get origination-fee user-data)
+  )
+)
+
+(define-public (get-reserve-available-liquidity
+  (asset <ft>)
+)
+  (contract-call? asset get-balance (as-contract tx-sender))
+)
+
+(define-read-only (get-user-index (who principal) (asset principal))
+  (default-to (get last-liquidity-cumulative-index (get-reserve-state asset)) (map-get? user-index who))
+)
+
+(define-read-only (get-reserve-state (asset principal))
+  (unwrap-panic (map-get? reserve-state asset))
+)
+
+(define-read-only (get-reserve-state-optional (asset principal))
+  (map-get? reserve-state asset)
 )
 
 (define-map
@@ -111,10 +225,10 @@
 )
 
 (define-map user-index principal uint)
-(define-data-var reserves (list 100 principal) (list))
+(define-data-var assets (list 100 principal) (list))
 
-(define-read-only (get-reserves)
-  (var-get reserves)
+(define-read-only (get-assets)
+  (var-get assets)
 )
 
 (define-public (init
@@ -124,7 +238,7 @@
   (interest-rate-strategy-address principal)
 )
   (begin
-    (var-set reserves (unwrap-panic (as-max-len? (append (var-get reserves) asset) u100)))
+    (var-set assets (unwrap-panic (as-max-len? (append (var-get assets) asset) u100)))
     (ok
       (map-set
         reserve-state
@@ -193,14 +307,32 @@
     (try! (update-cumulative-indexes (contract-of asset)))
     (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
     
-    (print { deposited-state: (get-reserve-state (contract-of asset)) })
+    ;; (print { deposited-state: (get-reserve-state (contract-of asset)) })
 
     (if is-first-deposit
-      (set-user-reserve-as-collateral who asset true)
+      (begin
+        (add-supplied-asset who (contract-of asset))
+        (set-user-reserve-as-collateral who asset true)
+      )
       (ok true)
     )
   )
 )
+
+
+(define-read-only (value-to-collateral
+  (value uint)
+  )
+  (/ value u2)
+)
+
+;; (define-public (add-user-asset (who principal) (asset principal))
+;;   (ok (map-set user-assets who (unwrap-panic (as-max-len? (append (get-user-assets who) asset) u100))))
+;; )
+
+;; (define-read-only (get-user-assets (who principal))
+;;   (default-to (list) (map-get? user-assets who))
+;; )
 
 (define-public (update-state-on-repay
   (asset <ft>)
@@ -258,7 +390,7 @@
     (last-updated-block block-height)
   )
   (asserts! true (err u0))
-  (print { last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index })
+  ;; (print { last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index })
   (map-set
     user-reserve-data
     { user: who, reserve: (contract-of asset) }
@@ -298,28 +430,9 @@
         }
       )
     )
-    ;; (print
-    ;;   { 
-    ;;     oh-man:
-    ;;       (merge
-    ;;         reserve-data
-    ;;         {
-    ;;           total-borrows-variable: (- (+ (get total-borrows-variable reserve-data) balance-increase) payback-amount-minus-fees)
-    ;;         }
-    ;;       )
-    ;;   }
-    ;; )
     (ok u0)
   )
 )
-
-(define-read-only (get-user-reserve-data
-  (who principal)
-  (reserve <ft>)
-  )
-  (default-to default-user-reserve-data (map-get? user-reserve-data { user: who, reserve: (contract-of reserve) }))
-)
-
 
 (define-public (update-state-on-redeem
   (asset <ft>)
@@ -332,7 +445,10 @@
     (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
 
     (if user-redeemed-everything
-      (set-user-reserve-as-collateral who asset user-redeemed-everything)
+      (begin
+        (remove-supplied-asset who (contract-of asset))
+        (set-user-reserve-as-collateral who asset user-redeemed-everything)
+      )
       (ok true)
     )
   )
@@ -366,33 +482,13 @@
     )
     (try! (update-reserve-interest-rates-and-timestamp asset u0 amount-borrowed))
 
+
+    (add-borrowed-asset who (contract-of asset))
+
     (ok {
       user-current-borrow-rate: (get-user-current-borrow-rate who asset),
       balance-increase: (get balance-increase ret)
     })
-  )
-)
-
-(define-read-only (get-user-current-borrow-rate
-  (who principal)
-  (asset <ft>)
-  )
-  (let (
-    (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data who asset))
-  )
-    (get current-variable-borrow-rate reserve-data)
-  )
-)
-
-(define-read-only (get-user-origination-fee
-  (who principal)
-  (asset <ft>)
-  )
-  (let (
-    (user-data (get-user-reserve-data who asset))
-  )
-    (get origination-fee user-data)
   )
 )
 
@@ -459,12 +555,6 @@
   )
     ;; TODO: increase borrow amount
     (asserts! true (err u0))
-    ;; (print { BIRD: (merge
-    ;;     reserve-data
-    ;;     {
-    ;;       total-borrows-variable: (+ (get total-borrows-variable reserve-data) balance-increase amount-borrowed)
-    ;;     }
-    ;;   ) })
     (map-set
       reserve-state
       asset
@@ -565,7 +655,7 @@
             (mul
               (calculate-compounded-interest
                 current-variable-borrow-rate
-                last-updated-block-reserve
+                (- block-height last-updated-block)
               )
               last-variable-borrow-cumulative-index-reserve
             )
@@ -585,7 +675,6 @@
     )
   )
 )
-
 
 (define-public (transfer-to-user
   (asset <ft>)
@@ -636,9 +725,6 @@
         reserve-data
         (merge
           {
-            ;; current-liquidity-rate: (get current-liquidity-rate ret),
-            ;; current-stable-borrow-rate: (get current-stable-borrow-rate ret),
-            ;; current-variable-borrow-rate: (get current-variable-borrow-rate ret),
             last-updated-block: block-height
           }
           ret
@@ -647,10 +733,6 @@
     )
   )
     (asserts! true (err u0))
-
-    ;; (print { new-reserve-state: new-reserve-state })
-    ;; (print { new-reserve-state: new-reserve-state })
-    ;; (print { ret: ret })
 
     (map-set reserve-state (contract-of asset) new-reserve-state)
     (ok u0)
@@ -704,8 +786,6 @@
   )
     ;; TOOD: update user index
     (map-set user-index who new-user-index)
-    ;; (print { carnival: reserve-data })
-
     ;; (print { cumulated-balance: (try! (get-balance lp asset who)) })
 
     (ok {
@@ -716,12 +796,6 @@
       }
     )
   )
-)
-
-(define-public (get-reserve-available-liquidity
-  (asset <ft>)
-)
-  (contract-call? asset get-balance (as-contract tx-sender))
 )
 
 (define-public (update-cumulative-indexes (asset principal))
@@ -737,7 +811,7 @@
         (cumulated-liquidity-interest
           (calculate-linear-interest
             (get current-liquidity-rate reserve-data)
-            (get last-updated-block reserve-data)
+            (- block-height (get last-updated-block reserve-data))
           )
         )
         (current-liquidity-cumulative-index
@@ -749,7 +823,7 @@
         (cumulated-variable-borrow-interest
           (calculate-compounded-interest
             (get current-variable-borrow-rate reserve-data)
-            (get last-updated-block reserve-data)
+            (- block-height (get last-updated-block reserve-data))
           )
         )
         (current-variable-borrow-liquidity-cumulative-index
@@ -786,10 +860,6 @@
   )
 )
 
-(define-read-only (get-reserve-state (asset principal))
-  (unwrap-panic (map-get? reserve-state asset))
-)
-
 (define-public (get-balance (lp-token <ft>) (asset principal) (who principal))
   (let (
     (balance (try! (contract-call? lp-token get-balance who)))
@@ -820,13 +890,6 @@
         (get last-liquidity-cumulative-index reserve-data)))
     )
     (asserts! true (err u0))
-    ;; (print {
-    ;;   normalized-income: normalized-income,
-    ;;   current-liquidity-rate: (get current-liquidity-rate reserve-data),
-    ;;   last-updated-block: (get last-updated-block reserve-data),
-    ;;   last-liquidity-cumulative-index: (get last-liquidity-cumulative-index reserve-data)
-    ;;   })
-
     ;; TODO: update user index
     (ok
       (div
@@ -839,10 +902,6 @@
   )
 )
 
-(define-read-only (get-user-index (who principal) (asset principal))
-  (default-to (get last-liquidity-cumulative-index (get-reserve-state asset)) (map-get? user-index who))
-)
-
 (define-read-only (get-normalized-income
   (current-liquidity-rate uint)
   (last-updated-block uint)
@@ -852,7 +911,9 @@
     (cumulated 
       (calculate-linear-interest
         current-liquidity-rate
-        last-updated-block))
+        (- block-height last-updated-block)
+      )
+    )
   )
     (mul cumulated last-liquidity-cumulative-index)
   )
@@ -912,10 +973,10 @@
 
 (define-read-only (calculate-compounded-interest
   (current-liquidity-rate uint)
-  (last-updated-block uint)
+  (delta uint)
   )
   (let (
-    (delta (- block-height last-updated-block))
+    ;; (delta (- block-height last-updated-block))
     (rate-per-second (div (fixed-to-exp current-liquidity-rate) (get-seconds-in-year)))
     (time (* delta (get-seconds-in-block)))
   )
@@ -925,10 +986,10 @@
 
 (define-read-only (calculate-linear-interest
   (current-liquidity-rate uint)
-  (last-updated-block uint)
+  (delta uint)
   )
   (let (
-    (delta (- block-height last-updated-block))
+    ;; (delta (- block-height last-updated-block))
     (years-elapsed (div (* delta (get-seconds-in-block)) (get-seconds-in-year)))
   )
     (+ one-8 (mul years-elapsed current-liquidity-rate))
@@ -936,52 +997,52 @@
 )
 
 
-(define-public (add-asset (asset <ft>) (amount uint) (token-id uint) (sender principal))
-  (let (
-    (asset-amount (default-to u0 (map-get? assets token-id) )))
-    ;; (try! (is-approved-contract contract-caller))
-    (try! (contract-call? asset transfer amount sender (as-contract tx-sender) none))
-    (print {sender: sender, amount: amount})
-    (map-set assets token-id (+ asset-amount amount))
+;; (define-public (add-asset (asset <ft>) (amount uint) (token-id uint) (sender principal))
+;;   (let (
+;;     (asset-amount (default-to u0 (map-get? assets token-id) )))
+;;     ;; (try! (is-approved-contract contract-caller))
+;;     (try! (contract-call? asset transfer amount sender (as-contract tx-sender) none))
+;;     (print {sender: sender, amount: amount})
+;;     (map-set assets token-id (+ asset-amount amount))
 
-    (print { type: "add-asset-liquidity-vault-v1-0", payload: { key: token-id, data: { amount: amount }} })
-    (ok (+ asset-amount amount))
-  )
-)
+;;     (print { type: "add-asset-liquidity-vault-v1-0", payload: { key: token-id, data: { amount: amount }} })
+;;     (ok (+ asset-amount amount))
+;;   )
+;; )
 
-(define-public (remove-asset (asset <ft>) (amount uint) (token-id uint) (recipient principal))
-  (let (
-    (asset-amount (default-to u0 (map-get? assets token-id)))
-    )
-    ;; (try! (is-approved-contract contract-caller))
-    (try! (as-contract (contract-call? asset transfer amount tx-sender recipient none)))
-    (if (>= amount asset-amount)
-      (begin
-        (map-set assets token-id u0)
-        (print { type: "remove-asset-liquidity-vault-v1-0", payload: { key: token-id, data: { amount: amount }} })
-        (ok u0)
-      )
-      (begin
-        (map-set assets token-id (- asset-amount amount))
-        (print { type: "remove-asset-liquidity-vault-v1-0", payload: { key: token-id, data: { amount:  amount } } })
-        (ok (- asset-amount amount))
-      )
-    )
-  )
-)
+;; (define-public (remove-asset (asset <ft>) (amount uint) (token-id uint) (recipient principal))
+;;   (let (
+;;     (asset-amount (default-to u0 (map-get? assets token-id)))
+;;     )
+;;     ;; (try! (is-approved-contract contract-caller))
+;;     (try! (as-contract (contract-call? asset transfer amount tx-sender recipient none)))
+;;     (if (>= amount asset-amount)
+;;       (begin
+;;         (map-set assets token-id u0)
+;;         (print { type: "remove-asset-liquidity-vault-v1-0", payload: { key: token-id, data: { amount: amount }} })
+;;         (ok u0)
+;;       )
+;;       (begin
+;;         (map-set assets token-id (- asset-amount amount))
+;;         (print { type: "remove-asset-liquidity-vault-v1-0", payload: { key: token-id, data: { amount:  amount } } })
+;;         (ok (- asset-amount amount))
+;;       )
+;;     )
+;;   )
+;; )
 
-(define-public (draw (asset <ft>) (token-id uint) (recipient principal))
-  (let (
-    (asset-amount (default-to u0 (map-get? assets token-id)))
-    )
-    ;; (try! (is-approved-contract contract-caller))
-    (try! (as-contract (contract-call? asset transfer asset-amount tx-sender recipient none)))
-    (map-delete assets token-id)
+;; (define-public (draw (asset <ft>) (token-id uint) (recipient principal))
+;;   (let (
+;;     (asset-amount (default-to u0 (map-get? assets token-id)))
+;;     )
+;;     ;; (try! (is-approved-contract contract-caller))
+;;     (try! (as-contract (contract-call? asset transfer asset-amount tx-sender recipient none)))
+;;     (map-delete assets token-id)
 
-    (print { type: "draw-liquidity-vault-v1-0", payload: { key: token-id, data: { amount: asset-amount }} })
-    (ok asset-amount)
-  )
-)
+;;     (print { type: "draw-liquidity-vault-v1-0", payload: { key: token-id, data: { amount: asset-amount }} })
+;;     (ok asset-amount)
+;;   )
+;; )
 
 (define-public (transfer (amount uint) (recipient principal) (f-t <ft>))
   (begin
@@ -991,8 +1052,8 @@
   )
 )
 
-(define-public (get-asset (token-id uint))
-  (ok (map-get? assets token-id)))
+;; (define-public (get-asset (token-id uint))
+;;   (ok (map-get? assets token-id)))
 
 ;; ERROR START 7000
 (define-constant ERR_UNAUTHORIZED (err u7000))

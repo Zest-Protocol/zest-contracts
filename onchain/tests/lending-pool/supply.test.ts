@@ -122,6 +122,9 @@ describe("example tests", () => {
       Borrower_1
     );
 
+    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
+    // console.log(callResponse.events);
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "borrow",
@@ -200,6 +203,31 @@ describe("example tests", () => {
     // console.log(callResponse.events);
 
     // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
+
+    // let user_assets = simnet.callReadOnlyFn(
+    //   `pool-read`,
+    //   "get-user-assets",
+    //   [Cl.standardPrincipal(LP_3)],
+    //   LP_3
+    // );
+    // console.log(Cl.prettyPrint(user_assets.result));
+
+    let supply_apy = simnet.callReadOnlyFn(
+      `pool-read`,
+      "get-asset-supply-apy",
+      [Cl.contractPrincipal(deployerAddress, stSTX)],
+      deployerAddress
+    );
+
+    let borrow_apy = simnet.callReadOnlyFn(
+      `pool-read`,
+      "get-asset-supply-apy",
+      [Cl.contractPrincipal(deployerAddress, stSTX)],
+      deployerAddress
+    );
+
+    console.log(Cl.prettyPrint(supply_apy.result));
+    console.log(Cl.prettyPrint(borrow_apy.result));
 
     simnet.mineEmptyBlocks(10);
 

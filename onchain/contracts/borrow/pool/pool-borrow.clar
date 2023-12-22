@@ -13,7 +13,7 @@
     (current-balance (try! (contract-call? .pool-0-reserve get-balance lp (contract-of asset) owner)))
     )
     ;; (print { current-balance: current-balance })
-    (try! (contract-call? .pool-0-reserve update-state-on-deposit asset owner amount (> current-balance u0)))
+    (try! (contract-call? .pool-0-reserve update-state-on-deposit asset owner amount (is-eq current-balance u0)))
     (try! (contract-call? .pool-0-reserve mint-on-deposit owner amount lp (contract-of asset)))
     (try! (contract-call? .pool-0-reserve transfer-to-reserve asset owner amount))
 
@@ -41,7 +41,7 @@
     (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-redeem))
 
     ;; (print { THIS: amount })
-    (print { THIS: ret })
+    ;; (print { THIS: ret })
 
     (try! (contract-call? lp burn amount-to-redeem owner))
 

@@ -270,6 +270,16 @@ path = "contracts/borrow/pool/pool-borrow.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.oracle]
+path = "contracts/borrow/pool/oracle.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.pool-read]
+path = "contracts/borrow/pool/pool-read.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.liquidation-manager]
 path = "contracts/borrow/pool/liquidation-manager.clar"
 clarity_version = 2

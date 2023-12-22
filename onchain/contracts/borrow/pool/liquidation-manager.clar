@@ -6,7 +6,7 @@
   (assets (list 100 { asset: <ft>, lp-token: <ft> }))
 )
   (let (
-    (reserves (contract-call? .pool-0-reserve get-reserves))
+    (reserves (contract-call? .pool-0-reserve get-assets))
     (aggregate (try!
         (fold
           aggregate-user-data
@@ -30,11 +30,10 @@
     ;; TODO: ADD currentLiquidationTreshold
     ;; TODO: ADD healthFactor
     ;; TODO: ADD healthFactorBelowTreshold
-    
+
     (ok u0)
   )
 )
-
 
 
 (define-private (aggregate-user-data
