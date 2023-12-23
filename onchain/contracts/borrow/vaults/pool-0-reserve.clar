@@ -209,7 +209,7 @@
     (current-stable-borrow-rate uint)
     (current-average-stable-borrow-rate uint)
     (last-variable-borrow-cumulative-index uint)
-    (base-ltvas-collateral uint)
+    (base-ltv-as-collateral uint)
     (liquidation-threshold uint)
     (liquidation-bonus uint)
     (decimals uint)
@@ -257,7 +257,7 @@
           current-stable-borrow-rate: u0,
           current-average-stable-borrow-rate: u0,
           last-variable-borrow-cumulative-index: one-8,
-          base-ltvas-collateral: u0,
+          base-ltv-as-collateral: u0,
           liquidation-threshold: u0,
           liquidation-bonus: u0,
           decimals: decimals,

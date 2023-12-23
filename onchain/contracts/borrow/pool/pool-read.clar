@@ -21,10 +21,13 @@
   )
 )
 
-(define-read-only (can-be-used-as-collateral (asset principal))
-  (get usage-as-collateral-enabled (contract-call? .pool-0-reserve get-reserve-state asset))
-)
+;; (define-read-only (can-be-used-as-collateral (asset principal))
+;;   (get usage-as-collateral-enabled (contract-call? .pool-0-reserve get-reserve-state-optional asset))
+;; )
 
+(define-read-only (get-reserve-state (reserve principal))
+  (contract-call? .pool-0-reserve get-reserve-state-optional reserve)
+)
 
 (define-read-only (get-asset-supply-apy
     (reserve principal)
@@ -153,10 +156,4 @@
 ;;     u0
 ;;   )
 ;; )
-
-(define-read-only (get-reserve-state
-    (reserve principal)
-  )
-  (contract-call? .pool-0-reserve get-reserve-state-optional reserve)
-)
 ;; u1416667

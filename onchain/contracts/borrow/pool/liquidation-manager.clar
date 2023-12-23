@@ -1,6 +1,9 @@
 (use-trait ft .ft-trait.ft-trait)
 
 
+(define-data-var health-factor-liquidation-treshold uint u90000000)
+
+
 (define-public (calculate-user-global-data
   (user principal)
   (assets (list 100 { asset: <ft>, lp-token: <ft> }))
@@ -25,16 +28,51 @@
         )
       )
     )
+    (total-collateral-balanceSTX (get total-collateral-balanceSTX aggregate))
+    (current-ltv
+      (if (> total-collateral-balanceSTX u0)
+        (div (get current-ltv aggregate) total-collateral-balanceSTX)
+        u0
+      )
+    )
+    (current-liquidation-threshold
+      (if (> total-collateral-balanceSTX u0)
+        (div (get current-liquidation-threshold aggregate) total-collateral-balanceSTX)
+        u0
+      )
+    )
+    (health-factor
+      (calculate-health-factor-from-balances
+        (get total-collateral-balanceSTX aggregate)
+        (get total-borrow-balanceSTX aggregate)
+        (get total-feesSTX aggregate)
+        (get current-liquidation-threshold aggregate)
+      )
+    )
+    (is-health-factor-below-treshold (< health-factor (var-get health-factor-liquidation-treshold)))
   )
-    ;; TODO: ADD currentLtv
-    ;; TODO: ADD currentLiquidationTreshold
-    ;; TODO: ADD healthFactor
-    ;; TODO: ADD healthFactorBelowTreshold
-
-    (ok u0)
+    
+    (ok {
+      total-liquidity-balanceSTX: (get total-liquidity-balanceSTX aggregate),
+      total-collateral-balanceSTX: total-collateral-balanceSTX,
+      total-borrow-balanceSTX: (get total-borrow-balanceSTX aggregate),
+      total-feesSTX: (get total-feesSTX aggregate),
+      current-ltv: current-ltv,
+      current-liquidation-threshold: current-liquidation-threshold,
+      health-factor: health-factor,
+      is-health-factor-below-treshold: is-health-factor-below-treshold
+    })
   )
 )
 
+(define-read-only (calculate-health-factor-from-balances
+  (total-collateral-balanceSTX uint)
+  (total-borrow-balanceSTX uint)
+  (total-feesSTX uint)
+  (current-liquidation-threshold uint)
+  )
+  u0
+)
 
 (define-private (aggregate-user-data
   (reserve
@@ -202,12 +240,3 @@
   ;; })
   (ok u0)
 )
-
-;; total-liquidity-balanceSTX,
-;; total-collateral-balanceSTX,
-;; total-borrow-balanceSTX,
-;; total-feesSTX,
-;; current-ltv,
-;; current-liquidation-threshold,
-;; health-factor,
-;; health-factor-below-threshold

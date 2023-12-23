@@ -212,22 +212,22 @@ describe("example tests", () => {
     // );
     // console.log(Cl.prettyPrint(user_assets.result));
 
-    let supply_apy = simnet.callReadOnlyFn(
-      `pool-read`,
-      "get-asset-supply-apy",
-      [Cl.contractPrincipal(deployerAddress, stSTX)],
-      deployerAddress
-    );
+    // let supply_apy = simnet.callReadOnlyFn(
+    //   `pool-read`,
+    //   "get-asset-supply-apy",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   deployerAddress
+    // );
 
-    let borrow_apy = simnet.callReadOnlyFn(
-      `pool-read`,
-      "get-asset-supply-apy",
-      [Cl.contractPrincipal(deployerAddress, stSTX)],
-      deployerAddress
-    );
+    // let borrow_apy = simnet.callReadOnlyFn(
+    //   `pool-read`,
+    //   "get-asset-supply-apy",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   deployerAddress
+    // );
 
-    console.log(Cl.prettyPrint(supply_apy.result));
-    console.log(Cl.prettyPrint(borrow_apy.result));
+    // console.log(Cl.prettyPrint(supply_apy.result));
+    // console.log(Cl.prettyPrint(borrow_apy.result));
 
     simnet.mineEmptyBlocks(10);
 
@@ -249,24 +249,24 @@ describe("example tests", () => {
 
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
 
-    lp_1_data = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "get-user-reserve-data",
-      [
-        Cl.standardPrincipal(LP_1),
-        Cl.contractPrincipal(deployerAddress, stSTX),
-      ],
-      deployerAddress
-    );
-    borrower_data = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "get-user-reserve-data",
-      [
-        Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, stSTX),
-      ],
-      deployerAddress
-    );
+    // lp_1_data = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-0-reserve`,
+    //   "get-user-reserve-data",
+    //   [
+    //     Cl.standardPrincipal(LP_1),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //   ],
+    //   deployerAddress
+    // );
+    // borrower_data = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-0-reserve`,
+    //   "get-user-reserve-data",
+    //   [
+    //     Cl.standardPrincipal(Borrower_1),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //   ],
+    //   deployerAddress
+    // );
 
     // console.log(Cl.prettyPrint(lp_1_data.result));
     // console.log(Cl.prettyPrint(borrower_data.result));
