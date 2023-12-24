@@ -1,0 +1,6 @@
+#V2
+(contract-call? .pool-0-reserve init .lp-token-0 .stSTX u6 .interest-rate-strategy-default)
+(contract-call? .pool-0-reserve fixed-to-exp u1416667)
+(div (contract-call? .pool-0-reserve fixed-to-exp u1416667) u31536000)
+(contract-call? .math div (contract-call? .pool-0-reserve fixed-to-exp u1416667) u31536000)
+(contract-call? .pool-0-reserve fixed-to-exp u1416667)

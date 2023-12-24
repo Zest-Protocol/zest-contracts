@@ -4,8 +4,8 @@
 (define-fungible-token lp-token-0)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP Token 0")
-(define-data-var token-symbol (string-ascii 32) "LP0")
+(define-data-var token-name (string-ascii 32) "LP Token 1")
+(define-data-var token-symbol (string-ascii 32) "LP1")
 
 (define-constant pool-id u0)
 

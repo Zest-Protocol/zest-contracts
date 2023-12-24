@@ -74,7 +74,8 @@
 (define-read-only (get-supplied-balance
   (assets (list 100 { asset: principal, amount: uint}))
   )
-  (map token-to-usd-internal assets)
+  ;; (map token-to-usd-internal assets)
+  u0
 )
 
 (define-read-only (get-collateral-available
@@ -82,7 +83,8 @@
   (oracle principal)
   )
   (begin
-    (map token-to-available-collateral assets)
+    ;; (map token-to-available-collateral assets)
+    u0
     ;; (mul (get amount item) (contract-call? .oracle get-unit-price (get asset item) ))
     ;; (contract-call? .pool-0-reserve get-collateral-available assets oracle)
   )
@@ -102,15 +104,15 @@
 )
 
 (define-private (token-to-available-collateral
-  (item { asset: principal, amount: uint})
+  (item { asset: <ft>, amount: uint})
 )
   (contract-call? .pool-0-reserve value-to-collateral (token-to-usd-internal item))
 )
 
 (define-private (token-to-usd-internal
-  (item { asset: principal, amount: uint})
+  (item { asset: <ft>, amount: uint})
 )
-  (mul (get amount item) (contract-call? .oracle get-unit-price (get asset item) ))
+  (mul (get amount item) (contract-call? .oracle get-asset-price-read (get asset item) ))
 )
 
 ;; (define-read-only (get-balance (asset <ft>) (who principal))
@@ -124,7 +126,7 @@
   (amount uint)
   )
   (let (
-    (unit-price (contract-call? .oracle get-unit-price (contract-of asset)))
+    (unit-price (contract-call? .oracle get-asset-price-read asset))
   )
     (mul amount unit-price)
   )

@@ -168,6 +168,10 @@
   )
 )
 
+(define-read-only (get-reserve-liquidation-bonus (asset <ft>))
+  (get liquidation-bonus (get-reserve-state (contract-of asset)))
+)
+
 (define-read-only (get-user-origination-fee
   (who principal)
   (asset <ft>)
@@ -243,6 +247,8 @@
   (interest-rate-strategy-address principal)
 )
   (begin
+    (asserts! true (err u1))
+    
     (var-set assets (unwrap-panic (as-max-len? (append (var-get assets) asset) u100)))
     (ok
       (map-set
@@ -967,6 +973,13 @@
   )
 )
 
+(define-read-only (is-reserve-collateral-enabled-as-collateral (asset principal))
+  (get usage-as-collateral-enabled (get-reserve-state asset))
+)
+
+(define-read-only (is-user-collateral-enabled-as-collateral (who principal) (asset <ft>))
+  (get use-as-collateral (get-user-reserve-data who asset))
+)
 
 (define-read-only (calculate-compounded-interest
   (current-liquidity-rate uint)

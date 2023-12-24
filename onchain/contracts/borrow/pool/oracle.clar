@@ -1,9 +1,10 @@
 
 (use-trait ft .ft-trait.ft-trait)
 
-(define-read-only (get-unit-price (token principal))
+(define-public (get-asset-price (token <ft>))
   (begin
-    (unwrap-panic (map-get? tickers token))
+    (asserts! true (err u1))
+    (ok (unwrap-panic (map-get? tickers (contract-of token))))
   )
 )
 
@@ -11,16 +12,37 @@
   (contract-call? .math mul x y)
 )
 
-(define-read-only (token-to-usd
+(define-public (token-to-usd
   (who principal)
   (asset <ft>)
   (oracle principal)
   (amount uint)
   )
   (let (
-    (unit-price (get-unit-price (contract-of asset)))
+    (unit-price (try! (get-asset-price asset)))
   )
-    (mul amount unit-price)
+    (ok (mul amount unit-price))
+  )
+)
+
+;; read-versions
+
+(define-read-only (get-asset-price-read (token <ft>))
+  (begin
+    (unwrap-panic (map-get? tickers (contract-of token)))
+  )
+)
+
+(define-read-only (token-to-usd-read
+  (who principal)
+  (asset <ft>)
+  (oracle principal)
+  (amount uint)
+  )
+  (let (
+    (unit-price (get-asset-price-read asset))
+  )
+    (ok (mul amount unit-price))
   )
 )
 

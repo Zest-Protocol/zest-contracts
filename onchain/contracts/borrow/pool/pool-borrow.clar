@@ -149,15 +149,26 @@
 
 
 (define-public (liquidation-call
+  (assets (list 100 { asset: <ft>, lp-token: <ft> }))
   (lp-token <ft>)
   (collateral <ft>)
-  (reserve principal)
+  (asset-borrowed <ft>)
+  (oracle principal)
   (user principal)
   (purchase-amount uint)
   (to-receive-underlying bool)
   )
   (begin
-    (contract-call? .liquidation-manager liquidation-call lp-token collateral reserve user purchase-amount to-receive-underlying)
+    (contract-call? .liquidation-manager liquidation-call
+      assets
+      lp-token
+      collateral
+      asset-borrowed
+      oracle
+      user
+      purchase-amount
+      to-receive-underlying
+    )
   )
 )
 
