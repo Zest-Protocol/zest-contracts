@@ -91,7 +91,7 @@
 )
 
 (define-read-only (get-borrow-balance-amount (who principal) (asset <ft>))
-  (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who asset))
+  (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who (contract-of asset)))
 )
 
 (define-read-only (get-borrow-balance-value (who principal) (asset <ft>) (oracle principal))
@@ -99,7 +99,7 @@
     who
     asset
     oracle
-    (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who asset))
+    (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who (contract-of asset)))
   )
 )
 
@@ -132,30 +132,89 @@
   )
 )
 
-;; (define-private (agg-assets
-;;   (asset principal)
-;;   (agg { who: principal, assets: (list 100 principal) })
-;;   )
-;;   (begin
-;;     ;; (match (contract-call? .pool-0-reserve get-user-state-optional (get who agg) asset)
-;;     ;;   ret (begin
-;;     ;;     {
-;;     ;;       who: (get who agg),
-;;     ;;       assets:
-;;     ;;         (unwrap-panic
-;;     ;;           (as-max-len?
-;;     ;;             (append
-;;     ;;               (get assets agg)
-;;     ;;               asset
-;;     ;;             )
-;;     ;;             u100
-;;     ;;           )
-;;     ;;         )
-;;     ;;     }
-;;     ;;   )
-;;     ;;   agg
-;;     ;; )
-;;     u0
-;;   )
-;; )
-;; u1416667
+;; Define a helper function to get reserve data
+(define-read-only (get-reserve-data (asset principal))
+  (contract-call? .pool-0-reserve get-reserve-state asset)
+)
+
+;; Getter for each field in the tuple
+
+(define-read-only (get-last-liquidity-cumulative-index (asset principal))
+  (get last-liquidity-cumulative-index (get-reserve-data asset))
+)
+
+(define-read-only (get-current-liquidity-rate (asset principal))
+  (get current-liquidity-rate (contract-call? .pool-0-reserve get-reserve-state asset))
+)
+
+(define-read-only (get-total-borrows-stable (asset principal))
+  (get total-borrows-stable (contract-call? .pool-0-reserve get-reserve-state asset))
+)
+
+(define-read-only (get-total-borrows-variable (asset principal))
+  (get total-borrows-variable (get-reserve-data asset))
+)
+
+(define-read-only (get-current-variable-borrow-rate (asset principal))
+  (get current-variable-borrow-rate (get-reserve-data asset))
+)
+
+(define-read-only (get-current-stable-borrow-rate (asset principal))
+  (get current-stable-borrow-rate (get-reserve-data asset))
+)
+
+(define-read-only (get-current-average-stable-borrow-rate (asset principal))
+  (get current-average-stable-borrow-rate (get-reserve-data asset))
+)
+
+(define-read-only (get-last-variable-borrow-cumulative-index (asset principal))
+  (get last-variable-borrow-cumulative-index (get-reserve-data asset))
+)
+
+(define-read-only (get-base-ltv-as-collateral (asset principal))
+  (get base-ltv-as-collateral (get-reserve-data asset))
+)
+
+(define-read-only (get-liquidation-threshold (asset principal))
+  (get liquidation-threshold (get-reserve-data asset))
+)
+
+(define-read-only (get-liquidation-bonus (asset principal))
+  (get liquidation-bonus (get-reserve-data asset))
+)
+
+(define-read-only (get-decimals (asset principal))
+  (get decimals (get-reserve-data asset))
+)
+
+(define-read-only (get-a-token-address (asset principal))
+  (get a-token-address (get-reserve-data asset))
+)
+
+(define-read-only (get-interest-rate-strategy-address (asset principal))
+  (get interest-rate-strategy-address (get-reserve-data asset))
+)
+
+(define-read-only (get-last-updated-block (asset principal))
+  (get last-updated-block (get-reserve-data asset))
+)
+
+(define-read-only (get-borrowing-enabled (asset principal))
+  (get borrowing-enabled (get-reserve-data asset))
+)
+
+(define-read-only (get-usage-as-collateral-enabled (asset principal))
+  (get usage-as-collateral-enabled (get-reserve-data asset))
+)
+
+(define-read-only (get-is-stable-borrow-rate-enabled (asset principal))
+  (get is-stable-borrow-rate-enabled (get-reserve-data asset))
+)
+
+(define-read-only (get-is-active (asset principal))
+  (get is-active (get-reserve-data asset))
+)
+
+(define-read-only (get-is-freezed (asset principal))
+  (get is-freezed (get-reserve-data asset))
+)

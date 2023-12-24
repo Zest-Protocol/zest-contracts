@@ -57,8 +57,7 @@
   (contract-call? .math taylor-6 x)
 )
 
-(define-map
-  user-reserve-data
+(define-map user-reserve-data
   { user: principal, reserve: principal}
   (tuple
     (principal-borrow-balance uint)
@@ -70,8 +69,7 @@
   )
 )
 
-(define-constant
-  default-user-reserve-data
+(define-constant default-user-reserve-data
   {
     principal-borrow-balance: u0,
     last-variable-borrow-cumulative-index: u0,
@@ -82,13 +80,125 @@
   }
 )
 
-(define-map
-  user-assets
+(define-map user-assets
   principal
   {
     assets-supplied: (list 100 principal),
     assets-borrowed: (list 100 principal)
   }
+)
+
+(define-map reserve-state
+  principal
+  (tuple
+    (last-liquidity-cumulative-index uint)
+    (current-liquidity-rate uint)
+    (total-borrows-stable uint)
+    (total-borrows-variable uint)
+    (current-variable-borrow-rate uint)
+    (current-stable-borrow-rate uint)
+    (current-average-stable-borrow-rate uint)
+    (last-variable-borrow-cumulative-index uint)
+    (base-ltv-as-collateral uint)
+    (liquidation-threshold uint)
+    (liquidation-bonus uint)
+    (decimals uint)
+    (a-token-address principal)
+    (interest-rate-strategy-address principal)
+    (last-updated-block uint)
+    (borrowing-enabled bool)
+    (usage-as-collateral-enabled bool)
+    (is-stable-borrow-rate-enabled bool)
+    (is-active bool)
+    (is-freezed bool)
+  )
+)
+
+(define-map user-isolated principal (optional principal))
+
+;; MODES:
+;; 1. Stables
+;; 2. STX
+;; 3. BTC
+;; ASSETS RELATED
+;; MODE -> ASSETS RELATED
+(define-map e-modes (buff 2) (list 255 principal))
+
+
+(define-map isolated-assets principal bool)
+
+;; TODO: enabled adding manually
+(map-set isolated-assets .stSTX true)
+
+;; Assets that can be borrowed using isolated assets as collateral
+(define-data-var borroweable-isolated
+  (list 100 principal)
+  (list .xUSD)
+)
+
+(define-private (add-borroweable-isolated (who principal) (asset principal))
+  (let (
+    (assets-data (get-user-assets who))
+  )
+    (map-set
+      user-assets
+      who
+      {
+        assets-supplied: (unwrap-panic (as-max-len? (append (get assets-supplied assets-data) asset) u100)),
+        assets-borrowed: (get assets-borrowed assets-data)
+      }
+    )
+  )
+)
+
+(define-map user-index principal uint)
+
+(define-data-var assets (list 100 principal) (list))
+
+(define-read-only (is-in-isolation-mode (who principal))
+  (let (
+    (assets-supplied (get assets-supplied (get-user-assets who)))
+    (split-assets (fold split-isolated assets-supplied { isolated: (list), non-isolated: (list) }))
+    (enabled-isolated-n (get enabled-count (fold count-collateral-enabled (get isolated split-assets) { who: who, enabled-count: u0 })))
+    (enabled-non-isolated-n  (get enabled-count (fold count-collateral-enabled (get non-isolated split-assets) { who: who, enabled-count: u0 })))
+  )
+    (if (> enabled-non-isolated-n u0)
+      (ok false)
+      (if (> enabled-isolated-n u1)
+        (ok false)
+        (ok true)
+      )
+    )
+  )
+)
+
+;; (define-read-only (split-isolated-test (who principal) (assets-supplied (list 100 principal)))
+;;   (fold split-isolated assets-supplied { non-isolated: (list), isolated: (list) })
+;;   ;; (fold count-collateral-enabled assets-supplied { who: who, enabled-count: u0 })
+;; )
+
+(define-read-only (split-isolated (asset principal) (ret { isolated: (list 100 principal), non-isolated: (list 100 principal) }))
+  (if (asset-is-isolated-type asset)
+    {
+      isolated: (unwrap-panic (as-max-len? (append (get isolated ret) asset) u100)) ,
+      non-isolated: (get non-isolated ret)
+    }
+    {
+      isolated: (get isolated ret),
+      non-isolated: (unwrap-panic (as-max-len? (append (get isolated ret) asset) u100))
+    }
+  )
+)
+
+(define-read-only (count-collateral-enabled (asset principal) (ret { who: principal, enabled-count: uint }))
+  (if (get use-as-collateral (get-user-reserve-data (get who ret) asset))
+    (merge ret { enabled-count: (+ (get enabled-count ret) u1) })
+    (merge ret { enabled-count: (get enabled-count ret) })
+  )
+)
+
+(define-read-only (asset-is-isolated-type (asset principal))
+  (default-to false (map-get? isolated-assets asset))
 )
 
 (define-private (add-supplied-asset (who principal) (asset principal))
@@ -143,9 +253,9 @@
 
 (define-read-only (get-user-reserve-data
   (who principal)
-  (reserve <ft>)
+  (reserve principal)
   )
-  (default-to default-user-reserve-data (map-get? user-reserve-data { user: who, reserve: (contract-of reserve) }))
+  (default-to default-user-reserve-data (map-get? user-reserve-data { user: who, reserve: reserve }))
 )
 
 
@@ -162,7 +272,7 @@
   )
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data who asset))
+    (user-data (get-user-reserve-data who (contract-of asset)))
   )
     (get current-variable-borrow-rate reserve-data)
   )
@@ -177,7 +287,7 @@
   (asset <ft>)
   )
   (let (
-    (user-data (get-user-reserve-data who asset))
+    (user-data (get-user-reserve-data who (contract-of asset)))
   )
     (get origination-fee user-data)
   )
@@ -200,37 +310,6 @@
 (define-read-only (get-reserve-state-optional (asset principal))
   (map-get? reserve-state asset)
 )
-
-(define-map
-  reserve-state
-  principal
-  (tuple
-    (last-liquidity-cumulative-index uint)
-    (current-liquidity-rate uint)
-    (total-borrows-stable uint)
-    (total-borrows-variable uint)
-    (current-variable-borrow-rate uint)
-    (current-stable-borrow-rate uint)
-    (current-average-stable-borrow-rate uint)
-    (last-variable-borrow-cumulative-index uint)
-    (base-ltv-as-collateral uint)
-    (liquidation-threshold uint)
-    (liquidation-bonus uint)
-    (decimals uint)
-    (a-token-address principal)
-    (interest-rate-strategy-address principal)
-    (last-updated-block uint)
-    (borrowing-enabled bool)
-    (usage-as-collateral-enabled bool)
-    (is-stable-borrow-rate-enabled bool)
-    (is-active bool)
-    (is-freezed bool)
-  )
-)
-
-(define-map user-isolated principal (optional principal))
-(define-map user-index principal uint)
-(define-data-var assets (list 100 principal) (list))
 
 (define-read-only (get-user-isolated (who principal))
   (default-to none (map-get? user-isolated who))
@@ -367,7 +446,7 @@
   )
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data who asset))
+    (user-data (get-user-reserve-data who (contract-of asset)))
     (principal-borrow-balance
       (-
         (+
@@ -420,7 +499,7 @@
   )
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data who asset))
+    (user-data (get-user-reserve-data who (contract-of asset)))
   )
     (try! (update-cumulative-indexes (contract-of asset)))
     (map-set
@@ -504,7 +583,7 @@
   )
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data who asset))
+    (user-data (get-user-reserve-data who (contract-of asset)))
     (new-user-data {
       stable-borrow-rate: u0,
       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
@@ -572,12 +651,12 @@
   )
 )
 
-(define-public (get-user-borrow-balance
+(define-read-only (get-user-borrow-balance
   (who principal)
   (asset <ft>)
 )
   (let (
-    (user-data (get-user-reserve-data who asset))
+    (user-data (get-user-reserve-data who (contract-of asset)))
     (reserve-data (get-reserve-state (contract-of asset)))
   )
     (asserts! true (err u0))
@@ -692,7 +771,7 @@
 
 (define-public (set-user-reserve-as-collateral (user principal) (asset <ft>) (use-as-collateral bool))
   (let (
-    (user-data (get-user-reserve-data user asset))
+    (user-data (get-user-reserve-data user (contract-of asset)))
     (data u0)
   )
     (asserts! true (err u0))
@@ -878,7 +957,7 @@
   )
 )
 
-(define-public (get-cumulated-balance
+(define-read-only (get-cumulated-balance
   (who principal)
   (balance uint)
   (asset principal)
@@ -928,7 +1007,7 @@
   (user principal)
   )
   (let (
-    (user-data (get-user-reserve-data user asset))
+    (user-data (get-user-reserve-data user (contract-of asset)))
     (reserve-data (get-reserve-state (contract-of asset)))
     (underlying-balance (try! (get-user-underlying-asset-balance lp-token asset user)))
     (compounded-borrow-balance (get-compounded-borrow-balance
@@ -965,7 +1044,7 @@
   (user principal)
   )
   (let (
-    (user-data (get-user-reserve-data user asset))
+    (user-data (get-user-reserve-data user (contract-of asset)))
     (reserve-data (get-reserve-state (contract-of asset)))
     (underlying-balance (try! (get-balance lp-token (contract-of asset) user)))
   )
@@ -978,7 +1057,7 @@
 )
 
 (define-read-only (is-user-collateral-enabled-as-collateral (who principal) (asset <ft>))
-  (get use-as-collateral (get-user-reserve-data who asset))
+  (get use-as-collateral (get-user-reserve-data who (contract-of asset)))
 )
 
 (define-read-only (calculate-compounded-interest
