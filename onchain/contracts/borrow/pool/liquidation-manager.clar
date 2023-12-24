@@ -254,12 +254,6 @@
       ) (err u3)
     )
 
-    ;; if liquidator wants underlying asset, check there is enough collateral
-    (if (not to-receive-underlying)
-      true
-      false
-    )
-
     (let (
       (borrowed-ret (try! (get-user-borrow-balance user purchasing-asset)))
       (compounded-borrow-balance (get compounded-balance borrowed-ret))
@@ -291,6 +285,7 @@
             )
           )
         )
+        (max-collateral-to-liquidate (get collateral-amount collateral-ret))
         (origination-fee (get-user-origination-fee user purchasing-asset))
         (collateral-fees
           (if (> origination-fee u0)
@@ -301,7 +296,7 @@
                 purchasing-asset
                 oracle
                 amount-to-liquidate
-                (- user-collateral-balance origination-fee)
+                (- user-collateral-balance max-collateral-to-liquidate)
               )
             )
             collateral-ret
@@ -315,9 +310,20 @@
         )
 
       )
-        u0
+        ;; if liquidator wants underlying asset, check there is enough collateral
+        (if (not to-receive-underlying)
+          (let (
+            (current-available-collateral (try! (get-reserve-available-liquidity collateral-to-liquidate)))
+          )
+            ;; not enough liquidity
+            (asserts! (< current-available-collateral max-collateral-to-liquidate) (err u5))
+            true
+          )
+          false
+        )
+        ;; TODO: ADD UPDATE STATE ON LIQUIDATION
+        ;; (try! (update-state-on-liquidation))
       )
-
       u0
     )
 
@@ -325,6 +331,8 @@
   )
 
 )
+
+
 
 (define-public (calculate-available-collateral-to-liquidate
   (collateral <ft>)
@@ -391,6 +399,10 @@
   (user principal)
   )
   (contract-call? .pool-0-reserve get-user-underlying-asset-balance lp-token asset user)
+)
+
+(define-public (get-reserve-available-liquidity (asset <ft>))
+  (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)
 )
 
 (define-read-only (is-reserve-collateral-enabled-as-collateral (user principal))
