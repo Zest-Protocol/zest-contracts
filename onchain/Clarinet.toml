@@ -83,18 +83,39 @@ path = "contracts/v2_sbtc/loan/loan-v1-0.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.lp-token-0]
-path = "contracts/borrow/token/lp-token-0.clar"
+[contracts.lp-diko]
+path = "contracts/borrow/token/lp-diko.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.lp-token-1]
-path = "contracts/borrow/token/lp-token-1.clar"
+[contracts.lp-sBTC]
+path = "contracts/borrow/token/lp-sBTC.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-stSTX]
+path = "contracts/borrow/token/lp-stSTX.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-USDA]
+path = "contracts/borrow/token/lp-USDA.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-xUSD]
+path = "contracts/borrow/token/lp-xUSD.clar"
 clarity_version = 2
 epoch = 2.1
 
 [contracts.pool-0-reserve]
 path = "contracts/borrow/vaults/pool-0-reserve.clar"
+clarity_version = 2
+epoch = 2.1
+
+
+[contracts.diko]
+path = "contracts/v2_sbtc/token/diko.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -228,6 +249,11 @@ path = "contracts/v2_sbtc/trait/swap-router-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.USDA]
+path = 'contracts/v2_sbtc/token/USDA.clar'
+clarity_version = 2
+epoch = 2.1
+
 [contracts.vault-trait]
 path = "contracts/v2_sbtc/trait/vault-trait.clar"
 clarity_version = 2
@@ -240,6 +266,11 @@ epoch = 2.1
 
 [contracts.withdrawal-manager]
 path = 'contracts/v2_sbtc/pool/withdrawal-manager.clar'
+clarity_version = 2
+epoch = 2.1
+
+[contracts.xUSD]
+path = 'contracts/v2_sbtc/token/xUSD.clar'
 clarity_version = 2
 epoch = 2.1
 

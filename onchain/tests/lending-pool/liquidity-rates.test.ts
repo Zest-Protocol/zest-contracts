@@ -33,6 +33,7 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, lpToken0),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(6),
+        Cl.uint(80000000),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress

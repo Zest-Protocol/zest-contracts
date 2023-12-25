@@ -1,16 +1,16 @@
 (use-trait ft .ft-mint-trait.ft-mint-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
-(define-fungible-token lp-token-0)
+(define-fungible-token lp-usda)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP Token 1")
-(define-data-var token-symbol (string-ascii 32) "LP1")
+(define-data-var token-name (string-ascii 32) "LP USDA")
+(define-data-var token-symbol (string-ascii 32) "LP-USDA")
 
 (define-constant pool-id u0)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-token-0)))
+  (ok (ft-get-supply lp-usda)))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))
@@ -25,7 +25,7 @@
   (ok (some (var-get token-uri))))
 
 (define-read-only (get-balance (account principal))
-  (ok (ft-get-balance lp-token-0 account))
+  (ok (ft-get-balance lp-usda account))
 )
 
 (define-public (set-token-uri (value (string-utf8 256)))
@@ -46,7 +46,7 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
     (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (match (ft-transfer? lp-token-0 amount sender recipient)
+    (match (ft-transfer? lp-usda amount sender recipient)
       response (begin
         (print memo)
         (ok response)
@@ -59,14 +59,14 @@
 (define-public (mint (amount uint) (recipient principal))
   (begin
     (asserts! true ERR_UNAUTHORIZED)
-    (ft-mint? lp-token-0 amount recipient)
+    (ft-mint? lp-usda amount recipient)
   )
 )
 
 (define-public (burn (amount uint) (owner principal))
   (begin
     (asserts! true ERR_UNAUTHORIZED)
-    (ft-burn? lp-token-0 amount owner)
+    (ft-burn? lp-usda amount owner)
   )
 )
 
@@ -79,7 +79,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-token-0", payload: owner })
+    (print { type: "set-contract-owner-lp-usda", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))

@@ -11,57 +11,17 @@
   (assets (list 100 { asset: <ft>, lp-token: <ft> }))
 )
   (let (
-    (reserves (contract-call? .pool-0-reserve get-assets))
-    (aggregate (try!
-        (fold
-          aggregate-user-data
-          assets
-          (ok
-            {
-              total-liquidity-balanceSTX: u0,
-              total-collateral-balanceSTX: u0,
-              total-borrow-balanceSTX: u0,
-              total-feesSTX: u0,
-              current-ltv: u0,
-              current-liquidation-threshold: u0,
-              user: user
-            }
-          )
-        )
-      )
-    )
-    (total-collateral-balanceSTX (get total-collateral-balanceSTX aggregate))
-    (current-ltv
-      (if (> total-collateral-balanceSTX u0)
-        (div (get current-ltv aggregate) total-collateral-balanceSTX)
-        u0
-      )
-    )
-    (current-liquidation-threshold
-      (if (> total-collateral-balanceSTX u0)
-        (div (get current-liquidation-threshold aggregate) total-collateral-balanceSTX)
-        u0
-      )
-    )
-    (health-factor
-      (calculate-health-factor-from-balances
-        (get total-collateral-balanceSTX aggregate)
-        (get total-borrow-balanceSTX aggregate)
-        (get total-feesSTX aggregate)
-        (get current-liquidation-threshold aggregate)
-      )
-    )
-    (is-health-factor-below-treshold (< health-factor (var-get health-factor-liquidation-treshold)))
+    (global-user-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
+    (is-health-factor-below-treshold (< (get health-factor global-user-data) (var-get health-factor-liquidation-treshold)))
   )
-    
     (ok {
-      total-liquidity-balanceSTX: (get total-liquidity-balanceSTX aggregate),
-      total-collateral-balanceSTX: total-collateral-balanceSTX,
-      total-borrow-balanceSTX: (get total-borrow-balanceSTX aggregate),
-      total-feesSTX: (get total-feesSTX aggregate),
-      current-ltv: current-ltv,
-      current-liquidation-threshold: current-liquidation-threshold,
-      health-factor: health-factor,
+      total-liquidity-balanceSTX: (get total-liquidity-balanceSTX global-user-data),
+      total-collateral-balanceSTX: (get total-collateral-balanceSTX global-user-data),
+      total-borrow-balanceSTX: (get total-borrow-balanceSTX global-user-data),
+      total-feesSTX: (get total-feesSTX global-user-data),
+      current-ltv: (get current-ltv global-user-data),
+      current-liquidation-threshold: (get current-liquidation-threshold global-user-data),
+      health-factor: (get health-factor global-user-data),
       is-health-factor-below-treshold: is-health-factor-below-treshold
     })
   )
@@ -112,14 +72,6 @@
   )
 )
 
-(define-read-only (mul (x uint) (y uint))
-  (contract-call? .math mul x y)
-)
-
-(define-read-only (div (x uint) (y uint))
-  (contract-call? .math div x y)
-)
-
 (define-public (get-user-basic-reserve-data
   (lp-token <ft>)
   (asset <ft>)
@@ -135,7 +87,7 @@
   )
   (let (
     (user (get user aggregate))
-    (user-reserve-data (try! (contract-call? .pool-0-reserve get-user-basic-reserve-data lp-token asset user)))
+    (user-reserve-data (try! (contract-call? .pool-0-reserve get-user-balance-reserve-data lp-token asset user)))
   )
     (if (is-eq (+ (get compounded-borrow-balance user-reserve-data) (get compounded-borrow-balance user-reserve-data)) u0)
       ;; do nothing this loop
@@ -224,6 +176,14 @@
       )
     )
   )
+)
+
+(define-read-only (mul (x uint) (y uint))
+  (contract-call? .math mul x y)
+)
+
+(define-read-only (div (x uint) (y uint))
+  (contract-call? .math div x y)
 )
 
 
@@ -331,8 +291,6 @@
   )
 
 )
-
-
 
 (define-public (calculate-available-collateral-to-liquidate
   (collateral <ft>)

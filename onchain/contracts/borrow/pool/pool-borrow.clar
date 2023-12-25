@@ -58,16 +58,22 @@
   (owner principal)
 )
   (let (
-    (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
-    (ret (try! (contract-call? .pool-0-reserve update-state-on-borrow asset owner amount-to-be-borrowed u0)))
+    (available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
   )
-    ;; TODO: asset borrowing enabled
-    ;; TODO: check amount is smaller than available liquidity
-    ;; TODO: add oracle checks
-    ;; (print { siph: (contract-call? .pool-0-reserve get-user-reserve-data owner asset) })
-    ;; (print { siph: owner, asset: asset })
-    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-be-borrowed))
-    (ok u0)
+
+    (asserts! (contract-call? .pool-0-reserve is-borrowing-enabled (contract-of asset)) (err u1))
+    (asserts! (> available-liquidity amount-to-be-borrowed) (err u2))
+    (let (
+      (ret (try! (contract-call? .pool-0-reserve update-state-on-borrow asset owner amount-to-be-borrowed u0)))
+      )
+      ;; TODO: asset borrowing enabled
+      ;; TODO: check amount is smaller than available liquidity
+      ;; TODO: add oracle checks
+      ;; (print { siph: (contract-call? .pool-0-reserve get-user-reserve-data owner asset) })
+      ;; (print { siph: owner, asset: asset })
+      (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-be-borrowed))
+      (ok u0)
+    )
   )
 )
 
@@ -159,16 +165,17 @@
   (to-receive-underlying bool)
   )
   (begin
-    (contract-call? .liquidation-manager liquidation-call
-      assets
-      lp-token
-      collateral
-      asset-borrowed
-      oracle
-      user
-      purchase-amount
-      to-receive-underlying
-    )
+    ;; (contract-call? .liquidation-manager liquidation-call
+    ;;   assets
+    ;;   lp-token
+    ;;   collateral
+    ;;   asset-borrowed
+    ;;   oracle
+    ;;   user
+    ;;   purchase-amount
+    ;;   to-receive-underlying
+    ;; )
+    (ok u0)
   )
 )
 

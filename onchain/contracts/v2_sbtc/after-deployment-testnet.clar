@@ -15,21 +15,31 @@
 ;; testnet
 ;; (try! (contract-call? .executor-dao construct .zgp000-bootstrap))
 
-(try! (contract-call? .sBTC mint u1000000000000000 'ST317KEDCKCQ36JY3Z0DGY8TMJH3QSZ1VMJX2R2ZS))
-(try! (contract-call? .stSTX mint u1000000000000000 'ST317KEDCKCQ36JY3Z0DGY8TMJH3QSZ1VMJX2R2ZS))
+(try! (contract-call? .sBTC mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
+(try! (contract-call? .stSTX mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
+(try! (contract-call? .diko mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
+(try! (contract-call? .USDA mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
+(try! (contract-call? .xUSD mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
 
-(try! (contract-call? .sBTC mint u1000000000000000 'ST7AEGG17NW8W44R4T5REP3VK2HP50GGYHM1BFH7))
-(try! (contract-call? .stSTX mint u1000000000000000 'ST7AEGG17NW8W44R4T5REP3VK2HP50GGYHM1BFH7))
+(try! (contract-call? .sBTC mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
+(try! (contract-call? .stSTX mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
+(try! (contract-call? .diko mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
+(try! (contract-call? .USDA mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
+(try! (contract-call? .xUSD mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
 
-(try! (contract-call? .sBTC mint u1000000000000000 'ST2TPWFTCHR74JZJ715T6NR1DVDB25T1DNP77VBDX))
-(try! (contract-call? .stSTX mint u1000000000000000 'ST2TPWFTCHR74JZJ715T6NR1DVDB25T1DNP77VBDX))
+(try! (contract-call? .sBTC mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
+(try! (contract-call? .stSTX mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
+(try! (contract-call? .diko mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
+(try! (contract-call? .USDA mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
+(try! (contract-call? .xUSD mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
 
 (try!
   (contract-call? .pool-0-reserve
     init
-    .lp-token-0
+    .lp-stSTX
     .stSTX
     u6
+    u80000000
     .interest-rate-strategy-default
   )
 )
@@ -38,9 +48,43 @@
 (try!
   (contract-call? .pool-0-reserve
     init
-    .lp-token-0
+    .lp-sBTC
     .sBTC
     u6
+    u90000000
+    .interest-rate-strategy-default
+  )
+)
+
+(try!
+  (contract-call? .pool-0-reserve
+    init
+    .lp-diko
+    .diko
+    u6
+    u60000000
+    .interest-rate-strategy-default
+  )
+)
+
+(try!
+  (contract-call? .pool-0-reserve
+    init
+    .lp-USDA
+    .USDA
+    u6
+    u90000000
+    .interest-rate-strategy-default
+  )
+)
+
+(try!
+  (contract-call? .pool-0-reserve
+    init
+    .lp-xUSD
+    .xUSD
+    u6
+    u100000000
     .interest-rate-strategy-default
   )
 )

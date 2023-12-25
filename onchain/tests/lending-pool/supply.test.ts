@@ -15,13 +15,21 @@ const Delegate_1 = accounts.get("wallet_3")!;
 
 const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
-const lpToken0 = "lp-token-0";
-const lpToken1 = "lp-token-1";
+
+const lpdiko = "lp-diko";
+const lpsBTC = "lp-sBTC";
+const lpstSTX = "lp-stSTX";
+const lpUSDA = "lp-USDA";
+const lpxUSD = "lp-xUSD";
+
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
 const interestRateStrategyDefault = "interest-rate-strategy-default";
-const stSTX = "stSTX";
+const diko = "diko";
 const sBTC = "sBTC";
+const stSTX = "stSTX";
+const USDA = "USDA";
+const xUSD = "xUSD";
 
 describe("example tests", () => {
   it("Supply and immediately redeem without returns", () => {
@@ -29,9 +37,10 @@ describe("example tests", () => {
       "pool-0-reserve",
       "init",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpdiko),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(6),
+        Cl.uint(80000000),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
@@ -41,7 +50,7 @@ describe("example tests", () => {
       "pool-borrow",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpdiko),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -54,7 +63,7 @@ describe("example tests", () => {
       "pool-borrow",
       "redeem-underlying",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpdiko),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -74,9 +83,10 @@ describe("example tests", () => {
       "pool-0-reserve",
       "init",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(6),
+        Cl.uint(80000000),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
@@ -86,9 +96,49 @@ describe("example tests", () => {
       "pool-0-reserve",
       "init",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken1),
+        Cl.contractPrincipal(deployerAddress, lpsBTC),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(6),
+        Cl.uint(80000000),
+        Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
+      ],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "init",
+      [
+        Cl.contractPrincipal(deployerAddress, lpdiko),
+        Cl.contractPrincipal(deployerAddress, diko),
+        Cl.uint(6),
+        Cl.uint(80000000),
+        Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
+      ],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "init",
+      [
+        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.uint(6),
+        Cl.uint(80000000),
+        Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
+      ],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "init",
+      [
+        Cl.contractPrincipal(deployerAddress, lpxUSD),
+        Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.uint(6),
+        Cl.uint(80000000),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
@@ -98,7 +148,7 @@ describe("example tests", () => {
       "pool-borrow",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -107,18 +157,22 @@ describe("example tests", () => {
       LP_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "supply",
-      [
-        Cl.contractPrincipal(deployerAddress, lpToken1),
-        Cl.contractPrincipal(deployerAddress, pool0Reserve),
-        Cl.contractPrincipal(deployerAddress, sBTC),
-        Cl.uint(1_000_000_000),
-        Cl.standardPrincipal(LP_1),
-      ],
-      LP_1
-    );
+    // console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(LP_1);
+    // console.log(simnet.getAssetsMap().get(".lp-stSTX.lp-stSTX"));
+
+    // callResponse = simnet.callPublicFn(
+    //   "pool-borrow",
+    //   "supply",
+    //   [
+    //     Cl.contractPrincipal(deployerAddress, lpsBTC),
+    //     Cl.contractPrincipal(deployerAddress, pool0Reserve),
+    //     Cl.contractPrincipal(deployerAddress, sBTC),
+    //     Cl.uint(1_000_000_000),
+    //     Cl.standardPrincipal(LP_1),
+    //   ],
+    //   LP_1
+    // );
     // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
     // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
 
@@ -126,7 +180,7 @@ describe("example tests", () => {
       "pool-borrow",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken1),
+        Cl.contractPrincipal(deployerAddress, lpsBTC),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(10_000_000_000),
@@ -186,7 +240,7 @@ describe("example tests", () => {
       "pool-borrow",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -199,7 +253,7 @@ describe("example tests", () => {
       "pool-borrow",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -207,6 +261,81 @@ describe("example tests", () => {
       ],
       LP_3
     );
+
+    let cumulated_balance = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-read`,
+      "get-max-borroweable",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, "lp-stSTX"),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      Borrower_1
+    );
+
+    console.log(Cl.prettyPrint(cumulated_balance.result));
+
+    // cumulated_balance = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.${lpsBTC}`,
+    //   "get-balance",
+    //   [Cl.standardPrincipal(Borrower_1)],
+    //   Borrower_1
+    // );
+
+    // console.log(Cl.prettyPrint(cumulated_balance.result));
+
+    // cumulated_balance = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-0-reserve`,
+    //   "get-cumulated-balance-read",
+    //   [
+    //     Cl.standardPrincipal(Borrower_1),
+    //     Cl.contractPrincipal(deployerAddress, "lp-stSTX"),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //     Cl.uint(10000000000),
+    //   ],
+    //   Borrower_1
+    // );
+
+    // console.log(Cl.prettyPrint(cumulated_balance.result));
+
+    // cumulated_balance = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-read`,
+    //   "token-to-usd",
+    //   [
+    //     Cl.standardPrincipal(Borrower_1),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //     // Cl.contractPrincipal(deployerAddress, "lp-stSTX"),
+    //     Cl.contractPrincipal(deployerAddress, "oracle"),
+    //     Cl.uint(2000001940),
+    //   ],
+    //   LP_1
+    // );
+
+    // console.log(Cl.prettyPrint(cumulated_balance.result));
+
+    // cumulated_balance = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-read`,
+    //   "get-reserve-state",
+    //   [
+    //     // Cl.standardPrincipal(LP_1),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //     // Cl.contractPrincipal(deployerAddress, "lp-stSTX"),
+    //     // Cl.contractPrincipal(deployerAddress, "oracle"),
+    //     // Cl.uint(2000001940),
+    //   ],
+    //   LP_1
+    // );
+
+    // console.log(Cl.prettyPrint(cumulated_balance.result));
+
+    // cumulated_balance = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.math`,
+    //   "mul",
+    //   [Cl.uint(3200003104), Cl.uint(80000000)],
+    //   Borrower_1
+    // );
+
+    // console.log(Cl.prettyPrint(cumulated_balance.result));
 
     // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
     // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
@@ -290,7 +419,7 @@ describe("example tests", () => {
       "pool-borrow",
       "redeem-underlying",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -313,7 +442,7 @@ describe("example tests", () => {
       "pool-borrow",
       "redeem-underlying",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -329,7 +458,7 @@ describe("example tests", () => {
       "pool-borrow",
       "redeem-underlying",
       [
-        Cl.contractPrincipal(deployerAddress, lpToken0),
+        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
