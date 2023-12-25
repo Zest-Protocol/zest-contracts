@@ -80,15 +80,6 @@ describe("example tests", () => {
       LP_1
     );
 
-    console.log(Cl.prettyPrint(reserve_state.result));
-
-    // reserve_state = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-0-reserve`,
-    //   "get-reserve-state",
-    //   [Cl.contractPrincipal(deployerAddress, sBTC)],
-    //   Borrower_1
-    // );
-
     // console.log(Cl.prettyPrint(reserve_state.result));
 
     callResponse = simnet.callPublicFn(
@@ -104,33 +95,5 @@ describe("example tests", () => {
       ],
       Borrower_1
     );
-
-    reserve_state = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-read`,
-      "get-current-liquidity-rate",
-      [Cl.contractPrincipal(deployerAddress, stSTX)],
-      LP_1
-    );
-    console.log(Cl.prettyPrint(reserve_state.result));
-
-    reserve_state = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "get-reserve-state",
-      [Cl.contractPrincipal(deployerAddress, stSTX)],
-      LP_1
-    );
-
-    console.log(Cl.prettyPrint(reserve_state.result));
-
-    // let is_isolation_mode = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-0-reserve`,
-    //   "is-in-isolation-mode",
-    //   [Cl.standardPrincipal(LP_1)],
-    //   LP_1
-    // );
-
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(Cl.prettyPrint(is_isolation_mode.result));
-    // console.log(Cl.prettyPrint(reserve_state.result));
   });
 });

@@ -1,14 +1,15 @@
 
 ;; (try! (contract-call? .loan-v1-0 add-borrower 'ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP))
 
+;; (try! (contract-call? .Wrapped-Bitcoin initialize "xBTC" "xBTC" u8 (as-contract tx-sender)))
+;; (try! (contract-call? .Wrapped-Bitcoin add-principal-to-role u1 (as-contract tx-sender)))
+;; (try! (contract-call? .Wrapped-Bitcoin set-token-uri u"https://wrapped.com/xbtc.json"))
+
 ;; (try! (contract-call? .executor-dao construct .zgp000-bootstrap))
 ;; (try! (contract-call? .globals add-admin tx-sender))
 ;; (try! (contract-call? .globals add-governor tx-sender))
-;; (try! (contract-call? .Wrapped-Bitcoin initialize "xBTC" "xBTC" u8 (as-contract tx-sender)))
 ;; (try! (contract-call? .Wrapped-USD initialize "xUSD" "xUSD" u8 (as-contract tx-sender)))
-;; (try! (contract-call? .Wrapped-Bitcoin add-principal-to-role u1 (as-contract tx-sender)))
 ;; (try! (contract-call? .Wrapped-USD add-principal-to-role u1 (as-contract tx-sender)))
-;; (try! (contract-call? .Wrapped-Bitcoin set-token-uri u"https://wrapped.com/xbtc.json"))
 ;; (try! (contract-call? .Wrapped-USD set-token-uri u"https://wrapped.com/xusd.json"))
 
 ;; testnet

@@ -69,6 +69,14 @@
   )
 )
 
+(define-public (set-use-as-collateral (who principal) (asset <ft>) (use-as-collateral bool))
+  (let (
+    (user-data (get-user-reserve-data who (contract-of asset)))
+  )
+    (ok (map-set user-reserve-data { user: who, reserve: (contract-of asset) } (merge user-data { use-as-collateral: use-as-collateral })))
+  )
+)
+
 (define-constant default-user-reserve-data
   {
     principal-borrow-balance: u0,
@@ -113,6 +121,7 @@
     (is-freezed bool)
   )
 )
+
 
 (define-map user-isolated principal (optional principal))
 
@@ -162,6 +171,10 @@
     (enabled-isolated-n (get enabled-count (fold count-collateral-enabled (get isolated split-assets) { who: who, enabled-count: u0 })))
     (enabled-non-isolated-n  (get enabled-count (fold count-collateral-enabled (get non-isolated split-assets) { who: who, enabled-count: u0 })))
   )
+    (print { split-assets: split-assets })
+    (print { enabled-isolated-n: enabled-isolated-n })
+    (print { enabled-non-isolated-n: enabled-non-isolated-n })
+
     (if (> enabled-non-isolated-n u0)
       (ok false)
       (if (> enabled-isolated-n u1)
@@ -185,7 +198,7 @@
     }
     {
       isolated: (get isolated ret),
-      non-isolated: (unwrap-panic (as-max-len? (append (get isolated ret) asset) u100))
+      non-isolated: (unwrap-panic (as-max-len? (append (get non-isolated ret) asset) u100))
     }
   )
 )
@@ -220,17 +233,17 @@
   (let (
     (assets-data (get-user-assets who))
   )
-    ;; (map-set
-    ;;   user-assets
-    ;;   who
-    ;;   {
-    ;;     assets-supplied: (unwrap-panic (as-max-len? (append (get assets-supplied assets-data) asset) u100)),
-    ;;     assets-borrowed: (get assets-borrowed assets-data)
-    ;;   }
-    ;; )
-    u0
+    (map-set
+      user-assets
+      who
+      {
+        assets-supplied: (get agg (fold filter-asset (get assets-supplied assets-data) { filter-by: asset, agg: (list) })),
+        assets-borrowed: (get assets-borrowed assets-data)
+      }
+    )
   )
 )
+
 
 (define-private (add-borrowed-asset (who principal) (asset principal))
   (let (
@@ -244,6 +257,30 @@
         assets-borrowed: (unwrap-panic (as-max-len? (append (get assets-borrowed assets-data) asset) u100)),
       }
     )
+  )
+)
+
+(define-private (remove-borrowed-asset (who principal) (asset principal))
+  (let (
+    (assets-data (get-user-assets who))
+  )
+    (map-set
+      user-assets
+      who
+      {
+        assets-supplied: (get assets-supplied assets-data),
+        assets-borrowed: (get agg (fold filter-asset (get assets-borrowed assets-data) { filter-by: asset, agg: (list) }))
+      }
+    )
+  )
+)
+
+(define-read-only (filter-asset (asset principal) (ret { filter-by: principal, agg: (list 100 principal) }))
+  (if (is-eq asset (get filter-by ret))
+    ;; ignore, do not add
+    ret
+    ;; add back to list
+    { filter-by: (get filter-by ret), agg: (unwrap-panic (as-max-len? (append (get agg ret) asset) u100)) }
   )
 )
 
@@ -409,13 +446,6 @@
   )
 )
 
-
-(define-read-only (value-to-collateral
-  (value uint)
-  )
-  (/ value u2)
-)
-
 (define-public (update-state-on-repay
   (asset <ft>)
   (who principal)
@@ -432,86 +462,6 @@
 
     (try! (update-reserve-interest-rates-and-timestamp asset payback-amount-minus-fees u0))
 
-    (ok u0)
-  )
-)
-
-(define-public (update-user-state-on-repay
-  (asset <ft>)
-  (who principal)
-  (payback-amount-minus-fees uint)
-  (origination-fee-repaid uint)
-  (balance-increase uint)
-  (repaid-whole-loan bool)
-  )
-  (let (
-    (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data who (contract-of asset)))
-    (principal-borrow-balance
-      (-
-        (+
-          (get principal-borrow-balance user-data)
-          balance-increase
-        )
-        payback-amount-minus-fees
-      )
-    )
-    (last-variable-borrow-cumulative-index
-      (if repaid-whole-loan
-        u0
-        (get last-variable-borrow-cumulative-index reserve-data)
-      )
-    )
-    (stable-borrow-rate
-      (if repaid-whole-loan
-        u0
-        (get stable-borrow-rate user-data)
-      )
-    )
-    (origination-fee (- (get origination-fee user-data) origination-fee-repaid))
-    (last-updated-block block-height)
-  )
-  (asserts! true (err u0))
-  ;; (print { last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index })
-  (map-set
-    user-reserve-data
-    { user: who, reserve: (contract-of asset) }
-    (merge
-      user-data
-      {
-        principal-borrow-balance: principal-borrow-balance,
-        last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
-        stable-borrow-rate: stable-borrow-rate,
-        origination-fee: origination-fee,
-        last-updated-block: last-updated-block
-      }
-    )
-  )
-  (ok u0)
-  )
-)
-
-(define-public (update-reserve-state-on-repay
-  (who principal)
-  (payback-amount-minus-fees uint)
-  (balance-increase uint)
-  (asset <ft>)
-  )
-  (let (
-    (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data who (contract-of asset)))
-  )
-    (try! (update-cumulative-indexes (contract-of asset)))
-    (map-set
-      reserve-state
-      (contract-of asset)
-      (merge
-        reserve-data
-        {
-          total-borrows-variable: (- (+ (get total-borrows-variable reserve-data) balance-increase) payback-amount-minus-fees)
-        }
-      )
-    )
     (ok u0)
   )
 )
@@ -571,6 +521,97 @@
       user-current-borrow-rate: (get-user-current-borrow-rate who asset),
       balance-increase: (get balance-increase ret)
     })
+  )
+)
+
+(define-read-only (value-to-collateral
+  (value uint)
+  )
+  (/ value u2)
+)
+
+
+(define-public (update-user-state-on-repay
+  (asset <ft>)
+  (who principal)
+  (payback-amount-minus-fees uint)
+  (origination-fee-repaid uint)
+  (balance-increase uint)
+  (repaid-whole-loan bool)
+  )
+  (let (
+    (reserve-data (get-reserve-state (contract-of asset)))
+    (user-data (get-user-reserve-data who (contract-of asset)))
+    (principal-borrow-balance
+      (-
+        (+
+          (get principal-borrow-balance user-data)
+          balance-increase
+        )
+        payback-amount-minus-fees
+      )
+    )
+    (last-variable-borrow-cumulative-index
+      (if repaid-whole-loan
+        u0
+        (get last-variable-borrow-cumulative-index reserve-data)
+      )
+    )
+    (stable-borrow-rate
+      (if repaid-whole-loan
+        u0
+        (get stable-borrow-rate user-data)
+      )
+    )
+    (origination-fee (- (get origination-fee user-data) origination-fee-repaid))
+    (last-updated-block block-height)
+  )
+  (asserts! true (err u0))
+  ;; (print { last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index })
+  (map-set
+    user-reserve-data
+    { user: who, reserve: (contract-of asset) }
+    (merge
+      user-data
+      {
+        principal-borrow-balance: principal-borrow-balance,
+        last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
+        stable-borrow-rate: stable-borrow-rate,
+        origination-fee: origination-fee,
+        last-updated-block: last-updated-block
+      }
+    )
+  )
+  (if repaid-whole-loan
+    (add-borrowed-asset who (contract-of asset))
+    false
+  )
+  (ok u0)
+  )
+)
+
+(define-public (update-reserve-state-on-repay
+  (who principal)
+  (payback-amount-minus-fees uint)
+  (balance-increase uint)
+  (asset <ft>)
+  )
+  (let (
+    (reserve-data (get-reserve-state (contract-of asset)))
+    (user-data (get-user-reserve-data who (contract-of asset)))
+  )
+    (try! (update-cumulative-indexes (contract-of asset)))
+    (map-set
+      reserve-state
+      (contract-of asset)
+      (merge
+        reserve-data
+        {
+          total-borrows-variable: (- (+ (get total-borrows-variable reserve-data) balance-increase) payback-amount-minus-fees)
+        }
+      )
+    )
+    (ok u0)
   )
 )
 

@@ -99,12 +99,11 @@
           )
         )
         (new-variable-borrow-rate
-          (+
+          (get-variable-borrow-rate
             (var-get base-variable-borrow-rate)
-            (mul
-              (var-get variable-rate-slope-1)
-              (div utilization-rate optimal-utilization-rate)
-            )
+            (var-get variable-rate-slope-1)
+            utilization-rate
+            optimal-utilization-rate
           )
         )
       )
@@ -129,8 +128,26 @@
   )
 )
 
+(define-read-only (get-variable-borrow-rate
+  (base-variable-borrow-rate-0 uint)
+  (variable-rate-slope uint)
+  (utilization-rate uint)
+  (optimal-utilization-rate-0 uint)
+  )
+  (+
+    base-variable-borrow-rate-0
+    (mul
+      variable-rate-slope
+      (div
+        utilization-rate
+        optimal-utilization-rate-0
+      )
+    )
+  )
+)
+
 ;; TODO: DOUBLE CHECK
-(define-private (get-overall-borrow-rate-internal
+(define-read-only (get-overall-borrow-rate-internal
     (total-borrows-stable uint)
     (total-borrows-variable uint)
     (current-variable-borrow-rate uint)
@@ -141,20 +158,14 @@
   )
     (if (is-eq total-borrows u0)
       u0
-      (let (
-        (overall-borrow-rate
-          (div
-            (+
-              ;; weighted-variable-rate
-              (mul total-borrows-variable current-variable-borrow-rate)
-              ;; weighted-stable-rate
-              (mul total-borrows-stable current-average-stable-borrow-rate)
-            )
-            total-borrows
-          )
+      (div
+        (+
+          ;; weighted-variable-rate
+          (mul total-borrows-variable current-variable-borrow-rate)
+          ;; weighted-stable-rate
+          (mul total-borrows-stable current-average-stable-borrow-rate)
         )
-      )
-        overall-borrow-rate
+        total-borrows
       )
     )
   )

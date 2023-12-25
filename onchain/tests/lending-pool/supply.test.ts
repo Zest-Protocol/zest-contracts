@@ -106,6 +106,19 @@ describe("example tests", () => {
       ],
       LP_1
     );
+
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpToken1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+      ],
+      LP_1
+    );
     // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
     // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
 
