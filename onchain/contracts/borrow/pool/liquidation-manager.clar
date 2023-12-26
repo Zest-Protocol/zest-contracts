@@ -8,17 +8,17 @@
 
 (define-public (calculate-user-global-data
   (user principal)
-  (assets (list 100 { asset: <ft>, lp-token: <ft> }))
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
 )
   (let (
     (global-user-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
     (is-health-factor-below-treshold (< (get health-factor global-user-data) (var-get health-factor-liquidation-treshold)))
   )
     (ok {
-      total-liquidity-balanceSTX: (get total-liquidity-balanceSTX global-user-data),
-      total-collateral-balanceSTX: (get total-collateral-balanceSTX global-user-data),
-      total-borrow-balanceSTX: (get total-borrow-balanceSTX global-user-data),
-      total-feesSTX: (get total-feesSTX global-user-data),
+      total-liquidity-balanceUSD: (get total-liquidity-balanceUSD global-user-data),
+      total-collateral-balanceUSD: (get total-collateral-balanceUSD global-user-data),
+      total-borrow-balanceUSD: (get total-borrow-balanceUSD global-user-data),
+      total-feesUSD: (get user-total-feesUSD global-user-data),
       current-ltv: (get current-ltv global-user-data),
       current-liquidation-threshold: (get current-liquidation-threshold global-user-data),
       health-factor: (get health-factor global-user-data),
@@ -28,9 +28,9 @@
 )
 
 (define-read-only (calculate-health-factor-from-balances
-  (total-collateral-balanceSTX uint)
-  (total-borrow-balanceSTX uint)
-  (total-feesSTX uint)
+  (total-collateral-balanceUSD uint)
+  (total-borrow-balanceUSD uint)
+  (total-feesUSD uint)
   (current-liquidation-threshold uint)
   )
   u0
@@ -40,16 +40,17 @@
   (reserve
     {
       asset: <ft>,
-      lp-token: <ft>
+      lp-token: <ft>,
+      oracle: principal
     }
   )
   (total
     (response
       (tuple
-        (total-liquidity-balanceSTX uint)
-        (total-collateral-balanceSTX uint)
-        (total-borrow-balanceSTX uint)
-        (total-feesSTX uint)
+        (total-liquidity-balanceUSD uint)
+        (total-collateral-balanceUSD uint)
+        (total-borrow-balanceUSD uint)
+        (total-feesUSD uint)
         (user principal)
         (current-ltv uint)
         (current-liquidation-threshold uint)
@@ -65,6 +66,7 @@
       (get-user-basic-reserve-data
         (get lp-token reserve)
         (get asset reserve)
+        (get oracle reserve)
         result
       )
     )
@@ -75,11 +77,12 @@
 (define-public (get-user-basic-reserve-data
   (lp-token <ft>)
   (asset <ft>)
+  (oracle principal)
   (aggregate {
-    total-liquidity-balanceSTX: uint,
-    total-collateral-balanceSTX: uint,
-    total-borrow-balanceSTX: uint,
-    total-feesSTX: uint,
+    total-liquidity-balanceUSD: uint,
+    total-collateral-balanceUSD: uint,
+    total-borrow-balanceUSD: uint,
+    total-feesUSD: uint,
     current-ltv: uint,
     current-liquidation-threshold: uint,
     user: principal
@@ -87,17 +90,17 @@
   )
   (let (
     (user (get user aggregate))
-    (user-reserve-data (try! (contract-call? .pool-0-reserve get-user-balance-reserve-data lp-token asset user)))
+    (user-reserve-data (try! (contract-call? .pool-0-reserve get-user-balance-reserve-data lp-token asset user oracle)))
   )
     (if (is-eq (+ (get compounded-borrow-balance user-reserve-data) (get compounded-borrow-balance user-reserve-data)) u0)
       ;; do nothing this loop
       (begin
         (ok 
           {
-            total-liquidity-balanceSTX: (get total-liquidity-balanceSTX aggregate),
-            total-collateral-balanceSTX: (get total-collateral-balanceSTX aggregate),
-            total-borrow-balanceSTX: (get total-borrow-balanceSTX aggregate),
-            total-feesSTX: (get total-feesSTX aggregate),
+            total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
+            total-collateral-balanceUSD: (get total-collateral-balanceUSD aggregate),
+            total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),
+            total-feesUSD: (get total-feesUSD aggregate),
             current-ltv: (get current-ltv aggregate),
             current-liquidation-threshold: (get current-liquidation-threshold aggregate),
             user: user
@@ -110,16 +113,16 @@
         ;; TODO: Correct for fixed-point arithemetic
         (reserve-unit-price u100000000)
         ;; liquidity and collateral balance
-        (liquidity-balanceSTX (/ (* reserve-unit-price (get underlying-balance user-reserve-data)) token-unit))
+        (liquidity-balanceUSD (/ (* reserve-unit-price (get underlying-balance user-reserve-data)) token-unit))
         (ret-1
           (let (
-            (total-liquidity-balance (+ (get total-liquidity-balanceSTX aggregate) liquidity-balanceSTX))
+            (total-liquidity-balance (+ (get total-liquidity-balanceUSD aggregate) liquidity-balanceUSD))
           )
             (if (> (get underlying-balance user-reserve-data) u0)
               (if (and (get usage-as-collateral-enabled reserve-data) (get use-as-collateral user-reserve-data))
                 {
-                  total-liquidity-balanceSTX:  total-liquidity-balance,
-                  total-collateral-balanceSTX: (+ (get total-collateral-balanceSTX aggregate) liquidity-balanceSTX),
+                  total-liquidity-balanceUSD:  total-liquidity-balance,
+                  total-collateral-balanceUSD: (+ (get total-collateral-balanceUSD aggregate) liquidity-balanceUSD),
                   current-ltv: (+ (get current-ltv aggregate) ),
                   current-liquidation-threshold:
                     (+
@@ -128,15 +131,15 @@
                     )
                 }
                 {
-                  total-liquidity-balanceSTX: total-liquidity-balance,
-                  total-collateral-balanceSTX: (get total-collateral-balanceSTX aggregate),
+                  total-liquidity-balanceUSD: total-liquidity-balance,
+                  total-collateral-balanceUSD: (get total-collateral-balanceUSD aggregate),
                   current-ltv: (get current-ltv aggregate),
                   current-liquidation-threshold: (get current-liquidation-threshold aggregate)
                 }
               )
               {
-                total-liquidity-balanceSTX: (get total-liquidity-balanceSTX aggregate),
-                total-collateral-balanceSTX: (get total-collateral-balanceSTX aggregate),
+                total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
+                total-collateral-balanceUSD: (get total-collateral-balanceUSD aggregate),
                 current-ltv: (get current-ltv aggregate),
                 current-liquidation-threshold: (get current-liquidation-threshold aggregate)
               }
@@ -146,20 +149,20 @@
         (ret-2
           (if (> (get compounded-borrow-balance user-reserve-data) u0)
             {
-              total-borrow-balanceSTX:
+              total-borrow-balanceUSD:
                 (+ 
-                  (get total-borrow-balanceSTX aggregate)
+                  (get total-borrow-balanceUSD aggregate)
                   (/ (* reserve-unit-price (get compounded-borrow-balance user-reserve-data)) token-unit)
                 ),
-              total-feesSTX:
+              total-feesUSD:
                 (+
-                  (get total-feesSTX aggregate)
+                  (get total-feesUSD aggregate)
                   (/ (* (get origination-fee user-reserve-data) reserve-unit-price) token-unit)
                 )
             }
             {
-              total-borrow-balanceSTX: (get total-borrow-balanceSTX aggregate),
-              total-feesSTX: (get total-feesSTX aggregate)
+              total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),
+              total-feesUSD: (get total-feesUSD aggregate)
             }
           )
         )
@@ -189,7 +192,7 @@
 
 ;; liquidates 1 collateral asset
 (define-public (liquidation-call
-  (assets (list 100 { asset: <ft>, lp-token: <ft> }))
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
   (lp-token <ft>)
   (collateral-to-liquidate <ft>)
   (purchasing-asset <ft>)

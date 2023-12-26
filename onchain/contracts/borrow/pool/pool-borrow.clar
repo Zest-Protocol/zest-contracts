@@ -34,45 +34,73 @@
 )
   (let (
     (ret (try! (contract-call? .pool-0-reserve cumulate-balance owner lp (contract-of asset))))
-    (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
     (amount-to-redeem (if (is-eq amount max-value) (get new-user-balance ret) amount))
+    (redeems-everything (>= amount-to-redeem (get new-user-balance ret)))
+    (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
   )
-    (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount (is-eq amount-to-redeem u0)))
-    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-redeem))
-
-    ;; (print { THIS: amount })
-    ;; (print { THIS: ret })
+    (asserts! (>= current-available-liquidity amount-to-redeem) (err u99990))
 
     (try! (contract-call? lp burn amount-to-redeem owner))
+
+    (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount redeems-everything))
+    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-redeem))
 
     (ok current-available-liquidity)
   )
 )
 
 (define-public (borrow
-  ;; (debt-token <ft-mint-trait>)
   (pool-reserve principal)
-  (asset <ft>)
+  (oracle principal)
+  (asset-to-borrow <ft>)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
   (amount-to-be-borrowed uint)
+  (fee-calculator principal)
   (interest-rate-mode uint)
   (owner principal)
 )
   (let (
-    (available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
+    (available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset-to-borrow)))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state (contract-of asset-to-borrow)))
   )
+    (asserts! (contract-call? .pool-0-reserve is-borrowing-enabled (contract-of asset-to-borrow)) (err u99991))
+    (asserts! (> available-liquidity amount-to-be-borrowed) (err u99991))
 
-    (asserts! (contract-call? .pool-0-reserve is-borrowing-enabled (contract-of asset)) (err u1))
-    (asserts! (> available-liquidity amount-to-be-borrowed) (err u2))
     (let (
-      (ret (try! (contract-call? .pool-0-reserve update-state-on-borrow asset owner amount-to-be-borrowed u0)))
+      (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
+      (amount-of-collateral-neededUSD
+        (+
+          
+          (try! (contract-call? .oracle token-to-usd owner asset-to-borrow oracle amount-to-be-borrowed))
+        )
       )
-      ;; TODO: asset borrowing enabled
-      ;; TODO: check amount is smaller than available liquidity
-      ;; TODO: add oracle checks
-      ;; (print { siph: (contract-call? .pool-0-reserve get-user-reserve-data owner asset) })
-      ;; (print { siph: owner, asset: asset })
-      (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-be-borrowed))
-      (ok u0)
+      (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner amount-to-be-borrowed)))
+      (amount-collateral-needed-in-USD
+        (try! 
+          (contract-call? .pool-0-reserve calculate-collateral-needed-in-USD
+            asset-to-borrow
+            oracle
+            amount-to-be-borrowed
+            borrow-fee
+            (get total-borrow-balanceUSD user-global-data)
+            (get user-total-feesUSD user-global-data)
+            (get current-ltv user-global-data)
+          )
+        )
+      )
+    )
+      ;; amount borrowed is too small
+      (asserts! (> borrow-fee u0) (err u99993))
+      (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) (err u99994))
+      (asserts! (< amount-collateral-needed-in-USD (get total-collateral-balanceUSD user-global-data)) (err u99995))
+
+      (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) (err u99996))
+
+      ;; conditions passed, can borrow
+      (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))
+
+      (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
+      (ok amount-to-be-borrowed)
     )
   )
 )
@@ -95,9 +123,9 @@
       )
     )
   )
-    ;; (print { PAY: amount-due })
+    (asserts! (> (get compounded-balance ret) u0) (err u900000))
     ;; if payback-amount is smaller than fees, just pay fees
-    (if (< payback-amount origination-fee)
+    (if (<= payback-amount origination-fee)
       (begin
         (try!
           (contract-call? .pool-0-reserve update-state-on-repay
@@ -155,7 +183,7 @@
 
 
 (define-public (liquidation-call
-  (assets (list 100 { asset: <ft>, lp-token: <ft> }))
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
   (lp-token <ft>)
   (collateral <ft>)
   (asset-borrowed <ft>)
@@ -165,17 +193,17 @@
   (to-receive-underlying bool)
   )
   (begin
-    ;; (contract-call? .liquidation-manager liquidation-call
-    ;;   assets
-    ;;   lp-token
-    ;;   collateral
-    ;;   asset-borrowed
-    ;;   oracle
-    ;;   user
-    ;;   purchase-amount
-    ;;   to-receive-underlying
-    ;; )
-    (ok u0)
+    (contract-call? .liquidation-manager liquidation-call
+      assets
+      lp-token
+      collateral
+      asset-borrowed
+      oracle
+      user
+      purchase-amount
+      to-receive-underlying
+    )
+    ;; (ok u0)
   )
 )
 

@@ -38,6 +38,11 @@ path = "contracts/v2_sbtc/dao/traits/extension-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.fees-calculator]
+path = "contracts/borrow/pool/fees-calculator.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.funding-vault]
 path = "contracts/v2_sbtc/loan/funding-vault.clar"
 clarity_version = 2

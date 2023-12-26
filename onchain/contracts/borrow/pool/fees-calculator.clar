@@ -6,6 +6,9 @@
   (contract-call? .math mul x y)
 )
 
-(define-public (calculate-orgination-fee (user principal) (amount uint))
-  (mul amount origination-fee-prc)
+(define-public (calculate-origination-fee (user principal) (amount uint))
+  (begin
+    (asserts! true (err u1))
+    (ok (mul amount origination-fee-prc))
+  )
 )

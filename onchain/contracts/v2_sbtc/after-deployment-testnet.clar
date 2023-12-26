@@ -33,6 +33,9 @@
 (try! (contract-call? .USDA mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
 (try! (contract-call? .xUSD mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
 
+
+(define-constant max-value u340282366920938463463374607431768211455)
+
 (try!
   (contract-call? .pool-0-reserve
     init
@@ -40,9 +43,11 @@
     .stSTX
     u6
     u80000000
+    max-value
     .interest-rate-strategy-default
   )
 )
+
 
 
 (try!
@@ -52,6 +57,7 @@
     .sBTC
     u6
     u90000000
+    max-value
     .interest-rate-strategy-default
   )
 )
@@ -63,6 +69,7 @@
     .diko
     u6
     u60000000
+    max-value
     .interest-rate-strategy-default
   )
 )
@@ -74,6 +81,7 @@
     .USDA
     u6
     u90000000
+    max-value
     .interest-rate-strategy-default
   )
 )
@@ -85,6 +93,20 @@
     .xUSD
     u6
     u100000000
+    max-value
     .interest-rate-strategy-default
   )
 )
+
+
+(contract-call? .pool-0-reserve set-usage-as-collateral-enabled .stSTX true)
+(contract-call? .pool-0-reserve set-usage-as-collateral-enabled .sBTC true)
+(contract-call? .pool-0-reserve set-usage-as-collateral-enabled .diko true)
+(contract-call? .pool-0-reserve set-usage-as-collateral-enabled .USDA true)
+(contract-call? .pool-0-reserve set-usage-as-collateral-enabled .xUSD true)
+
+(contract-call? .pool-0-reserve set-borrowing-enabled .xUSD true)
+(contract-call? .pool-0-reserve set-borrowing-enabled .sBTC true)
+(contract-call? .pool-0-reserve set-borrowing-enabled .diko true)
+(contract-call? .pool-0-reserve set-borrowing-enabled .USDA true)
+(contract-call? .pool-0-reserve set-borrowing-enabled .xUSD true)
