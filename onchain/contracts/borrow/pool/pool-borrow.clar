@@ -1,6 +1,6 @@
 (use-trait ft .ft-trait.ft-trait)
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
-;; (use-trait lv .liquidity-vault-trait.liquidity-vault-trait)
+(use-trait a-token .a-token-trait.a-token-trait)
 
 (define-public (supply
   (lp <ft-mint-trait>)
@@ -20,7 +20,6 @@
     (ok true)
   )
 )
-
 
 (define-constant max-value u340282366920938463463374607431768211455)
 
@@ -184,7 +183,7 @@
 
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
-  (lp-token <ft>)
+  (lp-token <a-token>)
   (collateral <ft>)
   (asset-borrowed <ft>)
   (oracle principal)

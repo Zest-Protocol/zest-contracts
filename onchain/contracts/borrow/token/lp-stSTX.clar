@@ -1,4 +1,6 @@
 (use-trait ft .ft-mint-trait.ft-mint-trait)
+
+(impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
 (define-fungible-token lp-stSTX)
@@ -53,6 +55,20 @@
       )
       error (err error)
     )
+  )
+)
+
+(define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
+  (begin
+    (try! (transfer amount from to none))
+    (ok amount)
+  )
+)
+
+(define-public (burn-on-liquidation (amount uint) (owner principal))
+  (begin
+    (try! (burn amount owner))
+    (ok amount)
   )
 )
 

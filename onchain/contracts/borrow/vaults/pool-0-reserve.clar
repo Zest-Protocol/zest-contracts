@@ -525,6 +525,121 @@
   )
 )
 
+(define-public (update-state-on-liquidation
+  (principal-reserve <ft>)
+  (collateral-reserve <ft>)
+  (user principal)
+  (amount-to-liquidate uint)
+  (collateral-to-liquidate uint)
+  (fee-liquidated uint)
+  (liquidated-collateral-for-fee uint)
+  (balance-increase uint)
+  (liquidator-receives-aToken bool)
+  )
+  (begin
+    (try! (update-principal-reserve-state-on-liquidation principal-reserve user amount-to-liquidate balance-increase))
+    (try! (update-cumulative-indexes (contract-of collateral-reserve)))
+
+    (try! (update-user-state-on-liquidation principal-reserve user amount-to-liquidate fee-liquidated balance-increase))
+    (try! (update-reserve-interest-rates-and-timestamp principal-reserve amount-to-liquidate u0))
+
+    (if liquidator-receives-aToken
+      (begin
+        (try! 
+          (update-reserve-interest-rates-and-timestamp
+            collateral-reserve
+            u0
+            (+ collateral-to-liquidate liquidated-collateral-for-fee)
+          )
+        )
+        (ok true)
+      )
+      (ok false)
+    )
+    ;; (ok u0)
+  )
+)
+
+(define-public (update-principal-reserve-state-on-liquidation
+  (principal-reserve <ft>)
+  (user principal)
+  (amount-to-liquidate uint)
+  (balance-increase uint)
+  )
+  (let (
+    (reserve-data (get-reserve-state (contract-of principal-reserve)))
+    (user-data (get-user-reserve-data user (contract-of principal-reserve)))
+  )
+    (try! (update-cumulative-indexes (contract-of principal-reserve)))
+
+    (ok
+      (map-set
+        reserve-state
+        (contract-of principal-reserve)
+        (merge
+          reserve-data
+          {
+            total-borrows-variable:
+            (-
+              (+
+                balance-increase
+                (get total-borrows-variable reserve-data)
+              )
+              amount-to-liquidate
+            )
+          }
+        )
+      )
+    )
+  )
+)
+
+(define-private (update-user-state-on-liquidation
+  (reserve <ft>)
+  (user principal)
+  (amount-to-liquidate uint)
+  (fee-liquidated uint)
+  (balance-increase uint)
+  )
+  (let (
+    (reserve-data (get-reserve-state (contract-of reserve)))
+    (user-data (get-user-reserve-data user (contract-of reserve)))
+    (principal-borrow-balance
+      (-
+        (+
+          (get principal-borrow-balance user-data)
+          balance-increase
+        )
+        amount-to-liquidate
+      )
+    )
+    (last-variable-borrow-cumulative-index (get last-variable-borrow-cumulative-index reserve-data))
+    (origination-fee
+      (if (> fee-liquidated u0)
+        (- (get origination-fee user-data) fee-liquidated)
+        (get origination-fee user-data)
+      )
+    )
+  )
+    (asserts! true (err u1))
+    (ok
+      (map-set
+        user-reserve-data
+        { user: user, reserve: (contract-of reserve) }
+        (merge
+          user-data
+          {
+            principal-borrow-balance: principal-borrow-balance,
+            last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
+            origination-fee: origination-fee,
+            last-updated-block: block-height
+          }
+        )
+      )
+    )
+  )
+)
+
 (define-private (reset-data-on-zero-balance (who principal) (asset principal))
   (map-delete user-reserve-data { user: who, reserve: asset })
 )
@@ -1195,15 +1310,6 @@
       )
     )
   )
-    ;; (print {
-    ;;   principal-borrow-balance: (get principal-borrow-balance user-data),
-    ;;   stable-borrow-rate: (get stable-borrow-rate user-data),
-    ;;   last-updated-block: (get last-updated-block user-data),
-    ;;   last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index user-data),
-    ;;   last-variable-borrow-cumulative-index-reserve: (get last-variable-borrow-cumulative-index reserve-data),
-    ;;   current-variable-borrow-rate: (get current-variable-borrow-rate reserve-data),
-    ;;   block-height: block-height,
-    ;; })
     (if (is-eq (get principal-borrow-balance user-data) u0)
       (ok {
         underlying-balance: underlying-balance,
@@ -1432,6 +1538,7 @@
         (get current-liquidation-threshold aggregate)
       )
     )
+    (is-health-factor-below-treshold (< health-factor (var-get health-factor-liquidation-treshold)))
   )
     ;; (print aggregate)
     (ok {
@@ -1442,6 +1549,7 @@
       current-ltv: current-ltv,
       current-liquidation-threshold: current-liquidation-threshold,
       health-factor: health-factor,
+      is-health-factor-below-treshold: is-health-factor-below-treshold
     })
   )
 )
