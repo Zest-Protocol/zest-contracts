@@ -24,6 +24,7 @@ const lpxUSD = "lp-xUSD";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
+const feesCalculator = "fees-calculator";
 const interestRateStrategyDefault = "interest-rate-strategy-default";
 const diko = "diko";
 const sBTC = "sBTC";
@@ -41,6 +42,7 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(6),
         Cl.uint(80000000),
+        Cl.uint(BigInt("340282366920938463463374607431768211455")),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
@@ -67,7 +69,6 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
-        // Cl.uint(0),
         Cl.standardPrincipal(LP_1),
       ],
       LP_1
@@ -87,10 +88,12 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(6),
         Cl.uint(80000000),
+        Cl.uint(BigInt("340282366920938463463374607431768211455")),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -100,10 +103,12 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(6),
         Cl.uint(80000000),
+        Cl.uint(BigInt("340282366920938463463374607431768211455")),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -113,10 +118,12 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, diko),
         Cl.uint(6),
         Cl.uint(80000000),
+        Cl.uint(BigInt("340282366920938463463374607431768211455")),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -126,10 +133,12 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, USDA),
         Cl.uint(6),
         Cl.uint(80000000),
+        Cl.uint(BigInt("340282366920938463463374607431768211455")),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -139,10 +148,92 @@ describe("example tests", () => {
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(6),
         Cl.uint(80000000),
+        Cl.uint(BigInt("340282366920938463463374607431768211455")),
         Cl.contractPrincipal(deployerAddress, interestRateStrategyDefault),
       ],
       deployerAddress
     );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-borrowing-enabled",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-borrowing-enabled",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-borrowing-enabled",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-borrowing-enabled",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-borrowing-enabled",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-usage-as-collateral-enabled",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-usage-as-collateral-enabled",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-usage-as-collateral-enabled",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-usage-as-collateral-enabled",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-usage-as-collateral-enabled",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.bool(true)],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -156,6 +247,7 @@ describe("example tests", () => {
       ],
       LP_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(LP_1);
@@ -188,6 +280,7 @@ describe("example tests", () => {
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
     // console.log(callResponse.events);
@@ -198,13 +291,43 @@ describe("example tests", () => {
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
         Cl.uint(200_000_000),
+        Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
     // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
@@ -248,6 +371,7 @@ describe("example tests", () => {
       ],
       LP_2
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -262,27 +386,31 @@ describe("example tests", () => {
       LP_3
     );
 
-    let cumulated_balance = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-read`,
-      "get-max-borroweable",
-      [
-        Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, "lp-stSTX"),
-        Cl.contractPrincipal(deployerAddress, stSTX),
-      ],
-      Borrower_1
-    );
+    // console.log(Cl.prettyPrint(callResponse.result));
+    console.log(Cl.prettyPrint(callResponse.result));
 
-    console.log(Cl.prettyPrint(cumulated_balance.result));
-
-    // cumulated_balance = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.${lpsBTC}`,
+    // let lp_balance = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.${lpstSTX}`,
     //   "get-balance",
-    //   [Cl.standardPrincipal(Borrower_1)],
-    //   Borrower_1
+    //   [Cl.standardPrincipal(LP_1)],
+    //   LP_1
     // );
 
-    // console.log(Cl.prettyPrint(cumulated_balance.result));
+    // console.log("THIS", Cl.prettyPrint(lp_balance.result));
+
+    // let cumulated_balance = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-0-reserve`,
+    //   "get-balance-read",
+    //   [
+    //     Cl.contractPrincipal(deployerAddress, lpstSTX),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //     Cl.standardPrincipal(LP_1),
+    //     Cl.uint(1000000000),
+    //   ],
+    //   LP_1
+    // );
+
+    // console.log("ONE", Cl.prettyPrint(cumulated_balance.result));
 
     // cumulated_balance = simnet.callReadOnlyFn(
     //   `${deployerAddress}.pool-0-reserve`,
@@ -383,6 +511,7 @@ describe("example tests", () => {
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
@@ -428,6 +557,9 @@ describe("example tests", () => {
       LP_1
     );
 
+    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(callResponse.events);
+
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
     // { THIS: { balance-increase: u940, index: u100000094, new-user-balance: u1000000940, previous-user-balance: u1000000000 } }
 
@@ -450,6 +582,8 @@ describe("example tests", () => {
       ],
       LP_2
     );
+    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(callResponse.events);
 
     // console.log(Cl.prettyPrint(callResponse.events[1]["data"].value!));
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
@@ -466,6 +600,7 @@ describe("example tests", () => {
       ],
       LP_3
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
     // console.log(callResponse.events);
