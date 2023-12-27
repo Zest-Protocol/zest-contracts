@@ -158,8 +158,7 @@
           (begin
             (try! (contract-call? lp-token burn-on-liquidation (get collateral-amount collateral-fees) user))
             (try!
-              (contract-call? .pool-0-reserve
-                liquidate-fee
+              (contract-call? .pool-0-reserve liquidate-fee
                 collateral-to-liquidate
                 (contract-call? .pool-0-reserve get-collection-address)
                 (get collateral-amount collateral-fees)

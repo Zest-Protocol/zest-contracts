@@ -122,7 +122,7 @@
     (is-stable-borrow-rate-enabled bool)
     (borrow-cap uint)
     (is-active bool)
-    (is-freezed bool)
+    (is-frozen bool)
   )
 )
 
@@ -420,7 +420,7 @@
           usage-as-collateral-enabled: false,
           is-stable-borrow-rate-enabled: false,
           is-active: true,
-          is-freezed: false
+          is-frozen: false
         }
       )
     )
@@ -1241,7 +1241,7 @@
   )
 )
 
-(define-public (get-balance-read (lp-token <ft>) (asset principal) (who principal) (balance uint))
+(define-read-only (get-balance-read (lp-token <ft>) (asset principal) (who principal) (balance uint))
   (begin
     (if (is-eq balance u0)
       (ok u0)

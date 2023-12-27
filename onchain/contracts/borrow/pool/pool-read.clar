@@ -206,8 +206,8 @@
   (get is-active (get-reserve-data asset))
 )
 
-(define-read-only (get-is-freezed (asset principal))
-  (get is-freezed (get-reserve-data asset))
+(define-read-only (get-is-frozen (asset principal))
+  (get is-frozen (get-reserve-data asset))
 )
 
 (define-read-only (get-user-borrow-balance-diko (who principal))

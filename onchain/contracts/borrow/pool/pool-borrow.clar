@@ -180,6 +180,28 @@
   )
 )
 
+(define-public (set-user-use-reserve-as-collateral
+  (who principal)
+  (lp-token <ft>)
+  (asset <ft>)
+  (use-as-collateral bool)
+  (oracle principal)
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
+  )
+  (let (
+    (reserve-data (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
+    (underlying-balance (try! (contract-call? .pool-0-reserve get-balance lp-token (contract-of asset) who)))
+  )
+    (asserts! (get is-active reserve-data) (err u1))
+    (asserts! (not (get is-frozen reserve-data)) (err u2))
+    (asserts! (> underlying-balance u0) (err u3))
+
+    ;; check user is not using deposited collateral
+    (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) (err u4))
+
+    (contract-call? .pool-0-reserve set-use-as-collateral who asset use-as-collateral)
+  )
+)
 
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
@@ -202,7 +224,6 @@
       purchase-amount
       to-receive-underlying
     )
-    ;; (ok u0)
   )
 )
 
