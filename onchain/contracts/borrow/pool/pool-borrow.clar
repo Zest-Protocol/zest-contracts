@@ -1,6 +1,7 @@
 (use-trait ft .ft-trait.ft-trait)
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 (use-trait a-token .a-token-trait.a-token-trait)
+(use-trait flash-loan .flash-loan-trait.flash-loan-trait)
 
 (define-public (supply
   (lp <ft-mint-trait>)
@@ -224,6 +225,54 @@
       purchase-amount
       to-receive-underlying
     )
+  )
+)
+
+(define-public (flashloan
+  (sender principal)
+  (receiver principal)
+  (lp-token <ft>)
+  (asset <ft>)
+  (amount uint)
+  (flashloan <flash-loan>)
+  )
+  (let (
+    (available-liquidity-before (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
+    (total-fee-bps (contract-call? .pool-0-reserve get-flashloan-fee-total))
+    (protocol-fee-bps (contract-call? .pool-0-reserve get-flashloan-fee-protocol))
+    (amount-fee (/ (* amount total-fee-bps) u10000))
+    (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
+  )
+    (asserts! (> amount available-liquidity-before) (err u1))
+    (asserts! (and (> amount-fee u0) (> protocol-fee u0)) (err u2))
+
+    (try! (contract-call? .pool-0-reserve transfer-to-user asset receiver amount))
+
+    (try! (contract-call? flashloan execute asset receiver amount))
+
+    (asserts!
+      (is-eq
+        (+ 
+          available-liquidity-before
+          amount-fee
+        )
+        (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset))
+      )
+      (err u3)
+    )
+
+    (try! 
+      (contract-call? .pool-0-reserve update-state-on-flash-loan
+        sender
+        receiver
+        asset
+        available-liquidity-before
+        (- amount-fee protocol-fee)
+        protocol-fee
+      )
+    )
+
+    (ok u0)
   )
 )
 

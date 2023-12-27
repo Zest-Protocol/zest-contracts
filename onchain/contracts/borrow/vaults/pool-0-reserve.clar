@@ -12,6 +12,8 @@
 ;; (define-map assets uint uint)
 (define-data-var contract-owner principal tx-sender)
 
+(define-data-var flashloan-fee-total uint (/ (* one-8 u35) one-8))
+(define-data-var flashloan-fee-protocol uint (/ (* one-8 u3000) one-8))
 
 (define-constant seconds-in-year (* u144 u365 u10 u60))
 
@@ -70,6 +72,23 @@
     (last-updated-block uint)
     (use-as-collateral bool)
   )
+)
+
+
+(define-read-only (get-flashloan-fee-total)
+  (var-get flashloan-fee-total)
+)
+
+(define-read-only (get-flashloan-fee-protocol)
+  (var-get flashloan-fee-protocol)
+)
+
+(define-public (set-flashloan-fee-total (fee uint))
+  (ok (var-set flashloan-fee-total fee))
+)
+
+(define-public (set-flashloan-fee-protocol (fee uint))
+  (ok (var-set flashloan-fee-protocol fee))
 )
 
 (define-public (set-use-as-collateral (who principal) (asset <ft>) (use-as-collateral bool))
@@ -481,6 +500,57 @@
       )
       (ok true)
     )
+  )
+)
+
+(define-public (update-state-on-flash-loan
+  (sender principal)
+  (receiver principal)
+  (asset <ft>)
+  (available-liquidity-before uint)
+  (income uint)
+  (protocol-fee uint)
+  )
+  (let (
+    (reserve-data (get-reserve-state (contract-of asset)))
+  )
+    (try! (transfer-fee-to-collection asset sender protocol-fee (get-collection-address)))
+    (try! (update-cumulative-indexes (contract-of asset)))
+    (try! (cumulate-to-liquidity-index
+        (+ available-liquidity-before (get total-borrows-variable reserve-data))
+        income
+        (contract-of asset)
+      )
+    )
+
+    (try! (update-reserve-interest-rates-and-timestamp asset income u0))
+
+    (ok u0)
+  )
+)
+
+(define-public (cumulate-to-liquidity-index
+  (total-liquidity uint)
+  (amount uint)
+  (asset principal)
+  )
+  (let (
+    (reserve-data (get-reserve-state asset))
+    (amount-to-liquidity-ratio (div amount total-liquidity))
+    (cumulated-liquidity (+ amount-to-liquidity-ratio one-8))
+  )
+    (asserts! true (err u1))
+    (map-set
+      reserve-state
+      asset
+      (merge
+        reserve-data
+        {
+          last-liquidity-cumulative-index: (mul cumulated-liquidity (get last-liquidity-cumulative-index reserve-data))
+        }
+      )
+    )
+    (ok u0)
   )
 )
 
