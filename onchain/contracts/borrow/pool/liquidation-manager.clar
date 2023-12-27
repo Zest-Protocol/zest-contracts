@@ -38,8 +38,8 @@
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
   (lp-token <a-token>)
-  (collateral-to-liquidate <ft>)
-  (purchasing-asset <ft>)
+  (collateral-to-liquidate <ft>) ;; collateral
+  (purchasing-asset <ft>) ;; borrowed asset
   (oracle principal)
   (user principal)
   (purchase-amount uint)
@@ -129,7 +129,6 @@
           false
         )
 
-        ;; TODO: ADD UPDATE STATE ON LIQUIDATION
         (try!
           (contract-call? .pool-0-reserve update-state-on-liquidation
             purchasing-asset
@@ -139,7 +138,7 @@
             max-collateral-to-liquidate
             (get principal-amount-needed collateral-fees)
             (get collateral-amount collateral-fees)
-            (get  balance-increase borrowed-ret)
+            (get balance-increase borrowed-ret)
             to-receive-atoken
           )
         )
@@ -152,6 +151,23 @@
             (try! (contract-call? lp-token burn-on-liquidation max-collateral-to-liquidate user))
             (try! (contract-call? .pool-0-reserve transfer-to-user collateral-to-liquidate tx-sender max-collateral-to-liquidate))
           )
+        )
+        (try! (contract-call? .pool-0-reserve transfer-to-reserve purchasing-asset user actual-amount-to-liquidate))
+        
+        (if (> (get principal-amount-needed collateral-fees) u0)
+          (begin
+            (try! (contract-call? lp-token burn-on-liquidation (get collateral-amount collateral-fees) user))
+            (try!
+              (contract-call? .pool-0-reserve
+                liquidate-fee
+                collateral-to-liquidate
+                (contract-call? .pool-0-reserve get-collection-address)
+                (get collateral-amount collateral-fees)
+              )
+            )
+            u0
+          )
+          u0
         )
       )
     )

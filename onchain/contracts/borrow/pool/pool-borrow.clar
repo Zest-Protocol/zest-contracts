@@ -141,7 +141,7 @@
             asset
             on-behalf-of
             payback-amount
-            (get-collection-address)
+            (contract-call? .pool-0-reserve get-collection-address)
           )
         )
         (ok u0)
@@ -167,7 +167,7 @@
                 asset
                 tx-sender
                 origination-fee
-                (get-collection-address)
+                (contract-call? .pool-0-reserve get-collection-address)
               )
             )
             u0
@@ -204,11 +204,6 @@
     )
     ;; (ok u0)
   )
-)
-
-
-(define-read-only (get-collection-address)
-  .protocol-treasury
 )
 
 ;; (define-public (get-pool (token-id uint))

@@ -1081,6 +1081,17 @@
   )
 )
 
+(define-public (liquidate-fee
+  (asset <ft>)
+  (destination principal)
+  (amount uint)
+  )
+  (begin
+    (try! (as-contract (contract-call? asset transfer amount tx-sender destination none)))
+    (ok u0)
+  )
+)
+
 (define-public (transfer-to-reserve
   (asset <ft>)
   (who principal)
@@ -1686,6 +1697,13 @@
 ;;     (ok asset-amount)
 ;;   )
 ;; )
+
+
+(define-data-var protocol-treasury-addr principal .protocol-treasury)
+
+(define-read-only (get-collection-address)
+  (var-get protocol-treasury-addr)
+)
 
 (define-public (transfer (amount uint) (recipient principal) (f-t <ft>))
   (begin
