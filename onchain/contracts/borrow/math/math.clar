@@ -1,4 +1,5 @@
 (define-constant one-8 u100000000)
+(define-constant fixed-precision u8)
 
 (define-constant max-value u340282366920938463463374607431768211455)
 
@@ -8,6 +9,83 @@
 
 (define-read-only (div (x uint) (y uint))
   (/ (+ (* x one-8) (/ y u2)) y)
+)
+
+(define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (mul (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+    (mul (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+  )
+)
+
+(define-read-only (div-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (div (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+    (div (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+  )
+)
+
+(define-read-only (add-precision-to-fixed (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (+ (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+    (+ (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+  )
+)
+
+(define-read-only (sub-precision-to-fixed (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (- (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+    (- (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+  )
+)
+
+(define-read-only (to-fixed (a uint) (decimals-a uint))
+  (if (> decimals-a fixed-precision)
+    (/ a (pow u10 (- decimals-a fixed-precision)))
+    (* a (pow u10 (- fixed-precision decimals-a)))
+  )
+)
+
+(define-read-only (fix-precision (a uint) (decimals-a uint) (b uint) (decimals-b uint))
+  (let (
+    (a-standard
+      (if (> decimals-a fixed-precision)
+        (/ a (pow u10 (- decimals-a fixed-precision)))
+        (* a (pow u10 (- fixed-precision decimals-a)))
+      ))
+    (b-standard
+      (if (> decimals-b fixed-precision)
+        (/ b (pow u10 (- decimals-b fixed-precision)))
+        (* b (pow u10 (- fixed-precision decimals-b)))
+      ))
+  )
+    {
+      a: a-standard,
+      decimals-a: decimals-a,
+      b: b-standard,
+      decimals-b: decimals-b,
+    }
+  )
+)
+
+(define-read-only (from-fixed-to-precision (a uint) (decimals-a uint))
+  (if (> decimals-a fixed-precision)
+    (* a (pow u10 (- decimals-a fixed-precision)))
+    (/ a (pow u10 (- fixed-precision decimals-a)))
+  )
+)
+
+(define-read-only (get-y-from-x
+  (x uint)
+  (x-decimals uint)
+  (y-decimals uint)
+  (x-price uint)
+  (y-price uint)
+  )
+  (from-fixed-to-precision
+    (mul-to-fixed-precision x x-decimals (div x-price y-price))
+    y-decimals
+  )
 )
 
 (define-read-only (is-odd (x uint))

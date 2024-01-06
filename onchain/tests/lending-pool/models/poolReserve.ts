@@ -19,7 +19,6 @@ class PoolReserve {
     assetDeployer: string,
     assetContractName: string,
     decimals: IntegerType,
-    baseLtvAsCollateral: IntegerType,
     supplyCap: IntegerType,
     borrowCap: IntegerType,
     interestRateStrategyAddressDeployerAddress: string,
@@ -33,7 +32,6 @@ class PoolReserve {
         Cl.contractPrincipal(lpDeployer, lpContractName),
         Cl.contractPrincipal(assetDeployer, assetContractName),
         Cl.uint(decimals),
-        Cl.uint(baseLtvAsCollateral),
         Cl.uint(supplyCap),
         Cl.uint(borrowCap),
         Cl.contractPrincipal(
@@ -66,6 +64,9 @@ class PoolReserve {
     assetDeployer: string,
     assetContractName: string,
     enabled: boolean,
+    baseLtvAsCollateral: IntegerType,
+    liquidationThreshold: IntegerType,
+    liquidationBonus: IntegerType,
     caller: string
   ) {
     return simnet.callPublicFn(
@@ -74,6 +75,9 @@ class PoolReserve {
       [
         Cl.contractPrincipal(assetDeployer, assetContractName),
         Cl.bool(enabled),
+        Cl.uint(baseLtvAsCollateral),
+        Cl.uint(liquidationThreshold),
+        Cl.uint(liquidationBonus),
       ],
       caller
     );

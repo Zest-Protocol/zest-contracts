@@ -106,7 +106,7 @@
       ;; amount borrowed is too small
       (asserts! (> borrow-fee u0) (err u99993))
       (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) (err u99994))
-      (asserts! (< amount-collateral-needed-in-USD (get total-collateral-balanceUSD user-global-data)) (err u99995))
+      (asserts! (<= amount-collateral-needed-in-USD (get total-collateral-balanceUSD user-global-data)) (err u99995))
 
       (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) (err u99996))
 
@@ -124,7 +124,6 @@
 )
 
 (define-public (repay
-  ;; (debt-token <ft-mint-trait>)
   (asset <ft>)
   (amount-to-repay uint)
   (on-behalf-of principal)
@@ -133,15 +132,19 @@
     (ret (try! (contract-call? .pool-0-reserve get-user-borrow-balance on-behalf-of asset)))
     (origination-fee (contract-call? .pool-0-reserve get-user-origination-fee on-behalf-of asset))
     (amount-due (+ (get compounded-balance ret) origination-fee))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
     ;; default to max repayment
     (payback-amount
-      (if (< amount-to-repay amount-due)
+      (if (and (not (is-eq amount-to-repay max-value)) (< amount-to-repay amount-due))
         amount-to-repay
         amount-due
       )
     )
   )
     (asserts! (> (get compounded-balance ret) u0) (err u900000))
+    (asserts! (get is-active reserve-state) (err u900001))
+    (asserts! (> amount-to-repay u0) (err u900002))
+    
     ;; if payback-amount is smaller than fees, just pay fees
     (if (<= payback-amount origination-fee)
       (begin
@@ -225,18 +228,24 @@
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
   (lp-token <a-token>)
-  (collateral <ft>)
+  (collateral-to-liquidate <ft>)
   (asset-borrowed <ft>)
   (oracle principal)
   (user principal)
   (purchase-amount uint)
   (to-receive-underlying bool)
   )
-  (begin
+  (let (
+    (reserve-data (contract-call? .pool-0-reserve get-reserve-state (contract-of asset-borrowed)))
+    (collateral-data (contract-call? .pool-0-reserve get-reserve-state (contract-of collateral-to-liquidate)))
+  )
+    (asserts! (get is-active reserve-data) (err u10))
+    (asserts! (get is-active collateral-data) (err u11))
+    
     (contract-call? .liquidation-manager liquidation-call
       assets
       lp-token
-      collateral
+      collateral-to-liquidate
       asset-borrowed
       oracle
       user
