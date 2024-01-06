@@ -38,16 +38,17 @@
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
   (lp-token <a-token>)
-  (borrowed-asset <ft>)  ;; borrowed asset
-  (principal-asset <ft>) ;; principal
-  (oracle principal)
+  (collateral <ft>)  ;; borrowed asset
+  (principal <ft>) ;; principal
+  (collateral-oracle principal)
+  (principal-oracle principal)
   (user principal) ;; address of borrower
   (purchase-amount uint)
   (to-receive-atoken bool)
   )
   (let (
     (ret (try! (calculate-user-global-data user assets)))
-    (user-collateral-balance (try! (get-user-underlying-asset-balance lp-token borrowed-asset user)))
+    (user-collateral-balance (try! (get-user-underlying-asset-balance lp-token collateral user)))
   )
     ;; health factor below treshold
     (asserts! (get is-health-factor-below-treshold ret) (err u1))
@@ -55,13 +56,14 @@
     (asserts! (> user-collateral-balance u0) (err u2))
     ;; collateral is enabled in asset reserve and by user
     (asserts! (and
-        (is-reserve-collateral-enabled-as-collateral (contract-of borrowed-asset))
-        (is-user-collateral-enabled-as-collateral user borrowed-asset)
+        (is-reserve-collateral-enabled-as-collateral (contract-of collateral))
+        (is-user-collateral-enabled-as-collateral user collateral)
       ) (err u3))
 
     (let (
-      (borrowed-ret (try! (get-user-borrow-balance user borrowed-asset)))
+      (borrowed-ret (try! (get-user-borrow-balance user principal)))
       (user-compounded-borrow-balance (get compounded-balance borrowed-ret))
+      (user-borrow-balance-increase (get balance-increase borrowed-ret))
     )
       ;; not borrowing anything
       (asserts! (> user-compounded-borrow-balance u0) (err u4))
@@ -82,9 +84,10 @@
         (available-collateral-principal
           (try! 
             (calculate-available-collateral-to-liquidate
-              borrowed-asset
-              principal-asset
-              oracle
+              collateral
+              principal
+              collateral-oracle
+              principal-oracle
               amount-to-liquidate
               user-collateral-balance
             )
@@ -92,33 +95,39 @@
         )
         (max-collateral-to-liquidate (get collateral-amount available-collateral-principal))
         (principal-amount-needed (get principal-amount-needed available-collateral-principal))
-        (origination-fee (get-user-origination-fee user principal-asset))
-        (collateral-fees
+        (origination-fee (get-user-origination-fee user principal))
+        (required-fees
           (if (> origination-fee u0)
             ;; if fees, take into account when calcualting available collateral
             (try!
               (calculate-available-collateral-to-liquidate
-                borrowed-asset
-                principal-asset
-                oracle
-                amount-to-liquidate
+                collateral
+                principal
+                collateral-oracle
+                principal-oracle
+                origination-fee
                 (- user-collateral-balance max-collateral-to-liquidate)
               )
             )
-            available-collateral-principal
+            {
+              collateral-amount: u0,
+              principal-amount-needed: u0
+            }
           )
         )
         (actual-amount-to-liquidate
-          (if (< (get principal-amount-needed available-collateral-principal) amount-to-liquidate)
-            (get principal-amount-needed available-collateral-principal)
+          (if (< principal-amount-needed amount-to-liquidate)
+            principal-amount-needed
             amount-to-liquidate
           )
         )
+        (fee-liquidated (get principal-amount-needed required-fees))
+        (liquidated-collateral-for-fee (get collateral-amount required-fees))
       )
         ;; if liquidator wants underlying asset, check there is enough collateral
         (if (not to-receive-atoken)
           (let (
-            (current-available-collateral (try! (get-reserve-available-liquidity borrowed-asset)))
+            (current-available-collateral (try! (get-reserve-available-liquidity collateral)))
           )
             ;; not enough liquidity
             (asserts! (< current-available-collateral max-collateral-to-liquidate) (err u5))
@@ -129,14 +138,14 @@
 
         (try!
           (contract-call? .pool-0-reserve update-state-on-liquidation
-            principal-asset
-            borrowed-asset
+            principal
+            collateral
             user
             actual-amount-to-liquidate
             max-collateral-to-liquidate
-            (get principal-amount-needed collateral-fees)
-            (get collateral-amount collateral-fees)
-            (get balance-increase borrowed-ret)
+            fee-liquidated
+            liquidated-collateral-for-fee
+            user-borrow-balance-increase
             to-receive-atoken
           )
         )
@@ -147,19 +156,19 @@
           )
           (begin
             (try! (contract-call? lp-token burn-on-liquidation max-collateral-to-liquidate user))
-            (try! (contract-call? .pool-0-reserve transfer-to-user borrowed-asset tx-sender max-collateral-to-liquidate))
+            (try! (contract-call? .pool-0-reserve transfer-to-user collateral tx-sender max-collateral-to-liquidate))
           )
         )
-        (try! (contract-call? .pool-0-reserve transfer-to-reserve principal-asset user actual-amount-to-liquidate))
+        (try! (contract-call? .pool-0-reserve transfer-to-reserve principal user actual-amount-to-liquidate))
         
-        (if (> (get principal-amount-needed collateral-fees) u0)
+        (if (> fee-liquidated u0)
           (begin
-            (try! (contract-call? lp-token burn-on-liquidation (get collateral-amount collateral-fees) user))
+            (try! (contract-call? lp-token burn-on-liquidation liquidated-collateral-for-fee user))
             (try!
               (contract-call? .pool-0-reserve liquidate-fee
-                borrowed-asset
+                collateral
                 (contract-call? .pool-0-reserve get-collection-address)
-                (get collateral-amount collateral-fees)
+                liquidated-collateral-for-fee
               )
             )
             u0
@@ -193,7 +202,8 @@
 (define-public (calculate-available-collateral-to-liquidate
   (collateral <ft>)
   (principal-asset <ft>)
-  (oracle principal)
+  (collateral-oracle principal)
+  (principal-oracle principal)
   (purchase-amount uint)
   (user-collateral-balance uint)
   )

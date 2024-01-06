@@ -230,7 +230,8 @@
   (lp-token <a-token>)
   (collateral-to-liquidate <ft>)
   (asset-borrowed <ft>)
-  (oracle principal)
+  (collateral-oracle principal)
+  (principal-oracle principal)
   (user principal)
   (purchase-amount uint)
   (to-receive-underlying bool)
@@ -247,7 +248,8 @@
       lp-token
       collateral-to-liquidate
       asset-borrowed
-      oracle
+      collateral-oracle
+      principal-oracle
       user
       purchase-amount
       to-receive-underlying
