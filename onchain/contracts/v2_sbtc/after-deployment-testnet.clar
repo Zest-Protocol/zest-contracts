@@ -15,23 +15,35 @@
 ;; testnet
 ;; (try! (contract-call? .executor-dao construct .zgp000-bootstrap))
 
-(try! (contract-call? .sBTC mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
-(try! (contract-call? .stSTX mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
-(try! (contract-call? .diko mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
-(try! (contract-call? .USDA mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
-(try! (contract-call? .xUSD mint u1000000000000000 'ST5C7XW3E9ERSDQTGSC9R1AQRHZWVV80PVDA5FGT))
+(try! (contract-call? .sBTC mint u1000000000000000 'STJVXZY0VBSZNP0DRD8JS69ESCX2KCKE4SQKP0XN))
+(try! (contract-call? .stSTX mint u1000000000000000 'STJVXZY0VBSZNP0DRD8JS69ESCX2KCKE4SQKP0XN))
+(try! (contract-call? .diko mint u1000000000000000 'STJVXZY0VBSZNP0DRD8JS69ESCX2KCKE4SQKP0XN))
+(try! (contract-call? .USDA mint u1000000000000000 'STJVXZY0VBSZNP0DRD8JS69ESCX2KCKE4SQKP0XN))
+(try! (contract-call? .xUSD mint u1000000000000000 'STJVXZY0VBSZNP0DRD8JS69ESCX2KCKE4SQKP0XN))
 
-(try! (contract-call? .sBTC mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
-(try! (contract-call? .stSTX mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
-(try! (contract-call? .diko mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
-(try! (contract-call? .USDA mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
-(try! (contract-call? .xUSD mint u1000000000000000 'ST2B3CHPEMP1KFGJJGF003KTZJN4BX90F4MMCRQQD))
+(try! (contract-call? .sBTC mint u1000000000000000 'ST2E8F8YETXPN3KKQXW30B7ZFD9FV2F2JYERKE7K1))
+(try! (contract-call? .stSTX mint u1000000000000000 'ST2E8F8YETXPN3KKQXW30B7ZFD9FV2F2JYERKE7K1))
+(try! (contract-call? .diko mint u1000000000000000 'ST2E8F8YETXPN3KKQXW30B7ZFD9FV2F2JYERKE7K1))
+(try! (contract-call? .USDA mint u1000000000000000 'ST2E8F8YETXPN3KKQXW30B7ZFD9FV2F2JYERKE7K1))
+(try! (contract-call? .xUSD mint u1000000000000000 'ST2E8F8YETXPN3KKQXW30B7ZFD9FV2F2JYERKE7K1))
 
-(try! (contract-call? .sBTC mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
-(try! (contract-call? .stSTX mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
-(try! (contract-call? .diko mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
-(try! (contract-call? .USDA mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
-(try! (contract-call? .xUSD mint u1000000000000000 'ST3ZJ8630RB3GS48G4FJPFBFWX7H4RC7V6YR4EADM))
+(try! (contract-call? .sBTC mint u1000000000000000 'ST1VM5HXCQT83EB1G2VDEZGH8DK49B2TQFVDR1PVK))
+(try! (contract-call? .stSTX mint u1000000000000000 'ST1VM5HXCQT83EB1G2VDEZGH8DK49B2TQFVDR1PVK))
+(try! (contract-call? .diko mint u1000000000000000 'ST1VM5HXCQT83EB1G2VDEZGH8DK49B2TQFVDR1PVK))
+(try! (contract-call? .USDA mint u1000000000000000 'ST1VM5HXCQT83EB1G2VDEZGH8DK49B2TQFVDR1PVK))
+(try! (contract-call? .xUSD mint u1000000000000000 'ST1VM5HXCQT83EB1G2VDEZGH8DK49B2TQFVDR1PVK))
+
+(try! (contract-call? .sBTC mint u1000000000000000 'STKT4F7DSZMS3JFGTRFD6Q43FBWTKX3A90WJD4PF))
+(try! (contract-call? .stSTX mint u1000000000000000 'STKT4F7DSZMS3JFGTRFD6Q43FBWTKX3A90WJD4PF))
+(try! (contract-call? .diko mint u1000000000000000 'STKT4F7DSZMS3JFGTRFD6Q43FBWTKX3A90WJD4PF))
+(try! (contract-call? .USDA mint u1000000000000000 'STKT4F7DSZMS3JFGTRFD6Q43FBWTKX3A90WJD4PF))
+(try! (contract-call? .xUSD mint u1000000000000000 'STKT4F7DSZMS3JFGTRFD6Q43FBWTKX3A90WJD4PF))
+
+(try! (contract-call? .sBTC mint u1000000000000000 'ST1HADRZRBG67DKMZEEBDHA2GQC85M1N519K4HFEM))
+(try! (contract-call? .stSTX mint u1000000000000000 'ST1HADRZRBG67DKMZEEBDHA2GQC85M1N519K4HFEM))
+(try! (contract-call? .diko mint u1000000000000000 'ST1HADRZRBG67DKMZEEBDHA2GQC85M1N519K4HFEM))
+(try! (contract-call? .USDA mint u1000000000000000 'ST1HADRZRBG67DKMZEEBDHA2GQC85M1N519K4HFEM))
+(try! (contract-call? .xUSD mint u1000000000000000 'ST1HADRZRBG67DKMZEEBDHA2GQC85M1N519K4HFEM))
 
 
 (define-constant max-value u340282366920938463463374607431768211455)
@@ -43,6 +55,7 @@
     .stSTX
     u6
     u80000000
+    max-value
     max-value
     .interest-rate-strategy-default
   )
@@ -58,6 +71,7 @@
     u6
     u90000000
     max-value
+    max-value
     .interest-rate-strategy-default
   )
 )
@@ -69,6 +83,7 @@
     .diko
     u6
     u60000000
+    max-value
     max-value
     .interest-rate-strategy-default
   )
@@ -82,6 +97,7 @@
     u6
     u90000000
     max-value
+    max-value
     .interest-rate-strategy-default
   )
 )
@@ -94,6 +110,7 @@
     u6
     u100000000
     max-value
+    max-value
     .interest-rate-strategy-default
   )
 )
@@ -105,8 +122,15 @@
 (contract-call? .pool-0-reserve set-usage-as-collateral-enabled .USDA true)
 (contract-call? .pool-0-reserve set-usage-as-collateral-enabled .xUSD true)
 
-(contract-call? .pool-0-reserve set-borrowing-enabled .xUSD true)
+(contract-call? .pool-0-reserve set-borrowing-enabled .stSTX true)
 (contract-call? .pool-0-reserve set-borrowing-enabled .sBTC true)
 (contract-call? .pool-0-reserve set-borrowing-enabled .diko true)
 (contract-call? .pool-0-reserve set-borrowing-enabled .USDA true)
 (contract-call? .pool-0-reserve set-borrowing-enabled .xUSD true)
+
+(contract-call? .pool-0-reserve add-isolated-asset .stSTX)
+
+(contract-call? .pool-0-reserve add-borroweable-isolated .xUSD)
+(contract-call? .pool-0-reserve add-borroweable-isolated .USDA)
+
+;;  .xUSD .USDA

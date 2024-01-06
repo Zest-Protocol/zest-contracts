@@ -13,10 +13,10 @@ path = "contracts/v2_sbtc/after-deployment-simnet.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.after-deployment-testnet]
-path = "contracts/v2_sbtc/after-deployment-testnet.clar"
-clarity_version = 2
-epoch = 2.1
+# [contracts.after-deployment-testnet]
+# path = "contracts/v2_sbtc/after-deployment-testnet.clar"
+# clarity_version = 2
+# epoch = 2.1
 
 [contracts.a-token-trait]
 path = "contracts/borrow/traits/a-token-trait.clar"

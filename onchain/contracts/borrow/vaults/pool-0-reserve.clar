@@ -139,47 +139,74 @@
     (borrowing-enabled bool)
     (usage-as-collateral-enabled bool)
     (is-stable-borrow-rate-enabled bool)
+    (supply-cap uint)
     (borrow-cap uint)
+    (debt-ceiling uint)
     (is-active bool)
     (is-frozen bool)
   )
 )
 
-
-(define-map user-isolated principal (optional principal))
-
-;; MODES:
-;; 1. Stables
-;; 2. STX
-;; 3. BTC
-;; ASSETS RELATED
-;; MODE -> ASSETS RELATED
-(define-map e-modes (buff 2) (list 255 principal))
-
-
 (define-map isolated-assets principal bool)
 
 ;; TODO: enabled adding manually
-(map-set isolated-assets .stSTX true)
+;; (map-set isolated-assets .stSTX true)
 
 ;; Assets that can be borrowed using isolated assets as collateral
 (define-data-var borroweable-isolated
   (list 100 principal)
-  (list .xUSD .USDA)
+  (list)
 )
 
-(define-private (add-borroweable-isolated (who principal) (asset principal))
-  (let (
-    (assets-data (get-user-assets who))
+(define-read-only (is-borroweable-isolated (asset principal))
+  (match (index-of? (var-get borroweable-isolated) asset)
+    res true
+    false
   )
-    (map-set
-      user-assets
-      who
-      {
-        assets-supplied: (unwrap-panic (as-max-len? (append (get assets-supplied assets-data) asset) u100)),
-        assets-borrowed: (get assets-borrowed assets-data)
-      }
+)
+
+(define-public (set-borroweable-isolated (asset principal) (debt-ceiling uint))
+  (let (
+    (reserve-data (get-reserve-state asset))
+  )
+    (var-set
+      borroweable-isolated
+      (unwrap-panic (as-max-len? (append (var-get borroweable-isolated) asset) u100))
     )
+    (map-set
+      reserve-state
+      asset
+      (merge
+        reserve-data
+        {
+          debt-ceiling: debt-ceiling
+        }
+      )
+    )
+    (ok true)
+  )
+)
+
+(define-public (remove-borroweable-isolated (asset principal))
+  (begin
+    (ok
+      (var-set
+        borroweable-isolated
+        (get agg (fold filter-asset (var-get borroweable-isolated) { filter-by: asset, agg: (list) }))
+      )
+    )
+  )
+)
+
+(define-public (remove-isolated-asset (asset principal))
+  (begin
+    (ok (map-delete isolated-assets asset))
+  )
+)
+
+(define-public (add-isolated-asset (asset principal))
+  (begin
+    (ok (map-set isolated-assets asset true))
   )
 )
 
@@ -246,6 +273,10 @@
       })
     ret
   )
+)
+
+(define-read-only (set-is-isolated-type (asset principal))
+  (default-to false (map-get? isolated-assets asset))
 )
 
 (define-read-only (asset-is-isolated-type (asset principal))
@@ -394,10 +425,6 @@
   (map-get? reserve-state asset)
 )
 
-(define-read-only (get-user-isolated (who principal))
-  (default-to none (map-get? user-isolated who))
-)
-
 (define-read-only (get-assets)
   (var-get assets)
 )
@@ -407,6 +434,7 @@
   (asset principal)
   (decimals uint)
   (base-ltv-as-collateral uint)
+  (supply-cap uint)
   (borrow-cap uint)
   (interest-rate-strategy-address principal)
 )
@@ -435,7 +463,9 @@
           interest-rate-strategy-address: interest-rate-strategy-address,
           last-updated-block: u0,
           borrowing-enabled: false,
+          supply-cap: supply-cap,
           borrow-cap: borrow-cap,
+          debt-ceiling: u0,
           usage-as-collateral-enabled: false,
           is-stable-borrow-rate-enabled: false,
           is-active: true,
@@ -444,6 +474,15 @@
       )
     )
   )
+)
+
+
+(define-read-only (is-frozen (asset principal))
+  (get is-frozen (get-reserve-state asset))
+)
+
+(define-read-only (is-active (asset principal))
+  (get is-active (get-reserve-state asset))
 )
 
 (define-read-only (is-borrowing-enabled (asset principal))

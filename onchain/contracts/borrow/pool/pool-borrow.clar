@@ -12,8 +12,14 @@
   )
   (let (
     (current-balance (try! (contract-call? .pool-0-reserve get-balance lp (contract-of asset) owner)))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
     )
     ;; (print { current-balance: current-balance })
+    (asserts! (> amount u0) (err u1))
+    (asserts! (get is-active reserve-state) (err u2))
+    (asserts! (not (get is-frozen reserve-state)) (err u3))
+    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) (err u5))
+
     (try! (contract-call? .pool-0-reserve update-state-on-deposit asset owner amount (is-eq current-balance u0)))
     (try! (contract-call? .pool-0-reserve mint-on-deposit owner amount lp (contract-of asset)))
     (try! (contract-call? .pool-0-reserve transfer-to-reserve asset owner amount))
@@ -37,7 +43,11 @@
     (amount-to-redeem (if (is-eq amount max-value) (get new-user-balance ret) amount))
     (redeems-everything (>= amount-to-redeem (get new-user-balance ret)))
     (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
   )
+    (asserts! (> amount u0) (err u1))
+    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) (err u2))
+    (asserts! (get is-active reserve-state) (err u3))
     (asserts! (>= current-available-liquidity amount-to-redeem) (err u99990))
 
     (try! (contract-call? lp burn amount-to-redeem owner))
@@ -62,15 +72,19 @@
   (let (
     (available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset-to-borrow)))
     (reserve-state (contract-call? .pool-0-reserve get-reserve-state (contract-of asset-to-borrow)))
+    (is-in-isolation-mode (contract-call? .pool-0-reserve is-in-isolation-mode owner))
   )
     (asserts! (contract-call? .pool-0-reserve is-borrowing-enabled (contract-of asset-to-borrow)) (err u99991))
-    (asserts! (> available-liquidity amount-to-be-borrowed) (err u99991))
+    (asserts! (> available-liquidity amount-to-be-borrowed) (err u99992))
+    (if is-in-isolation-mode
+      (asserts! (contract-call? .pool-0-reserve is-borroweable-isolated (contract-of asset-to-borrow)) (err u99997))
+      true
+    )
 
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
       (amount-of-collateral-neededUSD
         (+
-          
           (try! (contract-call? .oracle token-to-usd owner asset-to-borrow oracle amount-to-be-borrowed))
         )
       )
@@ -100,7 +114,11 @@
       (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))
 
       (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
-      (ok amount-to-be-borrowed)
+      (ok {
+        amount-to-be-borrowed: amount-to-be-borrowed,
+        is-in-isolation-mode: is-in-isolation-mode,
+        owner: owner,
+        is-borroweable: (contract-call? .pool-0-reserve is-borroweable-isolated (contract-of asset-to-borrow)) })
     )
   )
 )

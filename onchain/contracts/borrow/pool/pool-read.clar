@@ -14,11 +14,48 @@
   (contract-call? .math taylor-6 x)
 )
 
-
-(define-read-only (is-isolated (who principal))
+(define-read-only (is-in-isolation-mode (who principal))
   (begin
-    (contract-call? .pool-0-reserve get-user-isolated who)
+    (contract-call? .pool-0-reserve is-in-isolation-mode who)
   )
+)
+
+(define-constant available-assets (list .diko .sBTC .stSTX .xUSD .USDA ))
+
+(define-read-only (get-supplieable-assets)
+  (filter is-active available-assets)
+)
+
+(define-read-only (get-borroweable-assets)
+  (filter is-borroweable available-assets)
+)
+
+(define-read-only (get-isolated-mode-assets)
+  (filter is-isolated-asset available-assets)
+)
+
+(define-read-only (get-borroweable-assets-in-isolated-mode)
+  (filter is-borroweable-in-isolation available-assets)
+)
+
+(define-read-only (is-borroweable-in-isolation (asset principal))
+  (contract-call? .pool-0-reserve is-borroweable-isolated asset)
+)
+
+(define-read-only (is-isolated-asset (asset principal))
+  (contract-call? .pool-0-reserve asset-is-isolated-type asset)
+)
+
+(define-read-only (is-borroweable (asset principal))
+  (and
+    (contract-call? .pool-0-reserve is-active asset)
+    (not (contract-call? .pool-0-reserve is-frozen asset))
+    (contract-call? .pool-0-reserve is-borrowing-enabled asset)
+  )
+)
+
+(define-read-only (is-active (asset principal))
+  (and (contract-call? .pool-0-reserve is-active asset) (not (contract-call? .pool-0-reserve is-frozen asset)))
 )
 
 (define-read-only (is-used-as-collateral (who principal) (asset principal))
@@ -985,14 +1022,14 @@
   (unwrap-panic (contract-call? .xUSD get-balance .pool-0-reserve))
 )
 
-(define-read-only (get-borroweable-assets)
-  (let (
-    (all-assets (contract-call? .pool-0-reserve get-assets))
-    (borroweable-assets (fold filter-asset all-assets (list)))
-  )
-    borroweable-assets
-  )
-)
+;; (define-read-only (get-borroweable-assets)
+;;   (let (
+;;     (all-assets (contract-call? .pool-0-reserve get-assets))
+;;     (borroweable-assets (fold filter-asset all-assets (list)))
+;;   )
+;;     borroweable-assets
+;;   )
+;; )
 
 (define-read-only (filter-asset (asset principal) (ret (list 100 principal)))
   (let (
