@@ -83,14 +83,9 @@
 
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
-      (amount-of-collateral-neededUSD
-        (+
-          (try! (contract-call? .oracle token-to-usd owner asset-to-borrow oracle amount-to-be-borrowed))
-        )
-      )
       (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner amount-to-be-borrowed)))
-      (amount-collateral-needed-in-USD
-        (try! 
+      (amount-collateral-needed-USD
+        (try!
           (contract-call? .pool-0-reserve calculate-collateral-needed-in-USD
             asset-to-borrow
             oracle
@@ -106,7 +101,7 @@
       ;; amount borrowed is too small
       (asserts! (> borrow-fee u0) (err u99993))
       (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) (err u99994))
-      (asserts! (<= amount-collateral-needed-in-USD (get total-collateral-balanceUSD user-global-data)) (err u99995))
+      (asserts! (<= amount-collateral-needed-USD (get total-collateral-balanceUSD user-global-data)) (err u99995))
 
       (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) (err u99996))
 
@@ -114,11 +109,27 @@
       (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))
 
       (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
-      (ok {
-        amount-to-be-borrowed: amount-to-be-borrowed,
-        is-in-isolation-mode: is-in-isolation-mode,
-        owner: owner,
-        is-borroweable: (contract-call? .pool-0-reserve is-borroweable-isolated (contract-of asset-to-borrow)) })
+      ;; (ok {
+      ;;   amount-to-be-borrowed: amount-to-be-borrowed,
+      ;;   is-in-isolation-mode: is-in-isolation-mode,
+      ;;   owner: owner,
+      ;;   is-borroweable: (contract-call? .pool-0-reserve is-borroweable-isolated (contract-of asset-to-borrow)),
+      ;;   amount-collateral-needed-USD: amount-collateral-needed-USD,
+      ;;   current-ltv: (get current-ltv user-global-data)
+      ;;   }
+      ;; )
+      (ok (merge
+          user-global-data
+          {
+            amount-to-be-borrowed: amount-to-be-borrowed,
+            is-in-isolation-mode: is-in-isolation-mode,
+            owner: owner,
+            is-borroweable: (contract-call? .pool-0-reserve is-borroweable-isolated (contract-of asset-to-borrow)),
+            amount-collateral-needed-USD: amount-collateral-needed-USD,
+            current-ltv: (get current-ltv user-global-data)
+          }
+        )
+      )
     )
   )
 )

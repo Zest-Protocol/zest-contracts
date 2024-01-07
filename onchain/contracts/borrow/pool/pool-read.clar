@@ -132,12 +132,6 @@
   )
 )
 
-(define-private (token-to-available-collateral
-  (item { asset: <ft>, amount: uint})
-)
-  (contract-call? .pool-0-reserve value-to-collateral (token-to-usd-internal item))
-)
-
 (define-private (token-to-usd-internal
   (item { asset: <ft>, amount: uint})
 )

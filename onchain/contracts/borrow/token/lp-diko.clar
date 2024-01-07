@@ -46,9 +46,9 @@
     (ok (var-set token-symbol value))
     ERR_UNAUTHORIZED))
 
-(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
+
+(define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
     (match (ft-transfer? lp-diko amount sender recipient)
       response (begin
         (print memo)
@@ -56,6 +56,13 @@
       )
       error (err error)
     )
+  )
+)
+
+(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
+  (begin
+    (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
+    (transfer-internal amount sender recipient memo)
   )
 )
 
@@ -67,9 +74,14 @@
   )
 )
 
+
+(define-private (burn-internal (amount uint) (owner principal))
+  (ft-burn? lp-diko amount owner)
+)
+
 (define-public (burn-on-liquidation (amount uint) (owner principal))
   (begin
-    (try! (burn amount owner))
+    (try! (burn-internal amount owner))
     (ok amount)
   )
 )

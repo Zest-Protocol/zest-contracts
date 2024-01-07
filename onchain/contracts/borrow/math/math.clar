@@ -46,6 +46,23 @@
   )
 )
 
+(define-read-only (mul-perc (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (begin
+      (*
+        (mul (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+        (pow u10 (- decimals-a fixed-precision))
+      )
+    )
+    (begin
+      (/
+        (mul (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+        (pow u10 (- fixed-precision decimals-a))
+      )
+    )
+  )
+)
+
 (define-read-only (fix-precision (a uint) (decimals-a uint) (b uint) (decimals-b uint))
   (let (
     (a-standard
@@ -100,6 +117,10 @@
   e
 )
 
+(define-read-only (get-one)
+  one-8
+)
+
 (define-constant e 271828182)
 (define-constant seconds-in-year u31536000
   ;; (* u144 u365 u10 u60)
@@ -116,9 +137,9 @@
   seconds-in-block
 )
 
-(define-read-only (test-this)
-  (mul (* one-8 u1000) (taylor-6 (mul u5000000 u300000000)))
-)
+;; (define-read-only (test-this)
+;;   (mul (* one-8 u1000) (taylor-6 (mul u5000000 u300000000)))
+;; )
 
 (define-constant fact_2 u200000000)
 (define-constant fact_3 (mul u300000000 u200000000))

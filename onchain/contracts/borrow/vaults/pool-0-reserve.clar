@@ -373,18 +373,12 @@
   (default-to { assets-supplied: (list), assets-borrowed: (list) } (map-get? user-assets who))
 )
 
-(define-read-only (get-user-reserve-data
-  (who principal)
-  (reserve principal)
-  )
+(define-read-only (get-user-reserve-data (who principal) (reserve principal))
   (default-to default-user-reserve-data (map-get? user-reserve-data { user: who, reserve: reserve }))
 )
 
 
-(define-read-only (get-user-state-c
-  (user principal)
-  (asset principal)
-  )
+(define-read-only (get-user-state-c (user principal) (asset principal))
   (map-get? user-reserve-data { user: user, reserve: asset })
 )
 
@@ -404,10 +398,7 @@
   (get liquidation-bonus (get-reserve-state (contract-of asset)))
 )
 
-(define-read-only (get-user-origination-fee
-  (who principal)
-  (asset <ft>)
-  )
+(define-read-only (get-user-origination-fee (who principal) (asset <ft>))
   (let (
     (user-data (get-user-reserve-data who (contract-of asset)))
   )
@@ -415,9 +406,7 @@
   )
 )
 
-(define-public (get-reserve-available-liquidity
-  (asset <ft>)
-)
+(define-public (get-reserve-available-liquidity (asset <ft>))
   (contract-call? asset get-balance (as-contract tx-sender))
 )
 
@@ -665,7 +654,7 @@
   (principal-reserve <ft>)
   (collateral-reserve <ft>)
   (user principal)
-  (amount-to-liquidate uint)
+  (principal-amount-to-liquidate uint)
   (collateral-to-liquidate uint)
   (fee-liquidated uint)
   (liquidated-collateral-for-fee uint)
@@ -673,11 +662,11 @@
   (liquidator-receives-aToken bool)
   )
   (begin
-    (try! (update-principal-reserve-state-on-liquidation principal-reserve user amount-to-liquidate balance-increase))
+    (try! (update-principal-reserve-state-on-liquidation principal-reserve user principal-amount-to-liquidate balance-increase))
     (try! (update-cumulative-indexes (contract-of collateral-reserve)))
 
-    (try! (update-user-state-on-liquidation principal-reserve user amount-to-liquidate fee-liquidated balance-increase))
-    (try! (update-reserve-interest-rates-and-timestamp principal-reserve amount-to-liquidate u0))
+    (try! (update-user-state-on-liquidation principal-reserve user principal-amount-to-liquidate fee-liquidated balance-increase))
+    (try! (update-reserve-interest-rates-and-timestamp principal-reserve principal-amount-to-liquidate u0))
 
     (if liquidator-receives-aToken
       (begin
@@ -817,13 +806,6 @@
     })
   )
 )
-
-(define-read-only (value-to-collateral
-  (value uint)
-  )
-  (/ value u2)
-)
-
 
 (define-public (update-user-state-on-repay
   (asset <ft>)
@@ -1044,7 +1026,7 @@
         (if (is-eq (get total-borrow-balanceUSD user-global-data) u0)
           (ok true) ;; not borrowing anything
           (let (
-            (amount-to-decrease (mul (try! (contract-call? .oracle get-asset-price asset)) amount))
+            (amount-to-decrease (mul-to-fixed-precision amount (get decimals reserve-data) (try! (contract-call? .oracle get-asset-price asset))))
             (collateral-balance-after-decrease (- (get total-collateral-balanceUSD user-global-data) amount-to-decrease))
           )
             (if (is-eq collateral-balance-after-decrease u0)
@@ -1507,7 +1489,7 @@
   (let (
     (result (unwrap-panic total))
   )
-    (print result)
+    ;; (print result)
     (asserts! true (err u1))
     ;; (try!
       (get-user-basic-reserve-data
@@ -1559,7 +1541,7 @@
         (reserve-data (get-reserve-state (contract-of asset)))
         (reserve-unit-price (try! (contract-call? .oracle get-asset-price asset)))
         ;; liquidity and collateral balance
-        (liquidity-balanceUSD (mul-to-fixed-precision (get underlying-balance user-reserve-state) (get decimals reserve-data) reserve-unit-price ))
+        (liquidity-balanceUSD (mul-to-fixed-precision (get underlying-balance user-reserve-state) (get decimals reserve-data) reserve-unit-price))
         (ret-1
           (let (
             (total-liquidity-balance (+ (get total-liquidity-balanceUSD aggregate) liquidity-balanceUSD))
@@ -1613,6 +1595,12 @@
           )
         )
       )
+        ;; (print
+        ;;   {
+        ;;     underlying-balance: (get underlying-balance user-reserve-state),
+        ;;     decimals: (get decimals reserve-data),
+        ;;     reserve-unit-price: reserve-unit-price,
+        ;;   })
         
         (ok
           (merge
@@ -1670,22 +1658,22 @@
         (get total-collateral-balanceUSD aggregate)
         (get total-borrow-balanceUSD aggregate)
         (get user-total-feesUSD aggregate)
-        (get current-liquidation-threshold aggregate)
+        current-liquidation-threshold
       )
     )
     (is-health-factor-below-treshold (< health-factor (var-get health-factor-liquidation-treshold)))
   )
-    ;; (print aggregate)
-    (print {
-      total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
-      total-collateral-balanceUSD: total-collateral-balanceUSD,
-      total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),
-      user-total-feesUSD: (get user-total-feesUSD aggregate),
-      current-ltv: current-ltv,
-      current-liquidation-threshold: current-liquidation-threshold,
-      health-factor: health-factor,
-      is-health-factor-below-treshold: is-health-factor-below-treshold
-    })
+    ;; (print {
+    ;;   total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
+    ;;   total-collateral-balanceUSD: total-collateral-balanceUSD,
+    ;;   total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),
+    ;;   user-total-feesUSD: (get user-total-feesUSD aggregate),
+    ;;   current-ltv: current-ltv,
+    ;;   current-liquidation-threshold: current-liquidation-threshold,
+    ;;   health-factor: health-factor,
+    ;;   is-health-factor-below-treshold: is-health-factor-below-treshold
+    ;; })
+    ;; (print { total: (+ (get total-borrow-balanceUSD aggregate) (get user-total-feesUSD aggregate))  })
     (ok {
       total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
       total-collateral-balanceUSD: total-collateral-balanceUSD,
@@ -1713,7 +1701,7 @@
     (reserve-data (get-reserve-state (contract-of asset)))
     (requested-borrow-amount-USD (mul-to-fixed-precision (+ amount fee) (get decimals reserve-data) asset-price))
     (collateral-needed-in-USD
-      (mul
+      (div
         (+
           user-borrow-balance-USD
           user-total-fees-USD
@@ -1723,6 +1711,12 @@
       )
     )
   )
+    ;; (print {
+    ;;   user-borrow-balance-USD: user-borrow-balance-USD,
+    ;;   user-total-fees-USD: user-total-fees-USD,
+    ;;   requested-borrow-amount-USD: requested-borrow-amount-USD,
+    ;;   current-ltv: current-ltv
+    ;; })
     (ok collateral-needed-in-USD)
   )
 )
@@ -1779,8 +1773,6 @@
     (+ one-8 (mul years-elapsed current-liquidity-rate))
   )
 )
-
-
 
 
 ;; (define-public (add-asset (asset <ft>) (amount uint) (token-id uint) (sender principal))

@@ -45,9 +45,9 @@
     (ok (var-set token-symbol value))
     ERR_UNAUTHORIZED))
 
-(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
+
+(define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
     (match (ft-transfer? lp-stSTX amount sender recipient)
       response (begin
         (print memo)
@@ -58,6 +58,13 @@
   )
 )
 
+(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
+  (begin
+    (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
+    (transfer-internal amount sender recipient memo)
+  )
+)
+
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
     (try! (transfer amount from to none))
@@ -65,9 +72,14 @@
   )
 )
 
+
+(define-private (burn-internal (amount uint) (owner principal))
+  (ft-burn? lp-stSTX amount owner)
+)
+
 (define-public (burn-on-liquidation (amount uint) (owner principal))
   (begin
-    (try! (burn amount owner))
+    (try! (burn-internal amount owner))
     (ok amount)
   )
 )
@@ -82,7 +94,7 @@
 (define-public (burn (amount uint) (owner principal))
   (begin
     (asserts! true ERR_UNAUTHORIZED)
-    (ft-burn? lp-stSTX amount owner)
+    (burn-internal amount owner)
   )
 )
 

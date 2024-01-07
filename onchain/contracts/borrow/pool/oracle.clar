@@ -46,6 +46,10 @@
   )
 )
 
+(define-public (set-price (asset <ft>) (price uint))
+  (ok (map-set tickers (contract-of asset) price))
+)
+
 (define-map tickers principal uint)
 
 (map-set tickers .stSTX u160000000)
