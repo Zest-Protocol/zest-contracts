@@ -5,15 +5,25 @@
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 
 (define-constant a-token .lp-token-0)
-;; (define-constant default-interest-rate-strategy-address .interest-rate-strategy-default)
 
 (define-constant one-8 u100000000)
 
-;; (define-map assets uint uint)
-(define-data-var contract-owner principal tx-sender)
-
 (define-data-var flashloan-fee-total uint (/ (* one-8 u35) one-8))
 (define-data-var flashloan-fee-protocol uint (/ (* one-8 u3000) one-8))
+
+(define-public (set-flashloan-fee-total (fee uint))
+  (begin
+    (asserts! (is-configurator tx-sender) (err u9))
+    (ok (var-set flashloan-fee-total fee))
+  )
+)
+
+(define-public (set-flashloan-fee-protocol (fee uint))
+  (begin
+    (asserts! (is-configurator tx-sender) (err u9))
+    (ok (var-set flashloan-fee-protocol fee))
+  )
+)
 
 (define-constant seconds-in-year (* u144 u365 u10 u60))
 
@@ -67,9 +77,8 @@
   (contract-call? .math taylor-6 x)
 )
 
-(define-constant max-value u340282366920938463463374607431768211455)
+(define-constant max-value (contract-call? .math get-max-value))
 (define-data-var health-factor-liquidation-treshold uint u100000000)
-
 (define-map user-reserve-data
   { user: principal, reserve: principal}
   (tuple
@@ -80,42 +89,6 @@
     (last-updated-block uint)
     (use-as-collateral bool)
   )
-)
-
-
-(define-read-only (get-flashloan-fee-total)
-  (var-get flashloan-fee-total)
-)
-
-(define-read-only (get-flashloan-fee-protocol)
-  (var-get flashloan-fee-protocol)
-)
-
-(define-public (set-flashloan-fee-total (fee uint))
-  (ok (var-set flashloan-fee-total fee))
-)
-
-(define-public (set-flashloan-fee-protocol (fee uint))
-  (ok (var-set flashloan-fee-protocol fee))
-)
-
-(define-public (set-use-as-collateral (who principal) (asset <ft>) (use-as-collateral bool))
-  (let (
-    (user-data (get-user-reserve-data who (contract-of asset)))
-  )
-    (ok (map-set user-reserve-data { user: who, reserve: (contract-of asset) } (merge user-data { use-as-collateral: use-as-collateral })))
-  )
-)
-
-(define-constant default-user-reserve-data
-  {
-    principal-borrow-balance: u0,
-    last-variable-borrow-cumulative-index: one-8,
-    origination-fee: u0,
-    stable-borrow-rate: u0,
-    last-updated-block: u0,
-    use-as-collateral: false,
-  }
 )
 
 (define-map user-assets
@@ -155,15 +128,89 @@
   )
 )
 
+(define-map user-index principal uint)
+(define-data-var assets (list 100 principal) (list))
 (define-map isolated-assets principal bool)
-
-;; TODO: enabled adding manually
-;; (map-set isolated-assets .stSTX true)
-
 ;; Assets that can be borrowed using isolated assets as collateral
 (define-data-var borroweable-isolated
   (list 100 principal)
   (list)
+)
+
+(define-data-var configurator principal .pool-borrow)
+(define-data-var admin principal tx-sender)
+
+(define-public (set-configurator (new-configurator principal))
+  (begin
+    (asserts! (is-admin tx-sender) (err u9))
+    (ok (var-set configurator new-configurator))
+  )
+)
+
+(define-public (set-admin (new-admin principal))
+  (begin
+    (asserts! (is-admin tx-sender) (err u9))
+    (ok (var-set admin new-admin))
+  )
+)
+
+(define-read-only (is-configurator (caller principal))
+  (if (is-eq caller (var-get configurator))
+    true
+    false
+  )
+)
+
+(define-read-only (is-admin (caller principal))
+  (if (is-eq caller (var-get admin))
+    true
+    false
+  )
+)
+
+(define-read-only (get-flashloan-fee-total)
+  (var-get flashloan-fee-total)
+)
+
+(define-read-only (get-flashloan-fee-protocol)
+  (var-get flashloan-fee-protocol)
+)
+
+(define-private (set-use-as-collateral (who principal) (asset <ft>) (use-as-collateral bool))
+  (let (
+    (user-data (get-user-reserve-data who (contract-of asset)))
+  )
+    (ok (map-set user-reserve-data { user: who, reserve: (contract-of asset) } (merge user-data { use-as-collateral: use-as-collateral })))
+  )
+)
+
+
+(define-public (set-use-reserve-data
+  (who principal)
+  (asset principal)
+  (new-state (tuple
+    (principal-borrow-balance uint)
+    (last-variable-borrow-cumulative-index uint)
+    (origination-fee uint)
+    (stable-borrow-rate uint)
+    (last-updated-block uint)
+    (use-as-collateral bool)))
+  )
+  (begin
+    (asserts! true (err u2))
+    (ok (map-set user-reserve-data { user: who, reserve: asset } new-state))
+  )
+)
+
+(define-constant default-user-reserve-data
+  {
+    principal-borrow-balance: u0,
+    last-variable-borrow-cumulative-index: one-8,
+    origination-fee: u0,
+    stable-borrow-rate: u0,
+    last-updated-block: u0,
+    use-as-collateral: false,
+  }
 )
 
 (define-read-only (is-borroweable-isolated (asset principal))
@@ -173,36 +220,30 @@
   )
 )
 
-(define-public (set-borroweable-isolated (asset principal) (debt-ceiling uint))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (var-set
-      borroweable-isolated
-      (unwrap-panic (as-max-len? (append (var-get borroweable-isolated) asset) u100))
-    )
-    (map-set
-      reserve-state
-      asset
-      (merge
-        reserve-data
-        {
-          debt-ceiling: debt-ceiling
-        }
-      )
-    )
-    (ok true)
+(define-read-only (get-borroweable-isolated)
+  (var-get borroweable-isolated)
+)
+
+(define-read-only (get-health-factor-liquidation-treshold)
+  (var-get health-factor-liquidation-treshold)
+)
+
+(define-read-only (is-isolated-type (asset principal))
+  (default-to false (map-get? isolated-assets asset))
+)
+
+(define-public (set-health-factor-liquidation-treshold (hf uint))
+  (begin
+    (asserts! true (err u2))
+    (ok (var-set health-factor-liquidation-treshold hf))
   )
 )
 
-(define-public (remove-borroweable-isolated (asset principal))
+(define-public (set-borroweable-isolated (new-assets (list 100 principal)))
   (begin
-    (ok
-      (var-set
-        borroweable-isolated
-        (get agg (fold filter-asset (var-get borroweable-isolated) { filter-by: asset, agg: (list) }))
-      )
-    )
+    (asserts! true (err u2))
+    (var-set borroweable-isolated new-assets)
+    (ok true)
   )
 )
 
@@ -212,15 +253,11 @@
   )
 )
 
-(define-public (add-isolated-asset (asset principal))
+(define-public (set-isolated-asset (asset principal))
   (begin
     (ok (map-set isolated-assets asset true))
   )
 )
-
-(define-map user-index principal uint)
-
-(define-data-var assets (list 100 principal) (list))
 
 (define-read-only (is-in-isolation-mode (who principal))
   (let (
@@ -229,9 +266,6 @@
     (enabled-isolated-n (get enabled-count (fold count-collateral-enabled (get isolated split-assets) { who: who, enabled-count: u0, enabled-assets: (list) })))
     (enabled-non-isolated-n  (get enabled-count (fold count-collateral-enabled (get non-isolated split-assets) { who: who, enabled-count: u0, enabled-assets: (list) })))
   )
-    ;; (print { split-assets: split-assets })
-    ;; (print { enabled-isolated-n: enabled-isolated-n })
-    ;; (print { enabled-non-isolated-n: enabled-non-isolated-n })
 
     (if (> enabled-non-isolated-n u0)
       false
@@ -248,20 +282,14 @@
   (let (
     (assets-supplied (get assets-supplied (get-user-assets who)))
     (split-assets (fold split-isolated assets-supplied { isolated: (list), non-isolated: (list) }))
-    ;; (enabled-isolated-n (get enabled-count ))
-    ;; (enabled-non-isolated-n  (get enabled-count (fold count-collateral-enabled (get non-isolated split-assets) { who: who, enabled-count: u0 })))
   )
     (unwrap-panic (element-at (get enabled-assets (fold count-collateral-enabled (get isolated split-assets) { who: who, enabled-count: u0, enabled-assets: (list) })) u0))
   )
 )
 
-;; (define-read-only (split-isolated-test (who principal) (assets-supplied (list 100 principal)))
-;;   (fold split-isolated assets-supplied { non-isolated: (list), isolated: (list) })
-;;   ;; (fold count-collateral-enabled assets-supplied { who: who, enabled-count: u0 })
-;; )
-
+;; util function
 (define-read-only (split-isolated (asset principal) (ret { isolated: (list 100 principal), non-isolated: (list 100 principal) }))
-  (if (asset-is-isolated-type asset)
+  (if (is-isolated-type asset)
     {
       isolated: (unwrap-panic (as-max-len? (append (get isolated ret) asset) u100)) ,
       non-isolated: (get non-isolated ret)
@@ -273,6 +301,7 @@
   )
 )
 
+;; util function
 (define-read-only (count-collateral-enabled (asset principal) (ret { who: principal, enabled-count: uint, enabled-assets: (list 100 principal) }))
   (if (get use-as-collateral (get-user-reserve-data (get who ret) asset))
     (merge ret {
@@ -281,14 +310,6 @@
       })
     ret
   )
-)
-
-(define-read-only (set-is-isolated-type (asset principal))
-  (default-to false (map-get? isolated-assets asset))
-)
-
-(define-read-only (asset-is-isolated-type (asset principal))
-  (default-to false (map-get? isolated-assets asset))
 )
 
 (define-private (add-supplied-asset (who principal) (asset principal))
@@ -377,11 +398,6 @@
   (default-to default-user-reserve-data (map-get? user-reserve-data { user: who, reserve: reserve }))
 )
 
-
-(define-read-only (get-user-state-c (user principal) (asset principal))
-  (map-get? user-reserve-data { user: user, reserve: asset })
-)
-
 (define-read-only (get-user-current-borrow-rate
   (who principal)
   (asset <ft>)
@@ -424,6 +440,13 @@
 
 (define-read-only (get-assets)
   (var-get assets)
+)
+
+(define-public (add-asset (asset principal))
+  (begin
+    (asserts! true (err u1))
+    (ok (var-set assets (unwrap-panic (as-max-len? (append (var-get assets) asset) u100))))
+  )
 )
 
 (define-public (init
@@ -472,6 +495,58 @@
   )
 )
 
+(define-public (set-reserve
+  (asset principal)
+  (state
+    (tuple
+      (last-liquidity-cumulative-index uint)
+      (current-liquidity-rate uint)
+      (total-borrows-stable uint)
+      (total-borrows-variable uint)
+      (current-variable-borrow-rate uint)
+      (current-stable-borrow-rate uint)
+      (current-average-stable-borrow-rate uint)
+      (last-variable-borrow-cumulative-index uint)
+      (base-ltv-as-collateral uint)
+      (liquidation-threshold uint)
+      (liquidation-bonus uint)
+      (decimals uint)
+      (a-token-address principal)
+      (interest-rate-strategy-address principal)
+      (last-updated-block uint)
+      (borrowing-enabled bool)
+      (usage-as-collateral-enabled bool)
+      (is-stable-borrow-rate-enabled bool)
+      (supply-cap uint)
+      (borrow-cap uint)
+      (debt-ceiling uint)
+      (is-active bool)
+      (is-frozen bool)
+    )))
+  (begin
+    (map-set reserve-state asset state)
+    (ok true)
+  )
+)
+
+(define-public (set-user-reserve
+  (user principal)
+  (asset principal)
+  (state
+    (tuple
+    (principal-borrow-balance uint)
+    (last-variable-borrow-cumulative-index uint)
+    (origination-fee uint)
+    (stable-borrow-rate uint)
+    (last-updated-block uint)
+    (use-as-collateral bool)
+  )
+    ))
+  (begin
+    (map-set user-reserve-data { user: user, reserve: asset} state)
+    (ok true)
+  )
+)
 
 (define-read-only (is-frozen (asset principal))
   (get is-frozen (get-reserve-state asset))
@@ -485,55 +560,6 @@
   (get borrowing-enabled (get-reserve-state asset))
 )
 
-(define-public (set-borrowing-enabled (asset principal) (enabled bool))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (ok (map-set reserve-state asset (merge reserve-data { borrowing-enabled: enabled })))
-  )
-)
-
-(define-public (set-usage-as-collateral-enabled
-  (asset principal)
-  (enabled bool)
-  (base-ltv-as-collateral uint)
-  (liquidation-threshold uint)
-  (liquidation-bonus uint)
-  )
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (ok
-      (map-set
-        reserve-state
-        asset
-        (merge
-          reserve-data
-          {
-            usage-as-collateral-enabled: enabled,
-            base-ltv-as-collateral: base-ltv-as-collateral,
-            liquidation-threshold: liquidation-threshold,
-            liquidation-bonus: liquidation-bonus
-          }
-        )
-      )
-    )
-  )
-)
-
-;; -- ownable-trait --
-;; (define-public (get-contract-owner)
-;;   (ok (var-get contract-owner)))
-
-;; (define-read-only (is-contract-owner (caller principal))
-;;   (is-eq caller (var-get contract-owner)))
-
-;; (define-public (set-contract-owner (owner principal))
-;;   (begin
-;;     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-;;     (print { type: "set-contract-owner-liquidity-vault-v1-0", payload: owner })
-;;     (ok (var-set contract-owner owner))))
-
 (define-public (update-state-on-deposit
   (asset <ft>)
   (who principal)
@@ -545,8 +571,6 @@
 
     (try! (update-cumulative-indexes (contract-of asset)))
     (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
-    
-    ;; (print { deposited-state: (get-reserve-state (contract-of asset)) })
 
     (if is-first-deposit
       (begin
@@ -859,7 +883,7 @@
     )
   )
   (if repaid-whole-loan
-    (add-borrowed-asset who (contract-of asset))
+    (remove-borrowed-asset who (contract-of asset))
     false
   )
   (ok u0)
@@ -1061,10 +1085,6 @@
       )
     )
   )
-)
-
-(define-read-only (get-health-factor-liquidation-treshold)
-  (var-get health-factor-liquidation-treshold)
 )
 
 (define-public (transfer-fee-to-collection
@@ -1489,17 +1509,13 @@
   (let (
     (result (unwrap-panic total))
   )
-    ;; (print result)
     (asserts! true (err u1))
-    ;; (try!
-      (get-user-basic-reserve-data
-        (get lp-token reserve)
-        (get asset reserve)
-        (get oracle reserve)
-        result
-      )
-    ;; )
-    ;; total
+    (get-user-basic-reserve-data
+      (get lp-token reserve)
+      (get asset reserve)
+      (get oracle reserve)
+      result
+    )
   )
 )
 
@@ -1521,7 +1537,6 @@
     (user (get user aggregate))
     (user-reserve-state (try! (get-user-balance-reserve-data lp-token asset user oracle)))
   )
-    ;; (print user-reserve-state)
     (if (is-eq (+ (get underlying-balance user-reserve-state) (get compounded-borrow-balance user-reserve-state)) u0)
       ;; do nothing this loop
       (begin
@@ -1594,14 +1609,7 @@
             }
           )
         )
-      )
-        ;; (print
-        ;;   {
-        ;;     underlying-balance: (get underlying-balance user-reserve-state),
-        ;;     decimals: (get decimals reserve-data),
-        ;;     reserve-unit-price: reserve-unit-price,
-        ;;   })
-        
+      )        
         (ok
           (merge
             (merge

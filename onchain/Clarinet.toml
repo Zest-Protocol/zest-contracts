@@ -289,6 +289,11 @@ path = 'contracts/v2_sbtc/token/xUSD.clar'
 clarity_version = 2
 epoch = 2.1
 
+[contracts.wstx]
+path = 'contracts/v2_sbtc/token/wstx.clar'
+clarity_version = 2
+epoch = 2.1
+
 [contracts.zge000-governance-token]
 path = "contracts/v2_sbtc/dao/extensions/zge000-governance-token.clar"
 clarity_version = 2

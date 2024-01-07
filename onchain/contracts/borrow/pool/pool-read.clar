@@ -43,7 +43,7 @@
 )
 
 (define-read-only (is-isolated-asset (asset principal))
-  (contract-call? .pool-0-reserve asset-is-isolated-type asset)
+  (contract-call? .pool-0-reserve is-isolated-type asset)
 )
 
 (define-read-only (is-borroweable (asset principal))

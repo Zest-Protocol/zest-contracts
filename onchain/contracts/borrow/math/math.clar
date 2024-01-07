@@ -3,6 +3,10 @@
 
 (define-constant max-value u340282366920938463463374607431768211455)
 
+(define-read-only (get-max-value)
+  max-value
+)
+
 (define-read-only (mul (x uint) (y uint))
   (/ (+ (* x y) (/ one-8 u2)) one-8)
 )

@@ -90,7 +90,116 @@ describe("example tests", () => {
     );
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
 
-    let callResponse = poolReserve0.init(
+    let callResponse = simnet.callPublicFn(
+      sBTC,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST1J9DETBQBWSTSQ1WDAS66WP8RTJHK1SMRZMZXVQ"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      sBTC,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      sBTC,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      sBTC,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST21FPF3HJK57GXH9B5BB0FWZC8YDDK665APDYFQQ"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      stSTX,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST1J9DETBQBWSTSQ1WDAS66WP8RTJHK1SMRZMZXVQ"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      stSTX,
+      "mint",
+      [
+        Cl.uint(3000000000),
+        Cl.standardPrincipal("ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      stSTX,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      stSTX,
+      "mint",
+      [
+        Cl.uint(1000000000),
+        Cl.standardPrincipal("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      stSTX,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      stSTX,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST21FPF3HJK57GXH9B5BB0FWZC8YDDK665APDYFQQ"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      xUSD,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"),
+      ],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      USDA,
+      "mint",
+      [
+        Cl.uint(1000000000000000),
+        Cl.standardPrincipal("ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"),
+      ],
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.init(
       deployerAddress,
       lpstSTX,
       deployerAddress,
@@ -103,7 +212,7 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    callResponse = poolReserve0.init(
+    callResponse = poolBorrow.init(
       deployerAddress,
       lpsBTC,
       deployerAddress,
@@ -116,7 +225,7 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    callResponse = poolReserve0.init(
+    callResponse = poolBorrow.init(
       deployerAddress,
       lpdiko,
       deployerAddress,
@@ -129,7 +238,7 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    callResponse = poolReserve0.init(
+    callResponse = poolBorrow.init(
       deployerAddress,
       lpUSDA,
       deployerAddress,
@@ -142,7 +251,7 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    callResponse = poolReserve0.init(
+    callResponse = poolBorrow.init(
       deployerAddress,
       lpxUSD,
       deployerAddress,
@@ -155,44 +264,42 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    callResponse = poolReserve0.setBorrowingEnabled(
+    callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
       sBTC,
       true,
       deployerAddress
     );
 
-    callResponse = poolReserve0.setBorrowingEnabled(
+    callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
       stSTX,
       true,
       deployerAddress
     );
 
-    callResponse = poolReserve0.setBorrowingEnabled(
+    callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
       diko,
       true,
       deployerAddress
     );
 
-    callResponse = poolReserve0.setBorrowingEnabled(
+    callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
       USDA,
       true,
       deployerAddress
     );
 
-    callResponse = poolReserve0.setBorrowingEnabled(
+    callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
       xUSD,
       true,
       deployerAddress
     );
 
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    callResponse = poolReserve0.addIsolatedAsset(
+    callResponse = poolBorrow.addIsolatedAsset(
       deployerAddress,
       stSTX,
       deployerAddress
@@ -200,18 +307,16 @@ describe("example tests", () => {
     callResponse = poolReserve0.setBorroweableIsolated(
       deployerAddress,
       xUSD,
-      BigInt("340282366920938463463374607431768211455"),
       deployerAddress
     );
     callResponse = poolReserve0.setBorroweableIsolated(
       deployerAddress,
       USDA,
-      BigInt("340282366920938463463374607431768211455"),
       deployerAddress
     );
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = poolReserve0.setUsageAsCollateralEnabled(
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
       stSTX,
       true,
@@ -220,7 +325,7 @@ describe("example tests", () => {
       50000000,
       deployerAddress
     );
-    callResponse = poolReserve0.setUsageAsCollateralEnabled(
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
       sBTC,
       true,
@@ -229,7 +334,7 @@ describe("example tests", () => {
       50000000,
       deployerAddress
     );
-    callResponse = poolReserve0.setUsageAsCollateralEnabled(
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
       diko,
       true,
@@ -238,7 +343,7 @@ describe("example tests", () => {
       50000000,
       deployerAddress
     );
-    callResponse = poolReserve0.setUsageAsCollateralEnabled(
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
       USDA,
       true,
@@ -247,7 +352,7 @@ describe("example tests", () => {
       50000000,
       deployerAddress
     );
-    callResponse = poolReserve0.setUsageAsCollateralEnabled(
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
       xUSD,
       true,
@@ -281,7 +386,7 @@ describe("example tests", () => {
       Borrower_1,
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = poolBorrow.supply(
       deployerAddress,
@@ -294,7 +399,7 @@ describe("example tests", () => {
       LP_1,
       LP_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     // callResponse = poolBorrow.supply(
     //   deployerAddress,
@@ -323,8 +428,7 @@ describe("example tests", () => {
       Borrower_2,
       Borrower_2
     );
-
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
     // console.log(callResponse.events);
@@ -433,15 +537,16 @@ describe("example tests", () => {
       Borrower_1
     );
 
+    console.log(Cl.prettyPrint(borrower_1_data.result));
     // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
 
     // console.log(Cl.prettyPrint(borrower_1_data.result));
-    console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
-    console.log(Cl.prettyPrint(borrower_1_data.events[1].data.value!));
-    console.log(Cl.prettyPrint(borrower_1_data.events[2].data.value!));
-    console.log(Cl.prettyPrint(borrower_1_data.events[3].data.value!));
-    console.log(Cl.prettyPrint(borrower_1_data.events[4].data.value!));
-    console.log(Cl.prettyPrint(borrower_1_data.events[5].data.value!));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[1].data.value!));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[2].data.value!));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[3].data.value!));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[4].data.value!));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[5].data.value!));
 
     // let borrower_data = simnet.callReadOnlyFn(
     //   `${deployerAddress}.pool-0-reserve`,

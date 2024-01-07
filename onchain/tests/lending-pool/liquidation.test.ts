@@ -89,7 +89,7 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    callResponse = poolReserve0.init(
+    callResponse = poolBorrow.init(
       deployerAddress,
       lpsBTC,
       deployerAddress,
@@ -102,7 +102,7 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    callResponse = poolReserve0.init(
+    callResponse = poolBorrow.init(
       deployerAddress,
       lpxUSD,
       deployerAddress,
@@ -115,21 +115,21 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    callResponse = poolReserve0.setBorrowingEnabled(
+    callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
       sBTC,
       true,
       deployerAddress
     );
 
-    callResponse = poolReserve0.setBorrowingEnabled(
+    callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
       xUSD,
       true,
       deployerAddress
     );
 
-    callResponse = poolReserve0.setUsageAsCollateralEnabled(
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
       sBTC,
       true,
@@ -240,8 +240,22 @@ describe("example tests", () => {
       deployerAddress
     );
 
-    console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
-    console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
+    console.log(
+      simnet
+        .getAssetsMap()
+        .get(".sBTC.sBTC")
+        ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    );
+    const prevUsdamount = simnet
+      .getAssetsMap()
+      .get(".xUSD.xUSD")
+      ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")!;
+    console.log(
+      simnet
+        .getAssetsMap()
+        .get(".xUSD.xUSD")
+        ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    );
     // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -275,10 +289,42 @@ describe("example tests", () => {
     console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
     // console.log(callResponse.events);
-    console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
-    console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
+
+    console.log(
+      simnet
+        .getAssetsMap()
+        .get(".sBTC.sBTC")
+        ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    );
+    console.log(
+      simnet
+        .getAssetsMap()
+        .get(".xUSD.xUSD")
+        ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    );
+
+    console.log(
+      "Result: ",
+      prevUsdamount -
+        simnet
+          .getAssetsMap()
+          .get(".xUSD.xUSD")
+          ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")!
+    );
+    console.log(
+      "Earned collateral: ",
+      simnet
+        .getAssetsMap()
+        .get(".sBTC.sBTC")
+        ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    );
+
+    console.log("Purchased debt: ", 1_000_000_000_000);
+    console.log(Liquidator_1);
     // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[5].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[6].data.value!));
@@ -312,8 +358,332 @@ describe("example tests", () => {
     //   Borrower_1
     // );
 
-    console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
-    console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
+    // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
+    // console.log(simnet.getAssetsMap());
+    // console.log(Cl.prettyPrint(callResponse.result));
+  });
+});
+
+describe("example tests", () => {
+  it("Supply sBTC, borrow xUSD, liquidator buys part of the collateral", () => {
+    const poolReserve0 = new PoolReserve(
+      simnet,
+      deployerAddress,
+      "pool-0-reserve"
+    );
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+
+    let callResponse = simnet.callPublicFn(
+      sBTC,
+      "mint",
+      [Cl.uint(100_000_000_000), Cl.standardPrincipal(Borrower_1)],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      sBTC,
+      "mint",
+      [Cl.uint(1_000_000_000_000), Cl.standardPrincipal(LP_1)],
+      deployerAddress
+    );
+
+    // 3 992 301 124 525
+    //    50 000 000 000
+    callResponse = simnet.callPublicFn(
+      xUSD,
+      "mint",
+      [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(Liquidator_1)],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      xUSD,
+      "mint",
+      [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(LP_1)],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      "oracle",
+      "set-price",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(100_000_000)],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      "oracle",
+      "set-price",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(1_000_000_000_000)],
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.init(
+      deployerAddress,
+      lpsBTC,
+      deployerAddress,
+      sBTC,
+      8,
+      BigInt("340282366920938463463374607431768211455"),
+      BigInt("340282366920938463463374607431768211455"),
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.init(
+      deployerAddress,
+      lpxUSD,
+      deployerAddress,
+      xUSD,
+      6,
+      BigInt("340282366920938463463374607431768211455"),
+      BigInt("340282366920938463463374607431768211455"),
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      sBTC,
+      true,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      xUSD,
+      true,
+      deployerAddress
+    );
+    console.log("mint");
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
+      deployerAddress,
+      sBTC,
+      true,
+      80000000,
+      80000000,
+      5000000,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpsBTC,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      sBTC,
+      100_000_000_000,
+      Borrower_1,
+      Borrower_1
+    );
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpsBTC,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      sBTC,
+      1_000_000_000_000,
+      LP_1,
+      LP_1
+    );
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpxUSD,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      xUSD,
+      100_000_000_000_000,
+      LP_1,
+      LP_1
+    );
+
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "borrow",
+      [
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+        Cl.uint(6_996_172_743_701),
+        Cl.contractPrincipal(deployerAddress, feesCalculator),
+        Cl.uint(0),
+        Cl.standardPrincipal(Borrower_1),
+      ],
+      Borrower_1
+    );
+
+    // console.log(callResponse.events);
+    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
+
+    // simnet.mineEmptyBlocks(10);
+
+    let borrower_1_data = simnet.callPublicFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "calculate-user-global-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+
+    callResponse = simnet.callPublicFn(
+      "oracle",
+      "set-price",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(500_000_000_000)],
+      deployerAddress
+    );
+
+    console.log(
+      simnet.getAssetsMap().get(".sBTC.sBTC")
+      // ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    );
+    // const prevUsdamount = simnet.getAssetsMap().get(".xUSD.xUSD");
+    // ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")!;
+    console.log(
+      simnet.getAssetsMap().get(".xUSD.xUSD")
+      // ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    );
+    // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "liquidation-call",
+      [
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+        Cl.contractPrincipal(deployerAddress, lpsBTC),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.standardPrincipal(Borrower_1),
+        // Cl.uint(3_992_301_124_525),
+        Cl.uint(1_000_000_000_000),
+        Cl.bool(false),
+      ],
+      Liquidator_1
+    );
+    // u100000000000
+    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
+    // console.log(callResponse.events);
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[5].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[6].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[7].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[8].data.value!));
+
+    // console.log(
+    //   simnet.getAssetsMap().get(".sBTC.sBTC")
+    //   // ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    // );
+    // console.log("Can purchase sBTC: ", 21000000000);
+    // console.log(
+    //   simnet.getAssetsMap().get(".xUSD.xUSD")
+    //   // ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    // );
+
+    // console.log(
+    //   "Result: ",
+    //   prevUsdamount -
+    //     simnet
+    //       .getAssetsMap()
+    //       .get(".xUSD.xUSD")
+    //       ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")!
+    // );
+    // console.log(
+    //   "Earned collateral: ",
+    //   simnet
+    //     .getAssetsMap()
+    //     .get(".sBTC.sBTC")
+    //     ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
+    // );
+
+    // console.log("Purchased debt: ", 1_000_000_000_000);
+    // console.log(Liquidator_1);
+    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[5].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[6].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[7].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[8].data.value!));
+    // u20000000000
+    // console.log(Cl.prettyPrint(callResponse.events[9].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[10].data.value!));
+    // console.log(callResponse.events);
+
+    // console.log(Cl.prettyPrint(callResponse.events[6].data.value!));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[4].data.value!));
+    // console.log(Cl.prettyPrint(borrower_1_data.events[5].data.value!));
+    // callResponse = simnet.callPublicFn(
+    //   "pool-0-reserve",
+    //   "get-user-basic-reserve-data",
+    //   [
+    //     Cl.contractPrincipal(deployerAddress, lpsBTC),
+    //     Cl.contractPrincipal(deployerAddress, sBTC),
+    //     Cl.contractPrincipal(deployerAddress, "oracle"),
+    //     Cl.tuple({
+    //       "total-liquidity-balanceUSD": Cl.uint(0),
+    //       "total-collateral-balanceUSD": Cl.uint(0),
+    //       "total-borrow-balanceUSD": Cl.uint(0),
+    //       "user-total-feesUSD": Cl.uint(0),
+    //       "current-ltv": Cl.uint(0),
+    //       "current-liquidation-threshold": Cl.uint(0),
+    //       user: Cl.standardPrincipal(Borrower_1),
+    //     }),
+    //   ],
+    //   Borrower_1
+    // );
+
     // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
     // console.log(simnet.getAssetsMap());
     // console.log(Cl.prettyPrint(callResponse.result));
