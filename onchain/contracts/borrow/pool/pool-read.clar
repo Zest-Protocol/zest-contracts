@@ -242,23 +242,23 @@
 )
 
 (define-read-only (get-user-borrow-balance-diko (who principal))
-  (ok (get compounded-balance (try! (contract-call? .pool-0-reserve get-user-borrow-balance who .diko))))
+  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko))))
 )
 
 (define-read-only (get-user-borrow-balance-sBTC (who principal))
-  (ok (get compounded-balance (try! (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC))))
+  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC))))
 )
 
 (define-read-only (get-user-borrow-balance-stSTX (who principal))
-  (ok (get compounded-balance (try! (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX))))
+  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX))))
 )
 
 (define-read-only (get-user-borrow-balance-USDA (who principal))
-  (ok (get compounded-balance (try! (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA))))
+  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA))))
 )
 
 (define-read-only (get-user-borrow-balance-xUSD (who principal))
-  (ok (get compounded-balance (try! (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD))))
+  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD))))
 )
 
 (define-read-only (get-cumulated-balance-diko

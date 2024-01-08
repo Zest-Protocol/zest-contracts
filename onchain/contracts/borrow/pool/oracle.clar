@@ -1,4 +1,6 @@
 
+(impl-trait .oracle-trait.oracle-trait)
+
 (use-trait ft .ft-trait.ft-trait)
 
 (define-public (get-asset-price (token <ft>))

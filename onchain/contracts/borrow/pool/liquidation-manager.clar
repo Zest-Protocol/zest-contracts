@@ -1,6 +1,6 @@
 (use-trait ft .ft-trait.ft-trait)
 (use-trait a-token .a-token-trait.a-token-trait)
-
+(use-trait oracle .oracle-trait.oracle-trait)
 
 ;; 50%
 (define-data-var liquidation-close-factor-percent uint u50000000)
@@ -18,7 +18,7 @@
 
 (define-public (calculate-user-global-data
   (user principal)
-  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle> }))
 )
   (let (
     (global-user-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
@@ -38,12 +38,12 @@
 
 ;; liquidates 1 undercollateralized position
 (define-public (liquidation-call
-  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: principal }))
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle> }))
   (lp-token <a-token>)
   (collateral <ft>)  ;; borrowed asset
   (principal <ft>) ;; principal
-  (collateral-oracle principal)
-  (principal-oracle principal)
+  (collateral-oracle <oracle>)
+  (principal-oracle <oracle>)
   (user principal) ;; address of borrower
   (purchase-amount uint) ;; principal amount that liquidator wants to repay
   (to-receive-atoken bool)
@@ -65,7 +65,7 @@
       ) (err u3))
 
     (let (
-      (borrowed-ret (try! (get-user-borrow-balance user principal)))
+      (borrowed-ret (unwrap-panic (get-user-borrow-balance user principal)))
       (user-compounded-borrow-balance (get compounded-balance borrowed-ret))
       (user-borrow-balance-increase (get balance-increase borrowed-ret))
     )
@@ -75,7 +75,7 @@
       (asserts! (> user-compounded-borrow-balance u0) (err u4))
 
       (let (
-        (max-debt-to-liquidate 
+        (max-debt-to-liquidate
           (mul
             user-compounded-borrow-balance
             (var-get liquidation-close-factor-percent)
@@ -105,6 +105,7 @@
         (draw (print {draw: {
           max-debt-to-liquidate: max-debt-to-liquidate,
           debt-to-liquidate: debt-to-liquidate,
+          purchasing-more-than-available: (> purchase-amount max-debt-to-liquidate),
           max-collateral-to-liquidate: max-collateral-to-liquidate,
           debt-needed: debt-needed,
           origination-fee: origination-fee,
@@ -133,7 +134,6 @@
           )
         )
         (draw-1 (print { draw-1: available-collateral-principal}))
-        ;; (draw (print required-fees))
         (actual-debt-to-liquidate
           (if (< debt-needed debt-to-liquidate)
             debt-needed
@@ -143,10 +143,6 @@
         (fee-liquidated (get debt-needed required-fees))
         (liquidated-collateral-for-fee (get collateral-amount required-fees))
       )
-        ;; (print {
-        ;;   max-collateral-to-liquidate: max-collateral-to-liquidate,
-        ;;   current-available-collateral: (try! (get-reserve-available-liquidity collateral))
-        ;;   })
         ;; if liquidator wants underlying asset, check there is enough collateral
         (if (not to-receive-atoken)
           (let (
@@ -223,14 +219,14 @@
 (define-public (calculate-available-collateral-to-liquidate
   (collateral <ft>)
   (principal-asset <ft>)
-  (collateral-oracle principal)
-  (principal-oracle principal)
+  (collateral-oracle <oracle>)
+  (principal-oracle <oracle>)
   (debt-to-liquidate uint)
   (user-collateral-balance uint)
   )
   (let (
-    (collateral-price (try! (contract-call? .oracle get-asset-price collateral)))
-    (debt-currency-price (try! (contract-call? .oracle get-asset-price principal-asset)))
+    (collateral-price (try! (contract-call? collateral-oracle get-asset-price collateral)))
+    (debt-currency-price (try! (contract-call? principal-oracle get-asset-price principal-asset)))
     (liquidation-bonus (get-liquidation-bonus collateral))
     (collateral-reserve-data (unwrap-panic (get-reserve-state collateral)))
     (principal-reserve-data (unwrap-panic (get-reserve-state principal-asset)))
@@ -248,18 +244,18 @@
       )
     )
   )
-    (print { calculate-available-collateral-to-liquidate: {
-      user-collateral-balance: user-collateral-balance,
-      max-collateral-amount-from-debt: max-collateral-amount-from-debt,
-      debt-to-liquidate: debt-to-liquidate,
-      principal-decimals: (get decimals principal-reserve-data),
-      collateral-decimals: (get decimals collateral-reserve-data),
-      principal-currency-price: debt-currency-price,
-      collateral-price: collateral-price,
-      liquidation-bonus: (get liquidation-bonus collateral-reserve-data),
-      collateral-amount: (contract-call? .math get-y-from-x debt-to-liquidate (get decimals principal-reserve-data) (get decimals collateral-reserve-data) debt-currency-price collateral-price),
-      debt-needed: (contract-call? .math get-y-from-x user-collateral-balance (get decimals collateral-reserve-data) (get decimals principal-reserve-data) collateral-price debt-currency-price)
-    }})
+    ;; (print { calculate-available-collateral-to-liquidate: {
+    ;;   user-collateral-balance: user-collateral-balance,
+    ;;   max-collateral-amount-from-debt: max-collateral-amount-from-debt,
+    ;;   debt-to-liquidate: debt-to-liquidate,
+    ;;   principal-decimals: (get decimals principal-reserve-data),
+    ;;   collateral-decimals: (get decimals collateral-reserve-data),
+    ;;   principal-currency-price: debt-currency-price,
+    ;;   collateral-price: collateral-price,
+    ;;   liquidation-bonus: (get liquidation-bonus collateral-reserve-data),
+    ;;   collateral-amount: (contract-call? .math get-y-from-x debt-to-liquidate (get decimals principal-reserve-data) (get decimals collateral-reserve-data) debt-currency-price collateral-price),
+    ;;   debt-needed: (contract-call? .math get-y-from-x user-collateral-balance (get decimals collateral-reserve-data) (get decimals principal-reserve-data) collateral-price debt-currency-price)
+    ;; }})
     (ok
       (if (> max-collateral-amount-from-debt user-collateral-balance)
         (begin
