@@ -9,34 +9,73 @@
   (pool-reserve principal)
   (asset <ft>)
   (amount uint)
-  (enable-as-collateral bool)
   (owner principal)
   )
   (let (
-    (asset-principal (contract-of asset))
-    (current-balance (try! (contract-call? .pool-0-reserve get-balance lp asset-principal owner)))
-    (reserve-state (contract-call? .pool-0-reserve get-reserve-state asset-principal))
+    (supplied-asset-principal (contract-of asset))
+    (current-balance (try! (contract-call? .pool-0-reserve get-balance lp supplied-asset-principal owner)))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state supplied-asset-principal))
     (user-assets (contract-call? .pool-0-reserve get-user-assets owner))
-    (is-in-isolation-mode (contract-call? .pool-0-reserve is-in-isolation-mode owner))
+    (isolated-asset (contract-call? .pool-0-reserve is-in-isolation-mode owner))
+    (assets-used-as-collateral (contract-call? .pool-0-reserve get-assets-used-as-collateral owner))
+
     )
     (asserts! (> amount u0) (err u1))
     (asserts! (get is-active reserve-state) (err u2))
     (asserts! (not (get is-frozen reserve-state)) (err u3))
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) (err u5))
 
-    (asserts! (and (not is-in-isolation-mode) enable-as-collateral) (err u6578))
+    ;; if first supply
+    (if (is-eq current-balance u0)
+      (if (unwrap!
+            (validate-use-as-collateral
+              (is-some isolated-asset)
+              (get base-ltv-as-collateral reserve-state)
+              (get enabled-assets assets-used-as-collateral)
+              supplied-asset-principal
+              owner
+              (get debt-ceiling reserve-state)
+            )
+            (err u1)
+          )
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset true))
+        false
+      )
+      false
+    )
 
-    (asserts! (is-none (index-of? (get assets-borrowed user-assets) asset-principal)) (err u999999999))
+    (asserts! (is-none (index-of? (get assets-borrowed user-assets) supplied-asset-principal)) (err u999999999))
 
     (try! (contract-call? .pool-0-reserve update-state-on-deposit asset owner amount (is-eq current-balance u0)))
 
-    (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset enable-as-collateral))
+    ;; (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset enable-as-collateral))
 
-    (try! (contract-call? .pool-0-reserve mint-on-deposit owner amount lp asset-principal))
+    (try! (contract-call? .pool-0-reserve mint-on-deposit owner amount lp supplied-asset-principal))
     (try! (contract-call? .pool-0-reserve transfer-to-reserve asset owner amount))
 
     (ok true)
   )
+)
+
+(define-read-only (validate-use-as-collateral
+  (is-in-isolation-mode bool)
+  (base-ltv-as-collateral uint)
+  (assets-enabled-as-collateral (list 100 principal))
+  (asset-address principal)
+  (who principal)
+  (debt-ceiling uint)
+  )
+    (if (is-eq base-ltv-as-collateral u0)
+      (ok false)
+      ;; not any as collateral
+      (if (is-eq (len assets-enabled-as-collateral) u0)
+        (ok true)
+        (if (and is-in-isolation-mode)
+          (ok (> debt-ceiling u0))
+          (ok true)
+        )
+      )
+    )
 )
 
 (define-constant max-value (contract-call? .math get-max-value))
@@ -94,7 +133,7 @@
   )
     (asserts! (contract-call? .pool-0-reserve is-borrowing-enabled asset) (err u99991))
     ;; (asserts! (> available-liquidity amount-to-be-borrowed) (err u99992))
-    (if is-in-isolation-mode
+    (if (is-some is-in-isolation-mode)
       (asserts! (contract-call? .pool-0-reserve is-borroweable-isolated asset) (err u99997))
       true
     )
@@ -216,7 +255,7 @@
 
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  (debt-lp <a-token>)
+  (lp <a-token>)
   (collateral-to-liquidate <ft>)
   (debt-asset <ft>)
   (collateral-oracle <oracle-trait>)
@@ -231,11 +270,11 @@
   )
     (asserts! (get is-active reserve-data) (err u10))
     (asserts! (get is-active collateral-data) (err u11))
-    (asserts! (is-eq (contract-of debt-lp) (get a-token-address reserve-data)) (err u12))
+    (asserts! (is-eq (contract-of lp) (get a-token-address collateral-data)) (err u13))
     
     (contract-call? .liquidation-manager liquidation-call
       assets
-      debt-lp
+      lp
       collateral-to-liquidate
       debt-asset
       collateral-oracle
@@ -326,15 +365,19 @@
     (reserve-data (get-reserve-state (contract-of asset)))
     (underlying-balance (try! (contract-call? .pool-0-reserve get-balance lp-token (contract-of asset) who)))
     (user-data (get-user-reserve-data who (contract-of asset)))
+    (is-in-isolation-mode (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who)))
   )
     (asserts! (is-eq tx-sender who) (err u5))
-    (asserts! (is-configurator tx-sender) (err u9))
 
     (asserts! (get is-active reserve-data) (err u1))
     (asserts! (not (get is-frozen reserve-data)) (err u2))
     (asserts! (> underlying-balance u0) (err u3))
 
-
+    (if is-in-isolation-mode
+      ;; repay or cannot exit isolation mode
+      (asserts! (not (contract-call? .pool-0-reserve is-borrowing-assets who)) (err u9456))
+      false
+    )
 
     ;; check user is not using deposited collateral
     (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) (err u4))

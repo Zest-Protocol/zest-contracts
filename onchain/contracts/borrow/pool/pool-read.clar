@@ -395,7 +395,7 @@
 )
 
 (define-read-only (get-useable-collateral-usd (who principal))
-  (if (contract-call? .pool-0-reserve is-in-isolation-mode who)
+  (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
     (let (
       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
     )
@@ -585,7 +585,7 @@
 )
 
 (define-read-only (get-useable-collateral-usd-diko (who principal))
-  (if (contract-call? .pool-0-reserve is-in-isolation-mode who)
+  (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
     (let (
       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
     )
@@ -627,7 +627,7 @@
 )
 
 (define-read-only (get-useable-collateral-usd-sBTC (who principal))
-  (if (contract-call? .pool-0-reserve is-in-isolation-mode who)
+  (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
     (let (
       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
     )
@@ -669,7 +669,7 @@
 )
 
 (define-read-only (get-useable-collateral-usd-stSTX (who principal))
-  (if (contract-call? .pool-0-reserve is-in-isolation-mode who)
+  (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
     (let (
       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
     )
@@ -699,7 +699,7 @@
 
 
 (define-read-only (get-useable-collateral-usd-USDA (who principal))
-  (if (contract-call? .pool-0-reserve is-in-isolation-mode who)
+  (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
     (let (
       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
     )
@@ -741,7 +741,7 @@
 )
 
 (define-read-only (get-useable-collateral-usd-xUSD (who principal))
-  (if (contract-call? .pool-0-reserve is-in-isolation-mode who)
+  (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
     (let (
       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
     )

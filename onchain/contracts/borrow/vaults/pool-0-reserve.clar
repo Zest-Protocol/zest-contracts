@@ -279,21 +279,33 @@
   )
 )
 
+(define-read-only (is-borrowing-assets (user principal))
+  (> (len (get assets-borrowed (get-user-assets user))) u0)
+)
+
 (define-read-only (is-in-isolation-mode (who principal))
   (let (
     (assets-supplied (get assets-supplied (get-user-assets who)))
     (split-assets (fold split-isolated assets-supplied { isolated: (list), non-isolated: (list) }))
-    (enabled-isolated-n (get enabled-count (fold count-collateral-enabled (get isolated split-assets) { who: who, enabled-count: u0, enabled-assets: (list) })))
+    (enabled-isolated (fold count-collateral-enabled (get isolated split-assets) { who: who, enabled-count: u0, enabled-assets: (list) }))
+    (enabled-isolated-n (get enabled-count enabled-isolated))
     (enabled-non-isolated-n  (get enabled-count (fold count-collateral-enabled (get non-isolated split-assets) { who: who, enabled-count: u0, enabled-assets: (list) })))
   )
-
     (if (is-eq enabled-non-isolated-n u0)
       (if (is-eq enabled-isolated-n u1)
-        true
-        false
+        (element-at? (get enabled-assets enabled-isolated) u0)
+        none
       )
-      false
+      none
     )
+  )
+)
+
+(define-read-only (get-assets-used-as-collateral (who principal))
+  (let (
+    (assets-supplied (get assets-supplied (get-user-assets who)))
+  )
+    (fold count-collateral-enabled assets-supplied { who: who, enabled-count: u0, enabled-assets: (list) })
   )
 )
 
@@ -1605,7 +1617,7 @@
       )
       (begin
         ;; (get-user-asset-data lp-token asset oracle aggregate)
-        (if (is-in-isolation-mode user)
+        (if (is-some (is-in-isolation-mode user))
           ;;  if it's in isolation mode
           (if (is-eq (contract-of asset) (get-isolated-asset user))
             ;;  if it's THE isolated asset,   

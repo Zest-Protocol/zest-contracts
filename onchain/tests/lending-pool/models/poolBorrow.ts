@@ -21,7 +21,6 @@ class PoolBorrow {
     assetDeployer: string,
     assetContractName: string,
     amount: IntegerType,
-    enableAsCollateral: boolean,
     user: string,
     caller: string
   ) {
@@ -33,7 +32,6 @@ class PoolBorrow {
         Cl.contractPrincipal(reserveDeployer, reserveContractName),
         Cl.contractPrincipal(assetDeployer, assetContractName),
         Cl.uint(amount),
-        Cl.bool(enableAsCollateral),
         Cl.standardPrincipal(user),
       ],
       caller

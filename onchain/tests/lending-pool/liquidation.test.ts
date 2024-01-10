@@ -4,6 +4,7 @@ import { Cl } from "@stacks/transactions";
 import { readFileSync } from "fs";
 import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
+import { Oracle } from "./models/oracle";
 
 const simnet = await initSimnet();
 
@@ -38,13 +39,36 @@ const USDA = "USDA";
 const xUSD = "xUSD";
 
 describe("Liquidation tests", () => {
-  it("Supply sBTC, borrow xUSD, price goes bellow health factor", () => {
+  it("Supply sBTC, borrow xUSD, price goes below health factor", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
       "pool-0-reserve"
     );
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+
+    const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
+
+    oracleContract.setPrice(
+      deployerAddress,
+      stSTX,
+      160_000_000,
+      deployerAddress
+    );
+    oracleContract.setPrice(
+      deployerAddress,
+      sBTC,
+      4000000000000,
+      deployerAddress
+    );
+    oracleContract.setPrice(deployerAddress, diko, 40000000, deployerAddress);
+    oracleContract.setPrice(deployerAddress, USDA, 99000000, deployerAddress);
+    oracleContract.setPrice(
+      deployerAddress,
+      xUSD,
+      100_000_000,
+      deployerAddress
+    );
 
     let callResponse = simnet.callPublicFn(
       sBTC,
@@ -263,6 +287,7 @@ describe("Liquidation tests", () => {
     //     ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
     // );
     // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "liquidation-call",
@@ -291,6 +316,8 @@ describe("Liquidation tests", () => {
       ],
       Liquidator_1
     );
+
+    console.log(Cl.prettyPrint(callResponse.result));
     // u100000000000
     // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
@@ -479,6 +506,13 @@ describe("Liquidation tests", () => {
       LP_1
     );
 
+    let borrower_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-assets-used-by",
+      [Cl.standardPrincipal(Borrower_1)],
+      Borrower_1
+    );
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "borrow",
@@ -492,11 +526,6 @@ describe("Liquidation tests", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
         ]),
         Cl.uint(6_996_172_743_701),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
@@ -505,6 +534,7 @@ describe("Liquidation tests", () => {
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.result));
@@ -555,6 +585,16 @@ describe("Liquidation tests", () => {
     //   // ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
     // );
     // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
+    borrower_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-assets-used-by",
+      [Cl.standardPrincipal(Borrower_1)],
+      Borrower_1
+    );
+
+    console.log("PI");
+    console.log(Cl.prettyPrint(borrower_data.result));
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "liquidation-call",
@@ -583,6 +623,7 @@ describe("Liquidation tests", () => {
       ],
       Liquidator_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
     // u100000000000
     // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
@@ -806,6 +847,13 @@ describe("Liquidation tests", () => {
       LP_1
     );
 
+    let borrower_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-assets-used-by",
+      [Cl.standardPrincipal(Borrower_1)],
+      Borrower_1
+    );
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "borrow",
@@ -819,11 +867,6 @@ describe("Liquidation tests", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
         ]),
         Cl.uint(6_996_172_743_701),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
@@ -834,7 +877,7 @@ describe("Liquidation tests", () => {
     );
 
     // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.result));
+    console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
@@ -882,6 +925,15 @@ describe("Liquidation tests", () => {
     //   // ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
     // );
     // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
+
+    borrower_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-assets-used-by",
+      [Cl.standardPrincipal(Borrower_1)],
+      Borrower_1
+    );
+    console.log(Cl.prettyPrint(borrower_data.result));
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "liquidation-call",
@@ -910,8 +962,8 @@ describe("Liquidation tests", () => {
       ],
       Liquidator_1
     );
-    // u100000000000
-    // console.log(Cl.prettyPrint(callResponse.result));
+
+    console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
     // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));

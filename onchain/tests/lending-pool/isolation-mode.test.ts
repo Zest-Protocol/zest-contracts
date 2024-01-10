@@ -194,7 +194,6 @@ describe("Isolated mode", () => {
       deployerAddress,
       xUSD,
       100_000_000_000,
-      true,
       LP_1,
       LP_1
     );
@@ -207,7 +206,6 @@ describe("Isolated mode", () => {
       deployerAddress,
       stSTX,
       1_000_000_000,
-      true,
       Borrower_1,
       Borrower_1
     );
@@ -270,6 +268,7 @@ describe("Isolated mode", () => {
 
     oracle.setPrice(deployerAddress, xUSD, 100_000_000, deployerAddress);
     oracle.setPrice(deployerAddress, stSTX, 160_000_000, deployerAddress);
+    oracle.setPrice(deployerAddress, sBTC, 4_000_000_000_000, deployerAddress);
 
     callResponse = poolBorrow.addIsolatedAsset(
       deployerAddress,
@@ -320,7 +319,6 @@ describe("Isolated mode", () => {
       deployerAddress,
       xUSD,
       100_000_000_000,
-      true,
       LP_1,
       LP_1
     );
@@ -333,7 +331,6 @@ describe("Isolated mode", () => {
       deployerAddress,
       stSTX,
       1_000_000_000,
-      true,
       Borrower_1,
       Borrower_1
     );
@@ -466,6 +463,7 @@ describe("Isolated mode", () => {
 
     oracle.setPrice(deployerAddress, xUSD, 100_000_000, deployerAddress);
     oracle.setPrice(deployerAddress, stSTX, 160_000_000, deployerAddress);
+    oracle.setPrice(deployerAddress, sBTC, 4_000_000_000_000, deployerAddress);
 
     callResponse = poolBorrow.addIsolatedAsset(
       deployerAddress,
@@ -516,7 +514,6 @@ describe("Isolated mode", () => {
       deployerAddress,
       xUSD,
       100_000_000_000,
-      true,
       LP_1,
       LP_1
     );
@@ -528,8 +525,7 @@ describe("Isolated mode", () => {
       pool0Reserve,
       deployerAddress,
       stSTX,
-      1_000_000_000,
-      true,
+      900_000_000,
       Borrower_1,
       Borrower_1
     );
@@ -611,6 +607,43 @@ describe("Isolated mode", () => {
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     // console.log(Cl.prettyPrint(callResponse.result));
 
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "calculate-user-global-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpsBTC,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      sBTC,
+      1_000_000_000,
+      Borrower_1,
+      Borrower_1
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+    // expect(callResponse.result).toBeErr(Cl.uint(8567));
+
     callResponse = poolBorrow.supply(
       deployerAddress,
       lpstSTX,
@@ -618,12 +651,47 @@ describe("Isolated mode", () => {
       pool0Reserve,
       deployerAddress,
       stSTX,
-      1_000_000_000,
-      true,
+      100_000_000,
       Borrower_1,
       Borrower_1
     );
-    expect(callResponse.result).toBeErr(Cl.uint(6578));
-    // console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    borrower_data = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-assets-used-by",
+      [Cl.standardPrincipal(Borrower_1)],
+      Borrower_1
+    );
+
+    console.log(Cl.prettyPrint(borrower_data.result));
+
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "calculate-user-global-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
   });
 });
