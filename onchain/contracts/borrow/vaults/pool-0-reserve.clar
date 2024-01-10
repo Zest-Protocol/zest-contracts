@@ -112,6 +112,7 @@
     (liquidation-bonus uint)
     (decimals uint)
     (a-token-address principal)
+    (oracle principal)
     (interest-rate-strategy-address principal)
     (last-updated-block uint)
     (borrowing-enabled bool)
@@ -474,6 +475,7 @@
   (decimals uint)
   (supply-cap uint)
   (borrow-cap uint)
+  (oracle principal)
   (interest-rate-strategy-address principal)
 )
   (begin
@@ -498,6 +500,7 @@
           liquidation-bonus: u0,
           decimals: decimals,
           a-token-address: a-token-address,
+          oracle: oracle,
           interest-rate-strategy-address: interest-rate-strategy-address,
           last-updated-block: u0,
           borrowing-enabled: false,
@@ -531,6 +534,7 @@
       (liquidation-bonus uint)
       (decimals uint)
       (a-token-address principal)
+      (oracle principal)
       (interest-rate-strategy-address principal)
       (last-updated-block uint)
       (borrowing-enabled bool)
@@ -594,7 +598,7 @@
     (if is-first-deposit
       (begin
         (add-supplied-asset who (contract-of asset))
-        (set-user-reserve-as-collateral who asset true)
+        (ok true)
       )
       (ok true)
     )
@@ -688,7 +692,7 @@
       (begin
         (reset-data-on-zero-balance who (contract-of asset))
         (remove-supplied-asset who (contract-of asset))
-        (set-user-reserve-as-collateral who asset user-redeemed-everything)
+        (ok (set-user-reserve-as-collateral-internal who asset user-redeemed-everything))
       )
       (ok true)
     )
@@ -1074,10 +1078,16 @@
         (user-global-data (try! (calculate-user-global-data user assets-to-calculate)))
       )
         (if (is-eq (get total-borrow-balanceUSD user-global-data) u0)
-          (ok true) ;; not borrowing anything
+          (ok true) ;; not borrowing anything, no reason to block
           (let (
-            (amount-to-decrease (mul-to-fixed-precision amount (get decimals reserve-data) (try! (contract-call? oracle get-asset-price asset))))
-            (collateral-balance-after-decrease (- (get total-collateral-balanceUSD user-global-data) amount-to-decrease))
+            (collateral-balance-in-base-currency (get total-collateral-balanceUSD user-global-data))
+            (amount-to-decrease-in-base-currency (mul-to-fixed-precision amount (get decimals reserve-data) (try! (contract-call? oracle get-asset-price asset))))
+            (collateral-balance-after-decrease
+              (if (<= (get total-collateral-balanceUSD user-global-data) amount-to-decrease-in-base-currency)
+                u0
+                (- (get total-collateral-balanceUSD user-global-data) amount-to-decrease-in-base-currency)
+              )
+            )
           )
             (if (is-eq collateral-balance-after-decrease u0)
               (ok false)
@@ -1085,18 +1095,15 @@
                   (liquidation-treshold-after-decrease
                     (div
                       (-
-                        (mul
-                          (get total-collateral-balanceUSD user-global-data)
-                          (get current-liquidation-threshold user-global-data)
-                        )
-                        (mul amount-to-decrease (get liquidation-threshold reserve-data))
+                        (mul collateral-balance-in-base-currency (get current-liquidation-threshold user-global-data))
+                        (mul amount-to-decrease-in-base-currency (get liquidation-threshold reserve-data))
                       )
                       collateral-balance-after-decrease
                     )
                   )
                   (health-factor-after-decrease
                     (calculate-health-factor-from-balances
-                      (get total-collateral-balanceUSD user-global-data)
+                      collateral-balance-after-decrease
                       (get total-borrow-balanceUSD user-global-data)
                       (get user-total-feesUSD user-global-data)
                       liquidation-treshold-after-decrease
@@ -1181,17 +1188,23 @@
   )
 )
 
-(define-private (set-user-reserve-as-collateral (user principal) (asset <ft>) (use-as-collateral bool))
+
+(define-private (set-user-reserve-as-collateral-internal (user principal) (asset <ft>) (use-as-collateral bool))
   (let (
     (user-data (get-user-reserve-data user (contract-of asset)))
   )
-    (asserts! true (err u0))
     (map-set
       user-reserve-data
       { user: user, reserve: (contract-of asset)}
       (merge user-data { use-as-collateral: use-as-collateral })
     )
-    (ok true)
+  )
+)
+
+(define-public (set-user-reserve-as-collateral (user principal) (asset <ft>) (use-as-collateral bool))
+  (begin
+    (asserts! (is-lending-pool contract-caller) (err u0))
+    (ok (set-user-reserve-as-collateral-internal user asset use-as-collateral))
   )
 )
 
@@ -1540,9 +1553,8 @@
     )
   ))
   (let (
-    (result (unwrap-panic total))
+    (result (try! total))
   )
-    (asserts! true (err u1))
     (get-user-basic-reserve-data
       (get lp-token reserve)
       (get asset reserve)
@@ -1581,6 +1593,11 @@
       }
     )
   )
+    ;; (print
+    ;;   {
+    ;;     underlying-balance: (get underlying-balance user-reserve-state),
+    ;;     compounded-borrow-balance : (get compounded-borrow-balance user-reserve-state)
+    ;;   })
     (if (is-eq (+ (get underlying-balance user-reserve-state) (get compounded-borrow-balance user-reserve-state)) u0)
       ;; do nothing this loop
       (begin
@@ -1630,6 +1647,8 @@
   (let (
     (user (get user aggregate))
     (reserve-data (get-reserve-state (contract-of asset)))
+    (is-lp-ok (asserts! (is-eq (get a-token-address reserve-data) (contract-of lp-token)) (err u8888)))
+    (is-oracle-ok (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) (err u8889)))
     (user-reserve-state (try! (get-user-balance-reserve-data lp-token asset user oracle)))
     (reserve-unit-price (try! (contract-call? oracle get-asset-price asset)))
     ;; liquidity and collateral balance
@@ -1643,14 +1662,14 @@
             (if (and (get usage-as-collateral-enabled reserve-data) (get use-as-collateral user-reserve-state))
               (begin
                 {
-                  total-liquidity-balanceUSD:  total-liquidity-balance,
+                  total-liquidity-balanceUSD: total-liquidity-balance,
                   total-collateral-balanceUSD: (+ (get total-collateral-balanceUSD aggregate) liquidity-balanceUSD),
                   current-ltv: (+ (get current-ltv aggregate) (mul liquidity-balanceUSD (get base-ltv-as-collateral reserve-data)) ),
                   current-liquidation-threshold: (+ (get current-liquidation-threshold aggregate) (mul liquidity-balanceUSD (get liquidation-threshold reserve-data)))
                 }
               )
               {
-                total-liquidity-balanceUSD: total-liquidity-balance,
+                total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
                 total-collateral-balanceUSD: (get total-collateral-balanceUSD aggregate),
                 current-ltv: (get current-ltv aggregate),
                 current-liquidation-threshold: (get current-liquidation-threshold aggregate)
@@ -1707,92 +1726,170 @@
   )
 )
 
+(define-read-only (validate-assets
+  (who principal)
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+)
+  (let (
+    (assets-used (get-assets-used-by who))
+  )
+    (if (and (is-eq (len assets-to-calculate) (len assets-used)) (> (len assets-used) u0))
+      (get valid (fold check-assets assets-used { idx: u0, assets: assets-to-calculate, valid: true }))
+      false
+    )
+  )
+)
+
+(define-read-only (check-assets
+  (asset-to-validate principal)
+  (ret {
+    idx: uint,
+    assets: (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }),
+    valid: bool }))
+  (if (not (get valid ret))
+    ;; we found mismatch, keep mismatched value
+    ret
+    (let (
+      (asset-principal (get asset (unwrap-panic (element-at? (get assets ret) (get idx ret))) ))
+    )
+      {
+        idx: (+ u1 (get idx ret)),
+        assets: (get assets ret),
+        valid: (is-eq asset-to-validate (contract-of asset-principal)),
+      }
+    )
+  )
+)
 
 (define-public (calculate-user-global-data
   (user principal)
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
 )
-  (let (
-    (reserves (get-assets-used-by user))
-    (aggregate (try!
-        (fold
-          aggregate-user-data
-          assets-to-calculate
-          (ok
-            {
-              total-liquidity-balanceUSD: u0,
-              total-collateral-balanceUSD: u0,
-              total-borrow-balanceUSD: u0,
-              user-total-feesUSD: u0,
-              current-ltv: u0,
-              current-liquidation-threshold: u0,
-              user: user
-            }
+  (begin
+    (asserts! (validate-assets user assets-to-calculate) (err u99))
+    (let (
+      (reserves (get-assets-used-by user))
+      (aggregate (try!
+          (fold
+            aggregate-user-data
+            assets-to-calculate
+            (ok
+              {
+                total-liquidity-balanceUSD: u0,
+                total-collateral-balanceUSD: u0,
+                total-borrow-balanceUSD: u0,
+                user-total-feesUSD: u0,
+                current-ltv: u0,
+                current-liquidation-threshold: u0,
+                user: user
+              }
+            )
           )
         )
       )
-    )
-    (total-collateral-balanceUSD (get total-collateral-balanceUSD aggregate))
-    (current-ltv
-      (if (> total-collateral-balanceUSD u0)
-        (div (get current-ltv aggregate) total-collateral-balanceUSD)
-        u0
+      (total-collateral-balanceUSD (get total-collateral-balanceUSD aggregate))
+      (current-ltv
+        (if (> total-collateral-balanceUSD u0)
+          (div (get current-ltv aggregate) total-collateral-balanceUSD)
+          u0
+        )
       )
-    )
-    (current-liquidation-threshold
-      (if (> total-collateral-balanceUSD u0)
-        (div (get current-liquidation-threshold aggregate) total-collateral-balanceUSD)
-        u0
+      (current-liquidation-threshold
+        (if (> total-collateral-balanceUSD u0)
+          (div (get current-liquidation-threshold aggregate) total-collateral-balanceUSD)
+          u0
+        )
       )
-    )
-    (health-factor
-      (calculate-health-factor-from-balances
-        (get total-collateral-balanceUSD aggregate)
-        (get total-borrow-balanceUSD aggregate)
-        (get user-total-feesUSD aggregate)
-        current-liquidation-threshold
+      (health-factor
+        (calculate-health-factor-from-balances
+          (get total-collateral-balanceUSD aggregate)
+          (get total-borrow-balanceUSD aggregate)
+          (get user-total-feesUSD aggregate)
+          current-liquidation-threshold
+        )
       )
+      (is-health-factor-below-treshold (< health-factor (var-get health-factor-liquidation-treshold)))
     )
-    (is-health-factor-below-treshold (< health-factor (var-get health-factor-liquidation-treshold)))
-  )
-    (ok {
-      total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
-      total-collateral-balanceUSD: total-collateral-balanceUSD,
-      total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),
-      user-total-feesUSD: (get user-total-feesUSD aggregate),
-      current-ltv: current-ltv,
-      current-liquidation-threshold: current-liquidation-threshold,
-      health-factor: health-factor,
-      is-health-factor-below-treshold: is-health-factor-below-treshold
-    })
+      ;; (print {
+      ;;   total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
+      ;;   total-collateral-balanceUSD: total-collateral-balanceUSD,
+      ;;   total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),
+      ;;   user-total-feesUSD: (get user-total-feesUSD aggregate),
+      ;;   current-ltv: current-ltv,
+      ;;   current-liquidation-threshold: current-liquidation-threshold,
+      ;;   health-factor: health-factor,
+      ;;   is-health-factor-below-treshold: is-health-factor-below-treshold
+      ;; })
+      (ok {
+        total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
+        total-collateral-balanceUSD: total-collateral-balanceUSD,
+        total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),
+        user-total-feesUSD: (get user-total-feesUSD aggregate),
+        current-ltv: current-ltv,
+        current-liquidation-threshold: current-liquidation-threshold,
+        health-factor: health-factor,
+        is-health-factor-below-treshold: is-health-factor-below-treshold
+      })
+    )
   )
 )
 
-(define-public (calculate-collateral-needed-in-USD
-  (asset <ft>)
-  (oracle <oracle-trait>)
+(define-read-only (calculate-collateral-needed-in-USD
+  (borrowing-asset <ft>)
   (amount uint)
-  (fee uint)
-  (user-borrow-balance-USD uint)
-  (user-total-fees-USD uint)
+  (decimals uint)
+  (asset-price uint)
+  (borrow-fee uint)
+  (current-user-borrow-balance-USD uint)
+  (current-fees-USD uint)
   (current-ltv uint)
   )
   (let (
-    (asset-price (try! (contract-call? oracle get-asset-price asset)))
-    (reserve-data (get-reserve-state (contract-of asset)))
-    (requested-borrow-amount-USD (mul-to-fixed-precision (+ amount fee) (get decimals reserve-data) asset-price))
+    (requested-borrow-amount-USD (mul-to-fixed-precision (+ amount borrow-fee) decimals asset-price))
     (collateral-needed-in-USD
       (div
-        (+
-          user-borrow-balance-USD
-          user-total-fees-USD
-          requested-borrow-amount-USD
-        )
+        (+ current-user-borrow-balance-USD current-fees-USD requested-borrow-amount-USD)
         current-ltv
       )
     )
   )
-    (ok collateral-needed-in-USD)
+    collateral-needed-in-USD
+  )
+)
+
+(define-read-only (from-fixed-to-precision (a uint) (decimals-a uint))
+  (contract-call? .math from-fixed-to-precision a decimals-a)
+)
+
+(define-public (calculate-available-borrowing-power-in-asset
+  (borrowing-asset <ft>)
+  (decimals uint)
+  (asset-price uint)
+  (current-user-collateral-balance-USD uint)
+  (current-user-borrow-balance-USD uint)
+  (current-fees-USD uint)
+  (current-ltv uint)
+  (user principal)
+  )
+  (let (
+    (available-borrow-power-in-base-currency
+      (-
+        (mul current-user-collateral-balance-USD current-ltv)
+        (+ current-user-borrow-balance-USD current-fees-USD)
+      )
+    )
+    (borrow-power-in-asset-amount
+      (from-fixed-to-precision
+        (div
+          available-borrow-power-in-base-currency
+          asset-price
+        )
+        decimals
+      )
+    )
+    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user borrow-power-in-asset-amount)))
+  )
+    (ok (- borrow-power-in-asset-amount borrow-fee))
   )
 )
 

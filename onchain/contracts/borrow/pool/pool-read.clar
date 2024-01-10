@@ -1,6 +1,8 @@
 (use-trait ft .ft-trait.ft-trait)
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 
+(use-trait oracle-trait .oracle-trait.oracle-trait)
+
 
 (define-read-only (div (x uint) (y uint))
   (contract-call? .math div x y)
@@ -53,6 +55,32 @@
     (contract-call? .pool-0-reserve is-borrowing-enabled asset)
   )
 )
+
+(define-public (calculate-available-borrowing-power-in-asset
+  (asset <ft>)
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (asset-principal (contract-of asset))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state asset-principal))
+    (user-assets (contract-call? .pool-0-reserve get-user-assets user))
+    (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
+    (asset-price (try! (contract-call? .oracle get-asset-price asset)))
+  )
+    (contract-call? .pool-0-reserve calculate-available-borrowing-power-in-asset
+      asset
+      (get decimals reserve-state)
+      asset-price
+      (get total-collateral-balanceUSD user-global-data)
+      (get total-borrow-balanceUSD user-global-data)
+      (get user-total-feesUSD user-global-data)
+      (get current-ltv user-global-data)
+      user
+    )
+  )
+)
+
 
 (define-read-only (is-active (asset principal))
   (and (contract-call? .pool-0-reserve is-active asset) (not (contract-call? .pool-0-reserve is-frozen asset)))

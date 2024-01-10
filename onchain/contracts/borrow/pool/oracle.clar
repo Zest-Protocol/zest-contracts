@@ -54,8 +54,8 @@
 
 (define-map tickers principal uint)
 
-(map-set tickers .stSTX u160000000)
-(map-set tickers .sBTC u4000000000000)
-(map-set tickers .diko u40000000)
-(map-set tickers .USDA u99000000)
-(map-set tickers .xUSD u100000000)
+;; (map-set tickers .stSTX u160000000)
+;; (map-set tickers .sBTC u4000000000000)
+;; (map-set tickers .diko u40000000)
+;; (map-set tickers .USDA u99000000)
+;; (map-set tickers .xUSD u100000000)

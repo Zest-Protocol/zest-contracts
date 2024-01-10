@@ -21,6 +21,7 @@ class PoolBorrow {
     assetDeployer: string,
     assetContractName: string,
     amount: IntegerType,
+    enableAsCollateral: boolean,
     user: string,
     caller: string
   ) {
@@ -32,6 +33,7 @@ class PoolBorrow {
         Cl.contractPrincipal(reserveDeployer, reserveContractName),
         Cl.contractPrincipal(assetDeployer, assetContractName),
         Cl.uint(amount),
+        Cl.bool(enableAsCollateral),
         Cl.standardPrincipal(user),
       ],
       caller
@@ -46,6 +48,8 @@ class PoolBorrow {
     decimals: IntegerType,
     supplyCap: IntegerType,
     borrowCap: IntegerType,
+    oracleDeployerAddress: string,
+    oracleContractName: string,
     interestRateStrategyAddressDeployerAddress: string,
     interestRateStrategyContractName: string,
     caller: string
@@ -59,6 +63,7 @@ class PoolBorrow {
         Cl.uint(decimals),
         Cl.uint(supplyCap),
         Cl.uint(borrowCap),
+        Cl.contractPrincipal(oracleDeployerAddress, oracleContractName),
         Cl.contractPrincipal(
           interestRateStrategyAddressDeployerAddress,
           interestRateStrategyContractName
@@ -94,6 +99,23 @@ class PoolBorrow {
       this.contractName,
       "add-isolated-asset",
       [Cl.contractPrincipal(assetDeployer, assetContractName)],
+      caller
+    );
+  }
+
+  setBorroweableIsolated(
+    assetDeployer: string,
+    assetContractName: string,
+    debtCeiling: IntegerType,
+    caller: string
+  ) {
+    return simnet.callPublicFn(
+      this.contractName,
+      "set-borroweable-isolated",
+      [
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+        Cl.uint(debtCeiling),
+      ],
       caller
     );
   }
