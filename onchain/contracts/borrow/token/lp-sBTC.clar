@@ -66,6 +66,7 @@
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
+    (try! (is-approved-contract contract-caller))
     (try! (transfer-internal amount from to none))
     (ok amount)
   )
@@ -73,25 +74,30 @@
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
   (begin
+    (try! (is-approved-contract contract-caller))
     (try! (burn-internal amount owner))
     (ok amount)
   )
 )
 
-(define-public (mint (amount uint) (recipient principal))
-  (begin
-    (asserts! true ERR_UNAUTHORIZED)
-    (ft-mint? lp-sBTC amount recipient)
-  )
+(define-private (mint-internal (amount uint) (owner principal))
+  (ft-mint? lp-sBTC amount owner)
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
   (ft-burn? lp-sBTC amount owner)
 )
 
+(define-public (mint (amount uint) (recipient principal))
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (mint-internal amount recipient)
+  )
+)
+
 (define-public (burn (amount uint) (owner principal))
   (begin
-    (asserts! true ERR_UNAUTHORIZED)
+    (try! (is-approved-contract contract-caller))
     (burn-internal amount owner)
   )
 )
@@ -115,14 +121,20 @@
 ;; -- permissions
 (define-map approved-contracts principal bool)
 
+(define-public (set-approved-contract (contract principal) (enabled bool))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (ok (map-set approved-contracts contract enabled))
+  )
+)
+
 (define-read-only (is-approved-contract (contract principal))
   (if (default-to false (map-get? approved-contracts contract))
     (ok true)
     ERR_UNAUTHORIZED))
 
-(map-set approved-contracts .loan-v1-0 true)
-(map-set approved-contracts .pool-v1-0 true)
-(map-set approved-contracts .payment-fixed true)
-(map-set approved-contracts .supplier-interface true)
+(map-set approved-contracts .pool-borrow true)
+(map-set approved-contracts .liquidation-manager true)
+(map-set approved-contracts .pool-0-reserve true)
 
 (define-constant ERR_UNAUTHORIZED (err u14401))

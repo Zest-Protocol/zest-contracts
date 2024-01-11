@@ -118,6 +118,53 @@ class PoolBorrow {
     );
   }
 
+  setUserUserReserveAsCollateral(
+    caller: string,
+    lpDeployer: string,
+    lpContractName: string,
+    assetDeployer: string,
+    assetContractName: string,
+    useAsCollateral: boolean,
+    oracleDeployer: string,
+    oracleContractName: string,
+    assetsToCalculate: {
+      asset: { deployerAddress: string; contractName: string };
+      "lp-token": { deployerAddress: string; contractName: string };
+      oracle: { deployerAddress: string; contractName: string };
+    }[]
+  ) {
+    return simnet.callPublicFn(
+      this.contractName,
+      "set-user-use-reserve-as-collateral",
+      [
+        Cl.standardPrincipal(caller),
+        Cl.contractPrincipal(lpDeployer, lpContractName),
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+        Cl.bool(useAsCollateral),
+        Cl.contractPrincipal(oracleDeployer, oracleContractName),
+        Cl.list(
+          assetsToCalculate.map((asset) => {
+            return Cl.tuple({
+              asset: Cl.contractPrincipal(
+                asset.asset.deployerAddress,
+                asset.asset.contractName
+              ),
+              "lp-token": Cl.contractPrincipal(
+                asset["lp-token"].deployerAddress,
+                asset["lp-token"].contractName
+              ),
+              oracle: Cl.contractPrincipal(
+                asset.oracle.deployerAddress,
+                asset.oracle.contractName
+              ),
+            });
+          })
+        ),
+      ],
+      caller
+    );
+  }
+
   setUsageAsCollateralEnabled(
     assetDeployer: string,
     assetContractName: string,
@@ -136,6 +183,25 @@ class PoolBorrow {
         Cl.uint(baseLtvAsCollateral),
         Cl.uint(liquidationThreshold),
         Cl.uint(liquidationBonus),
+      ],
+      caller
+    );
+  }
+
+  repay(
+    assetDeployer: string,
+    assetContractName: string,
+    amountToRepay: IntegerType,
+    onBehalfOf: string,
+    caller: string
+  ) {
+    return simnet.callPublicFn(
+      this.contractName,
+      "repay",
+      [
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+        Cl.uint(amountToRepay),
+        Cl.standardPrincipal(onBehalfOf),
       ],
       caller
     );

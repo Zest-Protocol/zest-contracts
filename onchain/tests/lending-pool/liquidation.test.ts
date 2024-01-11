@@ -212,6 +212,7 @@ describe("Liquidation tests", () => {
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, lpxUSD),
         Cl.list([
           // Cl.tuple({
           //   asset: Cl.contractPrincipal(deployerAddress, xUSD),
@@ -520,6 +521,7 @@ describe("Liquidation tests", () => {
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, lpxUSD),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
@@ -861,6 +863,7 @@ describe("Liquidation tests", () => {
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, lpxUSD),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),

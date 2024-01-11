@@ -455,7 +455,7 @@
 )
 
 (define-public (get-reserve-available-liquidity (asset <ft>))
-  (contract-call? asset get-balance (as-contract tx-sender))
+  (contract-call? asset get-balance (get-reserve-vault asset))
 )
 
 (define-read-only (get-user-index (who principal) (asset principal))
@@ -1132,6 +1132,35 @@
   )
 )
 
+;; check if balance decrease sets position health factor under 1e18
+(define-public (get-decrease-balance-allowed
+  (asset <ft>)
+  (oracle <oracle-trait>)
+  (user principal)
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (reserve-data (get-reserve-state (contract-of asset)))
+    (user-data (get-user-reserve-data user (contract-of asset)))
+    (user-global-data (try! (calculate-user-global-data user assets-to-calculate)))
+    (asset-price (try! (contract-call? oracle get-asset-price asset)))
+    (useable-collateral-in-base-currency
+      (mul
+        (- (get total-collateral-balanceUSD user-global-data) (+ (get total-borrow-balanceUSD user-global-data) (get user-total-feesUSD user-global-data)))
+        (get current-liquidation-threshold user-global-data)))
+    (amount-to-decrease
+      (from-fixed-to-precision
+        (div
+          useable-collateral-in-base-currency
+          asset-price
+        )
+        (get decimals reserve-data)
+      ))
+  )
+    (ok { amount-to-decrease: amount-to-decrease, useable-collateral-in-base-currency: useable-collateral-in-base-currency })
+  )
+)
+
 (define-public (transfer-fee-to-collection
   (asset <ft>)
   (who principal)
@@ -1195,7 +1224,7 @@
       (is-liquidator tx-sender)
       (is-liquidator contract-caller)
       ) (err u0))
-    (try! (as-contract (contract-call? asset transfer amount (as-contract tx-sender) who none)))
+    (try! (as-contract (contract-call? .pool-vault transfer amount who asset)))
     (ok u0)
   )
 )
@@ -1295,9 +1324,13 @@
   (amount uint)
   )
   (begin
-    (try! (contract-call? asset transfer amount who (as-contract tx-sender) none))
+    (try! (contract-call? asset transfer amount who (get-reserve-vault asset) none))
     (ok u0)
   )
+)
+
+(define-read-only (get-reserve-vault (asset <ft>))
+  .pool-vault
 )
 
 (define-public (cumulate-balance
@@ -1319,7 +1352,6 @@
   )
     ;; TOOD: update user index
     (map-set user-index who new-user-index)
-    ;; (print { cumulated-balance: (try! (get-balance lp asset who)) })
 
     (ok {
       previous-user-balance: previous-balance,
@@ -1605,11 +1637,6 @@
       }
     )
   )
-    ;; (print
-    ;;   {
-    ;;     underlying-balance: (get underlying-balance user-reserve-state),
-    ;;     compounded-borrow-balance : (get compounded-borrow-balance user-reserve-state)
-    ;;   })
     (if (is-eq (+ (get underlying-balance user-reserve-state) (get compounded-borrow-balance user-reserve-state)) u0)
       ;; do nothing this loop
       (begin
@@ -1885,9 +1912,12 @@
   )
   (let (
     (available-borrow-power-in-base-currency
-      (-
-        (mul current-user-collateral-balance-USD current-ltv)
-        (+ current-user-borrow-balance-USD current-fees-USD)
+      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD current-fees-USD))
+        (-
+          (mul current-user-collateral-balance-USD current-ltv)
+          (+ current-user-borrow-balance-USD current-fees-USD)
+        )
+        u0
       )
     )
     (borrow-power-in-asset-amount
@@ -1901,6 +1931,12 @@
     )
     (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user borrow-power-in-asset-amount)))
   )
+    ;; (print
+    ;;   {
+    ;;     current-user-collateral-balance-USD: current-user-collateral-balance-USD,
+    ;;     current-user-borrow-balance-USD: current-user-borrow-balance-USD,
+    ;;     current-fees-USD: current-fees-USD
+    ;;   })
     (ok (- borrow-power-in-asset-amount borrow-fee))
   )
 )
@@ -1962,13 +1998,6 @@
 
 (define-read-only (get-collection-address)
   (var-get protocol-treasury-addr)
-)
-
-(define-public (transfer (amount uint) (recipient principal) (f-t <ft>))
-  (begin
-    (print { type: "transfer-liquidity-vault-v1-0", payload: { amount: amount, recipient: recipient, asset: f-t } })
-    (as-contract (contract-call? f-t transfer amount tx-sender recipient none))
-  )
 )
 
 ;; ERROR START 7000

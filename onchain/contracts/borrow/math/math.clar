@@ -141,10 +141,6 @@
   seconds-in-block
 )
 
-;; (define-read-only (test-this)
-;;   (mul (* one-8 u1000) (taylor-6 (mul u5000000 u300000000)))
-;; )
-
 (define-constant fact_2 u200000000)
 (define-constant fact_3 (mul u300000000 u200000000))
 (define-constant fact_4 (mul u400000000 (mul u300000000 u200000000)))
