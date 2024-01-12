@@ -234,6 +234,11 @@ path = "contracts/v2_sbtc/pool/pool-data.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.pool-reserve-data]
+path = "contracts/borrow/vaults/pool-reserve-data.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.pool-data-provider]
 path = "contracts/borrow/pool/pool-data-provider.clar"
 clarity_version = 2

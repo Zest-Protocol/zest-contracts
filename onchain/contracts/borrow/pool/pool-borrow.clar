@@ -20,10 +20,10 @@
     (assets-used-as-collateral (contract-call? .pool-0-reserve get-assets-used-as-collateral owner))
 
     )
-    (asserts! (> amount u0) (err u1))
-    (asserts! (get is-active reserve-state) (err u2))
-    (asserts! (not (get is-frozen reserve-state)) (err u3))
-    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) (err u5))
+    (asserts! (> amount u0) (err u7))
+    (asserts! (get is-active reserve-state) (err u8))
+    (asserts! (not (get is-frozen reserve-state)) (err u9))
+    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) (err u10))
 
     ;; if first supply
     (if (is-eq current-balance u0)
@@ -265,13 +265,13 @@
 
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  (lp <a-token>)
+  (collateral-lp <a-token>)
   (collateral-to-liquidate <ft>)
   (debt-asset <ft>)
   (collateral-oracle <oracle-trait>)
   (debt-oracle <oracle-trait>)
   (user principal)
-  (purchase-amount uint)
+  (debt-amount uint)
   (to-receive-underlying bool)
   )
   (let (
@@ -280,19 +280,19 @@
   )
     (asserts! (get is-active reserve-data) (err u10))
     (asserts! (get is-active collateral-data) (err u11))
-    (asserts! (is-eq (contract-of lp) (get a-token-address collateral-data)) (err u13))
+    (asserts! (is-eq (contract-of collateral-lp) (get a-token-address collateral-data)) (err u13))
     (asserts! (is-eq (contract-of collateral-oracle) (get oracle collateral-data)) (err u4))
     (asserts! (is-eq (contract-of debt-oracle) (get oracle reserve-data)) (err u5))
     
     (contract-call? .liquidation-manager liquidation-call
       assets
-      lp
+      collateral-lp
       collateral-to-liquidate
       debt-asset
       collateral-oracle
       debt-oracle
       user
-      purchase-amount
+      debt-amount
       to-receive-underlying
     )
   )
@@ -308,18 +308,19 @@
   )
   (let (
     (available-liquidity-before (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
-    (total-fee-bps (contract-call? .pool-0-reserve get-flashloan-fee-total))
-    (protocol-fee-bps (contract-call? .pool-0-reserve get-flashloan-fee-protocol))
+    (total-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-total)))
+    (protocol-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-protocol)))
     (amount-fee (/ (* amount total-fee-bps) u10000))
     (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
     (reserve-data (get-reserve-state (contract-of lp)))
   )
-    (asserts! (> amount available-liquidity-before) (err u1))
-    (asserts! (and (> amount-fee u0) (> protocol-fee u0)) (err u2))
+    (asserts! (> amount available-liquidity-before) (err u4))
+    (asserts! (and (> amount-fee u0) (> protocol-fee u0)) (err u5))
+    (asserts! (get flashloan-enabled reserve-data) (err u6))
 
     (try! (contract-call? .pool-0-reserve transfer-to-user asset receiver amount))
 
-    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-data)) (err u2))
+    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-data)) (err u7))
 
     (try! (contract-call? flashloan execute asset receiver amount))
 
@@ -438,6 +439,7 @@
         a-token-address: a-token-address,
         oracle: oracle,
         interest-rate-strategy-address: interest-rate-strategy-address,
+        flashloan-enabled: false,
         last-updated-block: u0,
         borrowing-enabled: false,
         supply-cap: supply-cap,
@@ -561,8 +563,6 @@
 
     (contract-call? .pool-0-reserve set-reserve
       asset
-      (merge
-        reserve-data
         (merge
           reserve-data
           {
@@ -571,8 +571,8 @@
             liquidation-threshold: liquidation-threshold,
             liquidation-bonus: liquidation-bonus
           }
-        )
-      ))
+      )
+    )
   )
 )
 

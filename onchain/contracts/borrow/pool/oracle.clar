@@ -5,7 +5,7 @@
 
 (define-public (get-asset-price (token <ft>))
   (begin
-    (asserts! true (err u1))
+    (asserts! true (err u99999))
     (ok (unwrap-panic (map-get? tickers (contract-of token))))
   )
 )

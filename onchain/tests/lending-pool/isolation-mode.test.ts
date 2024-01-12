@@ -527,6 +527,7 @@ describe("Isolated mode", () => {
       LP_1,
       LP_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = poolBorrow.supply(
       deployerAddress,
@@ -539,6 +540,7 @@ describe("Isolated mode", () => {
       Borrower_1,
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     let borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -567,6 +569,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     const availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
@@ -593,6 +596,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.uint(availableBorrow));
@@ -618,6 +622,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     // console.log(Cl.prettyPrint(callResponse.result));
@@ -642,6 +647,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
     let beforeNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
 
     callResponse = poolBorrow.supply(
@@ -655,6 +661,7 @@ describe("Isolated mode", () => {
       Borrower_1,
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
@@ -696,6 +703,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    console.log(Cl.prettyPrint(callResponse.result));
 
     let afterNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
     expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112500657");
@@ -1077,7 +1085,7 @@ describe("Isolated mode", () => {
     expect(callResponse.result).toBeErr(Cl.uint(99995));
 
     // cannot enable or disable sBTC as collateral
-    callResponse = poolBorrow.setUserUserReserveAsCollateral(
+    callResponse = poolBorrow.setUserUseReserveAsCollateral(
       Borrower_1,
       deployerAddress,
       lpsBTC,
@@ -1108,7 +1116,7 @@ describe("Isolated mode", () => {
     expect(callResponse.result).toBeErr(Cl.uint(9456));
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = poolBorrow.setUserUserReserveAsCollateral(
+    callResponse = poolBorrow.setUserUseReserveAsCollateral(
       Borrower_1,
       deployerAddress,
       lpsBTC,
@@ -1242,7 +1250,7 @@ describe("Isolated mode", () => {
       Cl.contractPrincipal(deployerAddress, sBTC),
     ]);
 
-    callResponse = poolBorrow.setUserUserReserveAsCollateral(
+    callResponse = poolBorrow.setUserUseReserveAsCollateral(
       Borrower_1,
       deployerAddress,
       lpsBTC,
@@ -1267,7 +1275,7 @@ describe("Isolated mode", () => {
 
     expect(callResponse.result).toBeErr(Cl.uint(9457));
 
-    callResponse = poolBorrow.setUserUserReserveAsCollateral(
+    callResponse = poolBorrow.setUserUseReserveAsCollateral(
       Borrower_1,
       deployerAddress,
       lpstSTX,
@@ -1320,7 +1328,7 @@ describe("Isolated mode", () => {
       )
     ).toBe(0);
 
-    callResponse = poolBorrow.setUserUserReserveAsCollateral(
+    callResponse = poolBorrow.setUserUseReserveAsCollateral(
       Borrower_1,
       deployerAddress,
       lpsBTC,

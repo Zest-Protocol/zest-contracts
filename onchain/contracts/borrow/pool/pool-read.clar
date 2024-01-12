@@ -3,7 +3,6 @@
 
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
-
 (define-read-only (div (x uint) (y uint))
   (contract-call? .math div x y)
 )

@@ -118,7 +118,7 @@ class PoolBorrow {
     );
   }
 
-  setUserUserReserveAsCollateral(
+  setUserUseReserveAsCollateral(
     caller: string,
     lpDeployer: string,
     lpContractName: string,
