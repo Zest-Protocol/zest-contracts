@@ -637,8 +637,8 @@ describe("Liquidation tests", () => {
     // u100000000000
     // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(callResponse.events);
-    console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[5].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));

@@ -12,6 +12,7 @@
 (define-data-var token-symbol (string-ascii 32) "LP sBTC")
 
 (define-constant pool-id u0)
+(define-constant asset-addr .sBTC)
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply lp-sBTC)))
@@ -81,14 +82,31 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
     (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (transfer-internal amount sender recipient memo)
+    (execute-transfer-internal amount sender recipient)
+  )
+)
+
+(define-private (execute-transfer-internal
+  (amount uint)
+  (sender principal)
+  (recipient principal)
+  )
+  (let (
+    (from-ret (try! (cumulate-balance-internal sender)))
+    (to-ret (try! (cumulate-balance-internal recipient)))
+  )
+    (try! (transfer-internal amount sender recipient none))
+    (if (is-eq (- (get current-balance from-ret) amount) u0)
+      (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr)
+      (ok true)
+    )
   )
 )
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
     (try! (is-approved-contract contract-caller))
-    (try! (transfer-internal amount from to none))
+    (try! (execute-transfer-internal amount from to))
     (ok amount)
   )
 )
@@ -102,8 +120,14 @@
 (define-public (burn-on-liquidation (amount uint) (owner principal))
   (begin
     (try! (is-approved-contract contract-caller))
-    (try! (burn-internal amount owner))
-    (ok amount)
+    (let ((ret (try! (cumulate-balance-internal owner))))
+      (try! (burn-internal amount owner))
+      (if (is-eq (- (get current-balance ret) amount) u0)
+        (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+        false
+      )
+      (ok amount)
+    )
   )
 )
 
@@ -129,14 +153,14 @@
   (let (
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (contract-call? .pool-0-reserve get-reserve-state .sBTC))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state asset-addr))
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state)
     ))
   )
-    (try! (contract-call? .pool-0-reserve set-user-index account .sBTC new-user-index))
+    (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
 
     (ok {
       previous-user-balance: previous-balance,
@@ -162,13 +186,18 @@
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
     (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
-    (asserts! (try! (is-transfer-allowed .sBTC oracle amount tx-sender assets)) (err u998887))
+    (asserts! (try! (is-transfer-allowed asset-addr oracle amount tx-sender assets)) (err u998887))
     
     (try! (burn-internal amount tx-sender))
-    (try! (contract-call? .pool-0-reserve reset-index tx-sender .sBTC))
+    
+    (if (is-eq (- (get current-balance ret) amount) u0)
+      (try! (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr))
+      false
+    )
+
     (contract-call? .pool-borrow redeem-underlying
       pool-reserve
-      .sBTC
+      asset-addr
       oracle
       assets
       amount-to-redeem

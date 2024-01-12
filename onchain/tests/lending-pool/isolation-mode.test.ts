@@ -942,13 +942,14 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "redeem-underlying",
+      "lp-stSTX",
+      "redeem",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.uint(Math.floor(allowedWithdrawalAmount * factor)),
+        Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
@@ -961,8 +962,6 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.uint(Math.floor(allowedWithdrawalAmount * factor)),
-        Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
     );
@@ -1390,13 +1389,15 @@ describe("Isolated mode", () => {
     console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "redeem-underlying",
+      "lp-stSTX",
+      "redeem",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
+        // Cl.uint(max_value),
+        Cl.uint(400390115),
+        Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
@@ -1409,13 +1410,17 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.uint(max_value),
-        Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
     );
 
     console.log(Cl.prettyPrint(callResponse.result));
+
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
+    console.log(callResponse.events);
+    console.log(simnet.getAssetsMap());
 
     expect(simnet.getAssetsMap().get(".stSTX.stSTX")?.get(Borrower_1)).toBe(
       BigInt(1_000_000_000_000_000)

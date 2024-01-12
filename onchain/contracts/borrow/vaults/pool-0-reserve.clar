@@ -634,10 +634,8 @@
     (try! (update-user-state-on-liquidation principal-reserve user principal-amount-to-liquidate fee-liquidated balance-increase))
     (try! (update-reserve-interest-rates-and-timestamp principal-reserve principal-amount-to-liquidate u0))
 
-    (if liquidator-receives-aToken
-      (begin
-        (update-reserve-interest-rates-and-timestamp collateral-reserve u0 (+ collateral-to-liquidate liquidated-collateral-for-fee))
-      )
+    (if (not liquidator-receives-aToken)
+      (update-reserve-interest-rates-and-timestamp collateral-reserve u0 (+ collateral-to-liquidate liquidated-collateral-for-fee))
       (ok false)
     )
   )
@@ -728,7 +726,7 @@
 ;;   )
 ;; )
 
-(define-public (reset-index (who principal) (asset principal))
+(define-public (reset-user-index (who principal) (asset principal))
   (let ((reserve-data (get-reserve-state asset)))
     (if (is-eq contract-caller (get a-token-address reserve-data))
       true

@@ -53,8 +53,6 @@
     (user-collateral-balance (try! (get-user-underlying-asset-balance lp-token collateral user)))
   )
     ;; health factor below treshold
-    ;; (print {ret: ret})
-    ;; (print {user-collateral-balance: user-collateral-balance})
     (asserts! (get is-health-factor-below-treshold ret) (err u5356))
     ;; has deposited collateral
     (asserts! (> user-collateral-balance u0) (err u52467))
@@ -69,8 +67,6 @@
       (user-compounded-borrow-balance (get compounded-balance borrowed-ret))
       (user-borrow-balance-increase (get balance-increase borrowed-ret))
     )
-
-      ;; (print {borrower-borrow-info: borrowed-ret})
       ;; not borrowing anything
       (asserts! (> user-compounded-borrow-balance u0) (err u4))
 
@@ -102,15 +98,6 @@
         (max-collateral-to-liquidate (get collateral-amount available-collateral-principal))
         (debt-needed (get debt-needed available-collateral-principal))
         (origination-fee (get-user-origination-fee user principal))
-        ;; (draw
-        ;;   (print {draw: {
-        ;;   max-debt-to-liquidate: max-debt-to-liquidate,
-        ;;   debt-to-liquidate: debt-to-liquidate,
-        ;;   purchasing-more-than-available: (> purchase-amount max-debt-to-liquidate),
-        ;;   max-collateral-to-liquidate: max-collateral-to-liquidate,
-        ;;   debt-needed: debt-needed,
-        ;;   origination-fee: origination-fee,
-        ;;   }}))
         (required-fees
           (if (> origination-fee u0)
             ;; if fees, take into account when calcualting available collateral
@@ -134,7 +121,6 @@
             )
           )
         )
-        ;; (draw-1 (print { draw-1: available-collateral-principal}))
         (actual-debt-to-liquidate
           (if (< debt-needed debt-to-liquidate)
             debt-needed
@@ -171,7 +157,6 @@
         (if to-receive-atoken
           (begin
             (try! (contract-call? lp-token transfer-on-liquidation max-collateral-to-liquidate user tx-sender))
-            ;; u0
           )
           (begin
             (try! (contract-call? lp-token burn-on-liquidation max-collateral-to-liquidate user))
@@ -179,12 +164,6 @@
           )
         )
         (try! (contract-call? .pool-0-reserve transfer-to-reserve principal tx-sender actual-debt-to-liquidate))
-        
-        (print {
-          max-collateral-to-liquidate: max-collateral-to-liquidate,
-          actual-debt-to-liquidate: actual-debt-to-liquidate,
-        })
-        
         (if (> fee-liquidated u0)
           (begin
             (try! (contract-call? lp-token burn-on-liquidation liquidated-collateral-for-fee user))
@@ -247,22 +226,7 @@
           collateral-price
         )
         (get decimals collateral-reserve-data)
-        (+ one-8 (get liquidation-bonus collateral-reserve-data))
-      )
-    )
-  )
-    ;; (print { calculate-available-collateral-to-liquidate: {
-    ;;   user-collateral-balance: user-collateral-balance,
-    ;;   max-collateral-amount-from-debt: max-collateral-amount-from-debt,
-    ;;   debt-to-liquidate: debt-to-liquidate,
-    ;;   principal-decimals: (get decimals principal-reserve-data),
-    ;;   collateral-decimals: (get decimals collateral-reserve-data),
-    ;;   principal-currency-price: debt-currency-price,
-    ;;   collateral-price: collateral-price,
-    ;;   liquidation-bonus: (get liquidation-bonus collateral-reserve-data),
-    ;;   collateral-amount: (contract-call? .math get-y-from-x debt-to-liquidate (get decimals principal-reserve-data) (get decimals collateral-reserve-data) debt-currency-price collateral-price),
-    ;;   debt-needed: (contract-call? .math get-y-from-x user-collateral-balance (get decimals collateral-reserve-data) (get decimals principal-reserve-data) collateral-price debt-currency-price)
-    ;; }})
+        (+ one-8 (get liquidation-bonus collateral-reserve-data)))))
     (ok
       (if (> max-collateral-amount-from-debt user-collateral-balance)
         (begin

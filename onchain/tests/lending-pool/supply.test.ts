@@ -114,13 +114,14 @@ describe("example tests", () => {
     console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "redeem-underlying",
+      "lp-stSTX",
+      "redeem",
       [
-        Cl.contractPrincipal(deployerAddress, lpdiko),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
@@ -128,8 +129,6 @@ describe("example tests", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.uint(1_000_000_000),
-        Cl.standardPrincipal(LP_1),
       ],
       LP_1
     );
@@ -722,13 +721,14 @@ describe("example tests", () => {
     // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "redeem-underlying",
+      "lp-stSTX",
+      "redeem",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
@@ -736,8 +736,6 @@ describe("example tests", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.uint(1_000_000_000),
-        Cl.standardPrincipal(LP_1),
       ],
       LP_1
     );
@@ -756,13 +754,14 @@ describe("example tests", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "redeem-underlying",
+      "lp-stSTX",
+      "redeem",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_2),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
@@ -775,8 +774,6 @@ describe("example tests", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.uint(1_000_000_000),
-        Cl.standardPrincipal(LP_2),
       ],
       LP_2
     );
@@ -796,13 +793,14 @@ describe("example tests", () => {
     // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
-      "redeem-underlying",
+      "lp-stSTX",
+      "redeem",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_3),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
@@ -830,8 +828,6 @@ describe("example tests", () => {
           //   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           // }),
         ]),
-        Cl.uint(1_000_000_000),
-        Cl.standardPrincipal(LP_3),
       ],
       LP_3
     );

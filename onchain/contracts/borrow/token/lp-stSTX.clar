@@ -82,14 +82,14 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
     (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (transfer-internal amount sender recipient memo)
+    (execute-transfer-internal amount sender recipient)
   )
 )
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
     (try! (is-approved-contract contract-caller))
-    (try! (transfer-internal amount from to none))
+    (try! (execute-transfer-internal amount from to))
     (ok amount)
   )
 )
@@ -105,8 +105,15 @@
 (define-public (burn-on-liquidation (amount uint) (owner principal))
   (begin
     (try! (is-approved-contract contract-caller))
-    (try! (burn-internal amount owner))
-    (ok amount)
+    (let ((ret (try! (cumulate-balance-internal owner))))
+      (try! (burn-internal amount owner))
+
+      (if (is-eq (- (get current-balance ret) amount) u0)
+        (try! (contract-call? .pool-0-reserve reset-user-index owner .stSTX))
+        false
+      )
+      (ok amount)
+    )
   )
 )
 
@@ -168,7 +175,13 @@
     (asserts! (try! (is-transfer-allowed .stSTX oracle amount tx-sender assets)) (err u998887))
     
     (try! (burn-internal amount tx-sender))
-    (try! (contract-call? .pool-0-reserve reset-index tx-sender .stSTX))
+
+    (if (is-eq (- (get current-balance ret) amount) u0)
+      (try! (contract-call? .pool-0-reserve reset-user-index tx-sender .stSTX))
+      false
+    )
+    (print { amount-to-redeem: amount-to-redeem })
+
     (contract-call? .pool-borrow redeem-underlying
       pool-reserve
       .stSTX
@@ -177,6 +190,23 @@
       amount-to-redeem
       (get current-balance ret)
       tx-sender
+    )
+  )
+)
+
+(define-private (execute-transfer-internal
+  (amount uint)
+  (sender principal)
+  (recipient principal)
+  )
+  (let (
+    (from-ret (try! (cumulate-balance-internal sender)))
+    (to-ret (try! (cumulate-balance-internal recipient)))
+  )
+    (try! (transfer-internal amount sender recipient none))
+    (if (is-eq (- (get current-balance from-ret) amount) u0)
+      (contract-call? .pool-0-reserve reset-user-index tx-sender .stSTX)
+      (ok true)
     )
   )
 )
