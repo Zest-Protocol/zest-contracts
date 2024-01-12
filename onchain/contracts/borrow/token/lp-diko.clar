@@ -1,4 +1,6 @@
 (use-trait ft .ft-mint-trait.ft-mint-trait)
+(use-trait sip10 .ft-trait.ft-trait)
+(use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (impl-trait .a-token-trait.a-token-trait)
 
@@ -30,6 +32,9 @@
 (define-read-only (get-balance (account principal))
   (ok (ft-get-balance lp-diko account))
 )
+
+(define-read-only (get-principal-balance (account principal))
+  (ok (ft-get-balance lp-diko account)))
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
@@ -102,6 +107,21 @@
   (begin
     (try! (is-approved-contract contract-caller))
     (burn-internal amount owner)
+  )
+)
+
+(define-public (redeem
+  (pool-reserve principal)
+  (asset <sip10>)
+  (oracle <oracle-trait>)
+  (amount uint)
+  (owner principal)
+  (assets (list 100 { asset: <sip10>, lp-token: <sip10>, oracle: <oracle-trait> }))
+  )
+  (begin
+    (asserts! true (err u1))
+
+    (ok u0)
   )
 )
 

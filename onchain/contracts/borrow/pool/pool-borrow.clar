@@ -16,12 +16,11 @@
   )
   (let (
     (supplied-asset-principal (contract-of asset))
-    (current-balance (try! (contract-call? .pool-0-reserve get-balance lp supplied-asset-principal owner)))
+    (current-balance (try! (contract-call? lp get-balance owner)))
     (reserve-state (contract-call? .pool-0-reserve get-reserve-state supplied-asset-principal))
     (user-assets (contract-call? .pool-0-reserve get-user-assets owner))
     (isolated-asset (contract-call? .pool-0-reserve is-in-isolation-mode owner))
     (assets-used-as-collateral (contract-call? .pool-0-reserve get-assets-used-as-collateral owner))
-
     )
     (asserts! (> amount u0) (err u7))
     (asserts! (get is-active reserve-state) (err u8))
@@ -49,7 +48,7 @@
 
     (try! (contract-call? .pool-0-reserve update-state-on-deposit asset owner amount (is-eq current-balance u0)))
 
-    (try! (contract-call? .pool-0-reserve mint-on-deposit owner amount lp supplied-asset-principal))
+    (try! (contract-call? lp mint amount owner))
     (try! (contract-call? .pool-0-reserve transfer-to-reserve asset owner amount))
 
     (ok true)
@@ -78,36 +77,29 @@
 )
 
 (define-public (redeem-underlying
-  (lp <ft-mint-trait>)
   (pool-reserve principal)
   (asset <ft>)
   (oracle <oracle-trait>)
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
   (amount uint)
+  (current-balance uint)
   (owner principal)
 )
   (let (
-    (ret (try! (contract-call? .pool-0-reserve cumulate-balance owner lp (contract-of asset))))
-    (amount-to-redeem (if (is-eq amount max-value) (get new-user-balance ret) amount))
-    (redeems-everything (>= amount-to-redeem (get new-user-balance ret)))
+    (redeems-everything (>= amount current-balance))
     (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
     (reserve-state (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
   )
-    (asserts! (> amount-to-redeem u0) (err u1))
-    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) (err u2))
+    (asserts! (> amount u0) (err u1))
+    (asserts! (is-eq contract-caller (get a-token-address reserve-state)) (err u2))
+    (asserts! (is-eq (contract-of oracle) (get oracle reserve-state)) (err u5))
     (asserts! (get is-active reserve-state) (err u3))
-    (asserts! (is-eq (get oracle reserve-state) (contract-of oracle)) (err u5))
+    (asserts! (>= current-available-liquidity amount) (err u99990))
 
-    (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle amount-to-redeem owner assets)) (err u4))
+    (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount redeems-everything))
+    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
 
-    (asserts! (>= current-available-liquidity amount-to-redeem) (err u99990))
-
-    (try! (contract-call? lp burn amount-to-redeem owner))
-
-    (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount-to-redeem redeems-everything))
-    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-redeem))
-
-    (ok amount-to-redeem)
+    (ok amount)
   )
 )
 
@@ -374,7 +366,7 @@
   )
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
-    (underlying-balance (try! (contract-call? .pool-0-reserve get-balance lp-token (contract-of asset) who)))
+    (underlying-balance (try! (contract-call? lp-token get-balance who)))
     (user-data (get-user-reserve-data who (contract-of asset)))
     (isolation-mode-asset (contract-call? .pool-0-reserve is-in-isolation-mode who))
   )

@@ -1,4 +1,5 @@
 (use-trait ft .ft-mint-trait.ft-mint-trait)
+(use-trait sip10 .ft-trait.ft-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (impl-trait .a-token-trait.a-token-trait)
@@ -22,7 +23,7 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u8))
+  (ok u6))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
@@ -33,12 +34,22 @@
   )
     (if (is-eq current-principal-balance u0)
       (ok u0)
-      (begin
-        (ok current-principal-balance)
+      (let (
+        (cumulated-balance
+          (contract-call? .pool-0-reserve calculate-cumulated-balance
+            account
+            u6
+            .stSTX
+            current-principal-balance
+            u6)))
+        (ok cumulated-balance)
       )
     )
   )
 )
+
+(define-read-only (get-principal-balance (account principal))
+  (ok (ft-get-balance lp-stSTX account)))
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
@@ -78,7 +89,7 @@
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
     (try! (is-approved-contract contract-caller))
-    (try! (transfer amount from to none))
+    (try! (transfer-internal amount from to none))
     (ok amount)
   )
 )
@@ -102,7 +113,11 @@
 (define-public (mint (amount uint) (recipient principal))
   (begin
     (try! (is-approved-contract contract-caller))
-    (mint-internal amount recipient)
+    (let (
+      (ret (try! (cumulate-balance-internal recipient)))
+    )
+      (mint-internal amount recipient)
+    )
   )
 )
 
@@ -113,25 +128,67 @@
   )
 )
 
-
-(define-public (redeem-underlying
-  (pool-reserve principal)
-  (asset <ft>)
-  (oracle <oracle-trait>)
-  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  (amount uint)
-  (owner principal)
+(define-private (cumulate-balance-internal (account principal))
+  (let (
+    (previous-balance (unwrap-panic (get-principal-balance account)))
+    (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state .stSTX))
+    (new-user-index (contract-call? .pool-0-reserve get-normalized-income
+        (get current-liquidity-rate reserve-state)
+        (get last-updated-block reserve-state)
+        (get last-liquidity-cumulative-index reserve-state)
+    ))
   )
-  (begin
+    (try! (contract-call? .pool-0-reserve set-user-index account .stSTX new-user-index))
 
-    (ok u0)
+    (ok {
+      previous-user-balance: previous-balance,
+      current-balance: (+ previous-balance balance-increase),
+      balance-increase: balance-increase,
+      index: new-user-index,
+    })
   )
 )
 
+(define-constant max-value (contract-call? .math get-max-value))
 
-;; (define-private (cumulate-balance-internal)
+(define-public (redeem
+  (pool-reserve principal)
+  (asset <sip10>)
+  (oracle <oracle-trait>)
+  (amount uint)
+  (owner principal)
+  (assets (list 100 { asset: <sip10>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (ret (try! (cumulate-balance-internal tx-sender)))
+    (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
+  )
+    (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
+    (asserts! (try! (is-transfer-allowed .stSTX oracle amount tx-sender assets)) (err u998887))
+    
+    (try! (burn-internal amount tx-sender))
+    (try! (contract-call? .pool-0-reserve reset-index tx-sender .stSTX))
+    (contract-call? .pool-borrow redeem-underlying
+      pool-reserve
+      .stSTX
+      oracle
+      assets
+      amount-to-redeem
+      (get current-balance ret)
+      tx-sender
+    )
+  )
+)
 
-;; )
+(define-public (is-transfer-allowed
+  (asset <sip10>)
+  (oracle <oracle-trait>)
+  (amount uint)
+  (user principal)
+  (assets-to-calculate (list 100 { asset: <sip10>, lp-token: <ft>, oracle: <oracle-trait> })))
+  (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle amount user assets-to-calculate)
+)
 
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)

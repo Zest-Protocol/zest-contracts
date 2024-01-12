@@ -304,4 +304,3 @@
 
 ;; ERROR START 7000
 (define-constant ERR_UNAUTHORIZED (err u7000))
-(define-constant ERR_INVALID_TOKEN_ID (err u7001))
