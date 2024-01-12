@@ -1,12 +1,20 @@
-;; (impl-trait .ownable-trait.ownable-trait)
-;; (impl-trait .liquidity-vault-trait.liquidity-vault-trait)
-
 (use-trait ft .ft-trait.ft-trait)
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (define-constant one-8 (contract-call? .math get-one))
 (define-constant max-value (contract-call? .math get-max-value))
+
+(define-constant default-user-reserve-data
+  {
+    principal-borrow-balance: u0,
+    last-variable-borrow-cumulative-index: one-8,
+    origination-fee: u0,
+    stable-borrow-rate: u0,
+    last-updated-block: u0,
+    use-as-collateral: false,
+  }
+)
 
 (define-read-only (get-one-3) (contract-call? .pool-reserve-data get-one-3))
 
@@ -214,17 +222,6 @@
     (asserts! (is-lending-pool contract-caller) (err u0))
     (contract-call? .pool-reserve-data set-user-reserve-data who asset new-state)
   )
-)
-
-(define-constant default-user-reserve-data
-  {
-    principal-borrow-balance: u0,
-    last-variable-borrow-cumulative-index: one-8,
-    origination-fee: u0,
-    stable-borrow-rate: u0,
-    last-updated-block: u0,
-    use-as-collateral: false,
-  }
 )
 
 (define-read-only (is-borroweable-isolated (asset principal))
@@ -742,7 +739,7 @@
           principal-borrow-balance: principal-borrow-balance,
           last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
           origination-fee: origination-fee,
-          last-updated-block: block-height
+          last-updated-block: burn-block-height
         }
       )
     )
@@ -821,7 +818,7 @@
       )
     )
     (origination-fee (- (get origination-fee user-data) origination-fee-repaid))
-    (last-updated-block block-height)
+    (last-updated-block burn-block-height)
   )
   (asserts! (is-lending-pool contract-caller) (err u0))
 
@@ -886,7 +883,7 @@
       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
       principal-borrow-balance: (+ (get principal-borrow-balance user-data) amount-borrowed balance-increase),
       origination-fee: (+ (get origination-fee user-data) fee),
-      last-updated-block: block-height
+      last-updated-block: burn-block-height
     })
   )
     (asserts! (is-lending-pool contract-caller) (err u0))
@@ -1099,7 +1096,7 @@
           (mul
             (calculate-compounded-interest
               current-variable-borrow-rate
-              (- block-height last-updated-block)
+              (- burn-block-height last-updated-block)
             )
             last-variable-borrow-cumulative-index-reserve
           )
@@ -1110,7 +1107,7 @@
     (compounded-balance (mul principal-borrow-balance cumulated-interest))
   )
     (if (is-eq compounded-balance principal-borrow-balance)
-      (if (is-eq last-updated-block block-height)
+      (if (is-eq last-updated-block burn-block-height)
         (+ principal-borrow-balance u1)
         compounded-balance
       )
@@ -1178,7 +1175,7 @@
         reserve-data
         (merge
           {
-            last-updated-block: block-height
+            last-updated-block: burn-block-height
           }
           ret
         )
@@ -1267,6 +1264,29 @@
   )
 )
 
+(define-read-only (get-cumulated-balance
+  (who principal)
+  (balance uint)
+  (asset principal)
+  )
+  (let (
+    (current-user-index (get-user-index who asset))
+    (reserve-data (get-reserve-state asset))
+    (normalized-income
+      (get-normalized-income
+        (get current-liquidity-rate reserve-data)
+        (get last-updated-block reserve-data)
+        (get last-liquidity-cumulative-index reserve-data)))
+    )
+    (div
+      (mul
+        balance
+        normalized-income)
+      current-user-index
+    )
+  )
+)
+
 (define-read-only (get-cumulated-balance-read
   (who principal)
   (lp <ft-mint-trait>)
@@ -1307,7 +1327,7 @@
         (cumulated-liquidity-interest
           (calculate-linear-interest
             (get current-liquidity-rate reserve-data)
-            (- block-height (get last-updated-block reserve-data))
+            (- burn-block-height (get last-updated-block reserve-data))
           )
         )
         (current-liquidity-cumulative-index
@@ -1319,7 +1339,7 @@
         (cumulated-variable-borrow-interest
           (calculate-compounded-interest
             (get current-variable-borrow-rate reserve-data)
-            (- block-height (get last-updated-block reserve-data))
+            (- burn-block-height (get last-updated-block reserve-data))
           )
         )
         (current-variable-borrow-liquidity-cumulative-index
@@ -1385,26 +1405,14 @@
   )
 )
 
-(define-read-only (get-cumulated-balance
-  (who principal)
-  (balance uint)
-  (asset principal)
-  )
+(define-read-only (get-normalized-reserve-income (asset <ft>))
   (let (
-    (current-user-index (get-user-index who asset))
-    (reserve-data (get-reserve-state asset))
-    (normalized-income
-      (get-normalized-income
-        (get current-liquidity-rate reserve-data)
-        (get last-updated-block reserve-data)
-        (get last-liquidity-cumulative-index reserve-data)))
-    )
-    ;; TODO: update user index
-    (div
-      (mul
-        balance
-        normalized-income)
-      current-user-index
+    (reserve-data (get-reserve-state (contract-of asset)))
+  )
+    (get-normalized-income
+      (get current-liquidity-rate reserve-data)
+      (get last-updated-block reserve-data)
+      (get last-liquidity-cumulative-index reserve-data)
     )
   )
 )
@@ -1418,7 +1426,7 @@
     (cumulated 
       (calculate-linear-interest
         current-liquidity-rate
-        (- block-height last-updated-block)
+        (- burn-block-height last-updated-block)
       )
     )
   )
@@ -1858,7 +1866,7 @@
   (delta uint)
   )
   (let (
-    ;; (delta (- block-height last-updated-block))
+    ;; (delta (- burn-block-height last-updated-block))
     (rate-per-second (div current-liquidity-rate (get-seconds-in-year)))
     (time (* delta (get-seconds-in-block)))
   )
@@ -1871,7 +1879,7 @@
   (delta uint)
   )
   (let (
-    ;; (delta (- block-height last-updated-block))
+    ;; (delta (- burn-block-height last-updated-block))
     (years-elapsed (div (* delta (get-seconds-in-block)) (get-seconds-in-year)))
   )
     (+ one-8 (mul years-elapsed current-liquidity-rate))

@@ -1,4 +1,5 @@
 (use-trait ft .ft-mint-trait.ft-mint-trait)
+(use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
@@ -27,7 +28,16 @@
   (ok (some (var-get token-uri))))
 
 (define-read-only (get-balance (account principal))
-  (ok (ft-get-balance lp-stSTX account))
+  (let (
+    (current-principal-balance (ft-get-balance lp-stSTX account))
+  )
+    (if (is-eq current-principal-balance u0)
+      (ok u0)
+      (begin
+        (ok current-principal-balance)
+      )
+    )
+  )
 )
 
 (define-public (set-token-uri (value (string-utf8 256)))
@@ -102,6 +112,26 @@
     (burn-internal amount owner)
   )
 )
+
+
+(define-public (redeem-underlying
+  (pool-reserve principal)
+  (asset <ft>)
+  (oracle <oracle-trait>)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  (amount uint)
+  (owner principal)
+  )
+  (begin
+
+    (ok u0)
+  )
+)
+
+
+;; (define-private (cumulate-balance-internal)
+
+;; )
 
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)

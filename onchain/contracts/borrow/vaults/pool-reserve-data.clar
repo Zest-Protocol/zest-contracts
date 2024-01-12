@@ -1,12 +1,8 @@
-;; (impl-trait .ownable-trait.ownable-trait)
-;; (impl-trait .liquidity-vault-trait.liquidity-vault-trait)
-
 (use-trait ft .ft-trait.ft-trait)
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (define-constant one-8 (contract-call? .math get-one))
-
 (define-constant max-value (contract-call? .math get-max-value))
 (define-constant one-3 u1000)
 

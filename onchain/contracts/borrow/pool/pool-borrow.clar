@@ -4,6 +4,9 @@
 (use-trait flash-loan .flash-loan-trait.flash-loan-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
+(define-constant max-value (contract-call? .math get-max-value))
+(define-constant one-8 (contract-call? .math get-one))
+
 (define-public (supply
   (lp <ft-mint-trait>)
   (pool-reserve principal)
@@ -27,7 +30,7 @@
 
     ;; if first supply
     (if (is-eq current-balance u0)
-      (if (unwrap!
+      (if (unwrap-panic
             (validate-use-as-collateral
               (is-some isolated-asset)
               (get base-ltv-as-collateral reserve-state)
@@ -35,9 +38,7 @@
               supplied-asset-principal
               owner
               (get debt-ceiling reserve-state)
-            )
-            (err u1)
-          )
+            ))
         (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset true))
         false
       )
@@ -75,9 +76,6 @@
       )
     )
 )
-
-(define-constant max-value (contract-call? .math get-max-value))
-(define-constant one-8 (contract-call? .math get-one))
 
 (define-public (redeem-underlying
   (lp <ft-mint-trait>)
