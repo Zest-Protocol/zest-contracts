@@ -22,7 +22,6 @@
 (define-read-only (is-contract-owner (caller principal))
   (is-eq caller (var-get contract-owner)))
 
-
 (define-map approved-contracts principal bool)
 
 (define-read-only (is-approved-contract (contract principal))

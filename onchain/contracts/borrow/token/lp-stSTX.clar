@@ -48,6 +48,25 @@
   )
 )
 
+;; TODO: DELETE TEST PUBLIC
+(define-public (get-balance-test (account principal))
+  (let (
+    (current-principal-balance (ft-get-balance lp-stSTX account))
+  )
+    (if (is-eq current-principal-balance u0)
+      (err u1)
+      (begin
+        (contract-call? .pool-0-reserve calculate-cumulated-balance-test
+          account
+          u6
+          .stSTX
+          current-principal-balance
+          u6)
+      )
+    )
+  )
+)
+
 (define-read-only (get-principal-balance (account principal))
   (ok (ft-get-balance lp-stSTX account)))
 
@@ -143,9 +162,7 @@
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
-        (get last-liquidity-cumulative-index reserve-state)
-    ))
-  )
+        (get last-liquidity-cumulative-index reserve-state))))
     (try! (contract-call? .pool-0-reserve set-user-index account .stSTX new-user-index))
 
     (ok {
@@ -174,13 +191,12 @@
     (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
     (asserts! (try! (is-transfer-allowed .stSTX oracle amount tx-sender assets)) (err u998887))
     
-    (try! (burn-internal amount tx-sender))
+    (try! (burn-internal amount-to-redeem tx-sender))
 
-    (if (is-eq (- (get current-balance ret) amount) u0)
+    (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
       (try! (contract-call? .pool-0-reserve reset-user-index tx-sender .stSTX))
       false
     )
-    (print { amount-to-redeem: amount-to-redeem })
 
     (contract-call? .pool-borrow redeem-underlying
       pool-reserve
@@ -191,6 +207,8 @@
       (get current-balance ret)
       tx-sender
     )
+    ;; (ok amount-to-redeem)
+    ;; (ok ret)
   )
 )
 

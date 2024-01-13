@@ -17,7 +17,6 @@
 
 (define-public (get-flashloan-fee-total)
   (ok (var-get flashloan-fee-total)))
-
 (define-read-only (get-flashloan-fee-total-read)
   (var-get flashloan-fee-total))
 
@@ -106,7 +105,6 @@
   (begin
     (try! (is-approved-contract contract-caller))
     (ok (map-set user-assets user data))))
-
 (define-public (delete-user-assets
   (user principal))
   (begin
@@ -116,7 +114,6 @@
 (define-public (get-user-assets
   (user principal))
   (ok (map-get? user-assets user)))
-
 (define-read-only (get-user-assets-read
   (user principal))
   (map-get? user-assets user))
@@ -178,8 +175,7 @@
     (borrow-cap uint)
     (debt-ceiling uint)
     (is-active bool)
-    (is-frozen bool)
-  )))
+    (is-frozen bool))))
   (begin
     (try! (is-approved-contract contract-caller))
     (ok (map-set reserve-state reserve data))))
@@ -193,7 +189,6 @@
 (define-public (get-reserve-state
   (reserve principal))
   (ok (map-get? reserve-state reserve)))
-
 (define-read-only (get-reserve-state-read
   (reserve principal))
   (map-get? reserve-state reserve))
@@ -296,7 +291,6 @@
   (if (default-to false (map-get? approved-contracts contract))
     (ok true)
     ERR_UNAUTHORIZED))
-
 
 ;; (map-set approved-contracts .pool-borrow true)
 ;; (map-set approved-contracts .liquidation-manager true)

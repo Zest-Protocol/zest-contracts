@@ -1081,7 +1081,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeErr(Cl.uint(99995));
+    expect(callResponse.result).toBeErr(Cl.uint(30003));
 
     // cannot enable or disable sBTC as collateral
     callResponse = poolBorrow.setUserUseReserveAsCollateral(

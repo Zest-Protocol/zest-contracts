@@ -21,6 +21,10 @@
   )
 )
 
+(define-public (test-this)
+  (contract-call? .lp-stSTX get-balance tx-sender)
+)
+
 (define-constant available-assets (list .diko .sBTC .stSTX .xUSD .USDA ))
 
 (define-read-only (get-supplieable-assets)
@@ -389,6 +393,32 @@
     (if (< useable-collateral borrowed-collateral)
       u0
       (div (- useable-collateral borrowed-collateral) price)
+    )
+  )
+)
+
+(define-public (calculate-interest-rates-test (asset <ft>))
+  (let (
+    (reserve-data (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
+  )
+    (ok 
+      (merge
+          (contract-call? .interest-rate-strategy-default
+          calculate-interest-rates
+          (unwrap-panic (contract-call? asset get-balance .pool-vault))
+          (get total-borrows-stable reserve-data)
+          (get total-borrows-variable reserve-data)
+          (get current-average-stable-borrow-rate reserve-data)
+          (get decimals reserve-data)
+      )
+      {
+        available-liquidity: (unwrap-panic (contract-call? asset get-balance .pool-vault)),
+        total-borrows-stable: (get total-borrows-stable reserve-data),
+        total-borrows-variable: (get total-borrows-variable reserve-data),
+        current-average-stable-borrow-rate: (get current-average-stable-borrow-rate reserve-data),
+        decimals: (get decimals reserve-data)
+      }
+      )
     )
   )
 )

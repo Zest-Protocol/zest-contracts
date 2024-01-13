@@ -1,4 +1,5 @@
 (define-constant one-8 u100000000)
+(define-constant one-12 u1000000000000)
 (define-constant fixed-precision u8)
 
 (define-constant max-value u340282366920938463463374607431768211455)
@@ -8,12 +9,10 @@
 )
 
 (define-read-only (mul (x uint) (y uint))
-  (/ (+ (* x y) (/ one-8 u2)) one-8)
-)
+  (/ (+ (* x y) (/ one-8 u2)) one-8))
 
 (define-read-only (div (x uint) (y uint))
-  (/ (+ (* x one-8) (/ y u2)) y)
-)
+  (/ (+ (* x one-8) (/ y u2)) y))
 
 (define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
   (if (> decimals-a fixed-precision)
@@ -27,6 +26,20 @@
     (div (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
     (div (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
   )
+)
+
+;; assumes assets used do not have more than 12 decimals
+(define-read-only (div-precision-to-fixed (a uint) (b uint) (decimals uint))
+  (let (
+    (adjustment-difference (- one-12 decimals))
+    (result (/ (* a (pow u10 decimals)) b))
+    )
+    (to-fixed result decimals)
+  )
+)
+
+(define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
+  (from-fixed-to-precision (mul-to-fixed-precision a decimals-a b-fixed) decimals-a)
 )
 
 (define-read-only (add-precision-to-fixed (a uint) (decimals-a uint) (b-fixed uint))

@@ -118,6 +118,62 @@ class PoolBorrow {
     );
   }
 
+  borrow(
+    poolReserveDeployer: string,
+    poolReserveContractName: string,
+    oracleDeployer: string,
+    oracleContractName: string,
+    assetDeployer: string,
+    assetContractName: string,
+    lpDeployer: string,
+    lpContractName: string,
+    amountToBeBorrowed: IntegerType,
+    feeCalculatorDeployer: string,
+    feeCalculatorContractName: string,
+    interestRateMode: IntegerType,
+    owner: string,
+    assetsToCalculate: {
+      asset: { deployerAddress: string; contractName: string };
+      "lp-token": { deployerAddress: string; contractName: string };
+      oracle: { deployerAddress: string; contractName: string };
+    }[],
+    caller: string
+  ) {
+    return simnet.callPublicFn(
+      this.contractName,
+      "borrow",
+      [
+        Cl.contractPrincipal(poolReserveDeployer, poolReserveContractName),
+        Cl.contractPrincipal(oracleDeployer, oracleContractName),
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+        Cl.contractPrincipal(lpDeployer, lpContractName),
+        Cl.list(
+          assetsToCalculate.map((asset) => {
+            return Cl.tuple({
+              asset: Cl.contractPrincipal(
+                asset.asset.deployerAddress,
+                asset.asset.contractName
+              ),
+              "lp-token": Cl.contractPrincipal(
+                asset["lp-token"].deployerAddress,
+                asset["lp-token"].contractName
+              ),
+              oracle: Cl.contractPrincipal(
+                asset.oracle.deployerAddress,
+                asset.oracle.contractName
+              ),
+            });
+          })
+        ),
+        Cl.uint(amountToBeBorrowed),
+        Cl.contractPrincipal(feeCalculatorDeployer, feeCalculatorContractName),
+        Cl.uint(interestRateMode),
+        Cl.standardPrincipal(owner),
+      ],
+      caller
+    );
+  }
+
   setUserUseReserveAsCollateral(
     caller: string,
     lpDeployer: string,

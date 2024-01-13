@@ -3,33 +3,58 @@
 (define-constant optimal-utilization-rate u80000000)
 (define-constant excess-utilization-rate (- u100000000 optimal-utilization-rate))
 
-
 (define-constant one-percent u1000000)
 (define-constant five-percent u5000000)
 (define-constant ten-percent u10000000)
 
 ;; when Ur = 0
 (define-data-var base-variable-borrow-rate uint one-percent)
+(define-public (set-base-variable-borrow-rate (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set base-variable-borrow-rate rate))))
+
+(define-read-only (get-base-variable-borrow-rate)
+  (ok (var-get base-variable-borrow-rate)))
 
 ;; when Ur < optimal-utilization-rate
 (define-data-var variable-rate-slope-1 uint five-percent)
+(define-public (set-variable-rate-slope-1 (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set variable-rate-slope-1 rate))))
+
+(define-read-only (get-variable-rate-slope-1)
+  (ok (var-get variable-rate-slope-1)))
+
 ;; when Ur > optimal-utilization-rate
 (define-data-var variable-rate-slope-2 uint ten-percent)
+(define-public (set-variable-rate-slope-2 (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set variable-rate-slope-2 rate))))
+
+(define-read-only (get-variable-rate-slope-2)
+  (ok (var-get variable-rate-slope-2)))
 
 ;; when Ur < optimal-utilization-rate
 (define-data-var stable-rate-slope-1 uint five-percent)
 ;; when Ur > optimal-utilization-rate
 (define-data-var stable-rate-slope-2 uint ten-percent)
 
-(define-constant one-8 u100000000)
+(define-constant one-8 (contract-call? .math get-one))
 
 (define-read-only (mul (x uint) (y uint))
-  (/ (+ (* x y) (/ one-8 u2)) one-8)
-)
+  (/ (+ (* x y) (/ one-8 u2)) one-8))
 
 (define-read-only (div (x uint) (y uint))
-  (/ (+ (* x one-8) (/ y u2)) y)
-)
+  (/ (+ (* x one-8) (/ y u2)) y))
+
+(define-read-only (div-precision-to-fixed (a uint) (b uint) (decimals uint))
+  (contract-call? .math div-precision-to-fixed a b decimals))
+
+(define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
+  (contract-call? .math mul-precision-with-factor a decimals-a b-fixed))
 
 ;; returns current liquidity rate
 (define-read-only (calculate-interest-rates
@@ -37,135 +62,71 @@
     (total-borrows-stable uint)
     (total-borrows-variable uint)
     (average-stable-borrow-rate uint)
+    (decimals uint)
   )
   (let (
     (total-borrows (+ total-borrows-stable total-borrows-variable))
     (utilization-rate
       (if (and (is-eq total-borrows-stable u0) (is-eq total-borrows-variable u0))
         u0
-        (div total-borrows (+ total-borrows available-liquidity))
-      )
-    )
-    ;; TODO: should get this from an oracle, but might not exist
-    (current-stable-borrow-rate u0)
-  )
-    (asserts! true (err u0))
+        (div-precision-to-fixed total-borrows (+ total-borrows available-liquidity) decimals)))
+    (current-stable-borrow-rate u0))
     (if (> utilization-rate optimal-utilization-rate)
       (let (
         (excess-utilization-rate-ratio (div (- utilization-rate optimal-utilization-rate) excess-utilization-rate))
-        (new-stable-borrow-rate
-          (+
-            (+ current-stable-borrow-rate (var-get stable-rate-slope-1))
-            (mul
-              (var-get stable-rate-slope-2)
-              excess-utilization-rate-ratio
-            )
-          )
-        )
         (new-variable-borrow-rate
           (+
             (+ (var-get base-variable-borrow-rate) (var-get variable-rate-slope-1))
-              (mul
-                (var-get variable-rate-slope-2)
-                excess-utilization-rate-ratio
-              )
-          )
-        )
-      )
-        (ok
+            (mul (var-get variable-rate-slope-2) excess-utilization-rate-ratio))
+          ))
           {
-            current-liquidity-rate: (mul
-              (get-overall-borrow-rate-internal
-                total-borrows-stable
-                total-borrows-variable
-                new-variable-borrow-rate
-                average-stable-borrow-rate
-              )
+            current-liquidity-rate:
+            (mul
+              new-variable-borrow-rate
               utilization-rate
             ),
-            current-stable-borrow-rate: new-stable-borrow-rate,
-            current-variable-borrow-rate: new-variable-borrow-rate
+            current-variable-borrow-rate: new-variable-borrow-rate,
+            utilization-rate: utilization-rate,
           }
-        )
       )
       (let (
-        (new-stable-borrow-rate
-          (+
-            current-stable-borrow-rate
-            (mul
-              (var-get stable-rate-slope-1)
-              (div utilization-rate optimal-utilization-rate)
-            )
-          )
-        )
         (new-variable-borrow-rate
-          (get-variable-borrow-rate
+          (+
             (var-get base-variable-borrow-rate)
-            (var-get variable-rate-slope-1)
-            utilization-rate
-            optimal-utilization-rate
-          )
-        )
-      )
-        (ok
+            (mul
+              (div utilization-rate optimal-utilization-rate)
+              (var-get variable-rate-slope-1)
+            ))))
           {
             current-liquidity-rate:
               (mul 
-                (get-overall-borrow-rate-internal
-                  total-borrows-stable
-                  total-borrows-variable
-                  new-variable-borrow-rate
-                  average-stable-borrow-rate
-                )
+                new-variable-borrow-rate
                 utilization-rate
               ),
-            current-stable-borrow-rate: new-stable-borrow-rate,
-            current-variable-borrow-rate: new-variable-borrow-rate
+            current-variable-borrow-rate: new-variable-borrow-rate,
+            utilization-rate: utilization-rate,
           }
-        )
       )
     )
   )
 )
 
-(define-read-only (get-variable-borrow-rate
-  (base-variable-borrow-rate-0 uint)
-  (variable-rate-slope uint)
-  (utilization-rate uint)
-  (optimal-utilization-rate-0 uint)
-  )
-  (+
-    base-variable-borrow-rate-0
-    (mul
-      variable-rate-slope
-      (div
-        utilization-rate
-        optimal-utilization-rate-0
-      )
-    )
-  )
-)
-
-;; TODO: DOUBLE CHECK
 (define-read-only (get-overall-borrow-rate-internal
     (total-borrows-stable uint)
     (total-borrows-variable uint)
     (current-variable-borrow-rate uint)
     (current-average-stable-borrow-rate uint)
+    (decimals uint)
   )
   (let (
-    (total-borrows (+ total-borrows-stable total-borrows-variable))
+    (total-borrows total-borrows-variable)
   )
     (if (is-eq total-borrows u0)
       u0
-      (div
-        (+
-          ;; weighted-variable-rate
-          (mul total-borrows-variable current-variable-borrow-rate)
-          ;; weighted-stable-rate
-          (mul total-borrows-stable current-average-stable-borrow-rate)
-        )
+      (div-precision-to-fixed
+        (mul-precision-with-factor total-borrows-variable decimals current-variable-borrow-rate)
         total-borrows
+        decimals
       )
     )
   )
@@ -210,9 +171,20 @@
 
 (define-constant e 271828182)
 
-(define-read-only (test-this)
-  (mul (* one-8 u1000) (taylor-6 (mul u5000000 u300000000)))
-)
+(define-data-var contract-owner principal tx-sender)
+(define-public (set-contract-owner (owner principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (print { type: "set-contract-owner-pool-reserve-data", payload: owner })
+    (ok (var-set contract-owner owner))))
+
+(define-public (get-contract-owner)
+  (ok (var-get contract-owner)))
+(define-read-only (get-contract-owner-read)
+  (var-get contract-owner))
+
+(define-read-only (is-contract-owner (caller principal))
+  (is-eq caller (var-get contract-owner)))
 
 (define-constant fact_2 u200000000)
 (define-constant fact_3 (mul u300000000 u200000000))
@@ -237,28 +209,4 @@
   )
 )
 
-;; (define-read-only (pow8 (x uint) (n uint))
-;;   (let (
-;;     (z (if (is-odd n) x ONE_8))
-;;   )
-;;     (get z (fold pow8-internal iter-buff-128 { x: x, n: n, z: z}))
-;;   )
-;; )
-
-;; (define-private (pow8-internal (i (buff 1)) (ret { x: uint, n: uint, z: uint }))
-;;   (let (
-;;     (x (get x ret))
-;;     (z (get z ret))
-;;     (n (/ (get n ret) u2))
-;;   )
-;;     (let ((x_2 (mul x x)))
-;;       (if (> n u0)
-;;         (if (is-odd (get n ret))
-;;           { x: x_2, n: n, z: (mul z x) }
-;;           { x: x_2, n: n, z: z }
-;;         )
-;;         { x: x, n: n, z: z }
-;;       )
-;;     )
-;;   )
-;; )
+(define-constant ERR_UNAUTHORIZED (err u7000))
