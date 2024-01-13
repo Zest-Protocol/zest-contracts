@@ -48,24 +48,24 @@
   )
 )
 
-;; TODO: DELETE TEST PUBLIC
-(define-public (get-balance-test (account principal))
-  (let (
-    (current-principal-balance (ft-get-balance lp-stSTX account))
-  )
-    (if (is-eq current-principal-balance u0)
-      (err u1)
-      (begin
-        (contract-call? .pool-0-reserve calculate-cumulated-balance-test
-          account
-          u6
-          .stSTX
-          current-principal-balance
-          u6)
-      )
-    )
-  )
-)
+;; TODO: DELETE TEST
+;; (define-public (get-balance-test (account principal))
+;;   (let (
+;;     (current-principal-balance (ft-get-balance lp-stSTX account))
+;;   )
+;;     (if (is-eq current-principal-balance u0)
+;;       (err u1)
+;;       (begin
+;;         (contract-call? .pool-0-reserve calculate-cumulated-balance-test
+;;           account
+;;           u6
+;;           .stSTX
+;;           current-principal-balance
+;;           u6)
+;;       )
+;;     )
+;;   )
+;; )
 
 (define-read-only (get-principal-balance (account principal))
   (ok (ft-get-balance lp-stSTX account)))
@@ -165,6 +165,11 @@
         (get last-liquidity-cumulative-index reserve-state))))
     (try! (contract-call? .pool-0-reserve set-user-index account .stSTX new-user-index))
 
+    (if (is-eq balance-increase u0)
+      false
+      (try! (mint-internal balance-increase account))
+    )
+
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -207,8 +212,6 @@
       (get current-balance ret)
       tx-sender
     )
-    ;; (ok amount-to-redeem)
-    ;; (ok ret)
   )
 )
 

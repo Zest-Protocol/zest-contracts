@@ -1,41 +1,77 @@
 
 ;; 0.8 Ur
-(define-constant optimal-utilization-rate u80000000)
-(define-constant excess-utilization-rate (- u100000000 optimal-utilization-rate))
+(define-map optimal-utilization-rates principal uint)
+(define-public (set-optimal-utilization-rate (asset principal) (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (map-set optimal-utilization-rates asset rate))))
+
+(define-read-only (get-optimal-utilization-rate (asset principal))
+  (map-get? optimal-utilization-rates asset))
+
+(define-read-only (get-excess-utilization-rate (rate uint))
+  (- u100000000 rate)
+)
 
 (define-constant one-percent u1000000)
 (define-constant five-percent u5000000)
 (define-constant ten-percent u10000000)
 
 ;; when Ur = 0
-(define-data-var base-variable-borrow-rate uint one-percent)
-(define-public (set-base-variable-borrow-rate (rate uint))
+(define-map base-variable-borrow-rates principal uint)
+(define-public (set-base-variable-borrow-rate (asset principal) (rate uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (ok (var-set base-variable-borrow-rate rate))))
+    (ok (map-set base-variable-borrow-rates asset rate))))
 
-(define-read-only (get-base-variable-borrow-rate)
-  (ok (var-get base-variable-borrow-rate)))
+(define-read-only (get-base-variable-borrow-rate (asset principal))
+  (map-get? base-variable-borrow-rates asset))
 
 ;; when Ur < optimal-utilization-rate
-(define-data-var variable-rate-slope-1 uint five-percent)
-(define-public (set-variable-rate-slope-1 (rate uint))
+(define-map variable-rate-slopes-1 principal uint)
+(define-public (set-variable-rate-slope-1 (asset principal) (rate uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (ok (var-set variable-rate-slope-1 rate))))
+    (ok (map-set variable-rate-slopes-1 asset rate))))
 
-(define-read-only (get-variable-rate-slope-1)
-  (ok (var-get variable-rate-slope-1)))
+(define-read-only (get-variable-rate-slope-1 (asset principal))
+  (map-get? variable-rate-slopes-1 asset))
 
 ;; when Ur > optimal-utilization-rate
-(define-data-var variable-rate-slope-2 uint ten-percent)
-(define-public (set-variable-rate-slope-2 (rate uint))
+(define-map variable-rate-slopes-2 principal uint)
+(define-public (set-variable-rate-slope-2 (asset principal) (rate uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (ok (var-set variable-rate-slope-2 rate))))
+    (ok (map-set variable-rate-slopes-2 asset rate))))
 
-(define-read-only (get-variable-rate-slope-2)
-  (ok (var-get variable-rate-slope-2)))
+(define-read-only (get-variable-rate-slope-2 (asset principal))
+  (map-get? variable-rate-slopes-2 asset))
+
+
+(map-set base-variable-borrow-rates .stSTX u0)
+(map-set variable-rate-slopes-1 .stSTX u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .stSTX u300000000) ;; 300%
+(map-set optimal-utilization-rates .stSTX u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .sBTC u0)
+(map-set variable-rate-slopes-1 .sBTC u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .sBTC u300000000) ;; 300%
+(map-set optimal-utilization-rates .sBTC u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .diko u0)
+(map-set variable-rate-slopes-1 .diko u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .diko u300000000) ;; 300%
+(map-set optimal-utilization-rates .diko u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .xUSD u0)
+(map-set variable-rate-slopes-1 .xUSD u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .xUSD u300000000) ;; 300%
+(map-set optimal-utilization-rates .xUSD u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .USDA u0)
+(map-set variable-rate-slopes-1 .USDA u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .USDA u300000000) ;; 300%
+(map-set optimal-utilization-rates .USDA u80000000) ;; 80%
 
 ;; when Ur < optimal-utilization-rate
 (define-data-var stable-rate-slope-1 uint five-percent)
@@ -62,10 +98,12 @@
     (total-borrows-stable uint)
     (total-borrows-variable uint)
     (average-stable-borrow-rate uint)
+    (asset principal)
     (decimals uint)
   )
   (let (
     (total-borrows (+ total-borrows-stable total-borrows-variable))
+    (optimal-utilization-rate (unwrap-panic (get-optimal-utilization-rate asset)))
     (utilization-rate
       (if (and (is-eq total-borrows-stable u0) (is-eq total-borrows-variable u0))
         u0
@@ -73,11 +111,11 @@
     (current-stable-borrow-rate u0))
     (if (> utilization-rate optimal-utilization-rate)
       (let (
-        (excess-utilization-rate-ratio (div (- utilization-rate optimal-utilization-rate) excess-utilization-rate))
+        (excess-utilization-rate-ratio (div (- utilization-rate optimal-utilization-rate) (- u100000000 optimal-utilization-rate)))
         (new-variable-borrow-rate
           (+
-            (+ (var-get base-variable-borrow-rate) (var-get variable-rate-slope-1))
-            (mul (var-get variable-rate-slope-2) excess-utilization-rate-ratio))
+            (+ (unwrap-panic (get-base-variable-borrow-rate asset)) (unwrap-panic (get-variable-rate-slope-1 asset)))
+            (mul (unwrap-panic (get-variable-rate-slope-2 asset)) excess-utilization-rate-ratio))
           ))
           {
             current-liquidity-rate:
@@ -92,10 +130,10 @@
       (let (
         (new-variable-borrow-rate
           (+
-            (var-get base-variable-borrow-rate)
+            (unwrap-panic (get-base-variable-borrow-rate asset))
             (mul
               (div utilization-rate optimal-utilization-rate)
-              (var-get variable-rate-slope-1)
+              (unwrap-panic (get-variable-rate-slope-1 asset))
             ))))
           {
             current-liquidity-rate:

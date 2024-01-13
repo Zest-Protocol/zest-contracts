@@ -38,6 +38,12 @@
   )
 )
 
+(define-read-only (div-reduced-loss (a uint) (b uint))
+  (begin
+    (/ (* a one-8) b)
+  )
+)
+
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
   (from-fixed-to-precision (mul-to-fixed-precision a decimals-a b-fixed) decimals-a)
 )
@@ -130,13 +136,32 @@
   (is-eq (mod x u2) u0)
 )
 
-(define-read-only (get-e)
-  e
+;; rate in 8-fixed
+;; time passed in seconds
+;; u31536000
+(define-read-only (get-rt (rate uint) (t uint))
+  (begin
+    (/ (* (/ (* rate one-12) seconds-in-year) t) u100000)
+  )
 )
 
-(define-read-only (get-one)
-  one-8
+;; rate in 8-fixed
+;; n-blocks
+(define-read-only (get-rt-by-block (rate uint) (blocks uint))
+  (begin
+    (mul rate (* blocks sb-by-sy))
+  )
 )
+
+;; block-seconds/year-seconds in fixed precision
+(define-constant sb-by-sy u1903)
+
+(define-read-only (get-sb-by-sy)
+  sb-by-sy
+)
+
+(define-read-only (get-e) e)
+(define-read-only (get-one) one-8)
 
 (define-constant e 271828182)
 (define-constant seconds-in-year u31536000

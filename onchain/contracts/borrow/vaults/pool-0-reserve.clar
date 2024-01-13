@@ -383,6 +383,7 @@
     (contract-call? .pool-reserve-data get-user-assets-read who))
 )
 
+;; Can ignore because we only use variable borrow rate
 (define-read-only (get-user-current-borrow-rate
   (who principal)
   (asset <ft>)
@@ -583,12 +584,13 @@
   (begin
     (asserts! (is-lending-pool contract-caller) (err u0))
 
+    (try! (update-cumulative-indexes (contract-of asset)))
     (try! (update-reserve-state-on-repay who payback-amount-minus-fees balance-increase asset))
     (try! (update-user-state-on-repay asset who payback-amount-minus-fees origination-fee-repaid balance-increase repaid-whole-loan))
 
     (try! (update-reserve-interest-rates-and-timestamp asset payback-amount-minus-fees u0))
 
-    (ok u0)
+    (ok true)
   )
 )
 
@@ -771,7 +773,7 @@
   )
 )
 
-(define-public (update-user-state-on-repay
+(define-private (update-user-state-on-repay
   (asset <ft>)
   (who principal)
   (payback-amount-minus-fees uint)
@@ -794,16 +796,9 @@
         (get last-variable-borrow-cumulative-index reserve-data)
       )
     )
-    (stable-borrow-rate
-      (if repaid-whole-loan
-        u0
-        (get stable-borrow-rate user-data)
-      )
-    )
     (origination-fee (- (get origination-fee user-data) origination-fee-repaid))
     (last-updated-block burn-block-height)
   )
-  (asserts! (is-lending-pool contract-caller) (err u0))
 
   (try! (contract-call? .pool-reserve-data set-user-reserve-data
     who (contract-of asset)
@@ -812,7 +807,6 @@
       {
         principal-borrow-balance: principal-borrow-balance,
         last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
-        stable-borrow-rate: stable-borrow-rate,
         origination-fee: origination-fee,
         last-updated-block: last-updated-block
       }
@@ -822,11 +816,11 @@
     (try! (remove-borrowed-asset who (contract-of asset)))
     false
   )
-  (ok u0)
+  (ok true)
   )
 )
 
-(define-public (update-reserve-state-on-repay
+(define-private (update-reserve-state-on-repay
   (who principal)
   (payback-amount-minus-fees uint)
   (balance-increase uint)
@@ -836,8 +830,6 @@
     (reserve-data (get-reserve-state (contract-of asset)))
     (user-data (get-user-reserve-data who (contract-of asset)))
   )
-    (asserts! (is-lending-pool contract-caller) (err u0))
-    (try! (update-cumulative-indexes (contract-of asset)))
     (contract-call? .pool-reserve-data
       set-reserve-state
       (contract-of asset)
@@ -851,7 +843,7 @@
   )
 )
 
-(define-public (update-user-state-on-borrow
+(define-private (update-user-state-on-borrow
   (who principal)
   (asset <ft>)
   (amount-borrowed uint)
@@ -1148,24 +1140,24 @@
         (get total-borrows-stable reserve-data)
         (get total-borrows-variable reserve-data)
         (get current-average-stable-borrow-rate reserve-data)
+        (contract-of asset)
         (get decimals reserve-data)
       )
     )
     (new-reserve-state
       (merge
         reserve-data
-        (merge
-          {
-            last-updated-block: burn-block-height
-          }
-          {
-            current-liquidity-rate: (get current-liquidity-rate ret),
-            current-variable-borrow-rate: (get current-variable-borrow-rate ret)
-          }
-        )
+        {
+          last-updated-block: burn-block-height,
+          current-liquidity-rate: (get current-liquidity-rate ret),
+          current-variable-borrow-rate: (get current-variable-borrow-rate ret)
+        }
       )
     )
   )
+    (print ret)
+    (print {before-updat: reserve-data})
+    (print {after-update: new-reserve-state})
     (contract-call? .pool-reserve-data set-reserve-state (contract-of asset) new-reserve-state)
   )
 )
@@ -1263,7 +1255,6 @@
   )
 )
 
-;; TODO: Redoing z-token
 (define-read-only (calculate-cumulated-balance
   (who principal)
   (lp-decimals uint)
@@ -1287,35 +1278,36 @@
   )
 )
 
-;; TODO: DEELTE TEST FUNCTION
-(define-public (calculate-cumulated-balance-test
-  (who principal)
-  (lp-decimals uint)
-  (asset <ft>)
-  (asset-balance uint)
-  (asset-decimals uint))
-  (let (
-    (asset-principal (contract-of asset))
-    (reserve-data (get-reserve-state asset-principal))
-    (reserve-normalized-income
-      (get-normalized-income
-        (get current-liquidity-rate reserve-data)
-        (get last-updated-block reserve-data)
-        (get last-liquidity-cumulative-index reserve-data)))
-    )
-      (asserts! true (err u89))
-      (from-fixed-to-precision
-        (mul-to-fixed-precision
-          asset-balance
-          asset-decimals
-          (div reserve-normalized-income (get-user-index who asset-principal))
-        )
-        asset-decimals
-      )
-      
-    (ok reserve-data)
-  )
-)
+;; TODO: DELETE TEST FUNCTION
+;; (define-public (calculate-cumulated-balance-test
+;;   (who principal)
+;;   (lp-decimals uint)
+;;   (asset <ft>)
+;;   (asset-balance uint)
+;;   (asset-decimals uint))
+;;   (let (
+;;     (asset-principal (contract-of asset))
+;;     (reserve-data (get-reserve-state asset-principal))
+;;     (reserve-normalized-income
+;;       (get-normalized-income
+;;         (get current-liquidity-rate reserve-data)
+;;         (get last-updated-block reserve-data)
+;;         (get last-liquidity-cumulative-index reserve-data)))
+;;     )
+;;       (asserts! true (err u89))
+;;       (from-fixed-to-precision
+;;         (mul-to-fixed-precision
+;;           asset-balance
+;;           asset-decimals
+;;           (div reserve-normalized-income (get-user-index who asset-principal))
+;;         )
+;;         asset-decimals
+;;       )
+;;       (ok {current-liquidity-rate: (get current-liquidity-rate reserve-data),
+;;         last-updated-block: (get last-updated-block reserve-data),
+;;         last-liquidity-cumulative-index: (get last-liquidity-cumulative-index reserve-data)})
+;;   )
+;; )
 
 (define-read-only (get-cumulated-balance
   (who principal)
@@ -1329,8 +1321,7 @@
       (get-normalized-income
         (get current-liquidity-rate reserve-data)
         (get last-updated-block reserve-data)
-        (get last-liquidity-cumulative-index reserve-data)))
-    )
+        (get last-liquidity-cumulative-index reserve-data))))
     (div
       (mul
         balance
@@ -1381,7 +1372,7 @@
             (- burn-block-height (get last-updated-block reserve-data))
           )
         )
-        (current-liquidity-cumulative-index
+        (new-last-liquidity-cumulative-index
           (mul
             cumulated-liquidity-interest
             (get last-liquidity-cumulative-index reserve-data)
@@ -1393,21 +1384,31 @@
             (- burn-block-height (get last-updated-block reserve-data))
           )
         )
-        (current-variable-borrow-liquidity-cumulative-index
+        (new-last-variable-borrow-liquidity-cumulative-index
           (mul
-            cumulated-liquidity-interest
+            cumulated-variable-borrow-interest
             (get last-variable-borrow-cumulative-index reserve-data)
           )
         )
       )
+        ;; (print {bafor: {
+        ;;       current-liquidity-rate: (get current-liquidity-rate reserve-data),
+        ;;       current-variable-borrow-rate: (get current-variable-borrow-rate reserve-data),
+        ;;       last-liquidity-cumulative-index: (get last-liquidity-cumulative-index reserve-data),
+        ;;       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data)
+        ;;     }})
+        ;; (print {after: {
+        ;;       last-liquidity-cumulative-index: new-last-liquidity-cumulative-index,
+        ;;       last-variable-borrow-cumulative-index: new-last-variable-borrow-liquidity-cumulative-index
+        ;;     }})
         (contract-call? .pool-reserve-data
           set-reserve-state
           asset
           (merge
             reserve-data
             {
-              last-liquidity-cumulative-index: current-liquidity-cumulative-index,
-              last-variable-borrow-cumulative-index: current-variable-borrow-liquidity-cumulative-index
+              last-liquidity-cumulative-index: new-last-liquidity-cumulative-index,
+              last-variable-borrow-cumulative-index: new-last-variable-borrow-liquidity-cumulative-index
             }
           )
         )
@@ -1866,21 +1867,27 @@
   (current-liquidity-rate uint)
   (delta uint))
   (let (
-    (rate-per-second (div current-liquidity-rate (get-seconds-in-year)))
+    (rate-per-second (/ current-liquidity-rate (get-seconds-in-year)))
     (time (* delta (get-seconds-in-block))))
-    (taylor-6 (mul rate-per-second time))
+    (taylor-6 (get-rt-by-block current-liquidity-rate delta))
   )
+)
+
+(define-read-only (get-rt-by-block (rate uint) (blocks uint))
+  (contract-call? .math get-rt-by-block rate blocks)
 )
 
 (define-read-only (calculate-linear-interest
   (current-liquidity-rate uint)
   (delta uint))
   (let (
-    (years-elapsed (div (* delta (get-seconds-in-block)) (get-seconds-in-year)))
+    (years-elapsed (* delta (get-sb-by-sy)))
   )
     (+ one-8 (mul years-elapsed current-liquidity-rate))
   )
 )
+
+(define-read-only (get-sb-by-sy) (contract-call? .math get-sb-by-sy))
 
 (define-read-only (get-collection-address)
   (contract-call? .pool-reserve-data get-protocol-treasury-addr-read)

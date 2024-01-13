@@ -706,8 +706,8 @@ describe("Isolated mode", () => {
     console.log(Cl.prettyPrint(callResponse.result));
 
     let afterNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
-    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112500657");
-    expect(afterNonIsolatedSupply["health-factor"].value).toBe("112500611");
+    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112500701");
+    expect(afterNonIsolatedSupply["health-factor"].value).toBe("112500699");
     console.log(Cl.prettyPrint(callResponse.result));
   });
   it(`Supply and borrow supplying only isolated asset. \
@@ -966,7 +966,7 @@ describe("Isolated mode", () => {
       Borrower_1
     );
 
-    expect(callResponse.result).toBeOk(Cl.uint(499609885));
+    expect(callResponse.result).toBeOk(Cl.uint(499610074));
 
     borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,

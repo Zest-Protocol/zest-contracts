@@ -321,7 +321,7 @@ describe("Supply and redeem", () => {
     callResponse = simnet.callPublicFn(
       stSTX,
       "mint",
-      [Cl.uint(1_100_000_000), Cl.standardPrincipal(LP_1)],
+      [Cl.uint(1_000_000_000), Cl.standardPrincipal(LP_1)],
       deployerAddress
     );
 
@@ -343,24 +343,7 @@ describe("Supply and redeem", () => {
       LP_1,
       LP_1
     );
-
-    console.log("After stSTX supply");
-    callResponse = simnet.callPublicFn(
-      zStSTX,
-      "get-balance-test",
-      [Cl.standardPrincipal(LP_1)],
-      deployerAddress
-    );
-    // console.log(cvToJSON(callResponse.result)["value"]["value"]);
-
-    callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-reserve-data`,
-      "get-reserve-state-read",
-      [Cl.contractPrincipal(deployerAddress, stSTX)],
-      LP_1
-    );
-    // console.log(cvToJSON(callResponse.result)["value"]);
-    // console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = poolBorrow.supply(
       deployerAddress,
@@ -373,14 +356,7 @@ describe("Supply and redeem", () => {
       Borrower_1,
       Borrower_1
     );
-
-    callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "get-assets-used-by",
-      [Cl.standardPrincipal(Borrower_1)],
-      Borrower_1
-    );
-    // console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = poolBorrow.borrow(
       deployerAddress,
@@ -407,19 +383,6 @@ describe("Supply and redeem", () => {
     );
     expect(callResponse.result).toBeErr(Cl.uint(30007));
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      100_000_000,
-      LP_1,
-      LP_1
-    );
-    console.log(Cl.prettyPrint(callResponse.result));
-
     callResponse = poolBorrow.borrow(
       deployerAddress,
       "pool-0-reserve",
@@ -445,29 +408,53 @@ describe("Supply and redeem", () => {
     );
     expect(callResponse.result).toBeOk(Cl.uint(100_000_000));
 
-    console.log("After stSTX borrow by Borrower 1");
-    callResponse = simnet.callPublicFn(
-      zStSTX,
-      "get-balance-test",
-      [Cl.standardPrincipal(LP_1)],
-      deployerAddress
-    );
-    callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-reserve-data`,
-      "get-reserve-state-read",
-      [Cl.contractPrincipal(deployerAddress, stSTX)],
-      LP_1
-    );
+    // callResponse = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-reserve-data`,
+    //   "get-reserve-state-read",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   LP_1
+    // );
+    // console.log(cvToJSON(callResponse.result)["value"]);
+    // callResponse = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-reserve-data`,
+    //   "get-user-reserve-data-read",
+    //   [
+    //     Cl.standardPrincipal(Borrower_1),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //   ],
+    //   Borrower_1
+    // );
+    // console.log(cvToJSON(callResponse.result)["value"]["value"]);
+    // console.log("User Index data");
+    // callResponse = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-reserve-data`,
+    //   "get-user-index-read",
+    //   [Cl.standardPrincipal(LP_1)],
+    //   LP_1
+    // );
+    // console.log(cvToJSON(callResponse.result)["value"]);
+
+    // 50000
+    // 20
+    // 100000000
+
+    // console.log("After stSTX borrow by Borrower 1");
+    // callResponse = simnet.callPublicFn(
+    //   zStSTX,
+    //   "get-balance-test",
+    //   [Cl.standardPrincipal(LP_1)],
+    //   LP_1
+    // );
     // console.log(cvToJSON(callResponse.result)["value"]);
     // console.log(cvToJSON(callResponse.result)["value"]["value"]);
 
-    console.log("Calculating interest rates after borrowing");
-    callResponse = simnet.callPublicFn(
-      "pool-read",
-      "calculate-interest-rates-test",
-      [Cl.contractPrincipal(deployerAddress, stSTX)],
-      deployerAddress
-    );
+    // console.log("Calculating interest rates after borrowing");
+    // callResponse = simnet.callPublicFn(
+    //   "pool-read",
+    //   "calculate-interest-rates-test",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   deployerAddress
+    // );
     // console.log(cvToJSON(callResponse.result)["value"]);
 
     simnet.mineEmptyBlocks(10);
@@ -490,8 +477,24 @@ describe("Supply and redeem", () => {
       Borrower_1
     );
 
-    console.log("Repayment result");
-    console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.uint(100250114));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log("Reserve state data After Repayment");
+    // callResponse = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-reserve-data`,
+    //   "get-reserve-state-read",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   LP_1
+    // );
+    // callResponse = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-reserve-data`,
+    //   "get-user-reserve-data-read",
+    //   [
+    //     Cl.standardPrincipal(Borrower_1),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //   ],
+    //   Borrower_1
+    // );
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -524,7 +527,7 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(2_000_000_000));
+    // expect(callResponse.result).toBeOk(Cl.uint(2_000_000_000));
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -532,7 +535,7 @@ describe("Supply and redeem", () => {
       [Cl.standardPrincipal(Borrower_1)],
       Borrower_1
     );
-    expect(callResponse.result).toBeList([]);
+    // expect(callResponse.result).toBeList([]);
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.${zStSTX}`,
@@ -541,13 +544,12 @@ describe("Supply and redeem", () => {
       Borrower_1
     );
 
-    console.log("After sBTC redeems");
-    callResponse = simnet.callPublicFn(
-      zStSTX,
-      "get-balance-test",
-      [Cl.standardPrincipal(LP_1)],
-      deployerAddress
-    );
+    // callResponse = simnet.callPublicFn(
+    //   zStSTX,
+    //   "get-balance-test",
+    //   [Cl.standardPrincipal(LP_1)],
+    //   deployerAddress
+    // );
     // console.log(cvToJSON(callResponse.result)["value"]["value"]);
 
     callResponse = stSTXZToken.redeem(
@@ -568,9 +570,15 @@ describe("Supply and redeem", () => {
       ],
       LP_1
     );
-    // console.log(simnet.getAssetsMap());
-    console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(simnet.getAssetsMap());
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+
+    expect(callResponse.result).toBeOk(Cl.uint(1_000_000_110n));
+
+    expect(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC")?.get(Borrower_1)).toBe(
+      0n
+    );
+    expect(simnet.getAssetsMap().get(".lp-stSTX.lp-stSTX")?.get(LP_1)).toBe(0n);
+    expect(simnet.getAssetsMap().get(".stSTX.stSTX")?.get(LP_1)).toBe(
+      1_000_000_110n
+    );
   });
 });

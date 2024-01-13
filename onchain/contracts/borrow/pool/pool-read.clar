@@ -409,6 +409,7 @@
           (get total-borrows-stable reserve-data)
           (get total-borrows-variable reserve-data)
           (get current-average-stable-borrow-rate reserve-data)
+          (contract-of asset)
           (get decimals reserve-data)
       )
       {
