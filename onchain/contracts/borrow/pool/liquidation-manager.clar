@@ -63,9 +63,9 @@
     (asserts! (and
         (is-reserve-collateral-enabled-as-collateral (contract-of collateral))
         (is-user-collateral-enabled-as-collateral user collateral)
-      ) (err u7))
+      ) ERR_NOT_ENABLED_AS_COLL)
     
-    (asserts! (is-lending-pool contract-caller) (err u0))
+    (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
 
     (let (
       (borrowed-ret (unwrap-panic (get-user-borrow-balance user debt-asset)))
@@ -348,3 +348,5 @@
 
 (define-constant ERR_HEALTH_FACTOR_GT_1 (err u90000))
 (define-constant ERR_NOT_DEPOSITED (err u90001))
+(define-constant ERR_UNAUTHORIZED (err u90002))
+(define-constant ERR_NOT_ENABLED_AS_COLL (err u90003))

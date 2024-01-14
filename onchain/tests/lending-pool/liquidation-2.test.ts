@@ -869,7 +869,7 @@ describe("Supply and redeem", () => {
       ],
       Liquidator_1
     );
-    expect(callResponse.result).toBeErr(Cl.uint(7));
+    expect(callResponse.result).toBeErr(Cl.uint(90003));
 
     callResponse = stSTXZToken.redeem(
       deployerAddress,

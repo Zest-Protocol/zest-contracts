@@ -365,7 +365,6 @@
 ;; ERROR START 7000
 (define-constant ERR_UNAUTHORIZED (err u7000))
 
-
 (map-set base-variable-borrow-rates .stSTX u0)
 (map-set variable-rate-slopes-1 .stSTX u4000000) ;; 4%
 (map-set variable-rate-slopes-2 .stSTX u300000000) ;; 300%
