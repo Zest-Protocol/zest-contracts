@@ -68,19 +68,6 @@
   (contract-call? .math is-even x)
 )
 
-(define-read-only (get-e)
-  (contract-call? .math get-e)
-)
-
-
-(define-read-only (fixed-to-exp (fixed uint))
-  (* fixed (get-one-3))
-)
-
-(define-read-only (exp-to-fixed (fixed uint))
-  (/ (get-one-3) fixed)
-)
-
 (define-read-only (taylor-6 (x uint))
   (contract-call? .math taylor-6 x))
 
@@ -99,10 +86,6 @@
     (asserts! (is-lending-pool contract-caller) (err u0))
     (contract-call? .pool-reserve-data set-user-reserve-data user reserve data)))
 
-;; (define-map user-assets principal
-;;   { assets-supplied: (list 100 principal), assets-borrowed: (list 100 principal)}
-;; )
-
 (define-public (set-user-assets
   (user principal)
   (data
@@ -116,11 +99,38 @@
 )
 
 (define-data-var configurator principal .pool-borrow)
+(define-public (set-configurator (new-configurator principal))
+  (begin
+    (asserts! (is-admin tx-sender) (err u9))
+    (ok (var-set configurator new-configurator))))
+(define-read-only (is-configurator (caller principal))
+  (if (is-eq caller (var-get configurator)) true false))
+
 (define-data-var lending-pool principal .pool-borrow)
+(define-public (set-lending-pool (new-lending-pool principal))
+  (begin
+    (asserts! (is-admin tx-sender) (err u9))
+    (ok (var-set lending-pool new-lending-pool))))
+(define-read-only (is-lending-pool (caller principal))
+  (if (is-eq caller (var-get lending-pool)) true false))
+
 (define-data-var liquidator principal .liquidation-manager)
-(define-map approved-contracts principal bool)
+(define-public (set-liquidator (new-liquidator principal))
+  (begin
+    (asserts! (is-admin tx-sender) (err u9))
+    (ok (var-set liquidator new-liquidator))))
+(define-read-only (is-liquidator (caller principal))
+  (if (is-eq caller (var-get liquidator)) true false))
 
 (define-data-var admin principal tx-sender)
+(define-public (set-admin (new-admin principal))
+  (begin
+    (asserts! (is-admin tx-sender) (err u9))
+    (ok (var-set admin new-admin))))
+(define-read-only (is-admin (caller principal))
+  (if (is-eq caller (var-get admin)) true false))
+
+(define-map approved-contracts principal bool)
 
 (define-public (set-approved-contract (contract principal) (enabled bool))
   (begin
@@ -134,34 +144,6 @@
     (ok true)
     ERR_UNAUTHORIZED))
 
-(define-public (set-configurator (new-configurator principal))
-  (begin
-    (asserts! (is-admin tx-sender) (err u9))
-    (ok (var-set configurator new-configurator))
-  )
-)
-
-(define-public (set-admin (new-admin principal))
-  (begin
-    (asserts! (is-admin tx-sender) (err u9))
-    (ok (var-set admin new-admin))))
-
-(define-public (set-liquidator (new-liquidator principal))
-  (begin
-    (asserts! (is-admin tx-sender) (err u9))
-    (ok (var-set liquidator new-liquidator))))
-
-(define-read-only (is-configurator (caller principal))
-  (if (is-eq caller (var-get configurator)) true false))
-
-(define-read-only (is-liquidator (caller principal))
-  (if (is-eq caller (var-get liquidator)) true false))
-
-(define-read-only (is-lending-pool (caller principal))
-  (if (is-eq caller (var-get lending-pool)) true false))
-
-(define-read-only (is-admin (caller principal))
-  (if (is-eq caller (var-get admin)) true false))
 
 (define-public (get-flashloan-fee-total)
   (contract-call? .pool-reserve-data get-flashloan-fee-total))
@@ -170,8 +152,16 @@
   (contract-call? .pool-reserve-data get-flashloan-fee-protocol))
 
 (define-read-only (get-user-reserve-data (who principal) (reserve principal))
-  (default-to default-user-reserve-data (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve))
-)
+  (default-to default-user-reserve-data (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve)))
+
+(define-read-only (get-optimal-utilization-rate (asset principal))
+  (unwrap-panic (contract-call? .pool-reserve-data get-optimal-utilization-rate-read asset)))
+(define-read-only (get-base-variable-borrow-rate (asset principal))
+  (unwrap-panic (contract-call? .pool-reserve-data get-base-variable-borrow-rate-read asset)))
+(define-read-only (get-variable-rate-slope-1 (asset principal))
+  (unwrap-panic (contract-call? .pool-reserve-data get-variable-rate-slope-1-read asset)))
+(define-read-only (get-variable-rate-slope-2 (asset principal))
+  (unwrap-panic (contract-call? .pool-reserve-data get-variable-rate-slope-2-read asset)))
 
 (define-private (set-use-as-collateral (who principal) (asset <ft>) (use-as-collateral bool))
   (let (
@@ -549,11 +539,10 @@
   )
 )
 
-(define-public (cumulate-to-liquidity-index
+(define-private (cumulate-to-liquidity-index
   (total-liquidity uint)
   (amount uint)
-  (asset principal)
-  )
+  (asset principal))
   (let (
     (reserve-data (get-reserve-state asset))
     (amount-to-liquidity-ratio (div amount total-liquidity))
@@ -721,12 +710,6 @@
 (define-private (reset-data-on-zero-balance-internal (who principal) (asset principal))
   (contract-call? .pool-reserve-data delete-user-reserve-data who asset)
 )
-
-;; (define-public (reset-data-on-zero-balance (who principal) (asset principal))
-;;   (begin
-;;     (contract-call? .pool-reserve-data delete-user-reserve-data who asset)
-;;   )
-;; )
 
 (define-public (reset-user-index (who principal) (asset principal))
   (let ((reserve-data (get-reserve-state asset)))
@@ -1134,8 +1117,7 @@
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
     (ret
-      (contract-call? .interest-rate-strategy-default
-        calculate-interest-rates
+      (calculate-interest-rates
         (- (+ (try! (get-reserve-available-liquidity asset)) liquidity-added) liquidity-taken)
         (get total-borrows-stable reserve-data)
         (get total-borrows-variable reserve-data)
@@ -1155,9 +1137,6 @@
       )
     )
   )
-    (print ret)
-    (print {before-updat: reserve-data})
-    (print {after-update: new-reserve-state})
     (contract-call? .pool-reserve-data set-reserve-state (contract-of asset) new-reserve-state)
   )
 )
@@ -1208,7 +1187,7 @@
 )
 
 (define-read-only (get-reserve-vault (asset <ft>))
-  .pool-vault
+  (contract-call? .pool-reserve-data get-reserve-vault-read)
 )
 
 (define-public (set-user-index (who principal) (asset principal) (new-user-index uint))
@@ -1278,37 +1257,6 @@
   )
 )
 
-;; TODO: DELETE TEST FUNCTION
-;; (define-public (calculate-cumulated-balance-test
-;;   (who principal)
-;;   (lp-decimals uint)
-;;   (asset <ft>)
-;;   (asset-balance uint)
-;;   (asset-decimals uint))
-;;   (let (
-;;     (asset-principal (contract-of asset))
-;;     (reserve-data (get-reserve-state asset-principal))
-;;     (reserve-normalized-income
-;;       (get-normalized-income
-;;         (get current-liquidity-rate reserve-data)
-;;         (get last-updated-block reserve-data)
-;;         (get last-liquidity-cumulative-index reserve-data)))
-;;     )
-;;       (asserts! true (err u89))
-;;       (from-fixed-to-precision
-;;         (mul-to-fixed-precision
-;;           asset-balance
-;;           asset-decimals
-;;           (div reserve-normalized-income (get-user-index who asset-principal))
-;;         )
-;;         asset-decimals
-;;       )
-;;       (ok {current-liquidity-rate: (get current-liquidity-rate reserve-data),
-;;         last-updated-block: (get last-updated-block reserve-data),
-;;         last-liquidity-cumulative-index: (get last-liquidity-cumulative-index reserve-data)})
-;;   )
-;; )
-
 (define-read-only (get-cumulated-balance
   (who principal)
   (balance uint)
@@ -1321,7 +1269,8 @@
       (get-normalized-income
         (get current-liquidity-rate reserve-data)
         (get last-updated-block reserve-data)
-        (get last-liquidity-cumulative-index reserve-data))))
+        (get last-liquidity-cumulative-index reserve-data)))
+    )
     (div
       (mul
         balance
@@ -1626,21 +1575,17 @@
     (reserve-unit-price (try! (contract-call? oracle get-asset-price asset)))
     ;; liquidity and collateral balance
     (liquidity-balanceUSD (mul-to-fixed-precision (get underlying-balance user-reserve-state) (get decimals reserve-data) reserve-unit-price))
-    (ret-1
-      (let (
-        (total-liquidity-balance (+ (get total-liquidity-balanceUSD aggregate) liquidity-balanceUSD))
-      )
+    (supply-state
+      (begin
         (if (> (get underlying-balance user-reserve-state) u0)
           (begin
             (if (and (get usage-as-collateral-enabled reserve-data) (get use-as-collateral user-reserve-state))
-              (begin
-                {
-                  total-liquidity-balanceUSD: total-liquidity-balance,
-                  total-collateral-balanceUSD: (+ (get total-collateral-balanceUSD aggregate) liquidity-balanceUSD),
-                  current-ltv: (+ (get current-ltv aggregate) (mul liquidity-balanceUSD (get base-ltv-as-collateral reserve-data)) ),
-                  current-liquidation-threshold: (+ (get current-liquidation-threshold aggregate) (mul liquidity-balanceUSD (get liquidation-threshold reserve-data)))
-                }
-              )
+              {
+                total-liquidity-balanceUSD: (+ (get total-liquidity-balanceUSD aggregate) liquidity-balanceUSD),
+                total-collateral-balanceUSD: (+ (get total-collateral-balanceUSD aggregate) liquidity-balanceUSD),
+                current-ltv: (+ (get current-ltv aggregate) (mul liquidity-balanceUSD (get base-ltv-as-collateral reserve-data))),
+                current-liquidation-threshold: (+ (get current-liquidation-threshold aggregate) (mul liquidity-balanceUSD (get liquidation-threshold reserve-data)))
+              }
               {
                 total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
                 total-collateral-balanceUSD: (get total-collateral-balanceUSD aggregate),
@@ -1658,7 +1603,7 @@
         )
       )
     )
-    (ret-2
+    (borrow-state
       (if (> (get compounded-borrow-balance user-reserve-state) u0)
         {
           total-borrow-balanceUSD:
@@ -1678,12 +1623,12 @@
         }
       )
     )
-  )        
+  )
     (ok
       (merge
         (merge
-          ret-1
-          ret-2
+          supply-state
+          borrow-state
         )
         { user: user }
       )
@@ -1794,47 +1739,11 @@
       collateral-needed-in-USD: collateral-needed-in-USD,
       requested-borrow-amount-USD: requested-borrow-amount-USD,
     }
-    ;; collateral-needed-in-USD
   )
 )
 
 (define-read-only (from-fixed-to-precision (a uint) (decimals-a uint))
   (contract-call? .math from-fixed-to-precision a decimals-a))
-
-(define-public (calculate-available-borrowing-power-in-asset
-  (borrowing-asset <ft>)
-  (decimals uint)
-  (asset-price uint)
-  (current-user-collateral-balance-USD uint)
-  (current-user-borrow-balance-USD uint)
-  (current-fees-USD uint)
-  (current-ltv uint)
-  (user principal)
-  )
-  (let (
-    (available-borrow-power-in-base-currency
-      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD current-fees-USD))
-        (-
-          (mul current-user-collateral-balance-USD current-ltv)
-          (+ current-user-borrow-balance-USD current-fees-USD)
-        )
-        u0
-      )
-    )
-    (borrow-power-in-asset-amount
-      (from-fixed-to-precision
-        (div
-          available-borrow-power-in-base-currency
-          asset-price
-        )
-        decimals
-      )
-    )
-    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user borrow-power-in-asset-amount)))
-  )
-    (ok (- borrow-power-in-asset-amount borrow-fee))
-  )
-)
 
 (define-read-only (calculate-health-factor-from-balances
   (total-collateral-balanceUSD uint)
@@ -1866,9 +1775,11 @@
 (define-read-only (calculate-compounded-interest
   (current-liquidity-rate uint)
   (delta uint))
-  (let (
-    (rate-per-second (/ current-liquidity-rate (get-seconds-in-year)))
-    (time (* delta (get-seconds-in-block))))
+  (begin
+    ;; (let (
+    ;; (rate-per-second (/ current-liquidity-rate (get-seconds-in-year)))
+    ;; (time (* delta (get-seconds-in-block)))
+    ;; )
     (taylor-6 (get-rt-by-block current-liquidity-rate delta))
   )
 )
@@ -1884,6 +1795,85 @@
     (years-elapsed (* delta (get-sb-by-sy)))
   )
     (+ one-8 (mul years-elapsed current-liquidity-rate))
+  )
+)
+
+
+(define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
+  (contract-call? .math mul-precision-with-factor a decimals-a b-fixed))
+
+(define-read-only (div-precision-to-fixed (a uint) (b uint) (decimals uint))
+  (contract-call? .math div-precision-to-fixed a b decimals))
+
+
+;; returns current liquidity rate
+(define-read-only (calculate-interest-rates
+    (available-liquidity uint)
+    (total-borrows-stable uint)
+    (total-borrows-variable uint)
+    (average-stable-borrow-rate uint)
+    (asset principal)
+    (decimals uint)
+  )
+  (let (
+    (total-borrows (+ total-borrows-stable total-borrows-variable))
+    (optimal-utilization-rate (get-optimal-utilization-rate asset))
+    (utilization-rate
+      (if (and (is-eq total-borrows-stable u0) (is-eq total-borrows-variable u0))
+        u0
+        (div-precision-to-fixed total-borrows (+ total-borrows available-liquidity) decimals)))
+    (current-stable-borrow-rate u0))
+    (if (> utilization-rate optimal-utilization-rate)
+      (let (
+        (excess-utilization-rate-ratio (div (- utilization-rate optimal-utilization-rate) (- u100000000 optimal-utilization-rate)))
+        (new-variable-borrow-rate
+          (+
+            (+ (get-base-variable-borrow-rate asset) (get-variable-rate-slope-1 asset))
+            (mul (get-variable-rate-slope-2 asset) excess-utilization-rate-ratio))
+          ))
+          {
+            current-liquidity-rate:
+            (mul
+              new-variable-borrow-rate
+              utilization-rate
+            ),
+            current-variable-borrow-rate: new-variable-borrow-rate,
+            utilization-rate: utilization-rate,
+          }
+      )
+      (let (
+        (new-variable-borrow-rate
+          (+
+            (get-base-variable-borrow-rate asset)
+            (mul
+              (div utilization-rate optimal-utilization-rate)
+              (get-variable-rate-slope-1 asset)
+            ))))
+          {
+            current-liquidity-rate:
+              (mul 
+                new-variable-borrow-rate
+                utilization-rate
+              ),
+            current-variable-borrow-rate: new-variable-borrow-rate,
+            utilization-rate: utilization-rate,
+          }
+      )
+    )
+  )
+)
+
+(define-read-only (get-utilization-rate
+  (total-borrows-stable uint)
+  (total-borrows-variable uint)
+  (available-liquidity uint))
+  (let (
+    (total-borrows (+ total-borrows-stable total-borrows-variable))
+  )
+    (if (is-eq total-borrows u0)
+      u0
+      (div total-borrows (+ total-borrows available-liquidity))
+    )
   )
 )
 

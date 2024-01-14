@@ -354,7 +354,7 @@ describe("Isolated mode", () => {
 
     callResponse = simnet.callPublicFn(
       "pool-read",
-      "calculate-available-borrowing-power-in-asset",
+      "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.standardPrincipal(Borrower_1),
@@ -423,7 +423,7 @@ describe("Isolated mode", () => {
 
     callResponse = simnet.callPublicFn(
       "pool-read",
-      "calculate-available-borrowing-power-in-asset",
+      "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.standardPrincipal(Borrower_1),
@@ -555,7 +555,7 @@ describe("Isolated mode", () => {
 
     callResponse = simnet.callPublicFn(
       "pool-read",
-      "calculate-available-borrowing-power-in-asset",
+      "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.standardPrincipal(Borrower_1),
@@ -603,7 +603,7 @@ describe("Isolated mode", () => {
 
     callResponse = simnet.callPublicFn(
       "pool-read",
-      "calculate-available-borrowing-power-in-asset",
+      "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.standardPrincipal(Borrower_1),
@@ -816,7 +816,7 @@ describe("Isolated mode", () => {
 
     callResponse = simnet.callPublicFn(
       "pool-read",
-      "calculate-available-borrowing-power-in-asset",
+      "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.standardPrincipal(Borrower_1),
@@ -859,7 +859,7 @@ describe("Isolated mode", () => {
 
     callResponse = simnet.callPublicFn(
       "pool-read",
-      "calculate-available-borrowing-power-in-asset",
+      "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.standardPrincipal(Borrower_1),
@@ -1017,7 +1017,7 @@ describe("Isolated mode", () => {
 
     callResponse = simnet.callPublicFn(
       "pool-read",
-      "calculate-available-borrowing-power-in-asset",
+      "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.standardPrincipal(Borrower_1),
@@ -1182,11 +1182,11 @@ describe("Isolated mode", () => {
       Cl.tuple({
         "current-liquidation-threshold": Cl.uint(90000000),
         "current-ltv": Cl.uint(80000000),
-        "health-factor": Cl.uint(100097918),
+        "health-factor": Cl.uint(100098100),
         "is-health-factor-below-treshold": Cl.bool(false),
-        "total-borrow-balanceUSD": Cl.uint(57456136200),
-        "total-collateral-balanceUSD": Cl.uint(64062418400),
-        "total-liquidity-balanceUSD": Cl.uint(64062418400),
+        "total-borrow-balanceUSD": Cl.uint(57456004000),
+        "total-collateral-balanceUSD": Cl.uint(64062388160),
+        "total-liquidity-balanceUSD": Cl.uint(64062388160),
         "user-total-feesUSD": Cl.uint(143640000),
       })
     );
@@ -1198,8 +1198,7 @@ describe("Isolated mode", () => {
       Borrower_1,
       Borrower_1
     );
-
-    expect(callResponse.result).toBeOk(Cl.uint(575997871));
+    expect(callResponse.result).toBeOk(Cl.uint(575996440));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -1230,8 +1229,8 @@ describe("Isolated mode", () => {
         ),
         "is-health-factor-below-treshold": Cl.bool(false),
         "total-borrow-balanceUSD": Cl.uint(0),
-        "total-collateral-balanceUSD": Cl.uint(64062418400),
-        "total-liquidity-balanceUSD": Cl.uint(64062418400),
+        "total-collateral-balanceUSD": Cl.uint(64062388160),
+        "total-liquidity-balanceUSD": Cl.uint(64062388160),
         "user-total-feesUSD": Cl.uint(0),
       })
     );
@@ -1395,8 +1394,8 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
-        // Cl.uint(max_value),
-        Cl.uint(400390115),
+        Cl.uint(max_value),
+        // Cl.uint(400390115),
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
@@ -1414,13 +1413,13 @@ describe("Isolated mode", () => {
       Borrower_1
     );
 
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
-    console.log(callResponse.events);
-    console.log(simnet.getAssetsMap());
+    // console.log(callResponse.events);
+    // console.log(simnet.getAssetsMap());
 
     expect(simnet.getAssetsMap().get(".stSTX.stSTX")?.get(Borrower_1)).toBe(
       BigInt(1_000_000_000_000_000)

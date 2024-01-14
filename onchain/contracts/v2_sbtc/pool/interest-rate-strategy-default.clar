@@ -47,32 +47,6 @@
 (define-read-only (get-variable-rate-slope-2 (asset principal))
   (map-get? variable-rate-slopes-2 asset))
 
-
-(map-set base-variable-borrow-rates .stSTX u0)
-(map-set variable-rate-slopes-1 .stSTX u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .stSTX u300000000) ;; 300%
-(map-set optimal-utilization-rates .stSTX u80000000) ;; 80%
-
-(map-set base-variable-borrow-rates .sBTC u0)
-(map-set variable-rate-slopes-1 .sBTC u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .sBTC u300000000) ;; 300%
-(map-set optimal-utilization-rates .sBTC u80000000) ;; 80%
-
-(map-set base-variable-borrow-rates .diko u0)
-(map-set variable-rate-slopes-1 .diko u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .diko u300000000) ;; 300%
-(map-set optimal-utilization-rates .diko u80000000) ;; 80%
-
-(map-set base-variable-borrow-rates .xUSD u0)
-(map-set variable-rate-slopes-1 .xUSD u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .xUSD u300000000) ;; 300%
-(map-set optimal-utilization-rates .xUSD u80000000) ;; 80%
-
-(map-set base-variable-borrow-rates .USDA u0)
-(map-set variable-rate-slopes-1 .USDA u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .USDA u300000000) ;; 300%
-(map-set optimal-utilization-rates .USDA u80000000) ;; 80%
-
 ;; when Ur < optimal-utilization-rate
 (define-data-var stable-rate-slope-1 uint five-percent)
 ;; when Ur > optimal-utilization-rate
@@ -248,3 +222,29 @@
 )
 
 (define-constant ERR_UNAUTHORIZED (err u7000))
+
+
+(map-set base-variable-borrow-rates .stSTX u0)
+(map-set variable-rate-slopes-1 .stSTX u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .stSTX u300000000) ;; 300%
+(map-set optimal-utilization-rates .stSTX u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .sBTC u0)
+(map-set variable-rate-slopes-1 .sBTC u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .sBTC u300000000) ;; 300%
+(map-set optimal-utilization-rates .sBTC u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .diko u0)
+(map-set variable-rate-slopes-1 .diko u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .diko u300000000) ;; 300%
+(map-set optimal-utilization-rates .diko u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .xUSD u0)
+(map-set variable-rate-slopes-1 .xUSD u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .xUSD u300000000) ;; 300%
+(map-set optimal-utilization-rates .xUSD u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .USDA u0)
+(map-set variable-rate-slopes-1 .USDA u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .USDA u300000000) ;; 300%
+(map-set optimal-utilization-rates .USDA u80000000) ;; 80%

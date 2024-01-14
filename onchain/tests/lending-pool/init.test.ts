@@ -406,6 +406,7 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
+    console.log(cvToJSON(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.uint(100_000_000));
 
     // callResponse = simnet.callReadOnlyFn(

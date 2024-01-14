@@ -21,8 +21,20 @@
   )
 )
 
+(define-read-only (is-borroweable (asset principal))
+  (and
+    (contract-call? .pool-0-reserve is-active asset)
+    (not (contract-call? .pool-0-reserve is-frozen asset))
+    (contract-call? .pool-0-reserve is-borrowing-enabled asset)
+  )
+)
+
 (define-public (test-this)
   (contract-call? .lp-stSTX get-balance tx-sender)
+)
+
+(define-read-only (is-active (asset principal))
+  (and (contract-call? .pool-0-reserve is-active asset) (not (contract-call? .pool-0-reserve is-frozen asset)))
 )
 
 (define-constant available-assets (list .diko .sBTC .stSTX .xUSD .USDA ))
@@ -35,31 +47,58 @@
   (filter is-borroweable available-assets)
 )
 
-(define-read-only (get-isolated-mode-assets)
-  (filter is-isolated-asset available-assets)
-)
-
-(define-read-only (get-borroweable-assets-in-isolated-mode)
-  (filter is-borroweable-in-isolation available-assets)
-)
-
-(define-read-only (is-borroweable-in-isolation (asset principal))
-  (contract-call? .pool-0-reserve is-borroweable-isolated asset)
+(define-read-only (calculate-available-borrowing-power-in-asset
+  (borrowing-asset <ft>)
+  (decimals uint)
+  (asset-price uint)
+  (current-user-collateral-balance-USD uint)
+  (current-user-borrow-balance-USD uint)
+  (current-fees-USD uint)
+  (current-ltv uint)
+  (user principal)
+  )
+  (let (
+    (available-borrow-power-in-base-currency
+      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD current-fees-USD))
+        (-
+          (mul current-user-collateral-balance-USD current-ltv)
+          (+ current-user-borrow-balance-USD current-fees-USD)
+        )
+        u0
+      )
+    )
+    (borrow-power-in-asset-amount
+      (contract-call? .math from-fixed-to-precision
+        (div
+          available-borrow-power-in-base-currency
+          asset-price
+        )
+        decimals
+      )
+    )
+    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user borrow-power-in-asset-amount decimals)))
+  )
+    (ok (- borrow-power-in-asset-amount borrow-fee))
+  )
 )
 
 (define-read-only (is-isolated-asset (asset principal))
   (contract-call? .pool-0-reserve is-isolated-type asset)
 )
 
-(define-read-only (is-borroweable (asset principal))
-  (and
-    (contract-call? .pool-0-reserve is-active asset)
-    (not (contract-call? .pool-0-reserve is-frozen asset))
-    (contract-call? .pool-0-reserve is-borrowing-enabled asset)
-  )
+(define-read-only (get-isolated-mode-assets)
+  (filter is-isolated-asset available-assets)
 )
 
-(define-public (calculate-available-borrowing-power-in-asset
+(define-read-only (is-borroweable-in-isolation (asset principal))
+  (contract-call? .pool-0-reserve is-borroweable-isolated asset)
+)
+
+(define-read-only (get-borroweable-assets-in-isolated-mode)
+  (filter is-borroweable-in-isolation available-assets)
+)
+
+(define-public (borrowing-power-in-asset
   (asset <ft>)
   (user principal)
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
@@ -71,7 +110,7 @@
     (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
     (asset-price (try! (contract-call? .oracle get-asset-price asset)))
   )
-    (contract-call? .pool-0-reserve calculate-available-borrowing-power-in-asset
+    (calculate-available-borrowing-power-in-asset
       asset
       (get decimals reserve-state)
       asset-price
@@ -82,11 +121,6 @@
       user
     )
   )
-)
-
-
-(define-read-only (is-active (asset principal))
-  (and (contract-call? .pool-0-reserve is-active asset) (not (contract-call? .pool-0-reserve is-frozen asset)))
 )
 
 (define-read-only (is-used-as-collateral (who principal) (asset principal))
@@ -155,6 +189,18 @@
   (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who (contract-of asset)))
 )
 
+(define-read-only (token-to-usd
+  (asset <ft>)
+  (oracle principal)
+  (amount uint)
+  )
+  (let (
+    (unit-price (contract-call? .oracle get-asset-price-read asset))
+  )
+    (mul amount unit-price)
+  )
+)
+
 (define-read-only (get-borrow-balance-value (who principal) (asset <ft>) (oracle principal))
   (token-to-usd
     asset
@@ -173,17 +219,6 @@
 ;;   (contract-call? asset get-balance who)
 ;; )
 
-(define-read-only (token-to-usd
-  (asset <ft>)
-  (oracle principal)
-  (amount uint)
-  )
-  (let (
-    (unit-price (contract-call? .oracle get-asset-price-read asset))
-  )
-    (mul amount unit-price)
-  )
-)
 
 ;; Define a helper function to get reserve data
 (define-read-only (get-reserve-data (asset principal))

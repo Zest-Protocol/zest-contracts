@@ -53,6 +53,17 @@
 (define-read-only (get-protocol-treasury-addr-read)
   (var-get protocol-treasury-addr))
 
+(define-data-var reserve-vault principal .pool-vault)
+(define-public (set-reserve-vault (new-reserve-vault principal))
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (ok (var-set reserve-vault new-reserve-vault))))
+
+(define-public (get-reserve-vault)
+  (ok (var-get reserve-vault)))
+(define-read-only (get-reserve-vault-read)
+  (var-get reserve-vault))
+
 (define-map user-reserve-data
   { user: principal, reserve: principal}
   (tuple
@@ -258,6 +269,62 @@
 (define-read-only (get-borroweable-isolated-read)
     (var-get borroweable-isolated))
 
+
+(define-map optimal-utilization-rates principal uint)
+(define-public (set-optimal-utilization-rate (asset principal) (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (map-set optimal-utilization-rates asset rate))))
+
+(define-public (get-optimal-utilization-rate (asset principal))
+  (ok (map-get? optimal-utilization-rates asset)))
+(define-read-only (get-optimal-utilization-rate-read (asset principal))
+  (map-get? optimal-utilization-rates asset))
+
+(define-map base-variable-borrow-rates principal uint)
+(define-public (set-base-variable-borrow-rate (asset principal) (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (map-set base-variable-borrow-rates asset rate))))
+
+(define-public (get-base-variable-borrow-rate (asset principal))
+  (ok (map-get? base-variable-borrow-rates asset)))
+(define-read-only (get-base-variable-borrow-rate-read (asset principal))
+  (map-get? base-variable-borrow-rates asset))
+
+(define-map variable-rate-slopes-1 principal uint)
+(define-public (set-variable-rate-slope-1 (asset principal) (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (map-set variable-rate-slopes-1 asset rate))))
+
+(define-public (get-variable-rate-slope-1 (asset principal))
+  (ok (map-get? variable-rate-slopes-1 asset)))
+(define-read-only (get-variable-rate-slope-1-read (asset principal))
+  (map-get? variable-rate-slopes-1 asset))
+
+(define-map variable-rate-slopes-2 principal uint)
+(define-public (set-variable-rate-slope-2 (asset principal) (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (map-set variable-rate-slopes-2 asset rate))))
+
+(define-public (get-variable-rate-slope-2 (asset principal))
+  (ok (map-get? variable-rate-slopes-2 asset)))
+(define-read-only (get-variable-rate-slope-2-read (asset principal))
+  (map-get? variable-rate-slopes-2 asset))
+
+(define-map liquidation-close-factor-percent principal uint)
+(define-public (set-liquidation-close-factor-percent (asset principal) (rate uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (map-set liquidation-close-factor-percent asset rate))))
+
+(define-public (get-liquidation-close-factor-percent (asset principal))
+  (ok (map-get? liquidation-close-factor-percent asset)))
+(define-read-only (get-liquidation-close-factor-percent-read (asset principal))
+  (map-get? liquidation-close-factor-percent asset))
+
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)
 (define-public (set-contract-owner (owner principal))
@@ -298,3 +365,33 @@
 
 ;; ERROR START 7000
 (define-constant ERR_UNAUTHORIZED (err u7000))
+
+
+(map-set base-variable-borrow-rates .stSTX u0)
+(map-set variable-rate-slopes-1 .stSTX u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .stSTX u300000000) ;; 300%
+(map-set optimal-utilization-rates .stSTX u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .sBTC u0)
+(map-set variable-rate-slopes-1 .sBTC u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .sBTC u300000000) ;; 300%
+(map-set optimal-utilization-rates .sBTC u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .diko u0)
+(map-set variable-rate-slopes-1 .diko u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .diko u300000000) ;; 300%
+(map-set optimal-utilization-rates .diko u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .xUSD u0)
+(map-set variable-rate-slopes-1 .xUSD u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .xUSD u300000000) ;; 300%
+(map-set optimal-utilization-rates .xUSD u80000000) ;; 80%
+
+(map-set base-variable-borrow-rates .USDA u0)
+(map-set variable-rate-slopes-1 .USDA u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .USDA u300000000) ;; 300%
+(map-set optimal-utilization-rates .USDA u80000000) ;; 80%
+
+(map-set liquidation-close-factor-percent .stSTX u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .sBTC  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .xUSD  u50000000) ;; 50%

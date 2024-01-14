@@ -86,23 +86,6 @@
   )
 )
 
-(define-private (execute-transfer-internal
-  (amount uint)
-  (sender principal)
-  (recipient principal)
-  )
-  (let (
-    (from-ret (try! (cumulate-balance-internal sender)))
-    (to-ret (try! (cumulate-balance-internal recipient)))
-  )
-    (try! (transfer-internal amount sender recipient none))
-    (if (is-eq (- (get current-balance from-ret) amount) u0)
-      (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr)
-      (ok true)
-    )
-  )
-)
-
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
     (try! (is-approved-contract contract-caller))
@@ -157,10 +140,13 @@
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
-        (get last-liquidity-cumulative-index reserve-state)
-    ))
-  )
+        (get last-liquidity-cumulative-index reserve-state))))
     (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
+
+    (if (is-eq balance-increase u0)
+      false
+      (try! (mint-internal balance-increase account))
+    )
 
     (ok {
       previous-user-balance: previous-balance,
@@ -203,6 +189,23 @@
       amount-to-redeem
       (get current-balance ret)
       tx-sender
+    )
+  )
+)
+
+(define-private (execute-transfer-internal
+  (amount uint)
+  (sender principal)
+  (recipient principal)
+  )
+  (let (
+    (from-ret (try! (cumulate-balance-internal sender)))
+    (to-ret (try! (cumulate-balance-internal recipient)))
+  )
+    (try! (transfer-internal amount sender recipient none))
+    (if (is-eq (- (get current-balance from-ret) amount) u0)
+      (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr)
+      (ok true)
     )
   )
 )
