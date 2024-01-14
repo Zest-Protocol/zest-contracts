@@ -144,11 +144,12 @@
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
-        (get last-liquidity-cumulative-index reserve-state)
-    ))
-  )
+        (get last-liquidity-cumulative-index reserve-state))))
     (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
 
+    (if (is-eq balance-increase u0)
+      false
+      (try! (mint-internal balance-increase account)))
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -173,15 +174,14 @@
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
     (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
-    (asserts! (try! (is-transfer-allowed asset-addr oracle amount tx-sender assets)) (err u998887))
+    (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
+    (asserts! (is-eq (contract-of asset) .xUSD) ERR_UNAUTHORIZED)
     
-    (try! (burn-internal amount tx-sender))
+    (try! (burn-internal amount-to-redeem tx-sender))
 
-    (if (is-eq (- (get current-balance ret) amount) u0)
+    (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
       (try! (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr))
-      false
-    )
-
+      false)
     (contract-call? .pool-borrow redeem-underlying
       pool-reserve
       asset-addr
@@ -256,3 +256,4 @@
 (map-set approved-contracts .pool-0-reserve true)
 
 (define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))

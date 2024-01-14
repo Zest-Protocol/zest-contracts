@@ -148,9 +148,7 @@
 
     (if (is-eq balance-increase u0)
       false
-      (try! (mint-internal balance-increase account))
-    )
-
+      (try! (mint-internal balance-increase account)))
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -175,7 +173,8 @@
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
     (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
-    (asserts! (try! (is-transfer-allowed .stSTX oracle amount tx-sender assets)) (err u998887))
+    (asserts! (try! (is-transfer-allowed .stSTX oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
+    (asserts! (is-eq (contract-of asset) .stSTX) ERR_UNAUTHORIZED)
     
     (try! (burn-internal amount-to-redeem tx-sender))
 
@@ -258,3 +257,4 @@
 (map-set approved-contracts .pool-0-reserve true)
 
 (define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))

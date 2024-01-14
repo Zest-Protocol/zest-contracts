@@ -9,7 +9,6 @@
 (define-read-only (get-one-3) one-3)
 
 (define-data-var flashloan-fee-total uint (/ (* one-8 u35) one-8))
-
 (define-public (set-flashloan-fee-total (fee uint))
   (begin
     (try! (is-approved-contract contract-caller))

@@ -608,22 +608,29 @@
 (define-public (update-state-on-liquidation
   (principal-reserve <ft>)
   (collateral-reserve <ft>)
-  (user principal)
+  (borrower principal)
   (principal-amount-to-liquidate uint)
   (collateral-to-liquidate uint)
   (fee-liquidated uint)
   (liquidated-collateral-for-fee uint)
   (balance-increase uint)
+  (purchased-all-collateral bool)
   (liquidator-receives-aToken bool)
   )
   (begin
     (asserts! (is-liquidator contract-caller) (err u0))
 
-    (try! (update-principal-reserve-state-on-liquidation principal-reserve user principal-amount-to-liquidate balance-increase))
+    (try! (update-principal-reserve-state-on-liquidation principal-reserve borrower principal-amount-to-liquidate balance-increase))
     (try! (update-cumulative-indexes (contract-of collateral-reserve)))
 
-    (try! (update-user-state-on-liquidation principal-reserve user principal-amount-to-liquidate fee-liquidated balance-increase))
+    (try! (update-user-state-on-liquidation principal-reserve borrower principal-amount-to-liquidate fee-liquidated balance-increase))
     (try! (update-reserve-interest-rates-and-timestamp principal-reserve principal-amount-to-liquidate u0))
+
+    (print { purchased-all-collateral: purchased-all-collateral })
+    (if purchased-all-collateral
+      (try! (remove-supplied-asset borrower (contract-of collateral-reserve)))
+      false
+    )
 
     (if (not liquidator-receives-aToken)
       (update-reserve-interest-rates-and-timestamp collateral-reserve u0 (+ collateral-to-liquidate liquidated-collateral-for-fee))

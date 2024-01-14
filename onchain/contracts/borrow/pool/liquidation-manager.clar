@@ -55,10 +55,10 @@
     (ret (try! (calculate-user-global-data user assets)))
     (user-collateral-balance (try! (get-user-underlying-asset-balance lp-token collateral user)))
   )
-    ;; health factor below treshold
-    (asserts! (get is-health-factor-below-treshold ret) (err u5356))
     ;; has deposited collateral
-    (asserts! (> user-collateral-balance u0) (err u52467))
+    (asserts! (> user-collateral-balance u0) ERR_NOT_DEPOSITED)
+    ;; health factor below treshold
+    (asserts! (get is-health-factor-below-treshold ret) ERR_HEALTH_FACTOR_GT_1)
     ;; collateral is enabled in asset reserve and by user
     (asserts! (and
         (is-reserve-collateral-enabled-as-collateral (contract-of collateral))
@@ -128,9 +128,10 @@
             )
           )
         )
-        ;; if there is less collateral than there is purchasing power for, only purchase for available collateral
+        (purchasing-all-underlying-collateral (< debt-needed debt-to-liquidate))
+        ;; if borrower holds less collateral than there is purchasing power for, only purchase for available collateral
         (actual-debt-to-liquidate
-          (if (< debt-needed debt-to-liquidate)
+          (if purchasing-all-underlying-collateral
             debt-needed
             debt-to-liquidate
           )
@@ -171,6 +172,7 @@
             fee-liquidated
             liquidated-collateral-for-fee
             user-borrow-balance-increase
+            purchasing-all-underlying-collateral
             to-receive-atoken
           )
         )
@@ -344,3 +346,5 @@
   (contract-call? .pool-0-reserve is-user-collateral-enabled-as-collateral user asset)
 )
 
+(define-constant ERR_HEALTH_FACTOR_GT_1 (err u90000))
+(define-constant ERR_NOT_DEPOSITED (err u90001))
