@@ -1083,7 +1083,7 @@ describe("Isolated mode", () => {
     );
     expect(callResponse.result).toBeErr(Cl.uint(30003));
 
-    // cannot enable or disable sBTC as collateral
+    // cannot enable or disable sBTC as collateral, in isolated mode
     callResponse = poolBorrow.setUserUseReserveAsCollateral(
       Borrower_1,
       deployerAddress,
@@ -1112,7 +1112,7 @@ describe("Isolated mode", () => {
       ]
     );
 
-    expect(callResponse.result).toBeErr(Cl.uint(9456));
+    expect(callResponse.result).toBeErr(Cl.uint(30017));
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = poolBorrow.setUserUseReserveAsCollateral(
@@ -1143,7 +1143,7 @@ describe("Isolated mode", () => {
       ]
     );
 
-    expect(callResponse.result).toBeErr(Cl.uint(9456));
+    expect(callResponse.result).toBeErr(Cl.uint(30017));
     // console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log("After withdrawing half and then borrowing xUSD again");
@@ -1271,7 +1271,7 @@ describe("Isolated mode", () => {
       ]
     );
 
-    expect(callResponse.result).toBeErr(Cl.uint(9457));
+    expect(callResponse.result).toBeErr(Cl.uint(30019));
 
     callResponse = poolBorrow.setUserUseReserveAsCollateral(
       Borrower_1,

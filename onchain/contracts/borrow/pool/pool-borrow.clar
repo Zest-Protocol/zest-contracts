@@ -363,7 +363,7 @@
         ;; repay before changing
         (asserts! (not (contract-call? .pool-0-reserve is-borrowing-assets who)) ERR_REPAY_BEFORE_DISABLING)
         ;; if repaid, must be updating the isolated collateral asset
-        (asserts! (is-eq (unwrap-panic isolation-mode-asset) (contract-of asset)) ERR_INVALID_Z_TOKEN)
+        (asserts! (is-eq (unwrap-panic isolation-mode-asset) (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
         ;; if isolated asset is enabled, can only disable it
         (contract-call? .pool-0-reserve set-use-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false })))
       (begin
@@ -546,3 +546,4 @@
 (define-constant ERR_NOT_ENOUGH_REPAID (err u30016))
 (define-constant ERR_REPAY_BEFORE_DISABLING (err u30017))
 (define-constant ERR_INVALID_DECREASE (err u30018))
+(define-constant ERR_MUST_DISABLE_ISOLATED_ASSET (err u30019))
