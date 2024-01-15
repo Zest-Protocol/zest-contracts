@@ -1,4 +1,6 @@
 (use-trait ft .ft-mint-trait.ft-mint-trait)
+(use-trait sip10 .ft-trait.ft-trait)
+(use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
@@ -21,14 +23,33 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u8))
+  (ok u6))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
 
 (define-read-only (get-balance (account principal))
-  (ok (ft-get-balance lp-stSTX account))
+  (let (
+    (current-principal-balance (ft-get-balance lp-stSTX account))
+  )
+    (if (is-eq current-principal-balance u0)
+      (ok u0)
+      (let (
+        (cumulated-balance
+          (contract-call? .pool-0-reserve calculate-cumulated-balance
+            account
+            u6
+            .stSTX
+            current-principal-balance
+            u6)))
+        (ok cumulated-balance)
+      )
+    )
+  )
 )
+
+(define-read-only (get-principal-balance (account principal))
+  (ok (ft-get-balance lp-stSTX account)))
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
@@ -61,41 +82,143 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
     (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (transfer-internal amount sender recipient memo)
+    (execute-transfer-internal amount sender recipient)
   )
 )
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
-    (try! (transfer amount from to none))
+    (try! (is-approved-contract contract-caller))
+    (try! (execute-transfer-internal amount from to))
     (ok amount)
   )
 )
-
 
 (define-private (burn-internal (amount uint) (owner principal))
   (ft-burn? lp-stSTX amount owner)
 )
 
+(define-private (mint-internal (amount uint) (owner principal))
+  (ft-mint? lp-stSTX amount owner)
+)
+
 (define-public (burn-on-liquidation (amount uint) (owner principal))
   (begin
-    (try! (burn-internal amount owner))
-    (ok amount)
+    (try! (is-approved-contract contract-caller))
+    (let ((ret (try! (cumulate-balance-internal owner))))
+      (try! (burn-internal amount owner))
+
+      (if (is-eq (- (get current-balance ret) amount) u0)
+        (try! (contract-call? .pool-0-reserve reset-user-index owner .stSTX))
+        false
+      )
+      (ok amount)
+    )
   )
 )
 
 (define-public (mint (amount uint) (recipient principal))
   (begin
-    (asserts! true ERR_UNAUTHORIZED)
-    (ft-mint? lp-stSTX amount recipient)
+    (try! (is-approved-contract contract-caller))
+    (let (
+      (ret (try! (cumulate-balance-internal recipient)))
+    )
+      (mint-internal amount recipient)
+    )
   )
 )
 
 (define-public (burn (amount uint) (owner principal))
   (begin
-    (asserts! true ERR_UNAUTHORIZED)
+    (try! (is-approved-contract contract-caller))
     (burn-internal amount owner)
   )
+)
+
+(define-private (cumulate-balance-internal (account principal))
+  (let (
+    (previous-balance (unwrap-panic (get-principal-balance account)))
+    (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
+    (reserve-state (contract-call? .pool-0-reserve get-reserve-state .stSTX))
+    (new-user-index (contract-call? .pool-0-reserve get-normalized-income
+        (get current-liquidity-rate reserve-state)
+        (get last-updated-block reserve-state)
+        (get last-liquidity-cumulative-index reserve-state))))
+    (try! (contract-call? .pool-0-reserve set-user-index account .stSTX new-user-index))
+
+    (if (is-eq balance-increase u0)
+      false
+      (try! (mint-internal balance-increase account)))
+    (ok {
+      previous-user-balance: previous-balance,
+      current-balance: (+ previous-balance balance-increase),
+      balance-increase: balance-increase,
+      index: new-user-index,
+    })
+  )
+)
+
+(define-constant max-value (contract-call? .math get-max-value))
+
+(define-public (redeem
+  (pool-reserve principal)
+  (asset <sip10>)
+  (oracle <oracle-trait>)
+  (amount uint)
+  (owner principal)
+  (assets (list 100 { asset: <sip10>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (ret (try! (cumulate-balance-internal tx-sender)))
+    (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
+  )
+    (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
+    (asserts! (try! (is-transfer-allowed .stSTX oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
+    (asserts! (is-eq (contract-of asset) .stSTX) ERR_UNAUTHORIZED)
+    
+    (try! (burn-internal amount-to-redeem tx-sender))
+
+    (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
+      (try! (contract-call? .pool-0-reserve reset-user-index tx-sender .stSTX))
+      false
+    )
+
+    (contract-call? .pool-borrow redeem-underlying
+      pool-reserve
+      .stSTX
+      oracle
+      assets
+      amount-to-redeem
+      (get current-balance ret)
+      tx-sender
+    )
+  )
+)
+
+(define-private (execute-transfer-internal
+  (amount uint)
+  (sender principal)
+  (recipient principal)
+  )
+  (let (
+    (from-ret (try! (cumulate-balance-internal sender)))
+    (to-ret (try! (cumulate-balance-internal recipient)))
+  )
+    (try! (transfer-internal amount sender recipient none))
+    (if (is-eq (- (get current-balance from-ret) amount) u0)
+      (contract-call? .pool-0-reserve reset-user-index tx-sender .stSTX)
+      (ok true)
+    )
+  )
+)
+
+(define-public (is-transfer-allowed
+  (asset <sip10>)
+  (oracle <oracle-trait>)
+  (amount uint)
+  (user principal)
+  (assets-to-calculate (list 100 { asset: <sip10>, lp-token: <ft>, oracle: <oracle-trait> })))
+  (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle amount user assets-to-calculate)
 )
 
 ;; -- ownable-trait --
@@ -117,14 +240,21 @@
 ;; -- permissions
 (define-map approved-contracts principal bool)
 
+(define-public (set-approved-contract (contract principal) (enabled bool))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (ok (map-set approved-contracts contract enabled))
+  )
+)
+
 (define-read-only (is-approved-contract (contract principal))
   (if (default-to false (map-get? approved-contracts contract))
     (ok true)
     ERR_UNAUTHORIZED))
 
-(map-set approved-contracts .loan-v1-0 true)
-(map-set approved-contracts .pool-v1-0 true)
-(map-set approved-contracts .payment-fixed true)
-(map-set approved-contracts .supplier-interface true)
+(map-set approved-contracts .pool-borrow true)
+(map-set approved-contracts .liquidation-manager true)
+(map-set approved-contracts .pool-0-reserve true)
 
 (define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))

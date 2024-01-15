@@ -3,9 +3,9 @@
 
 (use-trait ft .ft-trait.ft-trait)
 
-(define-public (get-asset-price (token <ft>))
+(define-read-only (get-asset-price (token <ft>))
   (begin
-    (asserts! true (err u1))
+    (asserts! true (err u99999))
     (ok (unwrap-panic (map-get? tickers (contract-of token))))
   )
 )
@@ -14,7 +14,7 @@
   (contract-call? .math mul x y)
 )
 
-(define-public (token-to-usd
+(define-read-only (token-to-usd
   (who principal)
   (asset <ft>)
   (oracle principal)

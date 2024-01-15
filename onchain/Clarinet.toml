@@ -164,6 +164,11 @@ path = "contracts/v2_sbtc/pool/pool-v2-0.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.pool-vault]
+path = "contracts/borrow/vaults/pool-vault.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.proposal-trait]
 path = "contracts/v2_sbtc/dao/traits/proposal-trait.clar"
 clarity_version = 2
@@ -229,6 +234,11 @@ path = "contracts/v2_sbtc/pool/pool-data.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.pool-reserve-data]
+path = "contracts/borrow/vaults/pool-reserve-data.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.pool-data-provider]
 path = "contracts/borrow/pool/pool-data-provider.clar"
 clarity_version = 2
@@ -275,7 +285,7 @@ clarity_version = 2
 epoch = 2.1
 
 [contracts.vault-trait]
-path = "contracts/v2_sbtc/trait/vault-trait.clar"
+path = "contracts/borrow/traits/vault-trait.clar"
 clarity_version = 2
 epoch = 2.1
 

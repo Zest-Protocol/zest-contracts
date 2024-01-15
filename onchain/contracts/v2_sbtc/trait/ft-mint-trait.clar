@@ -1,3 +1,6 @@
+(use-trait ft .ft-trait.ft-trait)
+(use-trait oracle-trait .oracle-trait.oracle-trait)
+
 (define-trait ft-mint-trait
 	(
 		;; Transfer from the caller to a new principal
@@ -14,6 +17,7 @@
 
 		;; the balance of the passed principal
 		(get-balance (principal) (response uint uint))
+		(get-principal-balance (principal) (response uint uint))
 
 		;; the current total supply (which does not need to be a constant)
 		(get-total-supply () (response uint uint))

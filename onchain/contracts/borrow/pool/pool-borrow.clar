@@ -4,6 +4,9 @@
 (use-trait flash-loan .flash-loan-trait.flash-loan-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
+(define-constant max-value (contract-call? .math get-max-value))
+(define-constant one-8 (contract-call? .math get-one))
+
 (define-public (supply
   (lp <ft-mint-trait>)
   (pool-reserve principal)
@@ -13,21 +16,20 @@
   )
   (let (
     (supplied-asset-principal (contract-of asset))
-    (current-balance (try! (contract-call? .pool-0-reserve get-balance lp supplied-asset-principal owner)))
+    (current-balance (try! (contract-call? lp get-balance owner)))
     (reserve-state (contract-call? .pool-0-reserve get-reserve-state supplied-asset-principal))
     (user-assets (contract-call? .pool-0-reserve get-user-assets owner))
     (isolated-asset (contract-call? .pool-0-reserve is-in-isolation-mode owner))
     (assets-used-as-collateral (contract-call? .pool-0-reserve get-assets-used-as-collateral owner))
-
     )
-    (asserts! (> amount u0) (err u1))
-    (asserts! (get is-active reserve-state) (err u2))
-    (asserts! (not (get is-frozen reserve-state)) (err u3))
-    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) (err u5))
+    (asserts! (> amount u0) ERR_NOT_ZERO)
+    (asserts! (get is-active reserve-state) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
+    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
 
     ;; if first supply
     (if (is-eq current-balance u0)
-      (if (unwrap!
+      (if (unwrap-panic
             (validate-use-as-collateral
               (is-some isolated-asset)
               (get base-ltv-as-collateral reserve-state)
@@ -35,22 +37,18 @@
               supplied-asset-principal
               owner
               (get debt-ceiling reserve-state)
-            )
-            (err u1)
-          )
+            ))
         (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset true))
         false
       )
       false
     )
 
-    (asserts! (is-none (index-of? (get assets-borrowed user-assets) supplied-asset-principal)) (err u999999999))
+    (asserts! (is-none (index-of? (get assets-borrowed user-assets) supplied-asset-principal)) ERR_SUPPLYING_BORROWED_ASSET)
 
     (try! (contract-call? .pool-0-reserve update-state-on-deposit asset owner amount (is-eq current-balance u0)))
 
-    ;; (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset enable-as-collateral))
-
-    (try! (contract-call? .pool-0-reserve mint-on-deposit owner amount lp supplied-asset-principal))
+    (try! (contract-call? lp mint amount owner))
     (try! (contract-call? .pool-0-reserve transfer-to-reserve asset owner amount))
 
     (ok true)
@@ -78,39 +76,30 @@
     )
 )
 
-(define-constant max-value (contract-call? .math get-max-value))
-(define-constant one-8 (contract-call? .math get-one))
-
 (define-public (redeem-underlying
-  (lp <ft-mint-trait>)
   (pool-reserve principal)
   (asset <ft>)
   (oracle <oracle-trait>)
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
   (amount uint)
+  (current-balance uint)
   (owner principal)
 )
   (let (
-    (ret (try! (contract-call? .pool-0-reserve cumulate-balance owner lp (contract-of asset))))
-    (amount-to-redeem (if (is-eq amount max-value) (get new-user-balance ret) amount))
-    (redeems-everything (>= amount-to-redeem (get new-user-balance ret)))
+    (redeems-everything (>= amount current-balance))
     (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
     (reserve-state (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
   )
-    (asserts! (> amount u0) (err u1))
-    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) (err u2))
-    (asserts! (get is-active reserve-state) (err u3))
-
-    (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle amount owner assets)) (err u4))
-
-    (asserts! (>= current-available-liquidity amount-to-redeem) (err u99990))
-
-    (try! (contract-call? lp burn amount-to-redeem owner))
+    (asserts! (> amount u0) ERR_NOT_ZERO)
+    (asserts! (is-eq contract-caller (get a-token-address reserve-state)) ERR_UNAUTHORIZED)
+    (asserts! (is-eq (contract-of oracle) (get oracle reserve-state)) ERR_INVALID_ORACLE)
+    (asserts! (get is-active reserve-state) ERR_INACTIVE)
+    (asserts! (>= current-available-liquidity amount) ERR_EXCEEDED_LIQ)
 
     (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount redeems-everything))
-    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount-to-redeem))
+    (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
 
-    (ok current-available-liquidity)
+    (ok amount)
   )
 )
 
@@ -118,12 +107,12 @@
   (pool-reserve principal)
   (oracle <oracle-trait>)
   (asset-to-borrow <ft>)
+  (lp <ft>)
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
   (amount-to-be-borrowed uint)
   (fee-calculator principal)
   (interest-rate-mode uint)
-  (owner principal)
-)
+  (owner principal))
   (let (
     (asset (contract-of asset-to-borrow))
     (available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset-to-borrow)))
@@ -131,48 +120,49 @@
     (is-in-isolation-mode (contract-call? .pool-0-reserve is-in-isolation-mode owner))
     (user-assets (contract-call? .pool-0-reserve get-user-assets owner))
   )
-    (asserts! (contract-call? .pool-0-reserve is-borrowing-enabled asset) (err u99991))
-    ;; (asserts! (> available-liquidity amount-to-be-borrowed) (err u99992))
-    (if (is-some is-in-isolation-mode)
-      (asserts! (contract-call? .pool-0-reserve is-borroweable-isolated asset) (err u99997))
-      true
-    )
+    (asserts! (contract-call? .pool-0-reserve is-borrowing-enabled asset) ERR_BORROWING_DISABLED)
+    (asserts! (>= available-liquidity amount-to-be-borrowed) ERR_EXCEEDED_LIQ)
+    (asserts! (is-eq tx-sender owner) ERR_UNAUTHORIZED)
+    (asserts! (> amount-to-be-borrowed u0) ERR_NOT_ZERO)
+    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
 
-    (asserts! (is-none (index-of? (get assets-supplied user-assets) asset)) (err u999999999))
+    (if (is-some is-in-isolation-mode)
+      (asserts! (contract-call? .pool-0-reserve is-borroweable-isolated asset) ERR_NOT_SILOED_ASSET)
+      true)
+
+    (asserts! (is-eq (get a-token-address reserve-state) (contract-of lp)) ERR_INVALID_Z_TOKEN)
+    (asserts! (is-eq (get oracle reserve-state) (contract-of oracle)) ERR_INVALID_ORACLE)
+    (asserts! (is-none (index-of? (get assets-supplied user-assets) asset)) ERR_BORROWING_SUPPLIED_ASSET)
 
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
-      (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner amount-to-be-borrowed)))
-      (amount-collateral-needed-USD
+      (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner amount-to-be-borrowed (get decimals reserve-state))))
+      (borrow-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-balance-reserve-data lp asset-to-borrow owner oracle)))
+      (amount-collateral-needed
         (contract-call? .pool-0-reserve calculate-collateral-needed-in-USD
           asset-to-borrow
           amount-to-be-borrowed
           (get decimals reserve-state)
-          (try! (contract-call? .oracle get-asset-price asset-to-borrow))
+          (try! (contract-call? oracle get-asset-price asset-to-borrow))
           borrow-fee
           (get total-borrow-balanceUSD user-global-data)
           (get user-total-feesUSD user-global-data)
-          (get current-ltv user-global-data)
-        )
-      )
-      )
-      ;; (print {amount-collateral-needed-USD: amount-collateral-needed-USD})
-      ;; amount borrowed is too small
-      (asserts! (> borrow-fee u0) (err u99993))
-      (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) (err u99994))
-      (asserts! (<= amount-collateral-needed-USD (get total-collateral-balanceUSD user-global-data)) (err u99995))
+          (get current-ltv user-global-data))))
+      (asserts! (> borrow-fee u0) ERR_NOT_ZERO)
+      (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) ERR_NOT_ZERO)
+      (asserts! (<= (get collateral-needed-in-USD amount-collateral-needed) (get total-collateral-balanceUSD user-global-data)) ERR_NOT_ENOUGH_COLLATERAL)
+      (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
 
-      (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) (err u99996))
+      (if (> (get debt-ceiling reserve-state) u0)
+        (asserts! (<= (+ (get requested-borrow-amount-USD amount-collateral-needed) (get total-borrow-balanceUSD user-global-data))
+                      (get debt-ceiling reserve-state)) ERR_EXCEED_DEBT_CEIL)
+        false)
 
       ;; conditions passed, can borrow
       (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))
-
       (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
 
-      (ok amount-to-be-borrowed)
-    )
-  )
-)
+      (ok amount-to-be-borrowed))))
 
 (define-public (repay
   (asset <ft>)
@@ -184,17 +174,16 @@
     (origination-fee (contract-call? .pool-0-reserve get-user-origination-fee on-behalf-of asset))
     (amount-due (+ (get compounded-balance ret) origination-fee))
     (reserve-state (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
-    ;; default to max repayment
     (payback-amount
-      (if (and (not (is-eq amount-to-repay max-value)) (< amount-to-repay amount-due))
-        amount-to-repay
+      (if (is-eq amount-to-repay max-value)
         amount-due
-      )
-    )
-  )
-    (asserts! (> (get compounded-balance ret) u0) (err u900000))
-    (asserts! (get is-active reserve-state) (err u900001))
-    (asserts! (> amount-to-repay u0) (err u900002))
+        (if (> amount-to-repay amount-due)
+          amount-due
+          amount-to-repay ))))
+    ;; (asserts! false (err payback-amount))
+    (asserts! (> (get compounded-balance ret) u0) ERR_NOT_ZERO)
+    (asserts! (get is-active reserve-state) ERR_INACTIVE)
+    (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
     
     ;; if payback-amount is smaller than fees, just pay fees
     (if (<= payback-amount origination-fee)
@@ -217,7 +206,7 @@
             (contract-call? .pool-0-reserve get-collection-address)
           )
         )
-        (ok u0)
+        (ok payback-amount)
       )
       ;; paying back the balance
       (let (
@@ -247,7 +236,8 @@
           )
           u0
         )
-        (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount-minus-fees)
+        (try! (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount-minus-fees))
+        (ok payback-amount)
       )
     )
   )
@@ -255,33 +245,34 @@
 
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  (lp <a-token>)
+  (collateral-lp <a-token>)
   (collateral-to-liquidate <ft>)
   (debt-asset <ft>)
   (collateral-oracle <oracle-trait>)
-  (principal-oracle <oracle-trait>)
-  (user principal)
-  (purchase-amount uint)
-  (to-receive-underlying bool)
-  )
+  (debt-oracle <oracle-trait>)
+  (liquidated-user principal)
+  (debt-amount uint)
+  (to-receive-atoken bool))
   (let (
     (reserve-data (get-reserve-state (contract-of debt-asset)))
     (collateral-data (get-reserve-state (contract-of collateral-to-liquidate)))
   )
-    (asserts! (get is-active reserve-data) (err u10))
-    (asserts! (get is-active collateral-data) (err u11))
-    (asserts! (is-eq (contract-of lp) (get a-token-address collateral-data)) (err u13))
+    (asserts! (get is-active reserve-data) ERR_INACTIVE)
+    (asserts! (get is-active collateral-data) ERR_INACTIVE)
+    (asserts! (is-eq (contract-of collateral-lp) (get a-token-address collateral-data)) ERR_INVALID_Z_TOKEN)
+    (asserts! (is-eq (contract-of collateral-oracle) (get oracle collateral-data)) ERR_INVALID_ORACLE)
+    (asserts! (is-eq (contract-of debt-oracle) (get oracle reserve-data)) ERR_INVALID_ORACLE)
     
     (contract-call? .liquidation-manager liquidation-call
       assets
-      lp
+      collateral-lp
       collateral-to-liquidate
       debt-asset
       collateral-oracle
-      principal-oracle
-      user
-      purchase-amount
-      to-receive-underlying
+      debt-oracle
+      liquidated-user
+      debt-amount
+      to-receive-atoken
     )
   )
 )
@@ -292,22 +283,21 @@
   (lp <ft>)
   (asset <ft>)
   (amount uint)
-  (flashloan <flash-loan>)
-  )
+  (flashloan <flash-loan>))
   (let (
     (available-liquidity-before (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
-    (total-fee-bps (contract-call? .pool-0-reserve get-flashloan-fee-total))
-    (protocol-fee-bps (contract-call? .pool-0-reserve get-flashloan-fee-protocol))
+    (total-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-total)))
+    (protocol-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-protocol)))
     (amount-fee (/ (* amount total-fee-bps) u10000))
     (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
     (reserve-data (get-reserve-state (contract-of lp)))
   )
-    (asserts! (> amount available-liquidity-before) (err u1))
-    (asserts! (and (> amount-fee u0) (> protocol-fee u0)) (err u2))
+    (asserts! (> amount available-liquidity-before) ERR_EXCEEDED_LIQ)
+    (asserts! (and (> amount-fee u0) (> protocol-fee u0)) ERR_NOT_ZERO)
+    (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
+    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
     (try! (contract-call? .pool-0-reserve transfer-to-user asset receiver amount))
-
-    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-data)) (err u2))
 
     (try! (contract-call? flashloan execute asset receiver amount))
 
@@ -319,7 +309,7 @@
         )
         (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset))
       )
-      (err u3)
+      ERR_NOT_ENOUGH_REPAID
     )
 
     (try! 
@@ -341,48 +331,50 @@
 
 (define-public (set-configurator (new-configurator principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get configurator)) (err u9))
-    (ok (var-set configurator new-configurator))
-  )
-)
+    (asserts! (is-eq tx-sender (var-get configurator)) ERR_UNAUTHORIZED)
+    (ok (var-set configurator new-configurator))))
 
 (define-read-only (is-configurator (caller principal))
   (if (is-eq caller (var-get configurator))
     true
-    false
-  )
-)
+    false))
 
 (define-public (set-user-use-reserve-as-collateral
   (who principal)
   (lp-token <ft>)
   (asset <ft>)
-  (use-as-collateral bool)
+  (enable-as-collateral bool)
   (oracle <oracle-trait>)
-  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  )
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
-    (underlying-balance (try! (contract-call? .pool-0-reserve get-balance lp-token (contract-of asset) who)))
+    (underlying-balance (try! (contract-call? lp-token get-balance who)))
     (user-data (get-user-reserve-data who (contract-of asset)))
-    (is-in-isolation-mode (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who)))
-  )
-    (asserts! (is-eq tx-sender who) (err u5))
+    (isolation-mode-asset (contract-call? .pool-0-reserve is-in-isolation-mode who)))
+    (asserts! (is-eq tx-sender who) ERR_UNAUTHORIZED)
+    (asserts! (get is-active reserve-data) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
+    (asserts! (> underlying-balance u0) ERR_NOT_ZERO)
+    (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
-    (asserts! (get is-active reserve-data) (err u1))
-    (asserts! (not (get is-frozen reserve-data)) (err u2))
-    (asserts! (> underlying-balance u0) (err u3))
+    ;; if in isolation mode, can only disable isolated asset
+    (if (is-some isolation-mode-asset)
+      (begin
+        ;; repay before changing
+        (asserts! (not (contract-call? .pool-0-reserve is-borrowing-assets who)) ERR_REPAY_BEFORE_DISABLING)
+        ;; if repaid, must be updating the isolated collateral asset
+        (asserts! (is-eq (unwrap-panic isolation-mode-asset) (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
+        ;; if isolated asset is enabled, can only disable it
+        (contract-call? .pool-0-reserve set-use-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false })))
+      (begin
+        (if (not enable-as-collateral)
+          ;; if disabling as collateral, check user is not using deposited collateral
+          (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) ERR_INVALID_DECREASE)
+          true)
 
-    (if is-in-isolation-mode
-      ;; repay or cannot exit isolation mode
-      (asserts! (not (contract-call? .pool-0-reserve is-borrowing-assets who)) (err u9456))
-      false
+        (contract-call? .pool-0-reserve set-use-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: enable-as-collateral }))
+      )
     )
-
-    ;; check user is not using deposited collateral
-    (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) (err u4))
-
-    (contract-call? .pool-0-reserve set-use-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: use-as-collateral }))
   )
 )
 
@@ -393,8 +385,7 @@
   (supply-cap uint)
   (borrow-cap uint)
   (oracle principal)
-  (interest-rate-strategy-address principal)
-  )
+  (interest-rate-strategy-address principal))
   (begin
     (asserts! (is-configurator tx-sender) (err u9))
     (contract-call? .pool-0-reserve set-reserve
@@ -415,6 +406,7 @@
         a-token-address: a-token-address,
         oracle: oracle,
         interest-rate-strategy-address: interest-rate-strategy-address,
+        flashloan-enabled: false,
         last-updated-block: u0,
         borrowing-enabled: false,
         supply-cap: supply-cap,
@@ -429,185 +421,129 @@
   )
 )
 
-(define-public (set-is-oracle (asset principal) (oracle <oracle-trait>))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { oracle: (contract-of oracle) }))
-  )
-)
-
-(define-public (set-is-active-reserve (asset principal) (is-active bool))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { is-active: is-active }))
-  )
-)
-
-(define-public (set-is-frozen-reserve (asset principal) (is-frozen bool))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { is-frozen: is-frozen }))
-  )
-)
-
-(define-public (set-base-ltv-as-collateral (asset principal) (base-ltv-as-collateral uint))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { base-ltv-as-collateral: base-ltv-as-collateral }))
-  )
-)
-
-(define-public (set-liquidation-threshold (asset principal) (liquidation-threshold uint))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { liquidation-threshold: liquidation-threshold }))
-  )
-)
-
-(define-public (set-liquidation-bonus (asset principal) (liquidation-bonus uint))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { liquidation-bonus: liquidation-bonus }))
-  )
-)
-
-(define-public (set-reserve-decimals (asset principal) (decimals uint))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { decimals: decimals }))
-  )
-)
-
-(define-public (set-reserve-interest-rate-strategy-address
+(define-public (set-reserve
   (asset principal)
-  (interest-rate-strategy-address principal))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { interest-rate-strategy-address: interest-rate-strategy-address }))
+  (state
+    (tuple
+      (last-liquidity-cumulative-index uint)
+      (current-liquidity-rate uint)
+      (total-borrows-stable uint)
+      (total-borrows-variable uint)
+      (current-variable-borrow-rate uint)
+      (current-stable-borrow-rate uint)
+      (current-average-stable-borrow-rate uint)
+      (last-variable-borrow-cumulative-index uint)
+      (base-ltv-as-collateral uint)
+      (liquidation-threshold uint)
+      (liquidation-bonus uint)
+      (decimals uint)
+      (a-token-address principal)
+      (oracle principal)
+      (interest-rate-strategy-address principal)
+      (flashloan-enabled bool)
+      (last-updated-block uint)
+      (borrowing-enabled bool)
+      (usage-as-collateral-enabled bool)
+      (is-stable-borrow-rate-enabled bool)
+      (supply-cap uint)
+      (borrow-cap uint)
+      (debt-ceiling uint)
+      (is-active bool)
+      (is-frozen bool)
+    )))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data set-reserve-state asset state)
   )
 )
 
 (define-public (set-borrowing-enabled (asset principal) (enabled bool))
-  (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { borrowing-enabled: enabled }))
-  )
-)
+  (let ((reserve-data (get-reserve-state asset)))
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { borrowing-enabled: enabled }))))
 
 (define-read-only (get-reserve-state (asset principal))
-  (contract-call? .pool-0-reserve get-reserve-state asset)
-)
+  (contract-call? .pool-0-reserve get-reserve-state asset))
 
 (define-read-only (get-user-reserve-data (user principal) (asset principal))
-  (contract-call? .pool-0-reserve get-user-reserve-data user asset)
-)
+  (contract-call? .pool-0-reserve get-user-reserve-data user asset))
 
 (define-read-only (get-borroweable-isolated)
-  (contract-call? .pool-0-reserve get-borroweable-isolated)
-)
+  (contract-call? .pool-0-reserve get-borroweable-isolated))
 
 (define-public (set-usage-as-collateral-enabled
   (asset principal)
   (enabled bool)
   (base-ltv-as-collateral uint)
   (liquidation-threshold uint)
-  (liquidation-bonus uint)
-  )
+  (liquidation-bonus uint))
   (let (
-    (reserve-data (get-reserve-state asset))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
+    (reserve-data (get-reserve-state asset)))
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
 
     (contract-call? .pool-0-reserve set-reserve
       asset
       (merge
         reserve-data
-        (merge
-          reserve-data
-          {
-            usage-as-collateral-enabled: enabled,
-            base-ltv-as-collateral: base-ltv-as-collateral,
-            liquidation-threshold: liquidation-threshold,
-            liquidation-bonus: liquidation-bonus
-          }
-        )
-      ))
-  )
-)
-
+        {
+          usage-as-collateral-enabled: enabled,
+          base-ltv-as-collateral: base-ltv-as-collateral,
+          liquidation-threshold: liquidation-threshold,
+          liquidation-bonus: liquidation-bonus }))))
 
 (define-public (add-isolated-asset (asset principal))
   (begin
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve set-isolated-asset asset)
-  )
-)
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-0-reserve set-isolated-asset asset)))
 
 (define-public (add-asset (asset principal))
   (begin
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve add-asset asset)
-  )
-)
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-0-reserve add-asset asset)))
 
 (define-public (remove-isolated-asset (asset principal))
   (begin
-    (asserts! (is-configurator tx-sender) (err u9))
-    (contract-call? .pool-0-reserve remove-isolated-asset asset)
-  )
-)
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-0-reserve remove-isolated-asset asset)))
 
 (define-public (set-borroweable-isolated (asset principal) (debt-ceiling uint))
   (let (
     (reserve-data (get-reserve-state asset))
-    (borroweable-assets (get-borroweable-isolated))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
+    (borroweable-assets (get-borroweable-isolated)))
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (try! (contract-call? .pool-0-reserve set-borroweable-isolated
-      (unwrap-panic (as-max-len? (append borroweable-assets asset) u100))
-      )
-    )
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { debt-ceiling: debt-ceiling }))
-  )
-)
-
+      (unwrap-panic (as-max-len? (append borroweable-assets asset) u100))))
+    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { debt-ceiling: debt-ceiling }))))
 
 (define-public (remove-borroweable-isolated (asset principal))
-  (let (
-    (borroweable-assets (get-borroweable-isolated))
-  )
-    (asserts! (is-configurator tx-sender) (err u9))
+  (let ((borroweable-assets (get-borroweable-isolated)))
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (ok
       (contract-call? .pool-0-reserve set-borroweable-isolated
-        (get agg (fold filter-asset borroweable-assets { filter-by: asset, agg: (list) }))
-      )
-    )
-  )
-)
+        (get agg (fold filter-asset borroweable-assets { filter-by: asset, agg: (list) }))))))
 
 (define-read-only (filter-asset (asset principal) (ret { filter-by: principal, agg: (list 100 principal) }))
   (if (is-eq asset (get filter-by ret))
-    ;; ignore, do not add
     ret
-    ;; add back to list
-    { filter-by: (get filter-by ret), agg: (unwrap-panic (as-max-len? (append (get agg ret) asset) u100)) }
-  )
-)
+    { filter-by: (get filter-by ret), agg: (unwrap-panic (as-max-len? (append (get agg ret) asset) u100)) }))
+
+(define-constant ERR_UNAUTHORIZED (err u30000))
+(define-constant ERR_BORROW_TOO_SMALL (err u30001))
+(define-constant ERR_NOT_ZERO (err u30002))
+(define-constant ERR_NOT_ENOUGH_COLLATERAL (err u30003))
+(define-constant ERR_EXCEED_BORROW_CAP (err u30004))
+(define-constant ERR_EXCEED_DEBT_CEIL (err u30005))
+(define-constant ERR_BORROWING_DISABLED (err u30006))
+(define-constant ERR_EXCEEDED_LIQ (err u30007))
+(define-constant ERR_NOT_SILOED_ASSET (err u30008))
+(define-constant ERR_INVALID_Z_TOKEN (err u30009))
+(define-constant ERR_INVALID_ORACLE (err u30010))
+(define-constant ERR_BORROWING_SUPPLIED_ASSET (err u30011))
+(define-constant ERR_INACTIVE (err u30012))
+(define-constant ERR_FROZEN (err u30013))
+(define-constant ERR_SUPPLYING_BORROWED_ASSET (err u30014))
+(define-constant ERR_FLASHLOAN_DISABLED (err u30015))
+(define-constant ERR_NOT_ENOUGH_REPAID (err u30016))
+(define-constant ERR_REPAY_BEFORE_DISABLING (err u30017))
+(define-constant ERR_INVALID_DECREASE (err u30018))
+(define-constant ERR_MUST_DISABLE_ISOLATED_ASSET (err u30019))

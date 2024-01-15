@@ -1,4 +1,5 @@
 (define-constant one-8 u100000000)
+(define-constant one-12 u1000000000000)
 (define-constant fixed-precision u8)
 
 (define-constant max-value u340282366920938463463374607431768211455)
@@ -8,12 +9,10 @@
 )
 
 (define-read-only (mul (x uint) (y uint))
-  (/ (+ (* x y) (/ one-8 u2)) one-8)
-)
+  (/ (+ (* x y) (/ one-8 u2)) one-8))
 
 (define-read-only (div (x uint) (y uint))
-  (/ (+ (* x one-8) (/ y u2)) y)
-)
+  (/ (+ (* x one-8) (/ y u2)) y))
 
 (define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
   (if (> decimals-a fixed-precision)
@@ -27,6 +26,26 @@
     (div (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
     (div (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
   )
+)
+
+;; assumes assets used do not have more than 12 decimals
+(define-read-only (div-precision-to-fixed (a uint) (b uint) (decimals uint))
+  (let (
+    (adjustment-difference (- one-12 decimals))
+    (result (/ (* a (pow u10 decimals)) b))
+    )
+    (to-fixed result decimals)
+  )
+)
+
+(define-read-only (div-reduced-loss (a uint) (b uint))
+  (begin
+    (/ (* a one-8) b)
+  )
+)
+
+(define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
+  (from-fixed-to-precision (mul-to-fixed-precision a decimals-a b-fixed) decimals-a)
 )
 
 (define-read-only (add-precision-to-fixed (a uint) (decimals-a uint) (b-fixed uint))
@@ -117,13 +136,32 @@
   (is-eq (mod x u2) u0)
 )
 
-(define-read-only (get-e)
-  e
+;; rate in 8-fixed
+;; time passed in seconds
+;; u31536000
+(define-read-only (get-rt (rate uint) (t uint))
+  (begin
+    (/ (* (/ (* rate one-12) seconds-in-year) t) u100000)
+  )
 )
 
-(define-read-only (get-one)
-  one-8
+;; rate in 8-fixed
+;; n-blocks
+(define-read-only (get-rt-by-block (rate uint) (blocks uint))
+  (begin
+    (mul rate (* blocks sb-by-sy))
+  )
 )
+
+;; block-seconds/year-seconds in fixed precision
+(define-constant sb-by-sy u1903)
+
+(define-read-only (get-sb-by-sy)
+  sb-by-sy
+)
+
+(define-read-only (get-e) e)
+(define-read-only (get-one) one-8)
 
 (define-constant e 271828182)
 (define-constant seconds-in-year u31536000
@@ -140,10 +178,6 @@
 (define-read-only (get-seconds-in-block)
   seconds-in-block
 )
-
-;; (define-read-only (test-this)
-;;   (mul (* one-8 u1000) (taylor-6 (mul u5000000 u300000000)))
-;; )
 
 (define-constant fact_2 u200000000)
 (define-constant fact_3 (mul u300000000 u200000000))

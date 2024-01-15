@@ -1,3 +1,6 @@
+(use-trait ft .ft-trait.ft-trait)
+(use-trait oracle-trait .oracle-trait.oracle-trait)
+
 (define-trait ft-mint-trait
 	(
 		;; Transfer from the caller to a new principal
@@ -14,12 +17,22 @@
 
 		;; the balance of the passed principal
 		(get-balance (principal) (response uint uint))
+		(get-principal-balance (principal) (response uint uint))
 
 		;; the current total supply (which does not need to be a constant)
 		(get-total-supply () (response uint uint))
 
 		;; an optional URI that represents metadata of this token
 		(get-token-uri () (response (optional (string-utf8 256)) uint))
+
+		(get-redeem (
+      principal
+      <ft>
+      <oracle-trait>
+      (list 100 (tuple (asset <ft>) (lp-token <ft>) (oracle <oracle-trait>)
+      amount
+      principal
+      ) ()))) (response uint uint))
 
     (mint (uint principal) (response bool uint))
     (burn (uint principal) (response bool uint))

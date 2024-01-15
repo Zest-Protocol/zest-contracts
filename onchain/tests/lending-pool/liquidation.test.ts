@@ -212,6 +212,7 @@ describe("Liquidation tests", () => {
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, lpxUSD),
         Cl.list([
           // Cl.tuple({
           //   asset: Cl.contractPrincipal(deployerAddress, xUSD),
@@ -520,6 +521,7 @@ describe("Liquidation tests", () => {
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, lpxUSD),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
@@ -534,7 +536,7 @@ describe("Liquidation tests", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.uint(6_996_172_743_701));
 
     // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.result));
@@ -592,8 +594,11 @@ describe("Liquidation tests", () => {
       Borrower_1
     );
 
-    console.log("PI");
+    console.log("Before liquidation");
     console.log(Cl.prettyPrint(borrower_data.result));
+
+    console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
+    console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -623,12 +628,18 @@ describe("Liquidation tests", () => {
       ],
       Liquidator_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+
+    console.log(Liquidator_1);
+    console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
+    console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
+    console.log(callResponse.result);
+    console.log(callResponse.events);
     // u100000000000
     // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
     // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[5].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
@@ -861,6 +872,7 @@ describe("Liquidation tests", () => {
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, lpxUSD),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
@@ -876,8 +888,9 @@ describe("Liquidation tests", () => {
       Borrower_1
     );
 
+    // console.log(simnet.getAssetsMap());
     // console.log(callResponse.events);
-    console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.uint(6996172743701));
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
@@ -906,6 +919,8 @@ describe("Liquidation tests", () => {
       ],
       Borrower_1
     );
+
+    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "oracle",
@@ -962,7 +977,6 @@ describe("Liquidation tests", () => {
       ],
       Liquidator_1
     );
-
     console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
     // console.log(callResponse.events);
