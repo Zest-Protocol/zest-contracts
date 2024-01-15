@@ -286,8 +286,8 @@
   (flashloan <flash-loan>))
   (let (
     (available-liquidity-before (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
-    (total-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-total)))
-    (protocol-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-protocol)))
+    (total-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-total (contract-of asset))))
+    (protocol-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-protocol (contract-of asset))))
     (amount-fee (/ (* amount total-fee-bps) u10000))
     (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
     (reserve-data (get-reserve-state (contract-of lp)))
@@ -365,14 +365,14 @@
         ;; if repaid, must be updating the isolated collateral asset
         (asserts! (is-eq (unwrap-panic isolation-mode-asset) (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
         ;; if isolated asset is enabled, can only disable it
-        (contract-call? .pool-0-reserve set-use-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false })))
+        (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false })))
       (begin
         (if (not enable-as-collateral)
           ;; if disabling as collateral, check user is not using deposited collateral
           (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) ERR_INVALID_DECREASE)
           true)
 
-        (contract-call? .pool-0-reserve set-use-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: enable-as-collateral }))
+        (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: enable-as-collateral }))
       )
     )
   )

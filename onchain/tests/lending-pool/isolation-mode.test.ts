@@ -442,13 +442,9 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.result));
   });
-  it(`Supply and borrow supplying only isolated asset. \
-  Supply non-isolated asset when enabled as collateral, \
+  it(`Supply and borrow supplying only isolated asset.
+  Supply non-isolated asset when enabled as collateral,
   Remove some isolated collateral, cannot because not enough collateral`, () => {
     const poolReserve0 = new PoolReserve(
       simnet,
@@ -527,7 +523,6 @@ describe("Isolated mode", () => {
       LP_1,
       LP_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = poolBorrow.supply(
       deployerAddress,
@@ -540,7 +535,6 @@ describe("Isolated mode", () => {
       Borrower_1,
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
 
     let borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -596,9 +590,6 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
-
-    console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.uint(availableBorrow));
 
     callResponse = simnet.callPublicFn(
@@ -622,10 +613,6 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -647,7 +634,6 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
     let beforeNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
 
     callResponse = poolBorrow.supply(
@@ -661,7 +647,6 @@ describe("Isolated mode", () => {
       Borrower_1,
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
@@ -703,17 +688,13 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
-
     let afterNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
     expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112500701");
     expect(afterNonIsolatedSupply["health-factor"].value).toBe("112500699");
-    console.log(Cl.prettyPrint(callResponse.result));
   });
-  it(`Supply and borrow supplying only isolated asset. \
-  Supply non-isolated asset when enabled as collateral, \
-  while isolate asset is allowed as collateral, non-isolated assets. \
-  Does not count as collateral`, () => {
+  it(`Supply and borrow supplying only isolated asset.
+  Supply non-isolated asset when enabled as collateral,
+  while isolate asset is allowed as collateral, non-isolated asset does not count as collateral`, () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
@@ -928,18 +909,18 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
     let allowedWithdrawalAmount = Number(
       cvToJSON(callResponse.result)["value"]["value"]["amount-to-decrease"][
         "value"
       ]
     );
     let factor = 1.028;
-    console.log("increased: ", Math.floor(allowedWithdrawalAmount * factor));
-    console.log(
-      "difference: ",
-      Math.floor(allowedWithdrawalAmount * factor) - allowedWithdrawalAmount
-    );
+    // console.log("increased: ", Math.floor(allowedWithdrawalAmount * factor));
+    // console.log(
+    //   "difference: ",
+    //   Math.floor(allowedWithdrawalAmount * factor) - allowedWithdrawalAmount
+    // );
 
     callResponse = simnet.callPublicFn(
       "lp-stSTX",
@@ -1385,7 +1366,6 @@ describe("Isolated mode", () => {
       [Cl.standardPrincipal(Borrower_1)],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "lp-stSTX",
@@ -1412,15 +1392,6 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
-    // console.log(callResponse.events);
-    // console.log(simnet.getAssetsMap());
-
     expect(simnet.getAssetsMap().get(".stSTX.stSTX")?.get(Borrower_1)).toBe(
       BigInt(1_000_000_000_000_000)
     );

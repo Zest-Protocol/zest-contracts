@@ -8,27 +8,27 @@
 
 (define-read-only (get-one-3) one-3)
 
-(define-data-var flashloan-fee-total uint (/ (* one-8 u35) one-8))
-(define-public (set-flashloan-fee-total (fee uint))
+(define-map flashloan-fee-total principal uint)
+(define-public (set-flashloan-fee-total (asset principal) (fee uint))
   (begin
     (try! (is-approved-contract contract-caller))
-    (ok (var-set flashloan-fee-total fee))))
+    (ok (map-set flashloan-fee-total asset fee))))
 
-(define-public (get-flashloan-fee-total)
-  (ok (var-get flashloan-fee-total)))
-(define-read-only (get-flashloan-fee-total-read)
-  (var-get flashloan-fee-total))
+(define-public (get-flashloan-fee-total (asset principal))
+  (ok (map-get? flashloan-fee-total asset)))
+(define-read-only (get-flashloan-fee-total-read (asset principal))
+  (map-get? flashloan-fee-total asset))
 
-(define-data-var flashloan-fee-protocol uint (/ (* one-8 u3000) one-8))
-(define-public (set-flashloan-fee-protocol (fee uint))
+(define-map flashloan-fee-protocol principal uint)
+(define-public (set-flashloan-fee-protocol (asset principal) (fee uint))
   (begin
     (try! (is-approved-contract contract-caller))
-    (ok (var-set flashloan-fee-protocol fee))))
+    (ok (map-set flashloan-fee-protocol asset fee))))
 
-(define-public (get-flashloan-fee-protocol)
-  (ok (var-get flashloan-fee-protocol)))
-(define-read-only (get-flashloan-fee-protocol-read)
-  (var-get flashloan-fee-protocol))
+(define-public (get-flashloan-fee-protocol (asset principal))
+  (ok (map-get? flashloan-fee-protocol asset)))
+(define-read-only (get-flashloan-fee-protocol-read (asset principal))
+  (map-get? flashloan-fee-protocol asset))
 
 (define-data-var health-factor-liquidation-threshold uint u100000000)
 (define-public (set-health-factor-liquidation-threshold (hf uint))
@@ -393,3 +393,6 @@
 (map-set liquidation-close-factor-percent .stSTX u50000000) ;; 50%
 (map-set liquidation-close-factor-percent .sBTC  u50000000) ;; 50%
 (map-set liquidation-close-factor-percent .xUSD  u50000000) ;; 50%
+
+(map-set flashloan-fee-total .stSTX u35)
+(map-set flashloan-fee-protocol .stSTX u3000)

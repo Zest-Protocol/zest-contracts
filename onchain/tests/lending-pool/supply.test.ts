@@ -37,7 +37,7 @@ const stSTX = "stSTX";
 const USDA = "USDA";
 const xUSD = "xUSD";
 
-describe("example tests", () => {
+describe("Supply and Redeem", () => {
   beforeEach(() => {
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -509,7 +509,7 @@ describe("example tests", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
     // u9900000000
     // u990000000000
 
@@ -554,7 +554,7 @@ describe("example tests", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(borrower_1_data.result));
+    // console.log(Cl.prettyPrint(borrower_1_data.result));
     // console.log(Cl.prettyPrint(borrower_1_data.events[0].data.value!));
 
     // console.log(Cl.prettyPrint(borrower_1_data.result));
@@ -659,7 +659,7 @@ describe("example tests", () => {
       ],
       Borrower_2
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -675,7 +675,7 @@ describe("example tests", () => {
     );
     // console.log(simnet.getAssetsMap());
 
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     simnet.mineEmptyBlocks(10);
 
@@ -689,36 +689,6 @@ describe("example tests", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
-    // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
-    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
-
-    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
-
-    // lp_1_data = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-0-reserve`,
-    //   "get-user-reserve-data",
-    //   [
-    //     Cl.standardPrincipal(LP_1),
-    //     Cl.contractPrincipal(deployerAddress, stSTX),
-    //   ],
-    //   deployerAddress
-    // );
-    // borrower_data = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-0-reserve`,
-    //   "get-user-reserve-data",
-    //   [
-    //     Cl.standardPrincipal(Borrower_1),
-    //     Cl.contractPrincipal(deployerAddress, stSTX),
-    //   ],
-    //   deployerAddress
-    // );
-
-    // console.log(Cl.prettyPrint(lp_1_data.result));
-    // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
       "lp-stSTX",
@@ -739,19 +709,6 @@ describe("example tests", () => {
       ],
       LP_1
     );
-
-    console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(callResponse.events);
-
-    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
-    // { THIS: { balance-increase: u940, index: u100000094, new-user-balance: u1000000940, previous-user-balance: u1000000000 } }
-
-    // console.log(simnet.getAssetsMap().get(".lp-token-0.lp-token-0"));
-    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
-
-    // console.log(Cl.prettyPrint(callResponse.events[1]["data"].value!));
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "lp-stSTX",
@@ -778,19 +735,6 @@ describe("example tests", () => {
       LP_2
     );
     console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(callResponse.events);
-
-    // console.log(Cl.prettyPrint(callResponse.events[1]["data"].value!));
-    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
-
-    // borrower_data = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-0-reserve`,
-    //   "get-assets-used-by",
-    //   [Cl.standardPrincipal(LP_3)],
-    //   LP_3
-    // );
-    // console.log("WENT");
-    // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
       "lp-stSTX",
@@ -807,42 +751,10 @@ describe("example tests", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
-          // Cl.tuple({
-          //   asset: Cl.contractPrincipal(deployerAddress, sBTC),
-          //   "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-          //   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          // }),
-          // Cl.tuple({
-          //   asset: Cl.contractPrincipal(deployerAddress, diko),
-          //   "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-          //   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          // }),
-          // Cl.tuple({
-          //   asset: Cl.contractPrincipal(deployerAddress, USDA),
-          //   "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
-          //   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          // }),
-          // Cl.tuple({
-          //   asset: Cl.contractPrincipal(deployerAddress, xUSD),
-          //   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-          //   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          // }),
         ]),
       ],
       LP_3
     );
     console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log(Cl.prettyPrint(callResponse.events[0]["data"].value!));
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log(LP_2);
-
-    // console.log(simnet.getAssetsMap().get(".stSTX.stSTX"));
   });
-});
-
-describe("example tests", () => {
-  it("Supply and immediately redeem without returns", () => {});
 });

@@ -32,8 +32,7 @@
 (define-read-only (div-precision-to-fixed (a uint) (b uint) (decimals uint))
   (let (
     (adjustment-difference (- one-12 decimals))
-    (result (/ (* a (pow u10 decimals)) b))
-    )
+    (result (/ (* a (pow u10 decimals)) b)))
     (to-fixed result decimals)
   )
 )

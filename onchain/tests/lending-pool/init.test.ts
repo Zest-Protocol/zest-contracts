@@ -406,57 +406,8 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    console.log(cvToJSON(callResponse.result));
+    // console.log(cvToJSON(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.uint(100_000_000));
-
-    // callResponse = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-reserve-data`,
-    //   "get-reserve-state-read",
-    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
-    //   LP_1
-    // );
-    // console.log(cvToJSON(callResponse.result)["value"]);
-    // callResponse = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-reserve-data`,
-    //   "get-user-reserve-data-read",
-    //   [
-    //     Cl.standardPrincipal(Borrower_1),
-    //     Cl.contractPrincipal(deployerAddress, stSTX),
-    //   ],
-    //   Borrower_1
-    // );
-    // console.log(cvToJSON(callResponse.result)["value"]["value"]);
-    // console.log("User Index data");
-    // callResponse = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-reserve-data`,
-    //   "get-user-index-read",
-    //   [Cl.standardPrincipal(LP_1)],
-    //   LP_1
-    // );
-    // console.log(cvToJSON(callResponse.result)["value"]);
-
-    // 50000
-    // 20
-    // 100000000
-
-    // console.log("After stSTX borrow by Borrower 1");
-    // callResponse = simnet.callPublicFn(
-    //   zStSTX,
-    //   "get-balance-test",
-    //   [Cl.standardPrincipal(LP_1)],
-    //   LP_1
-    // );
-    // console.log(cvToJSON(callResponse.result)["value"]);
-    // console.log(cvToJSON(callResponse.result)["value"]["value"]);
-
-    // console.log("Calculating interest rates after borrowing");
-    // callResponse = simnet.callPublicFn(
-    //   "pool-read",
-    //   "calculate-interest-rates-test",
-    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
-    //   deployerAddress
-    // );
-    // console.log(cvToJSON(callResponse.result)["value"]);
 
     simnet.mineEmptyBlocks(10);
 
@@ -479,23 +430,6 @@ describe("Supply and redeem", () => {
     );
 
     expect(callResponse.result).toBeOk(Cl.uint(100250114));
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log("Reserve state data After Repayment");
-    // callResponse = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-reserve-data`,
-    //   "get-reserve-state-read",
-    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
-    //   LP_1
-    // );
-    // callResponse = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-reserve-data`,
-    //   "get-user-reserve-data-read",
-    //   [
-    //     Cl.standardPrincipal(Borrower_1),
-    //     Cl.contractPrincipal(deployerAddress, stSTX),
-    //   ],
-    //   Borrower_1
-    // );
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -506,9 +440,6 @@ describe("Supply and redeem", () => {
     expect(callResponse.result).toBeList([
       Cl.contractPrincipal(deployerAddress, sBTC),
     ]);
-
-    // console.log(simnet.getAssetsMap());
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
 
     callResponse = sBTCZToken.redeem(
       deployerAddress,
@@ -528,7 +459,6 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    // expect(callResponse.result).toBeOk(Cl.uint(2_000_000_000));
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -536,7 +466,6 @@ describe("Supply and redeem", () => {
       [Cl.standardPrincipal(Borrower_1)],
       Borrower_1
     );
-    // expect(callResponse.result).toBeList([]);
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.${zStSTX}`,
@@ -544,14 +473,6 @@ describe("Supply and redeem", () => {
       [Cl.standardPrincipal(LP_1)],
       Borrower_1
     );
-
-    // callResponse = simnet.callPublicFn(
-    //   zStSTX,
-    //   "get-balance-test",
-    //   [Cl.standardPrincipal(LP_1)],
-    //   deployerAddress
-    // );
-    // console.log(cvToJSON(callResponse.result)["value"]["value"]);
 
     callResponse = stSTXZToken.redeem(
       deployerAddress,
