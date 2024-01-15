@@ -604,6 +604,7 @@
   (principal-reserve <ft>)
   (collateral-reserve <ft>)
   (borrower principal)
+  (liquidator-addr principal)
   (principal-amount-to-liquidate uint)
   (collateral-to-liquidate uint)
   (fee-liquidated uint)
@@ -629,7 +630,10 @@
 
     (if (not liquidator-receives-aToken)
       (update-reserve-interest-rates-and-timestamp collateral-reserve u0 (+ collateral-to-liquidate liquidated-collateral-for-fee))
-      (ok false)
+      (begin
+        (try! (add-supplied-asset liquidator-addr (contract-of collateral-reserve)))
+        (ok false)
+      )
     )
   )
 )
