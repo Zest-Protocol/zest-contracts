@@ -199,7 +199,7 @@
   (amount uint)
   )
   (let (
-    (unit-price (contract-call? .oracle get-asset-price-read asset))
+    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price asset)))
   )
     (mul amount unit-price)
   )
@@ -216,7 +216,7 @@
 (define-private (token-to-usd-internal
   (item { asset: <ft>, amount: uint})
 )
-  (mul (get amount item) (contract-call? .oracle get-asset-price-read (get asset item) ))
+  (mul (get amount item) (unwrap-panic (contract-call? .oracle get-asset-price (get asset item) )))
 )
 
 ;; (define-read-only (get-balance (asset <ft>) (who principal))
@@ -413,7 +413,7 @@
 ;;         (get xUSD-compounded-balance borrowed-collateral)
 ;;       )
 ;;     )
-;;     (price (contract-call? .oracle get-asset-price-read asset))
+;;     (price (contract-call? .oracle get-asset-price asset))
 ;;   )
 ;;     (if (< total-useable-value total-borrowed-value)
 ;;       u0
@@ -427,7 +427,7 @@
   (borrowed-collateral uint)
   (asset-to-borrow <ft>))
   (let (
-    (price (contract-call? .oracle get-asset-price-read .xUSD))
+    (price (unwrap-panic (contract-call? .oracle get-asset-price .xUSD)))
   )
     (if (< useable-collateral borrowed-collateral)
       u0

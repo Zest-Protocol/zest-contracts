@@ -103,7 +103,7 @@ describe("Supply and Redeem", () => {
       LP_1,
       LP_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     let borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -111,7 +111,7 @@ describe("Supply and Redeem", () => {
       [Cl.standardPrincipal(LP_1)],
       LP_1
     );
-    console.log(Cl.prettyPrint(borrower_data.result));
+    // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
       "lp-stSTX",
@@ -484,7 +484,7 @@ describe("Supply and Redeem", () => {
       Borrower_1
     );
 
-    console.log(Cl.prettyPrint(borrower_data.result));
+    // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -607,7 +607,7 @@ describe("Supply and Redeem", () => {
       ],
       LP_2
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -734,7 +734,7 @@ describe("Supply and Redeem", () => {
       ],
       LP_2
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.uint(1_000_000_000));
 
     callResponse = simnet.callPublicFn(
       "lp-stSTX",
@@ -755,6 +755,6 @@ describe("Supply and Redeem", () => {
       ],
       LP_3
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.uint(1_000_000_000));
   });
 });

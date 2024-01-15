@@ -278,27 +278,25 @@
 )
 
 (define-public (flashloan
-  (sender principal)
   (receiver principal)
   (lp <ft>)
   (asset <ft>)
   (amount uint)
   (flashloan <flash-loan>))
-  (let (
+  (let  (
     (available-liquidity-before (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
     (total-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-total (contract-of asset))))
     (protocol-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-protocol (contract-of asset))))
     (amount-fee (/ (* amount total-fee-bps) u10000))
     (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
-    (reserve-data (get-reserve-state (contract-of lp)))
+    (reserve-data (get-reserve-state (contract-of asset)))
   )
-    (asserts! (> amount available-liquidity-before) ERR_EXCEEDED_LIQ)
+    (asserts! (>= available-liquidity-before amount) ERR_EXCEEDED_LIQ)
     (asserts! (and (> amount-fee u0) (> protocol-fee u0)) ERR_NOT_ZERO)
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
     (try! (contract-call? .pool-0-reserve transfer-to-user asset receiver amount))
-
     (try! (contract-call? flashloan execute asset receiver amount))
 
     (asserts!
@@ -309,12 +307,11 @@
         )
         (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset))
       )
-      ERR_NOT_ENOUGH_REPAID
+      ERR_REPAYMENT_SHOULD_BE_EXACT
     )
 
-    (try! 
+    (try!
       (contract-call? .pool-0-reserve update-state-on-flash-loan
-        sender
         receiver
         asset
         available-liquidity-before
@@ -322,7 +319,6 @@
         protocol-fee
       )
     )
-
     (ok u0)
   )
 )
@@ -543,7 +539,7 @@
 (define-constant ERR_FROZEN (err u30013))
 (define-constant ERR_SUPPLYING_BORROWED_ASSET (err u30014))
 (define-constant ERR_FLASHLOAN_DISABLED (err u30015))
-(define-constant ERR_NOT_ENOUGH_REPAID (err u30016))
+(define-constant ERR_REPAYMENT_SHOULD_BE_EXACT (err u30016))
 (define-constant ERR_REPAY_BEFORE_DISABLING (err u30017))
 (define-constant ERR_INVALID_DECREASE (err u30018))
 (define-constant ERR_MUST_DISABLE_ISOLATED_ASSET (err u30019))

@@ -845,7 +845,7 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
   });
   it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated.
   There are assets still available in the reserves, the reserve assets remain untouched.`, () => {
@@ -1339,7 +1339,7 @@ describe("Supply and redeem", () => {
     maxBorrowAmount = Math.floor(
       Number(cvToValue(callResponse.result)["value"]) * 1.000006
     );
-    console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
+    // console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
 
     // xUSD supplier borrows sBTC
     callResponse = poolBorrow.borrow(
@@ -1883,7 +1883,7 @@ describe("Supply and redeem", () => {
       [Cl.standardPrincipal(Borrower_1)],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = xUSDZToken.redeem(
       deployerAddress,

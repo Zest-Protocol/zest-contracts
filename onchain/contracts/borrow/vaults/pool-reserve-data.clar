@@ -358,7 +358,7 @@
     (ok true)
     ERR_UNAUTHORIZED))
 
-;; (map-set approved-contracts .pool-borrow true)
+(map-set approved-contracts .pool-borrow true)
 ;; (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
 
@@ -396,3 +396,6 @@
 
 (map-set flashloan-fee-total .stSTX u35)
 (map-set flashloan-fee-protocol .stSTX u3000)
+
+(map-set flashloan-fee-total .sBTC u35)
+(map-set flashloan-fee-protocol .sBTC u3000)

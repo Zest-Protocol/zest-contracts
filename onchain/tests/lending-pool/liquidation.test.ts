@@ -526,11 +526,11 @@ describe("Liquidation tests", () => {
       Borrower_1
     );
 
-    console.log("Before liquidation");
-    console.log(Cl.prettyPrint(borrower_data.result));
+    // console.log("Before liquidation");
+    // console.log(Cl.prettyPrint(borrower_data.result));
 
-    console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
-    console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
+    // console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
+    // console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -561,11 +561,11 @@ describe("Liquidation tests", () => {
       Liquidator_1
     );
 
-    console.log(Liquidator_1);
-    console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
-    console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
-    console.log(callResponse.result);
-    console.log(callResponse.events);
+    // console.log(Liquidator_1);
+    // console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
+    // console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
+    // console.log(callResponse.result);
+    // console.log(callResponse.events);
   });
   it("Supply sBTC, borrow xUSD, liquidator buys maximum possible amount of debt (>50%). There are remaining assets in the reserve", () => {
     const poolReserve0 = new PoolReserve(
@@ -662,8 +662,8 @@ describe("Liquidation tests", () => {
       true,
       deployerAddress
     );
-    console.log("mint");
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log("mint");
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
@@ -786,7 +786,7 @@ describe("Liquidation tests", () => {
       [Cl.standardPrincipal(Borrower_1)],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(borrower_data.result));
+    // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",

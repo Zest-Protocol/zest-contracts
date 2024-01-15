@@ -1,56 +1,16 @@
-
 (impl-trait .oracle-trait.oracle-trait)
-
 (use-trait ft .ft-trait.ft-trait)
 
+;; prices are fixed to 8 decimals
 (define-read-only (get-asset-price (token <ft>))
-  (begin
-    (asserts! true (err u99999))
-    (ok (unwrap-panic (map-get? tickers (contract-of token))))
-  )
-)
-
-(define-read-only (mul (x uint) (y uint))
-  (contract-call? .math mul x y)
-)
-
-(define-read-only (token-to-usd
-  (who principal)
-  (asset <ft>)
-  (oracle principal)
-  (amount uint)
-  )
-  (let (
-    (unit-price (try! (get-asset-price asset)))
-  )
-    (ok (mul amount unit-price))
-  )
-)
-
-;; read-versions
-
-(define-read-only (get-asset-price-read (token <ft>))
-  (begin
-    (unwrap-panic (map-get? tickers (contract-of token)))
-  )
-)
-
-(define-read-only (token-to-usd-read
-  (who principal)
-  (asset <ft>)
-  (oracle principal)
-  (amount uint)
-  )
-  (let (
-    (unit-price (get-asset-price-read asset))
-  )
-    (ok (mul amount unit-price))
+  (match (map-get? tickers (contract-of token))
+    ret (ok ret)
+    (err u99999)
   )
 )
 
 (define-public (set-price (asset <ft>) (price uint))
-  (ok (map-set tickers (contract-of asset) price))
-)
+  (ok (map-set tickers (contract-of asset) price)))
 
 (define-map tickers principal uint)
 

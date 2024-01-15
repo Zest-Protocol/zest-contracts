@@ -456,7 +456,6 @@
 ;; @desc after a flash loan is executed. It includes transferring the protocol fee, updating cumulative 
 ;; indexes, and adjusting the liquidity index based on the income generated from the flash loan.
 (define-public (update-state-on-flash-loan
-  (sender principal)
   (receiver principal)
   (asset <ft>)
   (available-liquidity-before uint)
@@ -467,7 +466,7 @@
     (reserve-data (get-reserve-state (contract-of asset)))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-    (try! (transfer-fee-to-collection asset sender protocol-fee (get-collection-address)))
+    (try! (transfer-fee-to-collection asset receiver protocol-fee (get-collection-address)))
     (try! (update-cumulative-indexes (contract-of asset)))
     (try! (cumulate-to-liquidity-index
         (+ available-liquidity-before (get total-borrows-variable reserve-data))

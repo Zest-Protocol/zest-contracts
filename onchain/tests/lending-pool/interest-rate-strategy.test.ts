@@ -45,7 +45,7 @@ const xUSD = "xUSD";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
-describe("Supply and redeem", () => {
+describe("Interest Rates", () => {
   beforeEach(() => {
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
