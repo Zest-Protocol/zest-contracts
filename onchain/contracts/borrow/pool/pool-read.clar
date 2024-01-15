@@ -127,6 +127,10 @@
   (get use-as-collateral (contract-call? .pool-0-reserve get-user-reserve-data who asset))
 )
 
+(define-read-only (get-user-reserve-data (who principal) (asset principal))
+  (contract-call? .pool-0-reserve get-user-reserve-data who asset)
+)
+
 (define-read-only (get-reserve-state (reserve principal))
   (contract-call? .pool-0-reserve get-reserve-state-optional reserve)
 )
@@ -846,6 +850,35 @@
 ;;     )
 ;;   )
 ;; )
+
+;; check if balance decrease sets position health factor under 1e18
+(define-public (get-decrease-balance-allowed
+  (asset <ft>)
+  (oracle <oracle-trait>)
+  (user principal)
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (reserve-data (unwrap-panic (get-reserve-state (contract-of asset))))
+    (user-data (get-user-reserve-data user (contract-of asset)))
+    (user-global-data (unwrap-panic (contract-call? .pool-0-reserve calculate-user-global-data user assets-to-calculate)))
+    (asset-price (unwrap-panic (contract-call? oracle get-asset-price asset)))
+    (useable-collateral-in-base-currency
+      (mul
+        (- (get total-collateral-balanceUSD user-global-data) (+ (get total-borrow-balanceUSD user-global-data) (get user-total-feesUSD user-global-data)))
+        (get current-liquidation-threshold user-global-data)))
+    (amount-to-decrease
+      (contract-call? .math from-fixed-to-precision
+        (div
+          useable-collateral-in-base-currency
+          asset-price
+        )
+        (get decimals reserve-data)
+      ))
+  )
+    (ok { amount-to-decrease: amount-to-decrease, useable-collateral-in-base-currency: useable-collateral-in-base-currency })
+  )
+)
 
 (define-read-only (get-borrowed-balance-user-usd (who principal))
   (begin

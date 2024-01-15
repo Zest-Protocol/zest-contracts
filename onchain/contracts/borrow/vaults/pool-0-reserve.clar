@@ -43,6 +43,7 @@
 (define-read-only (is-odd (x uint)) (contract-call? .math is-odd x))
 (define-read-only (is-even (x uint)) (contract-call? .math is-even x))
 (define-read-only (taylor-6 (x uint)) (contract-call? .math taylor-6 x))
+(define-read-only (get-sb-by-sy) (contract-call? .math get-sb-by-sy))
 
 (define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
   (contract-call? .math mul-to-fixed-precision a decimals-a b-fixed))
@@ -604,6 +605,10 @@
         reserve-data
         { total-borrows-variable: (- (+ balance-increase (get total-borrows-variable reserve-data)) amount-to-liquidate) }))))
 
+;; @desc manages the update of a user's state in the reserve during a liquidation process.
+;; It adjusts the user's borrow balance by accounting for the liquidated amount, any accrued balance increase,
+;; and the fees liquidated. This function ensures that the user's borrow balance and related parameters are accurately
+;; updated post-liquidation, reflecting changes in their debt and fee obligations within the reserve.
 (define-private (update-user-state-on-liquidation
   (reserve <ft>)
   (user principal)
@@ -636,16 +641,10 @@
           principal-borrow-balance: principal-borrow-balance,
           last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
           origination-fee: origination-fee,
-          last-updated-block: burn-block-height
-        }
-      )
-    )
-  )
-)
+          last-updated-block: burn-block-height }))))
 
 (define-private (reset-data-on-zero-balance-internal (who principal) (asset principal))
-  (contract-call? .pool-reserve-data delete-user-reserve-data who asset)
-)
+  (contract-call? .pool-reserve-data delete-user-reserve-data who asset))
 
 (define-public (reset-user-index (who principal) (asset principal))
   (let ((reserve-data (get-reserve-state asset)))
@@ -656,6 +655,7 @@
   )
 )
 
+;; @desc updates the state of the reserve from which the assets are borrowed,
 (define-public (update-state-on-borrow
   (asset <ft>)
   (who principal)
@@ -669,20 +669,15 @@
         (get principal ret)
         (get balance-increase ret)
         amount-borrowed
-        (contract-of asset)
-      )
-    )
+        (contract-of asset)))
     (try!
       (update-user-state-on-borrow
         who
         asset
         amount-borrowed
         (get balance-increase ret)
-        borrow-fee
-      )
-    )
+        borrow-fee))
     (try! (update-reserve-interest-rates-and-timestamp asset u0 amount-borrowed))
-
     (try! (add-borrowed-asset who (contract-of asset)))
 
     (ok {
@@ -692,23 +687,20 @@
   )
 )
 
+;; @desc updates the user's reserve data upon repayment of a loan. It adjusts the user's 
+;; principal borrow balance, accounting for the repayment amount, fees paid, and any accrued interest.
 (define-private (update-user-state-on-repay
   (asset <ft>)
   (who principal)
   (payback-amount-minus-fees uint)
   (origination-fee-repaid uint)
   (balance-increase uint)
-  (repaid-whole-loan bool)
-  )
+  (repaid-whole-loan bool))
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
     (user-data (get-user-reserve-data who (contract-of asset)))
     (principal-borrow-balance
-      (-
-        (+ (get principal-borrow-balance user-data) balance-increase)
-        payback-amount-minus-fees
-      )
-    )
+      (- (+ (get principal-borrow-balance user-data) balance-increase) payback-amount-minus-fees))
     (last-variable-borrow-cumulative-index
       (if repaid-whole-loan
         u0
@@ -716,8 +708,7 @@
       )
     )
     (origination-fee (- (get origination-fee user-data) origination-fee-repaid))
-    (last-updated-block burn-block-height)
-  )
+    (last-updated-block burn-block-height))
 
   (try! (contract-call? .pool-reserve-data set-user-reserve-data
     who (contract-of asset)
@@ -728,9 +719,7 @@
         last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
         origination-fee: origination-fee,
         last-updated-block: last-updated-block
-      }
-    )
-  ))
+      })))
   (if repaid-whole-loan
     (try! (remove-borrowed-asset who (contract-of asset)))
     false
@@ -739,29 +728,27 @@
   )
 )
 
+;; @desc manages the update of the reserve's state when a loan repayment is made.
+;; It adjusts the total variable borrows in the reserve, taking into account the repaid amount,
+;; and any balance increase due to accrued interest.
 (define-private (update-reserve-state-on-repay
   (who principal)
   (payback-amount-minus-fees uint)
   (balance-increase uint)
-  (asset <ft>)
-  )
+  (asset <ft>))
   (let (
     (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data who (contract-of asset)))
-  )
+    (user-data (get-user-reserve-data who (contract-of asset))))
     (contract-call? .pool-reserve-data
       set-reserve-state
       (contract-of asset)
       (merge
         reserve-data
-        {
-          total-borrows-variable: (- (+ (get total-borrows-variable reserve-data) balance-increase) payback-amount-minus-fees)
-        }
-      )
-    )
-  )
-)
+        { total-borrows-variable: (- (+ (get total-borrows-variable reserve-data) balance-increase) payback-amount-minus-fees) }))))
 
+;; @desc updates a user's borrowing state in the system when they take out a new loan.
+;; It modifies the user's principal borrow balance, incorporating the borrowed amount, any accrued balance increase,
+;; and the origination fee.
 (define-private (update-user-state-on-borrow
   (who principal)
   (asset <ft>)
@@ -776,9 +763,7 @@
       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
       principal-borrow-balance: (+ (get principal-borrow-balance user-data) amount-borrowed balance-increase),
       origination-fee: (+ (get origination-fee user-data) fee),
-      last-updated-block: burn-block-height
-    })
-  )
+      last-updated-block: burn-block-height }))
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     
     (contract-call? .pool-reserve-data set-user-reserve-data who (contract-of asset) (merge user-data new-user-data))
@@ -928,41 +913,11 @@
   )
 )
 
-;; check if balance decrease sets position health factor under 1e18
-(define-public (get-decrease-balance-allowed
-  (asset <ft>)
-  (oracle <oracle-trait>)
-  (user principal)
-  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  )
-  (let (
-    (reserve-data (get-reserve-state (contract-of asset)))
-    (user-data (get-user-reserve-data user (contract-of asset)))
-    (user-global-data (try! (calculate-user-global-data user assets-to-calculate)))
-    (asset-price (try! (contract-call? oracle get-asset-price asset)))
-    (useable-collateral-in-base-currency
-      (mul
-        (- (get total-collateral-balanceUSD user-global-data) (+ (get total-borrow-balanceUSD user-global-data) (get user-total-feesUSD user-global-data)))
-        (get current-liquidation-threshold user-global-data)))
-    (amount-to-decrease
-      (from-fixed-to-precision
-        (div
-          useable-collateral-in-base-currency
-          asset-price
-        )
-        (get decimals reserve-data)
-      ))
-  )
-    (ok { amount-to-decrease: amount-to-decrease, useable-collateral-in-base-currency: useable-collateral-in-base-currency })
-  )
-)
-
 (define-public (transfer-fee-to-collection
   (asset <ft>)
   (who principal)
   (amount uint)
-  (destination principal)
-  )
+  (destination principal))
   (begin
     (try! (contract-call? asset transfer amount who destination none))
     (ok amount)
@@ -988,16 +943,11 @@
           (mul
             (calculate-compounded-interest
               current-variable-borrow-rate
-              (- burn-block-height last-updated-block)
-            )
-            last-variable-borrow-cumulative-index-reserve
-          )
-          last-variable-borrow-cumulative-index
-        )
-      )
-    )
-    (compounded-balance (mul principal-borrow-balance cumulated-interest))
-  )
+              (- burn-block-height last-updated-block))
+            last-variable-borrow-cumulative-index-reserve)
+          last-variable-borrow-cumulative-index)
+      ))
+    (compounded-balance (mul principal-borrow-balance cumulated-interest)))
     (if (is-eq compounded-balance principal-borrow-balance)
       (if (is-eq last-updated-block burn-block-height)
         (+ principal-borrow-balance u1)
@@ -1189,30 +1139,6 @@
           asset-decimals
           (div reserve-normalized-income (get-user-index who asset-principal)))
         asset-decimals)
-  )
-)
-
-(define-read-only (get-cumulated-balance
-  (who principal)
-  (balance uint)
-  (asset principal)
-  )
-  (let (
-    (current-user-index (get-user-index who asset))
-    (reserve-data (get-reserve-state asset))
-    (normalized-income
-      (get-normalized-income
-        (get current-liquidity-rate reserve-data)
-        (get last-updated-block reserve-data)
-        (get last-liquidity-cumulative-index reserve-data)))
-    )
-    (div
-      (mul
-        balance
-        normalized-income
-      )
-      current-user-index
-    )
   )
 )
 
@@ -1731,25 +1657,9 @@
   )
 )
 
-(define-read-only (get-utilization-rate
-  (total-borrows-stable uint)
-  (total-borrows-variable uint)
-  (available-liquidity uint))
-  (let (
-    (total-borrows (+ total-borrows-stable total-borrows-variable))
-  )
-    (if (is-eq total-borrows u0)
-      u0
-      (div total-borrows (+ total-borrows available-liquidity))
-    )
-  )
-)
-
-(define-read-only (get-sb-by-sy) (contract-call? .math get-sb-by-sy))
 
 (define-read-only (get-collection-address)
-  (contract-call? .pool-reserve-data get-protocol-treasury-addr-read)
-)
+  (contract-call? .pool-reserve-data get-protocol-treasury-addr-read))
 
 ;; ERROR START 7000
 (define-constant ERR_UNAUTHORIZED (err u7000))

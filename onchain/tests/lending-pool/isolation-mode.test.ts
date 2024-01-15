@@ -247,7 +247,7 @@ describe("Isolated mode", () => {
       Borrower_1
     );
 
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.uint(200_000_000));
   });
 
@@ -397,7 +397,7 @@ describe("Isolated mode", () => {
 
     // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.uint(availableBorrow));
 
     callResponse = simnet.callPublicFn(
@@ -563,7 +563,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     const availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
@@ -888,7 +888,7 @@ describe("Isolated mode", () => {
     let beforeNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
 
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      "pool-read",
       "get-decrease-balance-allowed",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
