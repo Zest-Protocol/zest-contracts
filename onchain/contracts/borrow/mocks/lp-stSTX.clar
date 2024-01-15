@@ -205,8 +205,12 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .stSTX))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
-      (contract-call? .pool-0-reserve reset-user-index tx-sender .stSTX)
+      (begin
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .stSTX))
+        (contract-call? .pool-0-reserve reset-user-index tx-sender .stSTX)
+      )
       (ok true)
     )
   )

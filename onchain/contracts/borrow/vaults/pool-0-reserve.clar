@@ -251,6 +251,15 @@
   )
 )
 
+(define-public (add-supplied-asset-ztoken (who principal) (asset principal))
+  (let ((reserve-data (get-reserve-state asset)))
+    (if (is-eq contract-caller (get a-token-address reserve-data))
+      true
+      (try! (is-approved-contract contract-caller)))
+    (add-supplied-asset who asset)
+  )
+)
+
 (define-private (add-supplied-asset (who principal) (asset principal))
   (let ((assets-data (get-user-assets who)))
     (if (is-none (index-of? (get assets-supplied assets-data) asset))
@@ -263,6 +272,15 @@
         })
       (ok true)
     )
+  )
+)
+
+(define-public (remove-supplied-asset-ztoken (who principal) (asset principal))
+  (let ((reserve-data (get-reserve-state asset)))
+    (if (is-eq contract-caller (get a-token-address reserve-data))
+      true
+      (try! (is-approved-contract contract-caller)))
+    (remove-supplied-asset who asset)
   )
 )
 
@@ -567,7 +585,6 @@
     (try! (update-user-state-on-liquidation principal-reserve borrower principal-amount-to-liquidate fee-liquidated balance-increase))
     (try! (update-reserve-interest-rates-and-timestamp principal-reserve principal-amount-to-liquidate u0))
 
-    (print { purchased-all-collateral: purchased-all-collateral })
     (if purchased-all-collateral
       (try! (remove-supplied-asset borrower (contract-of collateral-reserve)))
       false)

@@ -142,11 +142,12 @@
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
-        (get last-liquidity-cumulative-index reserve-state)
-    ))
-  )
+        (get last-liquidity-cumulative-index reserve-state))))
     (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
 
+    (if (is-eq balance-increase u0)
+      false
+      (try! (mint-internal balance-increase account)))
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -202,8 +203,12 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .USDA))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
-      (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr)
+      (begin
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .USDA))
+        (contract-call? .pool-0-reserve reset-user-index tx-sender .USDA)
+      )
       (ok true)
     )
   )

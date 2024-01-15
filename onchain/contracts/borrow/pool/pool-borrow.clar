@@ -20,12 +20,12 @@
     (reserve-state (contract-call? .pool-0-reserve get-reserve-state supplied-asset-principal))
     (user-assets (contract-call? .pool-0-reserve get-user-assets owner))
     (isolated-asset (contract-call? .pool-0-reserve is-in-isolation-mode owner))
-    (assets-used-as-collateral (contract-call? .pool-0-reserve get-assets-used-as-collateral owner))
-    )
+    (assets-used-as-collateral (contract-call? .pool-0-reserve get-assets-used-as-collateral owner)))
     (asserts! (> amount u0) ERR_NOT_ZERO)
     (asserts! (get is-active reserve-state) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
+    (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
 
     ;; if first supply
     (if (is-eq current-balance u0)
@@ -51,6 +51,7 @@
     (try! (contract-call? lp mint amount owner))
     (try! (contract-call? .pool-0-reserve transfer-to-reserve asset owner amount))
 
+    (print { type: "supply", payload: { key: owner, data: { amount: amount } } })
     (ok true)
   )
 )
@@ -95,10 +96,13 @@
     (asserts! (is-eq (contract-of oracle) (get oracle reserve-state)) ERR_INVALID_ORACLE)
     (asserts! (get is-active reserve-state) ERR_INACTIVE)
     (asserts! (>= current-available-liquidity amount) ERR_EXCEEDED_LIQ)
+    (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
 
     (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount redeems-everything))
     (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
 
+
+    (print { type: "redeem-underlying", payload: { key: owner, data: { amount: amount } } })
     (ok amount)
   )
 )
@@ -162,6 +166,8 @@
       (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))
       (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
 
+      (print { type: "borrow", payload: { key: owner, data: { amount-to-be-borrowed: amount-to-be-borrowed, borrow-fee: borrow-fee,  } } })
+
       (ok amount-to-be-borrowed))))
 
 (define-public (repay
@@ -206,6 +212,8 @@
             (contract-call? .pool-0-reserve get-collection-address)
           )
         )
+        
+        (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount, origination-fee: payback-amount } } })
         (ok payback-amount)
       )
       ;; paying back the balance
@@ -237,6 +245,8 @@
           u0
         )
         (try! (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount-minus-fees))
+
+        (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount-minus-fees, origination-fee: origination-fee } } })
         (ok payback-amount)
       )
     )
@@ -319,6 +329,8 @@
         protocol-fee
       )
     )
+
+    (print { type: "flashloan", payload: { key: receiver, data: { amount: amount, amount-fee: amount-fee, protocol-fee: protocol-fee } } })
     (ok u0)
   )
 )

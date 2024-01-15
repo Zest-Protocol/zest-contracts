@@ -12,6 +12,7 @@
 (define-public (set-flashloan-fee-total (asset principal) (fee uint))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-flashloan-fee-total", payload: { key: asset, data: { fee: fee } } })
     (ok (map-set flashloan-fee-total asset fee))))
 
 (define-public (get-flashloan-fee-total (asset principal))
@@ -23,6 +24,7 @@
 (define-public (set-flashloan-fee-protocol (asset principal) (fee uint))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-flashloan-fee-protocol", payload: { key: asset, data: { fee: fee } } })
     (ok (map-set flashloan-fee-protocol asset fee))))
 
 (define-public (get-flashloan-fee-protocol (asset principal))
@@ -34,6 +36,7 @@
 (define-public (set-health-factor-liquidation-threshold (hf uint))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-health-factor-liquidation-threshold", payload: { key: "hf", data: { hf: hf } } })
     (ok (var-set health-factor-liquidation-threshold hf))))
 
 (define-public (get-health-factor-liquidation-threshold)
@@ -45,6 +48,7 @@
 (define-public (set-protocol-treasury-addr (protocol-treasury principal))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-protocol-treasury-addr", payload: { key: "protocol-treasury", data: { protocol-treasury: protocol-treasury } } })
     (ok (var-set protocol-treasury-addr protocol-treasury))))
 
 (define-public (get-protocol-treasury-addr)
@@ -56,6 +60,7 @@
 (define-public (set-reserve-vault (new-reserve-vault principal))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-reserve-vault", payload: { key: "reserve-vault", data: { new-reserve-vault: new-reserve-vault } } })
     (ok (var-set reserve-vault new-reserve-vault))))
 
 (define-public (get-reserve-vault)
@@ -86,6 +91,7 @@
     (use-as-collateral bool))))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-user-reserve-data", payload: { key: { user: user, reserve: reserve }, data: data } })
     (ok (map-set user-reserve-data { user:user, reserve: reserve } data))))
 
 (define-public (delete-user-reserve-data
@@ -93,6 +99,7 @@
   (reserve principal))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "delete-user-reserve-data", payload: { key: { user: user, reserve: reserve }, data: none } })
     (ok (map-delete user-reserve-data { user:user, reserve: reserve }))))
 
 (define-public (get-user-reserve-data
@@ -114,11 +121,13 @@
       (assets-borrowed (list 100 principal)))))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-user-assets", payload: { key: user, data: data } })
     (ok (map-set user-assets user data))))
 (define-public (delete-user-assets
   (user principal))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "delete-user-assets", payload: { key: user, data: none } })
     (ok (map-delete user-assets user))))
 
 (define-public (get-user-assets
@@ -188,12 +197,14 @@
     (is-frozen bool))))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-reserve-state", payload: { key: reserve, data: data } })
     (ok (map-set reserve-state reserve data))))
 
 (define-public (delete-reserve-state
   (reserve principal))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "delete-reserve-state", payload: { key: reserve, data: none } })
     (ok (map-delete reserve-state reserve))))
 
 (define-public (get-reserve-state
@@ -209,11 +220,13 @@
   (data uint))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-user-index", payload: { key: user, data: data } })
     (ok (map-set user-index user data))))
 (define-public (delete-user-index
   (user principal))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "delete-user-index", payload: { key: user, data: none } })
     (ok (map-delete user-index user))))
 
 (define-public (get-user-index
@@ -228,6 +241,7 @@
   (data (list 100 principal)))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-assets", payload: { key: "assets", data: data } })
     (ok (var-set assets data))))
 
 (define-public (get-assets)
@@ -241,11 +255,13 @@
   (data bool))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-isolated-assets", payload: { key: reserve, data: data } })
     (ok (map-set isolated-assets reserve data))))
 (define-public (delete-isolated-assets
   (reserve principal))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "delete-isolated-assets", payload: { key: reserve, data: none } })
     (ok (map-delete isolated-assets reserve))))
 
 (define-public (get-isolated-assets
@@ -261,6 +277,7 @@
   (data (list 100 principal)))
   (begin
     (try! (is-approved-contract contract-caller))
+    (print { type: "set-borroweable-isolated", payload: { key: "borroweable-isolated", data: data } })
     (ok (var-set borroweable-isolated data))))
 
 (define-public (get-borroweable-isolated)
@@ -273,6 +290,7 @@
 (define-public (set-optimal-utilization-rate (asset principal) (rate uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-optimal-utilization-rate", payload: { key: asset, data: rate } })
     (ok (map-set optimal-utilization-rates asset rate))))
 
 (define-public (get-optimal-utilization-rate (asset principal))
@@ -284,6 +302,7 @@
 (define-public (set-base-variable-borrow-rate (asset principal) (rate uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-base-variable-borrow-rate", payload: { key: asset, data: rate } })
     (ok (map-set base-variable-borrow-rates asset rate))))
 
 (define-public (get-base-variable-borrow-rate (asset principal))
@@ -295,6 +314,7 @@
 (define-public (set-variable-rate-slope-1 (asset principal) (rate uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-variable-rate-slope-1", payload: { key: asset, data: rate } })
     (ok (map-set variable-rate-slopes-1 asset rate))))
 
 (define-public (get-variable-rate-slope-1 (asset principal))
@@ -306,6 +326,7 @@
 (define-public (set-variable-rate-slope-2 (asset principal) (rate uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-variable-rate-slope-2", payload: { key: asset, data: rate } })
     (ok (map-set variable-rate-slopes-2 asset rate))))
 
 (define-public (get-variable-rate-slope-2 (asset principal))
@@ -317,6 +338,7 @@
 (define-public (set-liquidation-close-factor-percent (asset principal) (rate uint))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-liquidation-close-factor-percent", payload: { key: asset, data: rate } })
     (ok (map-set liquidation-close-factor-percent asset rate))))
 
 (define-public (get-liquidation-close-factor-percent (asset principal))
