@@ -1111,7 +1111,7 @@
 (define-private (set-user-index-internal (who principal) (new-user-index uint))
   (contract-call? .pool-reserve-data set-user-index who new-user-index))
 
-(define-public (cumulate-balance
+(define-private (cumulate-balance
   (who principal)
   (lp <ft-mint-trait>)
   (asset principal)

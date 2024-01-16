@@ -685,15 +685,7 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-
-    console.log(cvToJSON(callResponse.result));
-    // callResponse = simnet.callReadOnlyFn(
-    //   `${deployerAddress}.pool-borrow`,
-    //   "get-reserve-state",
-    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
-    //   Borrower_1
-    // );
-    // console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(cvToJSON(callResponse.result));
 
     callResponse = poolBorrow.borrow(
       deployerAddress,
@@ -738,6 +730,6 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    console.log(cvToJSON(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.uint(100250019));
   });
 });
