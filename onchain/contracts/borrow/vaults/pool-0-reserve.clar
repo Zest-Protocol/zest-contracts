@@ -8,7 +8,7 @@
 (define-constant default-user-reserve-data
   {
     principal-borrow-balance: u0,
-    last-variable-borrow-cumulative-index: one-8,
+    last-variable-borrow-cumulative-index: u0,
     origination-fee: u0,
     stable-borrow-rate: u0,
     last-updated-block: u0,
@@ -952,6 +952,12 @@
   (last-updated-block-reserve uint)
   )
   (let (
+    (user-cumulative-index
+      (if (is-eq last-variable-borrow-cumulative-index u0)
+        last-variable-borrow-cumulative-index-reserve
+        last-variable-borrow-cumulative-index
+      )
+    )
     (cumulated-interest
       (if (> stable-borrow-rate u0)
         u0
@@ -961,7 +967,7 @@
               current-variable-borrow-rate
               (- burn-block-height last-updated-block))
             last-variable-borrow-cumulative-index-reserve)
-          last-variable-borrow-cumulative-index)
+          user-cumulative-index)
       ))
     (compounded-balance (mul principal-borrow-balance cumulated-interest)))
     (if (is-eq compounded-balance principal-borrow-balance)
