@@ -76,7 +76,7 @@
         decimals
       )
     )
-    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user borrow-power-in-asset-amount decimals)))
+    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user (contract-of borrowing-asset) borrow-power-in-asset-amount decimals)))
   )
     (ok (- borrow-power-in-asset-amount borrow-fee))
   )
@@ -331,17 +331,17 @@
   (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD))))
 )
 
-;; (define-read-only (get-cumulated-balance-diko
-;;   (who principal)
-;;   (lp-token <ft-mint-trait>)
-;;   (asset principal)
-;;   )
-;;   (let (
-;;     (lp-balance (unwrap-panic (contract-call? .diko get-balance who)))
-;;   )
-;;     (ok (get new-user-balance (try! (contract-call? .pool-0-reserve get-cumulated-balance-read who lp-token .diko lp-balance))))
-;;   )
-;; )
+(define-read-only (get-cumulated-balance-stSTX
+  (who principal)
+  (lp-token <ft-mint-trait>)
+  (asset principal)
+  )
+  (let (
+    (lp-balance (unwrap-panic (contract-call? .lp-stSTX get-balance who)))
+  )
+    lp-balance
+  )
+)
 
 ;; (define-read-only (get-cumulated-balance-sBTC
 ;;   (who principal)
@@ -355,17 +355,18 @@
 ;;   )
 ;; )
 
-;; (define-read-only (get-cumulated-balance-stSTX
+;; (define-read-only (get-cumulated-balance-diko
 ;;   (who principal)
 ;;   (lp-token <ft-mint-trait>)
 ;;   (asset principal)
 ;;   )
 ;;   (let (
-;;     (lp-balance (unwrap-panic (contract-call? .stSTX get-balance who)))
+;;     (lp-balance (unwrap-panic (contract-call? .diko get-balance who)))
 ;;   )
-;;     (ok (get new-user-balance (try! (contract-call? .pool-0-reserve get-cumulated-balance-read who lp-token .stSTX lp-balance))))
+;;     (ok (get new-user-balance (try! (contract-call? .pool-0-reserve get-cumulated-balance-read who lp-token .diko lp-balance))))
 ;;   )
 ;; )
+
 
 ;; (define-read-only (get-cumulated-balance-USDA
 ;;   (who principal)

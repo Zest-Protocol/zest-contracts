@@ -346,6 +346,18 @@
 (define-read-only (get-liquidation-close-factor-percent-read (asset principal))
   (map-get? liquidation-close-factor-percent asset))
 
+(define-map origination-fee-prc principal uint)
+(define-public (set-origination-fee-prc (asset principal) (prc uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-origination-fee-prc", payload: { key: asset, data: prc } })
+    (ok (map-set origination-fee-prc asset prc))))
+
+(define-public (get-origination-fee-prc (asset principal))
+  (ok (map-get? origination-fee-prc asset)))
+(define-read-only (get-origination-fee-prc-read (asset principal))
+  (map-get? origination-fee-prc asset))
+
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)
 (define-public (set-contract-owner (owner principal))
@@ -421,3 +433,10 @@
 
 (map-set flashloan-fee-total .sBTC u35)
 (map-set flashloan-fee-protocol .sBTC u3000)
+
+;; 0.0025%
+(map-set origination-fee-prc .stSTX u250000)
+(map-set origination-fee-prc .sBTC u250000)
+(map-set origination-fee-prc .diko u250000)
+(map-set origination-fee-prc .xUSD u250000)
+(map-set origination-fee-prc .USDA u250000)

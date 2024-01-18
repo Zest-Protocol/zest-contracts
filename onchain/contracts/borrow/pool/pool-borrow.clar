@@ -17,6 +17,7 @@
   (let (
     (supplied-asset-principal (contract-of asset))
     (current-balance (try! (contract-call? lp get-balance owner)))
+    (current-available-liquidity (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
     (reserve-state (contract-call? .pool-0-reserve get-reserve-state supplied-asset-principal))
     (user-assets (contract-call? .pool-0-reserve get-user-assets owner))
     (isolated-asset (contract-call? .pool-0-reserve is-in-isolation-mode owner))
@@ -26,6 +27,7 @@
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
+    (asserts! (>= (get supply-cap reserve-state) (+ amount current-available-liquidity (get total-borrows-variable reserve-state))) ERR_EXCEED_SUPPLY_CAP)
 
     ;; if first supply
     (if (is-eq current-balance u0)
@@ -140,7 +142,7 @@
 
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
-      (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner amount-to-be-borrowed (get decimals reserve-state))))
+      (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner asset amount-to-be-borrowed (get decimals reserve-state))))
       (borrow-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-balance-reserve-data lp asset-to-borrow owner oracle)))
       (amount-collateral-needed
         (contract-call? .pool-0-reserve calculate-collateral-needed-in-USD
@@ -555,3 +557,4 @@
 (define-constant ERR_REPAY_BEFORE_DISABLING (err u30017))
 (define-constant ERR_INVALID_DECREASE (err u30018))
 (define-constant ERR_MUST_DISABLE_ISOLATED_ASSET (err u30019))
+(define-constant ERR_EXCEED_SUPPLY_CAP (err u30020))
