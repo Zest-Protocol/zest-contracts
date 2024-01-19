@@ -894,6 +894,22 @@ describe("Supply and redeem", () => {
       deployerAddress
     );
 
+    // callResponse = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-read`,
+    //   "get-asset-supply-apy",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   deployerAddress
+    // );
+    // console.log(Cl.prettyPrint(callResponse.result));
+
+    // callResponse = simnet.callReadOnlyFn(
+    //   `${deployerAddress}.pool-read`,
+    //   "get-asset-borrow-apy",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   deployerAddress
+    // );
+    // console.log(Cl.prettyPrint(callResponse.result));
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "repay",
