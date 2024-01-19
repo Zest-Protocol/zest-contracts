@@ -53,19 +53,19 @@
   (ok (ft-get-balance lp-usda account)))
 
 (define-public (set-token-uri (value (string-utf8 256)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-uri value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-uri value))))
 
 (define-public (set-token-name (value (string-ascii 32)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-name value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok   (var-set token-name value))))
 
 (define-public (set-token-symbol (value (string-ascii 32)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-symbol value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-symbol value))))
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin

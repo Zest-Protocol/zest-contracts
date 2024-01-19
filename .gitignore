@@ -1,7 +1,7 @@
 node_modules
 onchain/.cache
 onchain/deployments/default.*
-onchain/settings
+onchain/settings/Testnet.toml
 onchain/history.txt
 onchain/scripts
 onchain/settings/Testnet.toml
