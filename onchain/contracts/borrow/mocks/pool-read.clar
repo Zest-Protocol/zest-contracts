@@ -928,43 +928,43 @@
 )
 
 (define-read-only (get-supplied-balance-usd-diko)
-  (token-to-usd (unwrap-panic (contract-call? .diko get-balance .pool-0-reserve)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .diko)))
+  (token-to-usd (unwrap-panic (contract-call? .diko get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .diko)))
 )
 
 (define-read-only (get-supplied-balance-usd-sBTC)
-  (token-to-usd (unwrap-panic (contract-call? .sBTC get-balance .pool-0-reserve)) u8 (unwrap-panic (contract-call? .oracle get-asset-price .sBTC)))
+  (token-to-usd (unwrap-panic (contract-call? .sBTC get-balance .pool-vault)) u8 (unwrap-panic (contract-call? .oracle get-asset-price .sBTC)))
 )
 
 (define-read-only (get-supplied-balance-usd-stSTX)
-  (token-to-usd (unwrap-panic (contract-call? .stSTX get-balance .pool-0-reserve)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .stSTX)))
+  (token-to-usd (unwrap-panic (contract-call? .stSTX get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .stSTX)))
 )
 
 (define-read-only (get-supplied-balance-usd-USDA)
-  (token-to-usd (unwrap-panic (contract-call? .USDA get-balance .pool-0-reserve)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .USDA)))
+  (token-to-usd (unwrap-panic (contract-call? .USDA get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .USDA)))
 )
 
 (define-read-only (get-supplied-balance-usd-xUSD)
-  (token-to-usd (unwrap-panic (contract-call? .xUSD get-balance .pool-0-reserve)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .xUSD)))
+  (token-to-usd (unwrap-panic (contract-call? .xUSD get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .xUSD)))
 )
 
 (define-read-only (get-supplied-balance-diko)
-  (unwrap-panic (contract-call? .diko get-balance .pool-0-reserve))
+  (unwrap-panic (contract-call? .diko get-balance .pool-vault))
 )
 
 (define-read-only (get-supplied-balance-sBTC)
-  (unwrap-panic (contract-call? .sBTC get-balance .pool-0-reserve))
+  (unwrap-panic (contract-call? .sBTC get-balance .pool-vault))
 )
 
 (define-read-only (get-supplied-balance-stSTX)
-  (unwrap-panic (contract-call? .stSTX get-balance .pool-0-reserve))
+  (unwrap-panic (contract-call? .stSTX get-balance .pool-vault))
 )
 
 (define-read-only (get-supplied-balance-USDA)
-  (unwrap-panic (contract-call? .USDA get-balance .pool-0-reserve))
+  (unwrap-panic (contract-call? .USDA get-balance .pool-vault))
 )
 
 (define-read-only (get-supplied-balance-xUSD)
-  (unwrap-panic (contract-call? .xUSD get-balance .pool-0-reserve))
+  (unwrap-panic (contract-call? .xUSD get-balance .pool-vault))
 )
 
 (define-read-only (filter-asset (asset principal) (ret (list 100 principal)))
