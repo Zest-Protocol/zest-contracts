@@ -158,6 +158,11 @@ path = "contracts/borrow/mocks/sBTC.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.supply-wrapped]
+path = "contracts/borrow/mocks/supply-wrapped.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.stSTX]
 path = "contracts/borrow/mocks/stSTX.clar"
 clarity_version = 2

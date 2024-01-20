@@ -352,6 +352,16 @@ plan:
             cost: 5960
             clarity-version: 2
       epoch: "2.1"
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sBTC
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: mint
+            parameters:
+              - u1000000000000000000
+              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+            cost: 5960
+            clarity-version: 2
+      epoch: "2.1"
     - id: 6
       transactions:
         - contract-call:
@@ -439,6 +449,18 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.stSTX"
               - u100000000000
               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+            method: supply
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sBTC"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sBTC"
+              - u1000000000000000000
+              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
             cost: 5960
             clarity-version: 2
         # - contract-call:
