@@ -214,27 +214,32 @@
   (reserve principal))
   (map-get? reserve-state reserve))
 
-(define-map user-index principal uint)
+(define-map user-index { user: principal, asset: principal } uint)
 (define-public (set-user-index
   (user principal)
+  (asset principal)
   (data uint))
   (begin
     (try! (is-approved-contract contract-caller))
     (print { type: "set-user-index", payload: { key: user, data: data } })
-    (ok (map-set user-index user data))))
+    (ok (map-set user-index { user: user, asset: asset } data))))
 (define-public (delete-user-index
-  (user principal))
+  (user principal)
+  (asset principal))
   (begin
     (try! (is-approved-contract contract-caller))
     (print { type: "delete-user-index", payload: { key: user, data: none } })
-    (ok (map-delete user-index user))))
+    (ok (map-delete user-index { user: user, asset: asset }))))
 
 (define-public (get-user-index
-  (user principal))
-    (ok (map-get? user-index user)))
+  (user principal)
+  (asset principal)
+  )
+    (ok (map-get? user-index { user: user, asset: asset })))
 (define-read-only (get-user-index-read
-  (user principal))
-  (map-get? user-index user))
+  (user principal)
+  (asset principal))
+  (map-get? user-index { user: user, asset: asset }))
 
 (define-data-var assets (list 100 principal) (list))
 (define-public (set-assets
@@ -424,9 +429,15 @@
 (map-set variable-rate-slopes-2 .USDA u300000000) ;; 300%
 (map-set optimal-utilization-rates .USDA u80000000) ;; 80%
 
+(map-set base-variable-borrow-rates .wstx u0)
+(map-set variable-rate-slopes-1 .wstx u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .wstx u300000000) ;; 300%
+(map-set optimal-utilization-rates .wstx u80000000) ;; 80%
+
 (map-set liquidation-close-factor-percent .stSTX u50000000) ;; 50%
 (map-set liquidation-close-factor-percent .sBTC  u50000000) ;; 50%
 (map-set liquidation-close-factor-percent .xUSD  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .wstx  u50000000) ;; 50%
 
 (map-set flashloan-fee-total .stSTX u35)
 (map-set flashloan-fee-protocol .stSTX u3000)
@@ -440,3 +451,4 @@
 (map-set origination-fee-prc .diko u250000)
 (map-set origination-fee-prc .xUSD u250000)
 (map-set origination-fee-prc .USDA u250000)
+(map-set origination-fee-prc .wstx u250000)

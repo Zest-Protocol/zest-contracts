@@ -28,6 +28,11 @@
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-reserve-data set-flashloan-fee-protocol asset fee)))
 
+(define-public (set-origination-fee-prc (asset principal) (fee uint))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data set-origination-fee-prc asset fee)))
+
 (define-public (get-health-factor-liquidation-threshold)
   (contract-call? .pool-reserve-data get-health-factor-liquidation-threshold))
 
@@ -35,6 +40,8 @@
   (begin
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-reserve-data set-health-factor-liquidation-threshold hf)))
+
+    
 
 (define-read-only (get-seconds-in-block) (contract-call? .math get-seconds-in-block))
 (define-read-only (get-seconds-in-year) (contract-call? .math get-seconds-in-year))
@@ -76,7 +83,7 @@
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     (contract-call? .pool-reserve-data set-user-assets user data)))
 
-(define-data-var configurator principal .pool-borrow)
+(define-data-var configurator principal tx-sender)
 (define-public (set-configurator (new-configurator principal))
   (begin
     (asserts! (is-admin tx-sender) ERR_UNAUTHORIZED)
@@ -125,6 +132,9 @@
 
 (define-read-only (get-flashloan-fee-protocol (asset principal))
   (contract-call? .pool-reserve-data get-flashloan-fee-protocol-read asset))
+
+(define-read-only (get-origination-fee-prc (asset principal))
+  (contract-call? .pool-reserve-data get-origination-fee-prc-read asset))
 
 (define-read-only (get-user-reserve-data (who principal) (reserve principal))
   (default-to default-user-reserve-data (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve)))
@@ -365,7 +375,7 @@
   (contract-call? asset get-balance (get-reserve-vault asset)))
 
 (define-read-only (get-user-index (who principal) (asset principal))
-  (default-to (get last-liquidity-cumulative-index (get-reserve-state asset)) (contract-call? .pool-reserve-data get-user-index-read who)))
+  (default-to (get last-liquidity-cumulative-index (get-reserve-state asset)) (contract-call? .pool-reserve-data get-user-index-read who asset)))
 
 (define-read-only (get-reserve-state (asset principal))
   (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read asset)))
@@ -667,7 +677,7 @@
     (if (is-eq contract-caller (get a-token-address reserve-data))
       true
       (try! (is-approved-contract contract-caller)))
-    (contract-call? .pool-reserve-data delete-user-index who)
+    (contract-call? .pool-reserve-data delete-user-index who asset)
   )
 )
 
@@ -1104,12 +1114,12 @@
       true
       (try! (is-approved-contract contract-caller))
     )
-    (contract-call? .pool-reserve-data set-user-index who new-user-index)
+    (contract-call? .pool-reserve-data set-user-index who asset new-user-index)
   )
 )
 
-(define-private (set-user-index-internal (who principal) (new-user-index uint))
-  (contract-call? .pool-reserve-data set-user-index who new-user-index))
+(define-private (set-user-index-internal (who principal) (asset principal) (new-user-index uint))
+  (contract-call? .pool-reserve-data set-user-index who asset new-user-index))
 
 (define-private (cumulate-balance
   (who principal)
@@ -1129,7 +1139,7 @@
     )
   )
 
-    (try! (set-user-index-internal who new-user-index))
+    (try! (set-user-index-internal who asset new-user-index))
 
     (ok {
       previous-user-balance: previous-balance,

@@ -35,10 +35,12 @@ const interestRateStrategyDefault = "interest-rate-strategy-default";
 const diko = "diko";
 const sBTC = "sBTC";
 const stSTX = "stSTX";
-const zStSTX = "lp-stSTX";
+const zstSTX = "lp-stSTX";
 const zsBTC = "lp-sBTC";
+const zwstx = "lp-wstx";
 const USDA = "USDA";
 const xUSD = "xUSD";
+const wstx = "wstx";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
@@ -76,7 +78,7 @@ describe("Supply and redeem", () => {
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
-    const stSTXZToken = new ZToken(simnet, deployerAddress, zStSTX);
+    const stSTXZToken = new ZToken(simnet, deployerAddress, zstSTX);
     const sBTCZToken = new ZToken(simnet, deployerAddress, zsBTC);
 
     oracleContract.setPrice(
@@ -192,7 +194,7 @@ describe("Supply and redeem", () => {
       [
         {
           asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: zStSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -255,7 +257,7 @@ describe("Supply and redeem", () => {
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
-    const stSTXZToken = new ZToken(simnet, deployerAddress, zStSTX);
+    const stSTXZToken = new ZToken(simnet, deployerAddress, zstSTX);
     const sBTCZToken = new ZToken(simnet, deployerAddress, zsBTC);
 
     oracleContract.setPrice(
@@ -420,6 +422,186 @@ describe("Supply and redeem", () => {
     );
     expect(callResponse.result).toBeOk(Cl.uint(99_750_000));
   });
+  it("Supply and borrow wstx", () => {
+    const poolReserve0 = new PoolReserve(
+      simnet,
+      deployerAddress,
+      "pool-0-reserve"
+    );
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+    const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
+
+    const stSTXZToken = new ZToken(simnet, deployerAddress, zstSTX);
+    const sBTCZToken = new ZToken(simnet, deployerAddress, zsBTC);
+    const wstxZToken = new ZToken(simnet, deployerAddress, wstx);
+
+    oracleContract.setPrice(
+      deployerAddress,
+      stSTX,
+      161_000_000,
+      deployerAddress
+    );
+    oracleContract.setPrice(
+      deployerAddress,
+      wstx,
+      160_000_000,
+      deployerAddress
+    );
+
+    // let callResponse = poolReserve0.setOptimalUtilizationRate(deployerAddress, wstx, 1, deployerAddress);
+    // console.log(Cl.prettyPrint(callResponse.result));
+
+    let callResponse = poolBorrow.init(
+      deployerAddress,
+      lpstSTX,
+      deployerAddress,
+      stSTX,
+      6,
+      1_000_000_000,
+      100_000_000,
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.init(
+      deployerAddress,
+      zwstx,
+      deployerAddress,
+      wstx,
+      6,
+      max_value,
+      max_value,
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      wstx,
+      true,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
+      deployerAddress,
+      stSTX,
+      true,
+      80000000,
+      90000000,
+      50000000,
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      stSTX,
+      "mint",
+      [Cl.uint(1_100_000_000), Cl.standardPrincipal(LP_1)],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      wstx,
+      "transfer",
+      [
+        Cl.uint(2_000_000_000), 
+        Cl.standardPrincipal(deployerAddress),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none()
+      ],
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpstSTX,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      stSTX,
+      1_000_000_000,
+      LP_1,
+      LP_1
+    );
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      zwstx,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      wstx,
+      2_000_000_000,
+      Borrower_1,
+      Borrower_1
+    );
+    expect(simnet.getAssetsMap().get("STX")?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")).toBe(2000000000n);
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+
+    callResponse = poolBorrow.borrow(
+      deployerAddress,
+      "pool-0-reserve",
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      wstx,
+      deployerAddress,
+      zwstx,
+      99_750_000,
+      deployerAddress,
+      "fees-calculator",
+      0,
+      LP_1,
+      [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+      ],
+      LP_1
+    );
+    expect(callResponse.result).toBeOk(Cl.uint(99_750_000));
+
+    simnet.mineEmptyBlocks(100)
+
+    callResponse = simnet.callPublicFn(
+      wstx,
+      "transfer",
+      [
+        Cl.uint(99_750_000 * 10), 
+        Cl.standardPrincipal(deployerAddress),
+        Cl.standardPrincipal(LP_1),
+        Cl.none()
+      ],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "repay",
+      [
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.uint(max_value),
+        Cl.standardPrincipal(LP_1),
+      ],
+      Borrower_1
+    );
+    expect(callResponse.result).toBeOk(Cl.uint(99999858));
+  });
   it("Borrower supplies sBTC, borrow stSTX pay back with interest. LPer gets their stSTX back", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
@@ -429,7 +611,7 @@ describe("Supply and redeem", () => {
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
-    const stSTXZToken = new ZToken(simnet, deployerAddress, zStSTX);
+    const stSTXZToken = new ZToken(simnet, deployerAddress, zstSTX);
     const sBTCZToken = new ZToken(simnet, deployerAddress, zsBTC);
 
     oracleContract.setPrice(
@@ -642,7 +824,7 @@ describe("Supply and redeem", () => {
     );
 
     callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.${zStSTX}`,
+      `${deployerAddress}.${zstSTX}`,
       "get-balance",
       [Cl.standardPrincipal(LP_1)],
       Borrower_1
@@ -660,7 +842,7 @@ describe("Supply and redeem", () => {
       [
         {
           asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: zStSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -677,7 +859,7 @@ describe("Supply and redeem", () => {
       1_000_000_110n
     );
   });
-  it("Borrower supplies sBTC, borrow stSTX pay back with interest. LPer gets their stSTX back", () => {
+  it("Borrower supplies sBTC, borrow stSTX pay back with high interests. LPer gets their stSTX back", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
@@ -686,7 +868,7 @@ describe("Supply and redeem", () => {
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
-    const stSTXZToken = new ZToken(simnet, deployerAddress, zStSTX);
+    const stSTXZToken = new ZToken(simnet, deployerAddress, zstSTX);
     const sBTCZToken = new ZToken(simnet, deployerAddress, zsBTC);
 
     oracleContract.setPrice(
@@ -904,8 +1086,9 @@ describe("Supply and redeem", () => {
 
     // callResponse = simnet.callReadOnlyFn(
     //   `${deployerAddress}.pool-read`,
-    //   "get-asset-borrow-apy",
-    //   [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   "get-supplieable-assets",
+    //   // [Cl.contractPrincipal(deployerAddress, stSTX)],
+    //   [],
     //   deployerAddress
     // );
     // console.log(Cl.prettyPrint(callResponse.result));

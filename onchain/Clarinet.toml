@@ -98,6 +98,11 @@ path = "contracts/borrow/mocks/lp-stSTX.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.lp-wstx]
+path = "contracts/borrow/mocks/lp-wstx.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.lp-USDA]
 path = "contracts/borrow/mocks/lp-USDA.clar"
 clarity_version = 2
@@ -210,6 +215,11 @@ epoch = 2.1
 
 [contracts.pool-read]
 path = "contracts/borrow/mocks/pool-read.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.pool-read-supply]
+path = "contracts/borrow/mocks/pool-read-supply.clar"
 clarity_version = 2
 epoch = 2.1
 
