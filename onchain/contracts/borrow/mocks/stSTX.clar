@@ -3,7 +3,7 @@
 (define-constant err-unauthorised (err u3000))
 (define-constant err-not-token-owner (err u4))
 
-(define-fungible-token stSTX)
+(define-fungible-token ststx)
 
 (define-data-var token-name (string-ascii 32) "stSTX")
 (define-data-var token-symbol (string-ascii 10) "stSTX")
@@ -17,7 +17,7 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
 	(begin
 		(asserts! (or (is-eq tx-sender sender) (is-eq contract-caller sender)) err-not-token-owner)
-		(ft-transfer? stSTX amount sender recipient)
+		(ft-transfer? ststx amount sender recipient)
 	)
 )
 
@@ -34,11 +34,11 @@
 )
 
 (define-read-only (get-balance (who principal))
-	(ok (ft-get-balance stSTX who))
+	(ok (ft-get-balance ststx who))
 )
 
 (define-read-only (get-total-supply)
-	(ok (ft-get-supply stSTX))
+	(ok (ft-get-supply ststx))
 )
 
 (define-read-only (get-token-uri)
@@ -46,5 +46,5 @@
 )
 
 (define-public (mint (amount uint) (recipient principal))
-  (ft-mint? stSTX amount recipient)
+  (ft-mint? ststx amount recipient)
 )

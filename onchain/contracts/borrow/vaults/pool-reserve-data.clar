@@ -404,51 +404,51 @@
 ;; ERROR START 7000
 (define-constant ERR_UNAUTHORIZED (err u7000))
 
-(map-set base-variable-borrow-rates .stSTX u0)
-(map-set variable-rate-slopes-1 .stSTX u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .stSTX u300000000) ;; 300%
-(map-set optimal-utilization-rates .stSTX u80000000) ;; 80%
+(map-set base-variable-borrow-rates .ststx u0)
+(map-set variable-rate-slopes-1 .ststx u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .ststx u300000000) ;; 300%
+(map-set optimal-utilization-rates .ststx u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .sBTC u0)
-(map-set variable-rate-slopes-1 .sBTC u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .sBTC u300000000) ;; 300%
-(map-set optimal-utilization-rates .sBTC u80000000) ;; 80%
+(map-set base-variable-borrow-rates .sbtc u0)
+(map-set variable-rate-slopes-1 .sbtc u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .sbtc u300000000) ;; 300%
+(map-set optimal-utilization-rates .sbtc u80000000) ;; 80%
 
 (map-set base-variable-borrow-rates .diko u0)
 (map-set variable-rate-slopes-1 .diko u4000000) ;; 4%
 (map-set variable-rate-slopes-2 .diko u300000000) ;; 300%
 (map-set optimal-utilization-rates .diko u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .xUSD u0)
-(map-set variable-rate-slopes-1 .xUSD u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .xUSD u300000000) ;; 300%
-(map-set optimal-utilization-rates .xUSD u80000000) ;; 80%
+(map-set base-variable-borrow-rates .xusd u0)
+(map-set variable-rate-slopes-1 .xusd u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .xusd u300000000) ;; 300%
+(map-set optimal-utilization-rates .xusd u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .USDA u0)
-(map-set variable-rate-slopes-1 .USDA u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .USDA u300000000) ;; 300%
-(map-set optimal-utilization-rates .USDA u80000000) ;; 80%
+(map-set base-variable-borrow-rates .usda u0)
+(map-set variable-rate-slopes-1 .usda u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .usda u300000000) ;; 300%
+(map-set optimal-utilization-rates .usda u80000000) ;; 80%
 
 (map-set base-variable-borrow-rates .wstx u0)
 (map-set variable-rate-slopes-1 .wstx u4000000) ;; 4%
 (map-set variable-rate-slopes-2 .wstx u300000000) ;; 300%
 (map-set optimal-utilization-rates .wstx u80000000) ;; 80%
 
-(map-set liquidation-close-factor-percent .stSTX u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .sBTC  u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .xUSD  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .ststx u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .sbtc  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .xusd  u50000000) ;; 50%
 (map-set liquidation-close-factor-percent .wstx  u50000000) ;; 50%
 
-(map-set flashloan-fee-total .stSTX u35)
-(map-set flashloan-fee-protocol .stSTX u3000)
+(map-set flashloan-fee-total .ststx u35)
+(map-set flashloan-fee-protocol .ststx u3000)
 
-(map-set flashloan-fee-total .sBTC u35)
-(map-set flashloan-fee-protocol .sBTC u3000)
+(map-set flashloan-fee-total .sbtc u35)
+(map-set flashloan-fee-protocol .sbtc u3000)
 
 ;; 0.0025%
-(map-set origination-fee-prc .stSTX u250000)
-(map-set origination-fee-prc .sBTC u250000)
+(map-set origination-fee-prc .ststx u250000)
+(map-set origination-fee-prc .sbtc u250000)
 (map-set origination-fee-prc .diko u250000)
-(map-set origination-fee-prc .xUSD u250000)
-(map-set origination-fee-prc .USDA u250000)
+(map-set origination-fee-prc .xusd u250000)
+(map-set origination-fee-prc .usda u250000)
 (map-set origination-fee-prc .wstx u250000)

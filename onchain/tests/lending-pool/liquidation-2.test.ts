@@ -24,10 +24,10 @@ const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
 const lpdiko = "lp-diko";
-const lpsBTC = "lp-sBTC";
-const lpstSTX = "lp-stSTX";
-const lpUSDA = "lp-USDA";
-const lpxUSD = "lp-xUSD";
+const lpsBTC = "lp-sbtc";
+const lpstSTX = "lp-ststx";
+const lpUSDA = "lp-usda";
+const lpxUSD = "lp-xusd";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -35,13 +35,13 @@ const feesCalculator = "fees-calculator";
 const oracle = "oracle";
 const interestRateStrategyDefault = "interest-rate-strategy-default";
 const diko = "diko";
-const sBTC = "sBTC";
-const stSTX = "stSTX";
-const zStSTX = "lp-stSTX";
-const zsBTC = "lp-sBTC";
-const zxUSD = "lp-xUSD";
-const USDA = "USDA";
-const xUSD = "xUSD";
+const sBTC = "sbtc";
+const stSTX = "ststx";
+const zStSTX = "lp-ststx";
+const zsBTC = "lp-sbtc";
+const zxUSD = "lp-xusd";
+const USDA = "usda";
+const xUSD = "xusd";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
@@ -360,7 +360,7 @@ describe("Supply and redeem", () => {
 
     let prevVaultBalance = simnet
       .getAssetsMap()
-      .get(".stSTX.stSTX")
+      .get(".ststx.ststx")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
 
     callResponse = simnet.callPublicFn(
@@ -392,29 +392,29 @@ describe("Supply and redeem", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     expect(callResponse.result).toBeOk(Cl.uint(0));
-    expect(simnet.getAssetsMap().get(".sBTC.sBTC")?.get(Liquidator_1)).toBe(
+    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)).toBe(
       1675816423n
     );
     let currVaultBalance = simnet
       .getAssetsMap()
-      .get(".stSTX.stSTX")
+      .get(".ststx.ststx")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
     expect(
       simnet
         .getAssetsMap()
-        .get(".sBTC.sBTC")
+        .get(".sbtc.sbtc")
         ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!
     ).toBe(8379050n);
-    expect(currVaultBalance - prevVaultBalance).toBe(159601564083n);
+    expect(BigInt(currVaultBalance) - BigInt(prevVaultBalance)).toBe(159601564083n);
 
     // console.log("Max Borrow amount: ", maxBorrowAmount);
     let prevLiquidatorCollateralBalance = simnet
       .getAssetsMap()
-      .get(".sBTC.sBTC")
+      .get(".sbtc.sbtc")
       ?.get(Liquidator_1)!;
     prevVaultBalance = simnet
       .getAssetsMap()
-      .get(".sBTC.sBTC")
+      .get(".sbtc.sbtc")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
 
     callResponse = simnet.callPublicFn(
@@ -446,11 +446,11 @@ describe("Supply and redeem", () => {
     );
     currVaultBalance = simnet
       .getAssetsMap()
-      .get(".sBTC.sBTC")
+      .get(".sbtc.sbtc")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
     let currLiquidatorCollateralBalance = simnet
       .getAssetsMap()
-      .get(".sBTC.sBTC")
+      .get(".sbtc.sbtc")
       ?.get(Liquidator_1)!;
     expect(
       currLiquidatorCollateralBalance - prevLiquidatorCollateralBalance
@@ -458,7 +458,7 @@ describe("Supply and redeem", () => {
     expect(
       simnet
         .getAssetsMap()
-        .get(".sBTC.sBTC")
+        .get(".sbtc.sbtc")
         ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!
     ).toBe(0n);
 
@@ -473,7 +473,7 @@ describe("Supply and redeem", () => {
     ]);
 
     expect(
-      simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC")!?.get(Borrower_1)!
+      simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")!?.get(Borrower_1)!
     ).toBe(0n);
   });
   it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated. Liquidator
@@ -748,7 +748,7 @@ describe("Supply and redeem", () => {
       Liquidator_1
     );
     expect(
-      simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC")?.get(Liquidator_1)
+      simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Liquidator_1)
     ).toBe(1675816423n);
 
     expect(callResponse.result).toBeList([
@@ -828,11 +828,11 @@ describe("Supply and redeem", () => {
     // console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
     // console.log("lp-sBTC");
     expect(
-      simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC")?.get(Liquidator_1)
+      simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Liquidator_1)
     ).toBe(
       simnet
         .getAssetsMap()
-        .get(".sBTC.sBTC")
+        .get(".sbtc.sbtc")
         ?.get(`${deployerAddress}.pool-vault`)
     );
     callResponse = simnet.callPublicFn(
@@ -1071,7 +1071,7 @@ describe("Supply and redeem", () => {
 
     let prevVaultBalance = simnet
       .getAssetsMap()
-      .get(".stSTX.stSTX")
+      .get(".ststx.ststx")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
 
     callResponse = simnet.callPublicFn(
@@ -1136,7 +1136,7 @@ describe("Supply and redeem", () => {
     expect(
       simnet
         .getAssetsMap()
-        .get(".sBTC.sBTC")
+        .get(".sbtc.sbtc")
         ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!
     ).toBe(400000000000n);
 
@@ -1461,7 +1461,7 @@ describe("Supply and redeem", () => {
 
     let prevVaultBalance = simnet
       .getAssetsMap()
-      .get(".stSTX.stSTX")
+      .get(".ststx.ststx")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
 
     callResponse = simnet.callPublicFn(
@@ -1878,7 +1878,7 @@ describe("Supply and redeem", () => {
     expect(callResponse.result).toBeErr(Cl.uint(14401));
 
     callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.lp-xUSD`,
+      `${deployerAddress}.lp-xusd`,
       "get-principal-balance",
       [Cl.standardPrincipal(Borrower_1)],
       Borrower_1
@@ -1911,10 +1911,9 @@ describe("Supply and redeem", () => {
     expect(callResponse.result).toBeOk(Cl.uint(2_000_000_000));
 
     expect(
-      simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD")?.get(Borrower_1)!
+      simnet.getAssetsMap().get(".lp-xusd.lp-xusd")?.get(Borrower_1)!
     ).toBe(0n);
-
-    expect(simnet.getAssetsMap().get(".xUSD.xUSD")?.get(Borrower_1)!).toBe(
+    expect(simnet.getAssetsMap().get(".xusd.xusd")?.get(Borrower_1)!).toBe(
       2_000_000_000n
     );
   });

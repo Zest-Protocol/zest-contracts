@@ -8,11 +8,11 @@
 (define-fungible-token lp-usda)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP USDA")
-(define-data-var token-symbol (string-ascii 32) "LP-USDA")
+(define-data-var token-name (string-ascii 32) "LP usda")
+(define-data-var token-symbol (string-ascii 32) "LP-usda")
 
 (define-constant pool-id u0)
-(define-constant asset-addr .USDA)
+(define-constant asset-addr .usda)
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply lp-usda)))
@@ -40,7 +40,7 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u6
-            asset-addr
+            .usda
             current-principal-balance
             u6)))
         (ok cumulated-balance)
@@ -203,11 +203,11 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
-    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .USDA))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .usda))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
-        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .USDA))
-        (contract-call? .pool-0-reserve reset-user-index tx-sender .USDA)
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .usda))
+        (contract-call? .pool-0-reserve reset-user-index tx-sender .usda)
       )
       (ok true)
     )

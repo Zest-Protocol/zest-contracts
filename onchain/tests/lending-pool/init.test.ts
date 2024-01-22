@@ -22,10 +22,10 @@ const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
 const lpdiko = "lp-diko";
-const lpsBTC = "lp-sBTC";
-const lpstSTX = "lp-stSTX";
-const lpUSDA = "lp-USDA";
-const lpxUSD = "lp-xUSD";
+const lpsBTC = "lp-sbtc";
+const lpstSTX = "lp-ststx";
+const lpUSDA = "lp-usda";
+const lpxUSD = "lp-xusd";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -33,13 +33,13 @@ const feesCalculator = "fees-calculator";
 const oracle = "oracle";
 const interestRateStrategyDefault = "interest-rate-strategy-default";
 const diko = "diko";
-const sBTC = "sBTC";
-const stSTX = "stSTX";
-const zstSTX = "lp-stSTX";
-const zsBTC = "lp-sBTC";
+const sBTC = "sbtc";
+const stSTX = "ststx";
+const zstSTX = "lp-ststx";
+const zsBTC = "lp-sbtc";
 const zwstx = "lp-wstx";
-const USDA = "USDA";
-const xUSD = "xUSD";
+const USDA = "usda";
+const xUSD = "xusd";
 const wstx = "wstx";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
@@ -220,14 +220,14 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    expect(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC")?.get(Borrower_1)).toBe(
+    expect(simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Borrower_1)).toBe(
       0n
     );
-    expect(simnet.getAssetsMap().get(".lp-stSTX.lp-stSTX")?.get(LP_1)).toBe(0n);
-    expect(simnet.getAssetsMap().get(".sBTC.sBTC")?.get(Borrower_1)).toBe(
+    expect(simnet.getAssetsMap().get(".lp-ststx.lp-ststx")?.get(LP_1)).toBe(0n);
+    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Borrower_1)).toBe(
       2_000_000_000n
     );
-    expect(simnet.getAssetsMap().get(".stSTX.stSTX")?.get(LP_1)).toBe(
+    expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(LP_1)).toBe(
       1_000_000_000n
     );
 
@@ -851,11 +851,11 @@ describe("Supply and redeem", () => {
 
     expect(callResponse.result).toBeOk(Cl.uint(1_000_000_110n));
 
-    expect(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC")?.get(Borrower_1)).toBe(
+    expect(simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Borrower_1)).toBe(
       0n
     );
-    expect(simnet.getAssetsMap().get(".lp-stSTX.lp-stSTX")?.get(LP_1)).toBe(0n);
-    expect(simnet.getAssetsMap().get(".stSTX.stSTX")?.get(LP_1)).toBe(
+    expect(simnet.getAssetsMap().get(".lp-ststx.lp-ststx")?.get(LP_1)).toBe(0n);
+    expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(LP_1)).toBe(
       1_000_000_110n
     );
   });

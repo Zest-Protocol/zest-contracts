@@ -88,13 +88,13 @@ path = "contracts/borrow/token/zToken.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.lp-sBTC]
-path = "contracts/borrow/mocks/lp-sBTC.clar"
+[contracts.lp-sbtc]
+path = "contracts/borrow/mocks/lp-sbtc.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.lp-stSTX]
-path = "contracts/borrow/mocks/lp-stSTX.clar"
+[contracts.lp-ststx]
+path = "contracts/borrow/mocks/lp-ststx.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -103,13 +103,13 @@ path = "contracts/borrow/mocks/lp-wstx.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.lp-USDA]
-path = "contracts/borrow/mocks/lp-USDA.clar"
+[contracts.lp-usda]
+path = "contracts/borrow/mocks/lp-usda.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.lp-xUSD]
-path = "contracts/borrow/mocks/lp-xUSD.clar"
+[contracts.lp-xusd]
+path = "contracts/borrow/mocks/lp-xusd.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -153,8 +153,8 @@ path = "contracts/v2_sbtc/trait/ft-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.sBTC]
-path = "contracts/borrow/mocks/sBTC.clar"
+[contracts.sbtc]
+path = "contracts/borrow/mocks/sbtc.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -163,8 +163,8 @@ path = "contracts/borrow/mocks/supply-wrapped.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.stSTX]
-path = "contracts/borrow/mocks/stSTX.clar"
+[contracts.ststx]
+path = "contracts/borrow/mocks/ststx.clar"
 clarity_version = 2
 epoch = 2.1
 
@@ -183,8 +183,8 @@ path = "contracts/borrow/math/math.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.USDA]
-path = 'contracts/borrow/mocks/USDA.clar'
+[contracts.usda]
+path = 'contracts/borrow/mocks/usda.clar'
 clarity_version = 2
 epoch = 2.1
 
@@ -193,8 +193,8 @@ path = "contracts/borrow/traits/vault-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.xUSD]
-path = 'contracts/borrow/mocks/xUSD.clar'
+[contracts.xusd]
+path = 'contracts/borrow/mocks/xusd.clar'
 clarity_version = 2
 epoch = 2.1
 

@@ -10,7 +10,7 @@
   )
 )
 
-(define-constant available-assets (list .diko .sBTC .wstx .stSTX .xUSD .USDA ))
+(define-constant available-assets (list .diko .sbtc .wstx .ststx .xusd .usda ))
 
 (define-read-only (get-supplieable-assets)
   available-assets
@@ -84,11 +84,11 @@
   )
 )
 
-(define-read-only (get-useable-collateral-usd-sBTC (who principal))
+(define-read-only (get-useable-collateral-usd-sbtc (who principal))
   (let (
-    (asset-balance (unwrap-panic (contract-call? .lp-sBTC get-principal-balance who)))
-    (reserve-data (get-reserve-data .sBTC))
-    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .sBTC)))
+    (asset-balance (unwrap-panic (contract-call? .lp-sbtc get-principal-balance who)))
+    (reserve-data (get-reserve-data .sbtc))
+    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .sbtc)))
     (asset-decimals (get decimals reserve-data))
     (base-ltv-as-collateral (get base-ltv-as-collateral reserve-data))
     (reserve-normalized-income
@@ -106,7 +106,7 @@
         asset-balance
         asset-decimals
         (div reserve-normalized-income user-index))
-      (unwrap-panic (contract-call? .oracle get-asset-price .sBTC))
+      (unwrap-panic (contract-call? .oracle get-asset-price .sbtc))
       )
     )
   )
@@ -140,11 +140,11 @@
   )
 )
 
-(define-read-only (get-useable-collateral-usd-stSTX (who principal))
+(define-read-only (get-useable-collateral-usd-ststx (who principal))
   (let (
-    (asset-balance (unwrap-panic (contract-call? .lp-stSTX get-principal-balance who)))
-    (reserve-data (get-reserve-data .stSTX))
-    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .stSTX)))
+    (asset-balance (unwrap-panic (contract-call? .lp-ststx get-principal-balance who)))
+    (reserve-data (get-reserve-data .ststx))
+    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .ststx)))
     (asset-decimals (get decimals reserve-data))
     (base-ltv-as-collateral (get base-ltv-as-collateral reserve-data))
     (reserve-normalized-income
@@ -162,17 +162,17 @@
         asset-balance
         asset-decimals
         (div reserve-normalized-income user-index))
-      (unwrap-panic (contract-call? .oracle get-asset-price .stSTX))
+      (unwrap-panic (contract-call? .oracle get-asset-price .ststx))
       )
     )
   )
 )
 
-(define-read-only (get-useable-collateral-usd-xUSD (who principal))
+(define-read-only (get-useable-collateral-usd-xusd (who principal))
   (let (
-    (asset-balance (unwrap-panic (contract-call? .lp-xUSD get-principal-balance who)))
-    (reserve-data (get-reserve-data .xUSD))
-    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .xUSD)))
+    (asset-balance (unwrap-panic (contract-call? .lp-xusd get-principal-balance who)))
+    (reserve-data (get-reserve-data .xusd))
+    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .xusd)))
     (asset-decimals (get decimals reserve-data))
     (base-ltv-as-collateral (get base-ltv-as-collateral reserve-data))
     (reserve-normalized-income
@@ -190,17 +190,17 @@
         asset-balance
         asset-decimals
         (div reserve-normalized-income user-index))
-      (unwrap-panic (contract-call? .oracle get-asset-price .xUSD))
+      (unwrap-panic (contract-call? .oracle get-asset-price .xusd))
       )
     )
   )
 )
 
-(define-read-only (get-useable-collateral-usd-USDA (who principal))
+(define-read-only (get-useable-collateral-usd-usda (who principal))
   (let (
-    (asset-balance (unwrap-panic (contract-call? .lp-USDA get-principal-balance who)))
-    (reserve-data (get-reserve-data .USDA))
-    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .USDA)))
+    (asset-balance (unwrap-panic (contract-call? .lp-usda get-principal-balance who)))
+    (reserve-data (get-reserve-data .usda))
+    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .usda)))
     (asset-decimals (get decimals reserve-data))
     (base-ltv-as-collateral (get base-ltv-as-collateral reserve-data))
     (reserve-normalized-income
@@ -218,7 +218,7 @@
         asset-balance
         asset-decimals
         (div reserve-normalized-income user-index))
-      (unwrap-panic (contract-call? .oracle get-asset-price .USDA))
+      (unwrap-panic (contract-call? .oracle get-asset-price .usda))
       )
     )
   )
@@ -228,24 +228,24 @@
   (token-to-usd (get-supplied-balance-user-diko who) u6 (unwrap-panic (contract-call? .oracle get-asset-price .diko)))
 )
 
-(define-read-only (get-supplied-balance-user-usd-sBTC (who principal) (oracle principal))
-  (token-to-usd (get-supplied-balance-user-sBTC who) u8 (unwrap-panic (contract-call? .oracle get-asset-price .sBTC)))
+(define-read-only (get-supplied-balance-user-usd-sbtc (who principal) (oracle principal))
+  (token-to-usd (get-supplied-balance-user-sbtc who) u8 (unwrap-panic (contract-call? .oracle get-asset-price .sbtc)))
 )
 
 (define-read-only (get-supplied-balance-user-usd-wstx (who principal) (oracle principal))
   (token-to-usd (get-supplied-balance-user-wstx who) u6 (unwrap-panic (contract-call? .oracle get-asset-price .wstx)))
 )
 
-(define-read-only (get-supplied-balance-user-usd-stSTX (who principal) (oracle principal))
-  (token-to-usd (get-supplied-balance-user-stSTX who) u6 (unwrap-panic (contract-call? .oracle get-asset-price .stSTX)))
+(define-read-only (get-supplied-balance-user-usd-ststx (who principal) (oracle principal))
+  (token-to-usd (get-supplied-balance-user-ststx who) u6 (unwrap-panic (contract-call? .oracle get-asset-price .ststx)))
 )
 
-(define-read-only (get-supplied-balance-user-usd-USDA (who principal) (oracle principal))
-  (token-to-usd (get-supplied-balance-user-USDA who) u6 (unwrap-panic (contract-call? .oracle get-asset-price .USDA)))
+(define-read-only (get-supplied-balance-user-usd-usda (who principal) (oracle principal))
+  (token-to-usd (get-supplied-balance-user-usda who) u6 (unwrap-panic (contract-call? .oracle get-asset-price .usda)))
 )
 
-(define-read-only (get-supplied-balance-user-usd-xUSD (who principal) (oracle principal))
-  (token-to-usd (get-supplied-balance-user-xUSD who) u6 (unwrap-panic (contract-call? .oracle get-asset-price .xUSD)))
+(define-read-only (get-supplied-balance-user-usd-xusd (who principal) (oracle principal))
+  (token-to-usd (get-supplied-balance-user-xusd who) u6 (unwrap-panic (contract-call? .oracle get-asset-price .xusd)))
 )
 
 (define-read-only (get-supplied-balance-user-diko (who principal))
@@ -254,9 +254,9 @@
   )
 )
 
-(define-read-only (get-supplied-balance-user-sBTC (who principal))
-  (let ((principal (unwrap-panic (contract-call? .lp-sBTC get-principal-balance who))))
-    (calculate-cumulated-balance who u8 .sBTC principal u8)
+(define-read-only (get-supplied-balance-user-sbtc (who principal))
+  (let ((principal (unwrap-panic (contract-call? .lp-sbtc get-principal-balance who))))
+    (calculate-cumulated-balance who u8 .sbtc principal u8)
   )
 )
 
@@ -266,21 +266,21 @@
   )
 )
 
-(define-read-only (get-supplied-balance-user-stSTX (who principal))
-  (let ((principal (unwrap-panic (contract-call? .lp-stSTX get-principal-balance who))))
-    (calculate-cumulated-balance who u6 .stSTX principal u6)
+(define-read-only (get-supplied-balance-user-ststx (who principal))
+  (let ((principal (unwrap-panic (contract-call? .lp-ststx get-principal-balance who))))
+    (calculate-cumulated-balance who u6 .ststx principal u6)
   )
 )
 
-(define-read-only (get-supplied-balance-user-xUSD (who principal))
-  (let ((principal (unwrap-panic (contract-call? .lp-xUSD get-principal-balance who))))
-    (calculate-cumulated-balance who u6 .xUSD principal u6)
+(define-read-only (get-supplied-balance-user-xusd (who principal))
+  (let ((principal (unwrap-panic (contract-call? .lp-xusd get-principal-balance who))))
+    (calculate-cumulated-balance who u6 .xusd principal u6)
   )
 )
 
-(define-read-only (get-supplied-balance-user-USDA (who principal))
-  (let ((principal (unwrap-panic (contract-call? .lp-USDA get-principal-balance who))))
-    (calculate-cumulated-balance who u6 .USDA principal u6)
+(define-read-only (get-supplied-balance-user-usda (who principal))
+  (let ((principal (unwrap-panic (contract-call? .lp-usda get-principal-balance who))))
+    (calculate-cumulated-balance who u6 .usda principal u6)
   )
 )
 
@@ -288,48 +288,48 @@
   (token-to-usd (unwrap-panic (contract-call? .diko get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .diko)))
 )
 
-(define-read-only (get-supplied-balance-usd-sBTC)
-  (token-to-usd (unwrap-panic (contract-call? .sBTC get-balance .pool-vault)) u8 (unwrap-panic (contract-call? .oracle get-asset-price .sBTC)))
+(define-read-only (get-supplied-balance-usd-sbtc)
+  (token-to-usd (unwrap-panic (contract-call? .sbtc get-balance .pool-vault)) u8 (unwrap-panic (contract-call? .oracle get-asset-price .sbtc)))
 )
 
 (define-read-only (get-supplied-balance-usd-wstx)
   (token-to-usd (unwrap-panic (contract-call? .wstx get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .wstx)))
 )
 
-(define-read-only (get-supplied-balance-usd-stSTX)
-  (token-to-usd (unwrap-panic (contract-call? .stSTX get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .stSTX)))
+(define-read-only (get-supplied-balance-usd-ststx)
+  (token-to-usd (unwrap-panic (contract-call? .ststx get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .ststx)))
 )
 
-(define-read-only (get-supplied-balance-usd-USDA)
-  (token-to-usd (unwrap-panic (contract-call? .USDA get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .USDA)))
+(define-read-only (get-supplied-balance-usd-usda)
+  (token-to-usd (unwrap-panic (contract-call? .usda get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .usda)))
 )
 
-(define-read-only (get-supplied-balance-usd-xUSD)
-  (token-to-usd (unwrap-panic (contract-call? .xUSD get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .xUSD)))
+(define-read-only (get-supplied-balance-usd-xusd)
+  (token-to-usd (unwrap-panic (contract-call? .xusd get-balance .pool-vault)) u6 (unwrap-panic (contract-call? .oracle get-asset-price .xusd)))
 )
 
 (define-read-only (get-supplied-balance-diko)
   (unwrap-panic (contract-call? .diko get-balance .pool-vault))
 )
 
-(define-read-only (get-supplied-balance-sBTC)
-  (unwrap-panic (contract-call? .sBTC get-balance .pool-vault))
+(define-read-only (get-supplied-balance-sbtc)
+  (unwrap-panic (contract-call? .sbtc get-balance .pool-vault))
 )
 
 (define-read-only (get-supplied-balance-wstx)
   (unwrap-panic (contract-call? .wstx get-balance .pool-vault))
 )
 
-(define-read-only (get-supplied-balance-stSTX)
-  (unwrap-panic (contract-call? .stSTX get-balance .pool-vault))
+(define-read-only (get-supplied-balance-ststx)
+  (unwrap-panic (contract-call? .ststx get-balance .pool-vault))
 )
 
-(define-read-only (get-supplied-balance-USDA)
-  (unwrap-panic (contract-call? .USDA get-balance .pool-vault))
+(define-read-only (get-supplied-balance-usda)
+  (unwrap-panic (contract-call? .usda get-balance .pool-vault))
 )
 
-(define-read-only (get-supplied-balance-xUSD)
-  (unwrap-panic (contract-call? .xUSD get-balance .pool-vault))
+(define-read-only (get-supplied-balance-xusd)
+  (unwrap-panic (contract-call? .xusd get-balance .pool-vault))
 )
 
 ;; utils functions

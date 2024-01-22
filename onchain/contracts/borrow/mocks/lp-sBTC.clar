@@ -5,17 +5,17 @@
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
-(define-fungible-token lp-sBTC)
+(define-fungible-token lp-sbtc)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP sBTC")
-(define-data-var token-symbol (string-ascii 32) "LP sBTC")
+(define-data-var token-name (string-ascii 32) "LP sbtc")
+(define-data-var token-symbol (string-ascii 32) "LP sbtc")
 
 (define-constant pool-id u0)
-(define-constant asset-addr .sBTC)
+(define-constant asset-addr .sbtc)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-sBTC)))
+  (ok (ft-get-supply lp-sbtc)))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))
@@ -31,7 +31,7 @@
 
 (define-read-only (get-balance (account principal))
   (let (
-    (current-principal-balance (ft-get-balance lp-sBTC account))
+    (current-principal-balance (ft-get-balance lp-sbtc account))
   )
     (if (is-eq current-principal-balance u0)
       (ok u0)
@@ -40,7 +40,7 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u8
-            .sBTC
+            .sbtc
             current-principal-balance
             u8)))
         (ok cumulated-balance)
@@ -50,7 +50,7 @@
 )
 
 (define-read-only (get-principal-balance (account principal))
-  (ok (ft-get-balance lp-sBTC account)))
+  (ok (ft-get-balance lp-sbtc account)))
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (begin
@@ -69,7 +69,7 @@
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (match (ft-transfer? lp-sBTC amount sender recipient)
+    (match (ft-transfer? lp-sbtc amount sender recipient)
       response (begin
         (print memo)
         (ok response)
@@ -95,10 +95,10 @@
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (ft-burn? lp-sBTC amount owner))
+  (ft-burn? lp-sbtc amount owner))
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (ft-mint? lp-sBTC amount owner))
+  (ft-mint? lp-sbtc amount owner))
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
   (begin
@@ -228,7 +228,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-sBTC", payload: owner })
+    (print { type: "set-contract-owner-lp-sbtc", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))
