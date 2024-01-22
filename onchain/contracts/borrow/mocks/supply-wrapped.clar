@@ -10,10 +10,15 @@
   (asset <ft>)
   (amount uint)
   (owner principal)
-  (referral principal)
+  (referral (optional principal))
   )
   (begin
-    (print { type: "supply-referral", payload: { key: owner, data: { asset: asset, amount: amount, referral: referral } } })
-    (contract-call? .pool-borrow supply lp pool-reserve asset amount owner)
+    (match referral
+      referral-resp (begin
+          (print { type: "supply-referral", payload: { key: owner, data: { asset: asset, amount: amount, referral: referral-resp } } })
+          (contract-call? .pool-borrow supply lp pool-reserve asset amount owner)
+        )
+        (contract-call? .pool-borrow supply lp pool-reserve asset amount owner)
+    )
   )
 )

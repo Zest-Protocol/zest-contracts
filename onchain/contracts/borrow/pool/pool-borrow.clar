@@ -31,7 +31,8 @@
 
     ;; if first supply
     (if (is-eq current-balance u0)
-      (if (unwrap-panic
+      (if (and (get usage-as-collateral-enabled reserve-state)
+          (unwrap-panic
             (validate-use-as-collateral
               (is-some isolated-asset)
               (get base-ltv-as-collateral reserve-state)
@@ -40,6 +41,7 @@
               owner
               (get debt-ceiling reserve-state)
             ))
+            )
         (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset true))
         false
       )
@@ -365,6 +367,7 @@
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
     (asserts! (> underlying-balance u0) ERR_NOT_ZERO)
+    (asserts! (get usage-as-collateral-enabled reserve-data) ERR_COLLATERAL_DISABLED)
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
     ;; if in isolation mode, can only disable isolated asset
@@ -558,3 +561,4 @@
 (define-constant ERR_INVALID_DECREASE (err u30018))
 (define-constant ERR_MUST_DISABLE_ISOLATED_ASSET (err u30019))
 (define-constant ERR_EXCEED_SUPPLY_CAP (err u30020))
+(define-constant ERR_COLLATERAL_DISABLED (err u30021))

@@ -1,0 +1,252 @@
+[project]
+name = "stacks-lending"
+authors = []
+description = ""
+telemetry = false
+requirements = []
+cache_dir = ".requirements"
+cache_location = ".requirements"
+boot_contracts = ["pox", "costs-v1", "bns"]
+
+[contracts.a-token-trait]
+path = "contracts/borrow/traits/a-token-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.coll-vault]
+path = "contracts/v2_sbtc/loan/coll-vault.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.coll-vault-trait]
+path = "contracts/v2_sbtc/trait/coll-vault-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.executor-dao]
+path = "contracts/v2_sbtc/dao/executor-dao.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.extension-trait]
+path = "contracts/v2_sbtc/dao/traits/extension-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.fees-calculator]
+path = "contracts/borrow/pool/fees-calculator.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.flash-loan-trait]
+path = "contracts/borrow/traits/flash-loan-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.flashloan-script]
+path = "contracts/borrow/mocks/flashloan-script.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.flashloan-script-1]
+path = "contracts/borrow/mocks/flashloan-script-1.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.flashloan-script-2]
+path = "contracts/borrow/mocks/flashloan-script-2.clar"
+clarity_version = 2
+epoch = 2.1
+
+# [contracts.globals]
+# path = "contracts/v2_sbtc/globals.clar"
+# clarity_version = 2
+# epoch = 2.1
+
+[contracts.governance-token-trait]
+path = "contracts/v2_sbtc/dao/traits/governance-token-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.interest-rate-strategy-default]
+path = "contracts/v2_sbtc/pool/interest-rate-strategy-default.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.liquidity-vault-trait]
+path = "contracts/v2_sbtc/trait/liquidity-vault-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-diko]
+path = "contracts/borrow/mocks/lp-diko.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.zToken]
+path = "contracts/borrow/token/zToken.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-sBTC]
+path = "contracts/borrow/mocks/lp-sBTC.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-stSTX]
+path = "contracts/borrow/mocks/lp-stSTX.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-wstx]
+path = "contracts/borrow/mocks/lp-wstx.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-USDA]
+path = "contracts/borrow/mocks/lp-USDA.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-xUSD]
+path = "contracts/borrow/mocks/lp-xUSD.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.pool-0-reserve]
+path = "contracts/borrow/vaults/pool-0-reserve.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.diko]
+path = "contracts/borrow/mocks/diko.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.lp-token-trait]
+path = "contracts/v2_sbtc/trait/lp-token-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.ownable-trait]
+path = "contracts/v2_sbtc/trait/ownable-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.pool-vault]
+path = "contracts/borrow/vaults/pool-vault.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.proposal-trait]
+path = "contracts/v2_sbtc/dao/traits/proposal-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.protocol-treasury]
+path = "contracts/borrow/mocks/protocol-treasury.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.ft-trait]
+path = "contracts/v2_sbtc/trait/ft-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.sBTC]
+path = "contracts/borrow/mocks/sBTC.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.supply-wrapped]
+path = "contracts/borrow/mocks/supply-wrapped.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.stSTX]
+path = "contracts/borrow/mocks/stSTX.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.ft-mint-trait]
+path = "contracts/v2_sbtc/trait/ft-mint-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.pool-reserve-data]
+path = "contracts/borrow/vaults/pool-reserve-data.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.math]
+path = "contracts/borrow/math/math.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.USDA]
+path = 'contracts/borrow/mocks/USDA.clar'
+clarity_version = 2
+epoch = 2.1
+
+[contracts.vault-trait]
+path = "contracts/borrow/traits/vault-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.xUSD]
+path = 'contracts/borrow/mocks/xUSD.clar'
+clarity_version = 2
+epoch = 2.1
+
+[contracts.wstx]
+path = 'contracts/borrow/mocks/wstx.clar'
+clarity_version = 2
+epoch = 2.1
+
+[contracts.pool-borrow]
+path = "contracts/borrow/pool/pool-borrow.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.oracle]
+path = "contracts/borrow/pool/oracle.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.oracle-trait]
+path = "contracts/borrow/traits/oracle-trait.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.pool-read]
+path = "contracts/borrow/mocks/pool-read.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.pool-read-supply]
+path = "contracts/borrow/mocks/pool-read-supply.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.liquidation-manager]
+path = "contracts/borrow/pool/liquidation-manager.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.after-deployment-testnet]
+path = "contracts/borrow/mocks/after-deployment-testnet.clar"
+clarity_version = 2
+epoch = 2.1
+
+[repl]
+costs_version = 1
+parser_version = 2
+
+[repl.analysis]
+passes = []
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
