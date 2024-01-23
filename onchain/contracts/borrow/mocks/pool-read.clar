@@ -172,6 +172,10 @@
   (get-user-borrow-balance who .usda)
 )
 
+(define-read-only (get-borrowed-balance (asset principal))
+  (get total-borrows-variable (get-reserve-data asset))
+)
+
 ;; util functions
 (define-public (borrowing-power-in-asset
   (asset <ft>)

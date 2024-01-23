@@ -436,7 +436,9 @@
 
 (map-set liquidation-close-factor-percent .ststx u50000000) ;; 50%
 (map-set liquidation-close-factor-percent .sbtc  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .diko  u50000000) ;; 50%
 (map-set liquidation-close-factor-percent .xusd  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .usda  u50000000) ;; 50%
 (map-set liquidation-close-factor-percent .wstx  u50000000) ;; 50%
 
 (map-set flashloan-fee-total .ststx u35)

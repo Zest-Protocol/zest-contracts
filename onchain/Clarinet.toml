@@ -58,10 +58,10 @@ path = "contracts/borrow/mocks/flashloan-script-2.clar"
 clarity_version = 2
 epoch = 2.1
 
-# [contracts.globals]
-# path = "contracts/v2_sbtc/globals.clar"
-# clarity_version = 2
-# epoch = 2.1
+[contracts.pool-read-liquidation]
+path = "contracts/borrow/mocks/pool-read-liquidation.clar"
+clarity_version = 2
+epoch = 2.1
 
 [contracts.governance-token-trait]
 path = "contracts/v2_sbtc/dao/traits/governance-token-trait.clar"
