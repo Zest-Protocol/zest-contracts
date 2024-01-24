@@ -32,6 +32,11 @@
   available-assets
 )
 
+(define-read-only (get-assets-used-by (who principal))
+  (let (
+    (ret (get-user-assets who)))
+    (unwrap-panic (as-max-len? (concat (get assets-supplied ret) (get assets-borrowed ret)) u100))))
+
 (define-read-only (is-isolated-asset (asset principal))
   (contract-call? .pool-0-reserve is-isolated-type asset)
 )

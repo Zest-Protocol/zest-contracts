@@ -18,6 +18,16 @@ path = "contracts/v2_sbtc/loan/coll-vault.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.pyth-oracle-v2]
+path = "contracts/borrow/mocks/pyth-oracle-v2.clar"
+clarity_version = 2
+epoch = 2.1
+
+[contracts.stx-oracle]
+path = "contracts/borrow/mocks/stx-oracle.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.coll-vault-trait]
 path = "contracts/v2_sbtc/trait/coll-vault-trait.clar"
 clarity_version = 2
