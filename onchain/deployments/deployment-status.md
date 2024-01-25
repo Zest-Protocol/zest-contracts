@@ -1,13 +1,22 @@
 Deployer address: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
 
 ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
+
+```
 Supplies: diko sbtc ststx usda STX xusd
 Borrows: 
+```
 
 ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG (Isolated)
+
+```
 Supplies: ststx wstx
 Borrows: xUSD
+```
 
 ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+
+```
 Supplies: sbtc
 Borrows: xusd ststx wstx diko usda
+```
