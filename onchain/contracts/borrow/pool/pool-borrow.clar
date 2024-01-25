@@ -34,7 +34,7 @@
       (if (and (get usage-as-collateral-enabled reserve-state)
           (unwrap-panic
             (validate-use-as-collateral
-              (is-some isolated-asset)
+              isolated-asset
               (get base-ltv-as-collateral reserve-state)
               (get enabled-assets assets-used-as-collateral)
               supplied-asset-principal
@@ -61,7 +61,7 @@
 )
 
 (define-read-only (validate-use-as-collateral
-  (is-in-isolation-mode bool)
+  (isolated-asset (optional principal))
   (base-ltv-as-collateral uint)
   (assets-enabled-as-collateral (list 100 principal))
   (asset-address principal)
@@ -73,9 +73,12 @@
       ;; not any as collateral
       (if (is-eq (len assets-enabled-as-collateral) u0)
         (ok true)
-        (if (and is-in-isolation-mode)
-          (ok (> debt-ceiling u0))
-          (ok true)
+        ;; if it's in isolation mode
+        (match isolated-asset
+          ;; if user is in isolation mode, cannot enable anything
+          isolated-asset-ok (ok false)
+          ;; if user is not isolation mode, can set any asset to use as collateral that is not an isolated type
+          (ok (not (contract-call? .pool-0-reserve is-isolated-type asset-address)))
         )
       )
     )
@@ -161,10 +164,20 @@
       (asserts! (<= (get collateral-needed-in-USD amount-collateral-needed) (get total-collateral-balanceUSD user-global-data)) ERR_NOT_ENOUGH_COLLATERAL)
       (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
 
-      (if (> (get debt-ceiling reserve-state) u0)
-        (asserts! (<= (+ (get requested-borrow-amount-USD amount-collateral-needed) (get total-borrow-balanceUSD user-global-data))
-                      (get debt-ceiling reserve-state)) ERR_EXCEED_DEBT_CEIL)
-        false)
+      (match is-in-isolation-mode
+        isolated-asset
+          (let (
+            (isolated-reserve (contract-call? .pool-0-reserve get-reserve-state asset))
+          )
+            (if (> (get debt-ceiling isolated-reserve) u0)
+              (asserts! (<=
+                (+ (get requested-borrow-amount-USD amount-collateral-needed) (get total-borrow-balanceUSD user-global-data))
+                (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
+              true
+            )
+          )
+        true
+      )
 
       ;; conditions passed, can borrow
       (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))

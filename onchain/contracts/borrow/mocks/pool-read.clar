@@ -319,7 +319,7 @@
         (mul
           (calculate-compounded-interest
             current-variable-borrow-rate
-            (- burn-block-height last-updated-block))
+            (- burn-block-height last-updated-block-reserve))
           last-variable-borrow-cumulative-index-reserve)
         user-cumulative-index))
     (compounded-balance (mul principal-borrow-balance cumulated-interest)))

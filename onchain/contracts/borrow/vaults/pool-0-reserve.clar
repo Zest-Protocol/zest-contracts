@@ -561,9 +561,9 @@
 
     (if user-redeemed-everything
       (begin
-        (try! (reset-data-on-zero-balance-internal who (contract-of asset)))
+        ;; (try! (reset-data-on-zero-balance-internal who (contract-of asset)))
         (try! (remove-supplied-asset who (contract-of asset)))
-        (set-user-reserve-as-collateral-internal who asset user-redeemed-everything)
+        (set-user-reserve-as-collateral-internal who asset false)
       )
       (ok true)
     )
@@ -975,7 +975,7 @@
           (mul
             (calculate-compounded-interest
               current-variable-borrow-rate
-              (- burn-block-height last-updated-block))
+              (- burn-block-height last-updated-block-reserve))
             last-variable-borrow-cumulative-index-reserve)
           user-cumulative-index)
       ))
@@ -1058,22 +1058,6 @@
   )
 )
 
-(define-public (mint-on-deposit
-  (who principal)
-  (amount uint)
-  (lp <ft-mint-trait>)
-  (asset principal)
-  )
-  (let (
-    (ret (try! (cumulate-balance who lp asset)))
-  )
-    (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-
-    (try! (contract-call? lp mint (+ (get balance-increase ret) amount) who))
-    (ok u0)
-  )
-)
-
 (define-public (liquidate-fee
   (asset <ft>)
   (destination principal)
@@ -1120,36 +1104,6 @@
 
 (define-private (set-user-index-internal (who principal) (asset principal) (new-user-index uint))
   (contract-call? .pool-reserve-data set-user-index who asset new-user-index))
-
-(define-private (cumulate-balance
-  (who principal)
-  (lp <ft-mint-trait>)
-  (asset principal)
-  )
-  (let (
-    (previous-balance (try! (contract-call? lp get-principal-balance who)))
-    (balance-increase (- (try! (contract-call? lp get-balance who)) previous-balance))
-    (reserve-data (get-reserve-state asset))
-    (new-user-index
-      (get-normalized-income
-        (get current-liquidity-rate reserve-data)
-        (get last-updated-block reserve-data)
-        (get last-liquidity-cumulative-index reserve-data)
-      )
-    )
-  )
-
-    (try! (set-user-index-internal who asset new-user-index))
-
-    (ok {
-      previous-user-balance: previous-balance,
-      new-user-balance: (+ previous-balance balance-increase),
-      balance-increase: balance-increase,
-      index: new-user-index
-      }
-    )
-  )
-)
 
 (define-read-only (calculate-cumulated-balance
   (who principal)
