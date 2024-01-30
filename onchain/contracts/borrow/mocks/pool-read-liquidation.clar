@@ -456,12 +456,6 @@
   )
 )
 
-(define-read-only (div-reduced-loss (a uint) (b uint))
-  (begin
-    (/ (* a one-8) b)
-  )
-)
-
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
   (from-fixed-to-precision (mul-to-fixed-precision a decimals-a b-fixed) decimals-a)
 )
@@ -552,15 +546,6 @@
 
 (define-read-only (is-even (x uint))
   (is-eq (mod x u2) u0)
-)
-
-;; rate in 8-fixed
-;; time passed in seconds
-;; u31536000
-(define-read-only (get-rt (rate uint) (t uint))
-  (begin
-    (/ (* (/ (* rate one-12) seconds-in-year) t) u100000)
-  )
 )
 
 ;; rate in 8-fixed

@@ -11,7 +11,7 @@
 (define-data-var token-name (string-ascii 32) "LP ststx")
 (define-data-var token-symbol (string-ascii 32) "LP-ststx")
 
-(define-constant pool-id u0)
+(define-constant max-value (contract-call? .math get-max-value))
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply lp-ststx)))
@@ -42,7 +42,7 @@
             .ststx
             current-principal-balance
             u6)))
-        (ok cumulated-balance)
+        cumulated-balance
       )
     )
   )
@@ -138,7 +138,7 @@
   (let (
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (contract-call? .pool-0-reserve get-reserve-state .ststx))
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state .ststx)))
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
@@ -157,7 +157,6 @@
   )
 )
 
-(define-constant max-value (contract-call? .math get-max-value))
 
 (define-public (withdraw
   (pool-reserve principal)
@@ -235,8 +234,6 @@
 (define-read-only (is-contract-owner (caller principal))
   (is-eq caller (var-get contract-owner)))
 
-;; TODO: should use the pool logic designated by the Pool Delegate
-;; -- permissions
 (define-map approved-contracts principal bool)
 
 (define-public (set-approved-contract (contract principal) (enabled bool))

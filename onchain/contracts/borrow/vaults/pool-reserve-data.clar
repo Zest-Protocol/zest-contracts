@@ -4,9 +4,8 @@
 
 (define-constant one-8 (contract-call? .math get-one))
 (define-constant max-value (contract-call? .math get-max-value))
-(define-constant one-3 u1000)
 
-(define-read-only (get-one-3) one-3)
+(define-constant ERR_UNAUTHORIZED (err u7000))
 
 (define-map flashloan-fee-total principal uint)
 (define-public (set-flashloan-fee-total (asset principal) (fee uint))
@@ -102,10 +101,11 @@
     (print { type: "delete-user-reserve-data", payload: { key: { user: user, reserve: reserve }, data: none } })
     (ok (map-delete user-reserve-data { user:user, reserve: reserve }))))
 
-(define-public (get-user-reserve-data
+(define-read-only (get-user-reserve-data
   (user principal)
   (reserve principal))
-  (ok (map-get? user-reserve-data { user: user, reserve: reserve })))
+  (ok (map-get? user-reserve-data { user: user, reserve: reserve }))
+)
 (define-read-only (get-user-reserve-data-read
   (user principal)
   (reserve principal))
@@ -400,9 +400,6 @@
 (map-set approved-contracts .pool-borrow true)
 ;; (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
-
-;; ERROR START 7000
-(define-constant ERR_UNAUTHORIZED (err u7000))
 
 (map-set base-variable-borrow-rates .ststx u0)
 (map-set variable-rate-slopes-1 .ststx u4000000) ;; 4%

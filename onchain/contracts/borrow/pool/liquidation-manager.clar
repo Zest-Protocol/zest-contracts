@@ -44,6 +44,8 @@
   (let (
     (ret (try! (calculate-user-global-data user assets)))
     (user-collateral-balance (try! (get-user-underlying-asset-balance lp-token collateral user)))
+    (collateral-reserve-data (try! (get-reserve-state collateral)))
+    (borrower-reserve-data (unwrap-panic (get-user-reserve-state user collateral)))
   )
     ;; has deposited collateral
     (asserts! (> user-collateral-balance u0) ERR_NOT_DEPOSITED)
@@ -51,8 +53,8 @@
     (asserts! (get is-health-factor-below-treshold ret) ERR_HEALTH_FACTOR_GT_1)
     ;; collateral is enabled in asset reserve and by user
     (asserts! (and
-        (is-reserve-collateral-enabled-as-collateral (contract-of collateral))
-        (is-user-collateral-enabled-as-collateral user collateral)
+        (get usage-as-collateral-enabled collateral-reserve-data)
+        (get use-as-collateral borrower-reserve-data)
       ) ERR_NOT_ENABLED_AS_COLL)
     
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
@@ -182,9 +184,9 @@
   (let (
     (collateral-price (try! (contract-call? collateral-oracle get-asset-price collateral)))
     (debt-currency-price (try! (contract-call? principal-oracle get-asset-price principal-asset)))
-    (liquidation-bonus (get-liquidation-bonus collateral))
     (collateral-reserve-data (unwrap-panic (get-reserve-state collateral)))
     (principal-reserve-data (unwrap-panic (get-reserve-state principal-asset)))
+    (liquidation-bonus (get liquidation-bonus collateral-reserve-data))
     (max-collateral-amount-from-debt
       (contract-call? .math mul-perc
         (contract-call? .math get-y-from-x
@@ -223,7 +225,7 @@
 )
 
 (define-read-only (get-liquidation-bonus (asset <ft>))
-  (contract-call? .pool-0-reserve get-reserve-liquidation-bonus asset)
+  (ok (get liquidation-bonus (try! (get-reserve-state asset))))
 )
 
 (define-public (get-user-borrow-balance (who principal) (asset <ft>))
@@ -231,7 +233,10 @@
 )
 
 (define-public (get-reserve-state (asset <ft>))
-  (ok (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
+  (contract-call? .pool-0-reserve get-reserve-state (contract-of asset))
+)
+(define-public (get-user-reserve-state (user principal) (asset <ft>))
+  (contract-call? .pool-0-reserve get-user-reserve-data user (contract-of asset))
 )
 
 (define-public (get-user-underlying-asset-balance
@@ -243,14 +248,6 @@
 
 (define-public (get-reserve-available-liquidity (asset <ft>))
   (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)
-)
-
-(define-read-only (is-reserve-collateral-enabled-as-collateral (asset principal))
-  (contract-call? .pool-0-reserve is-reserve-collateral-enabled-as-collateral asset)
-)
-
-(define-read-only (is-user-collateral-enabled-as-collateral (user principal) (asset <ft>))
-  (contract-call? .pool-0-reserve is-user-collateral-enabled-as-collateral user asset)
 )
 
 (define-constant ERR_HEALTH_FACTOR_GT_1 (err u90000))

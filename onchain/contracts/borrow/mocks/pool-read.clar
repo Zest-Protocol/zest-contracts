@@ -9,15 +9,21 @@
 ;; 3) Filter isolated supplied assets by being enabled as collateral
 
 (define-read-only (is-borroweable (asset principal))
-  (and
-    (contract-call? .pool-0-reserve is-active asset)
-    (not (contract-call? .pool-0-reserve is-frozen asset))
-    (contract-call? .pool-0-reserve is-borrowing-enabled asset)
+  (let ((reserve-state (get-reserve-data asset)))
+    (and
+      (get is-active reserve-state)
+      (not (get is-frozen reserve-state))
+      (get borrowing-enabled reserve-state)
+    )
   )
 )
 
 (define-read-only (is-active (asset principal))
-  (and (contract-call? .pool-0-reserve is-active asset) (not (contract-call? .pool-0-reserve is-frozen asset)))
+  (let (
+    (reserve-state (get-reserve-data asset))
+  )
+    (and (get is-active reserve-state) (not (get is-frozen reserve-state)))
+  )
 )
 
 (define-constant available-assets (list .diko .sbtc .wstx .ststx .xusd .usda ))
@@ -189,7 +195,7 @@
   )
   (let (
     (asset-principal (contract-of asset))
-    (reserve-state (contract-call? .pool-0-reserve get-reserve-state asset-principal))
+    (reserve-state (unwrap-panic (contract-call? .pool-0-reserve get-reserve-state asset-principal)))
     (user-assets (contract-call? .pool-0-reserve get-user-assets user))
     (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
     (asset-price (try! (contract-call? .oracle get-asset-price asset)))
@@ -378,12 +384,6 @@
   )
 )
 
-(define-read-only (div-reduced-loss (a uint) (b uint))
-  (begin
-    (/ (* a one-8) b)
-  )
-)
-
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
   (from-fixed-to-precision (mul-to-fixed-precision a decimals-a b-fixed) decimals-a)
 )
@@ -474,15 +474,6 @@
 
 (define-read-only (is-even (x uint))
   (is-eq (mod x u2) u0)
-)
-
-;; rate in 8-fixed
-;; time passed in seconds
-;; u31536000
-(define-read-only (get-rt (rate uint) (t uint))
-  (begin
-    (/ (* (/ (* rate one-12) seconds-in-year) t) u100000)
-  )
 )
 
 ;; rate in 8-fixed
