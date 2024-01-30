@@ -395,6 +395,15 @@
   )
 )
 
+(define-public (remove-asset (asset principal))
+  (let (
+    (prev-assets (get-assets))
+  )
+    (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data set-assets (get agg (fold filter-asset prev-assets { filter-by: asset, agg: (list) })))
+  )
+)
+
 (define-public (set-reserve
   (asset principal)
   (state
@@ -1287,7 +1296,7 @@
   )
   (let (
     (user (get user aggregate))
-    (user-reserve-state (try! (get-user-balance-reserve-data lp-token asset user oracle)))
+    (user-reserve-state (get-user-reserve-data user (contract-of asset)))
     (default-reserve-value
       {
         total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
@@ -1300,34 +1309,11 @@
       }
     )
   )
-    (if (is-eq (+ (get underlying-balance user-reserve-state) (get compounded-borrow-balance user-reserve-state)) u0)
-      ;; do nothing this loop
-      (begin
-        (ok default-reserve-value)
-      )
-      (begin
-        ;; (get-user-asset-data lp-token asset oracle aggregate)
-        (if (is-some (is-in-isolation-mode user))
-          ;;  if it's in isolation mode
-          (if (is-eq (contract-of asset) (get-isolated-asset user))
-            ;;  if it's THE isolated asset,   
-            (get-user-asset-data lp-token asset oracle aggregate)
-            ;; if it's not, get the borrowed amounts
-            (ok 
-              (merge
-                (try! (get-user-asset-data lp-token asset oracle aggregate))
-                { user: user }
-              )
-            )
-          )
-          (get-user-asset-data lp-token asset oracle aggregate)
-        )
-        ;;      perform normally
-        ;;    if it's not the isolated asset
-        ;;      underlying balance is 0
-        ;;      count borrowing balance
-        ;; if it's not in isolation mode perform normally
-      )
+    (if (or (> (get principal-borrow-balance user-reserve-state) u0) (get use-as-collateral user-reserve-state))
+      ;; if borrowing or using as collateral
+      (get-user-asset-data lp-token asset oracle aggregate)
+      ;; do nothing
+      (ok default-reserve-value)
     )
   )
 )
@@ -1421,39 +1407,32 @@
     (ret (get-user-assets who)))
     (unwrap-panic (as-max-len? (concat (get assets-supplied ret) (get assets-borrowed ret)) u100))))
 
-(define-read-only (validate-assets
+(define-read-only (validate-assets-order
   (who principal)
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
-  (let (
-    (assets-used (get-assets-used-by who)))
-    (if (and (is-eq (len assets-to-calculate) (len assets-used)) (> (len assets-used) u0))
-      (get valid (fold check-assets assets-used { idx: u0, assets: assets-to-calculate, valid: true }))
-      false)))
+  (let ((assets-used (get-assets)))
+    (fold check-assets assets-used (ok { idx: u0, assets: assets-to-calculate }))
+  )
+)
 
 (define-read-only (check-assets
   (asset-to-validate principal)
-  (ret {
-    idx: uint,
-    assets: (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }),
-    valid: bool }))
-  (if (not (get valid ret))
-    ;; we found mismatch, keep mismatched value
-    ret
-    (let (
-      (asset-principal (get asset (unwrap-panic (element-at? (get assets ret) (get idx ret))) )))
-      {
-        idx: (+ u1 (get idx ret)),
-        assets: (get assets ret),
-        valid: (is-eq asset-to-validate (contract-of asset-principal)),
-      })))
+  (ret (response { idx: uint, assets: (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })} uint)))
+  (let (
+    (agg (try! ret))
+    (asset-principal (get asset (unwrap! (element-at? (get assets agg) (get idx agg)) ERR_NON_CORRESPONDING_ASSETS))))
+    (asserts! (is-eq asset-to-validate (contract-of asset-principal)) ERR_NON_CORRESPONDING_ASSETS)
+    
+    (ok { idx: (+ u1 (get idx agg)), assets: (get assets agg) })
+  )
+)
 
 (define-public (calculate-user-global-data
   (user principal)
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (begin
-    (asserts! (validate-assets user assets-to-calculate) ERR_NON_CORRESPONDING_ASSETS)
+    (try! (validate-assets-order user assets-to-calculate))
     (let (
-      (reserves (get-assets-used-by user))
       (aggregate (try!
           (fold
             aggregate-user-data

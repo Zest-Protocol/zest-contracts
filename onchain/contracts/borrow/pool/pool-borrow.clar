@@ -203,7 +203,6 @@
         (if (> amount-to-repay amount-due)
           amount-due
           amount-to-repay ))))
-    ;; (asserts! false (err payback-amount))
     (asserts! (> (get compounded-balance ret) u0) ERR_NOT_ZERO)
     (asserts! (get is-active reserve-state) ERR_INACTIVE)
     (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
@@ -517,29 +516,38 @@
           liquidation-threshold: liquidation-threshold,
           liquidation-bonus: liquidation-bonus }))))
 
-(define-public (add-isolated-asset (asset principal))
-  (begin
+(define-public (add-isolated-asset (asset principal) (debt-ceiling uint))
+  (let ((reserve-data (get-reserve-state asset)))
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-0-reserve set-isolated-asset asset)))
+    (try! (contract-call? .pool-0-reserve set-isolated-asset asset))
+    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { debt-ceiling: debt-ceiling }))
+  )
+)
 
 (define-public (add-asset (asset principal))
   (begin
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-0-reserve add-asset asset)))
 
+(define-public (remove-asset (asset principal))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-0-reserve remove-asset asset)))
+
 (define-public (remove-isolated-asset (asset principal))
   (begin
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-0-reserve remove-isolated-asset asset)))
 
-(define-public (set-borroweable-isolated (asset principal) (debt-ceiling uint))
+(define-public (set-borroweable-isolated (asset principal))
   (let (
     (reserve-data (get-reserve-state asset))
     (borroweable-assets (get-borroweable-isolated)))
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (try! (contract-call? .pool-0-reserve set-borroweable-isolated
-      (unwrap-panic (as-max-len? (append borroweable-assets asset) u100))))
-    (contract-call? .pool-0-reserve set-reserve asset (merge reserve-data { debt-ceiling: debt-ceiling }))))
+    (contract-call? .pool-0-reserve set-borroweable-isolated
+      (unwrap-panic (as-max-len? (append borroweable-assets asset) u100)))
+  )
+)
 
 (define-public (remove-borroweable-isolated (asset principal))
   (let ((borroweable-assets (get-borroweable-isolated)))
