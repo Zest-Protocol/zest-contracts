@@ -98,6 +98,11 @@ describe("Flashloans", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    poolBorrow.addAsset(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
 
     poolBorrow.init(
       deployerAddress,
@@ -113,6 +118,11 @@ describe("Flashloans", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
+      deployerAddress
+    );
 
     poolBorrow.init(
       deployerAddress,
@@ -126,6 +136,12 @@ describe("Flashloans", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    poolBorrow.addAsset(
+      deployerAddress,
+      xUSD,
       deployerAddress
     );
   });

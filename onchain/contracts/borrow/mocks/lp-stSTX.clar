@@ -160,7 +160,7 @@
 
 (define-constant max-value (contract-call? .math get-max-value))
 
-(define-public (redeem
+(define-public (withdraw
   (pool-reserve principal)
   (asset <sip10>)
   (oracle <oracle-trait>)

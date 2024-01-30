@@ -13,7 +13,7 @@ class ZToken {
     this.contractName = contractName;
   }
 
-  redeem(
+  withdraw(
     poolDeployer: string,
     poolContractName: string,
     assetDeployer: string,
@@ -31,7 +31,7 @@ class ZToken {
   ) {
     return simnet.callPublicFn(
       this.contractName,
-      "redeem",
+      "withdraw",
       [
         Cl.contractPrincipal(poolDeployer, poolContractName),
         Cl.contractPrincipal(assetDeployer, assetContractName),

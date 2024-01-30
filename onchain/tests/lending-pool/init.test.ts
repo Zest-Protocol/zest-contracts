@@ -108,6 +108,11 @@ describe("Supply and redeem", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -121,6 +126,11 @@ describe("Supply and redeem", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
       deployerAddress
     );
 
@@ -182,7 +192,7 @@ describe("Supply and redeem", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(simnet.getAssetsMap());
-    callResponse = stSTXZToken.redeem(
+    callResponse = stSTXZToken.withdraw(
       deployerAddress,
       "pool-0-reserve",
       deployerAddress,
@@ -197,12 +207,17 @@ describe("Supply and redeem", () => {
           "lp-token": { deployerAddress, contractName: zstSTX },
           oracle: { deployerAddress, contractName: oracle },
         },
+        {
+          asset: { deployerAddress, contractName: sBTC },
+          "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
       ],
       LP_1
     );
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
 
-    callResponse = sBTCZToken.redeem(
+    callResponse = sBTCZToken.withdraw(
       deployerAddress,
       "pool-0-reserve",
       deployerAddress,
@@ -212,6 +227,11 @@ describe("Supply and redeem", () => {
       2_000_000_000,
       Borrower_1,
       [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
         {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
@@ -288,6 +308,12 @@ describe("Supply and redeem", () => {
       deployerAddress
     );
 
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
+
     callResponse = poolBorrow.init(
       deployerAddress,
       lpsBTC,
@@ -300,6 +326,12 @@ describe("Supply and redeem", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
       deployerAddress
     );
 
@@ -388,6 +420,11 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -412,6 +449,11 @@ describe("Supply and redeem", () => {
       0,
       Borrower_1,
       [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
         {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
@@ -465,6 +507,11 @@ describe("Supply and redeem", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -478,6 +525,11 @@ describe("Supply and redeem", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      wstx,
       deployerAddress
     );
 
@@ -571,6 +623,11 @@ describe("Supply and redeem", () => {
           "lp-token": { deployerAddress, contractName: zstSTX },
           oracle: { deployerAddress, contractName: oracle },
         },
+        {
+          asset: { deployerAddress, contractName: wstx },
+          "lp-token": { deployerAddress, contractName: zwstx },
+          oracle: { deployerAddress, contractName: oracle },
+        },
       ],
       LP_1
     );
@@ -641,6 +698,11 @@ describe("Supply and redeem", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -654,6 +716,11 @@ describe("Supply and redeem", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
       deployerAddress
     );
 
@@ -730,6 +797,11 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -754,6 +826,11 @@ describe("Supply and redeem", () => {
       0,
       Borrower_1,
       [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
         {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
@@ -797,7 +874,7 @@ describe("Supply and redeem", () => {
       Cl.contractPrincipal(deployerAddress, sBTC),
     ]);
 
-    callResponse = sBTCZToken.redeem(
+    callResponse = sBTCZToken.withdraw(
       deployerAddress,
       "pool-0-reserve",
       deployerAddress,
@@ -807,6 +884,11 @@ describe("Supply and redeem", () => {
       2_000_000_000,
       Borrower_1,
       [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
         {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
@@ -830,7 +912,7 @@ describe("Supply and redeem", () => {
       Borrower_1
     );
 
-    callResponse = stSTXZToken.redeem(
+    callResponse = stSTXZToken.withdraw(
       deployerAddress,
       "pool-0-reserve",
       deployerAddress,
@@ -843,6 +925,11 @@ describe("Supply and redeem", () => {
         {
           asset: { deployerAddress, contractName: stSTX },
           "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: sBTC },
+          "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -899,6 +986,12 @@ describe("Supply and redeem", () => {
       deployerAddress
     );
 
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
+
     callResponse = poolBorrow.init(
       deployerAddress,
       lpsBTC,
@@ -911,6 +1004,12 @@ describe("Supply and redeem", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
       deployerAddress
     );
 
@@ -987,6 +1086,11 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -1011,6 +1115,11 @@ describe("Supply and redeem", () => {
       0,
       Borrower_1,
       [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
         {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
@@ -1058,6 +1167,11 @@ describe("Supply and redeem", () => {
       0,
       Borrower_1,
       [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zstSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
         {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },

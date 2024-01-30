@@ -97,6 +97,11 @@ describe("Supply and redeem", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    poolBorrow.addAsset(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
 
     poolBorrow.init(
       deployerAddress,
@@ -112,6 +117,11 @@ describe("Supply and redeem", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
+      deployerAddress
+    );
 
     poolBorrow.init(
       deployerAddress,
@@ -125,6 +135,11 @@ describe("Supply and redeem", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+    poolBorrow.addAsset(
+      deployerAddress,
+      xUSD,
       deployerAddress
     );
   });
@@ -196,8 +211,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -220,8 +245,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -247,8 +282,18 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: zxUSD },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -264,13 +309,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -304,13 +354,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -329,28 +384,6 @@ describe("Supply and redeem", () => {
       Borrower_1
     );
 
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "validate-assets",
-      [
-        Cl.standardPrincipal(Borrower_1),
-        Cl.list([
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-        ]),
-      ],
-      Borrower_1
-    );
 
     callResponse = stSTXToken.mint(
       BigInt("10000000000000000"),
@@ -369,13 +402,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -423,13 +461,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -545,8 +588,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -569,8 +622,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -596,8 +659,18 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: zxUSD },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -613,13 +686,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -653,13 +731,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -678,27 +761,7 @@ describe("Supply and redeem", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "validate-assets",
-      [
-        Cl.standardPrincipal(Borrower_1),
-        Cl.list([
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-        ]),
-      ],
-      Borrower_1
-    );
-
+    
     callResponse = stSTXToken.mint(
       BigInt("10000000000000000"),
       Liquidator_1,
@@ -717,13 +780,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -778,13 +846,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -808,6 +881,16 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -932,8 +1015,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -956,8 +1049,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -983,8 +1086,18 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: zxUSD },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -1000,13 +1113,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1028,13 +1146,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1042,27 +1165,7 @@ describe("Supply and redeem", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "validate-assets",
-      [
-        Cl.standardPrincipal(Borrower_1),
-        Cl.list([
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-        ]),
-      ],
-      Borrower_1
-    );
-
+    
     callResponse = stSTXToken.mint(
       BigInt("10000000000000000"),
       Liquidator_1,
@@ -1080,13 +1183,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1109,13 +1217,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1257,8 +1370,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1281,8 +1404,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1308,8 +1441,18 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: zxUSD },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -1326,6 +1469,16 @@ describe("Supply and redeem", () => {
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.standardPrincipal(deployerAddress),
         Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
@@ -1358,6 +1511,16 @@ describe("Supply and redeem", () => {
       deployerAddress,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: sBTC },
+          "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: xUSD },
           "lp-token": { deployerAddress, contractName: zxUSD },
           oracle: { deployerAddress, contractName: oracle },
@@ -1375,6 +1538,16 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1390,13 +1563,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1418,34 +1596,18 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
-        ]),
-      ],
-      Borrower_1
-    );
-
-    callResponse = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "validate-assets",
-      [
-        Cl.standardPrincipal(Borrower_1),
-        Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1470,13 +1632,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1592,6 +1759,11 @@ describe("Supply and redeem", () => {
       oracle,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -1610,6 +1782,11 @@ describe("Supply and redeem", () => {
       [
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
@@ -1639,6 +1816,11 @@ describe("Supply and redeem", () => {
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
@@ -1672,6 +1854,11 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -1693,6 +1880,11 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1700,11 +1892,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1728,6 +1915,11 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1735,11 +1927,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1762,6 +1949,11 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1769,11 +1961,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1798,13 +1985,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1829,13 +2021,18 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1852,7 +2049,7 @@ describe("Supply and redeem", () => {
     );
     expect(callResponse.result).toBeErr(Cl.uint(90003));
 
-    callResponse = stSTXZToken.redeem(
+    callResponse = stSTXZToken.withdraw(
       deployerAddress,
       "pool-0-reserve",
       deployerAddress,
@@ -1863,13 +2060,18 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
-          asset: { deployerAddress, contractName: xUSD },
-          "lp-token": { deployerAddress, contractName: zxUSD },
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
           oracle: { deployerAddress, contractName: oracle },
         },
         {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: zStSTX },
+          asset: { deployerAddress, contractName: sBTC },
+          "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: zxUSD },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -1885,7 +2087,7 @@ describe("Supply and redeem", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = xUSDZToken.redeem(
+    callResponse = xUSDZToken.withdraw(
       deployerAddress,
       "pool-0-reserve",
       deployerAddress,
@@ -1896,13 +2098,18 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
-          asset: { deployerAddress, contractName: xUSD },
-          "lp-token": { deployerAddress, contractName: zxUSD },
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
           oracle: { deployerAddress, contractName: oracle },
         },
         {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: zStSTX },
+          asset: { deployerAddress, contractName: sBTC },
+          "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: zxUSD },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],
@@ -2016,6 +2223,11 @@ describe("Supply and redeem", () => {
       oracle,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -2034,6 +2246,11 @@ describe("Supply and redeem", () => {
       [
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
@@ -2063,6 +2280,11 @@ describe("Supply and redeem", () => {
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
@@ -2096,6 +2318,11 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -2117,6 +2344,11 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -2124,11 +2356,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2146,6 +2373,11 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -2153,11 +2385,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2183,6 +2410,11 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -2190,11 +2422,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2219,6 +2446,11 @@ describe("Supply and redeem", () => {
       oracle,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -2238,6 +2470,11 @@ describe("Supply and redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -2245,11 +2482,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2269,6 +2501,11 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -2276,11 +2513,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2303,6 +2535,11 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -2310,11 +2547,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2337,6 +2569,11 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -2344,11 +2581,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2371,6 +2603,11 @@ describe("Supply and redeem", () => {
       [
         Cl.list([
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -2378,11 +2615,6 @@ describe("Supply and redeem", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2400,7 +2632,7 @@ describe("Supply and redeem", () => {
     expect(callResponse.result).toBeErr(Cl.uint(90001));
     // expect(callResponse.result).toBeOk(Cl.uint(0));
 
-    callResponse = xUSDZToken.redeem(
+    callResponse = xUSDZToken.withdraw(
       deployerAddress,
       "pool-0-reserve",
       deployerAddress,
@@ -2411,6 +2643,11 @@ describe("Supply and redeem", () => {
       Borrower_1,
       [
         {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
           asset: { deployerAddress, contractName: sBTC },
           "lp-token": { deployerAddress, contractName: zsBTC },
           oracle: { deployerAddress, contractName: oracle },
@@ -2418,11 +2655,6 @@ describe("Supply and redeem", () => {
         {
           asset: { deployerAddress, contractName: xUSD },
           "lp-token": { deployerAddress, contractName: zxUSD },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: zStSTX },
           oracle: { deployerAddress, contractName: oracle },
         },
       ],

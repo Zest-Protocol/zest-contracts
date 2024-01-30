@@ -88,20 +88,22 @@ class PoolBorrow {
     );
   }
 
-  addIsolatedAsset(
+  addAsset(
     assetDeployer: string,
     assetContractName: string,
     caller: string
   ) {
     return simnet.callPublicFn(
       this.contractName,
-      "add-isolated-asset",
-      [Cl.contractPrincipal(assetDeployer, assetContractName)],
+      "add-asset",
+      [
+        Cl.contractPrincipal(assetDeployer, assetContractName)
+      ],
       caller
     );
   }
 
-  setBorroweableIsolated(
+  addIsolatedAsset(
     assetDeployer: string,
     assetContractName: string,
     debtCeiling: IntegerType,
@@ -109,10 +111,25 @@ class PoolBorrow {
   ) {
     return simnet.callPublicFn(
       this.contractName,
+      "add-isolated-asset",
+      [
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+        Cl.uint(debtCeiling)
+      ],
+      caller
+    );
+  }
+
+  setBorroweableIsolated(
+    assetDeployer: string,
+    assetContractName: string,
+    caller: string
+  ) {
+    return simnet.callPublicFn(
+      this.contractName,
       "set-borroweable-isolated",
       [
         Cl.contractPrincipal(assetDeployer, assetContractName),
-        Cl.uint(debtCeiling),
       ],
       caller
     );
