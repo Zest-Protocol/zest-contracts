@@ -446,18 +446,6 @@
   )
 )
 
-;; (define-read-only (is-frozen (asset principal))
-;;   (get is-frozen (get-reserve-state asset))
-;; )
-
-;; (define-read-only (is-active (asset principal))
-;;   (get is-active (get-reserve-state asset))
-;; )
-
-;; (define-read-only (is-borrowing-enabled (asset principal))
-;;   (get borrowing-enabled (get-reserve-state asset))
-;; )
-
 ;; @desc The function updates cumulative indexes, reserve interest rates, and the timestamp.
 (define-public (update-state-on-deposit
   (asset <ft>)
