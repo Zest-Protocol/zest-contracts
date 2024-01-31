@@ -1331,9 +1331,33 @@
     )
   )
     (if (is-eq (+ (get underlying-balance user-reserve-state) (get compounded-borrow-balance user-reserve-state)) u0)
-      ;; do nothing if unused
-      (ok default-reserve-value)
-      (get-user-asset-data lp-token asset oracle aggregate)
+      ;; do nothing this loop
+      (begin
+        (ok default-reserve-value)
+      )
+      (begin
+        ;; (get-user-asset-data lp-token asset oracle aggregate)
+        (if (is-some (is-in-isolation-mode user))
+          ;;  if it's in isolation mode
+          (if (is-eq (contract-of asset) (get-isolated-asset user))
+            ;;  if it's THE isolated asset,   
+            (get-user-asset-data lp-token asset oracle aggregate)
+            ;; if it's not, get the borrowed amounts
+            (ok 
+              (merge
+                (try! (get-user-asset-data lp-token asset oracle aggregate))
+                { user: user }
+              )
+            )
+          )
+          (get-user-asset-data lp-token asset oracle aggregate)
+        )
+        ;;      perform normally
+        ;;    if it's not the isolated asset
+        ;;      underlying balance is 0
+        ;;      count borrowing balance
+        ;; if it's not in isolation mode perform normally
+      )
     )
   )
 )

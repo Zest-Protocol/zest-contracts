@@ -44,6 +44,8 @@
       false
     )
 
+    (asserts! (is-none (index-of? (get assets-borrowed user-assets) supplied-asset-principal)) ERR_SUPPLYING_BORROWED_ASSET)
+
     (try! (contract-call? .pool-0-reserve update-state-on-deposit asset owner amount (is-eq current-balance u0)))
 
     (try! (contract-call? lp mint amount owner))
@@ -134,6 +136,7 @@
 
     (asserts! (is-eq (get a-token-address reserve-state) (contract-of lp)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (get oracle reserve-state) (contract-of oracle)) ERR_INVALID_ORACLE)
+    (asserts! (is-none (index-of? (get assets-supplied user-assets) asset)) ERR_BORROWING_SUPPLIED_ASSET)
 
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
