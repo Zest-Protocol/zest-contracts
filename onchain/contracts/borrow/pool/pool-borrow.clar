@@ -7,6 +7,17 @@
 (define-constant max-value (contract-call? .math get-max-value))
 (define-constant one-8 (contract-call? .math get-one))
 
+(define-map users-id uint principal)
+(define-data-var last-user-id uint u0)
+
+(define-read-only (get-user (id uint))
+  (map-get? users-id id)
+)
+
+(define-read-only (get-last-user-id)
+  (var-get last-user-id)
+)
+
 (define-public (supply
   (lp <ft-mint-trait>)
   (pool-reserve principal)
@@ -28,6 +39,9 @@
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
     (asserts! (>= (get supply-cap reserve-state) (+ amount current-available-liquidity (get total-borrows-variable reserve-state))) ERR_EXCEED_SUPPLY_CAP)
+
+    (map-insert users-id (var-get last-user-id) tx-sender)
+    (var-set last-user-id (+ u1 (var-get last-user-id)))
 
     ;; if first supply
     (if (is-eq current-balance u0)
