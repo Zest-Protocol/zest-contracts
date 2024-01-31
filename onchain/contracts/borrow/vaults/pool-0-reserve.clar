@@ -1273,7 +1273,7 @@
     (if (or (> (get principal-borrow-balance user-reserve-state) u0) (get use-as-collateral user-reserve-state))
       ;; if borrowing or using as collateral
       (get-user-asset-data lp-token asset oracle aggregate)
-      ;; do nothing
+      ;; add nothing
       (ok default-reserve-value)
     )
   )
