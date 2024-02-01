@@ -535,13 +535,13 @@
 (define-public (update-state-on-redeem
   (asset <ft>)
   (who principal)
-  (amount-deposited uint)
+  (amount-claimed uint)
   (user-redeemed-everything bool)
   )
   (begin
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     (try! (update-cumulative-indexes (contract-of asset)))
-    (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
+    (try! (update-reserve-interest-rates-and-timestamp asset u0 amount-claimed))
 
     (if user-redeemed-everything
       (begin
