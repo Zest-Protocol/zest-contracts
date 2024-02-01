@@ -163,6 +163,7 @@
     (supply-cap uint)
     (borrow-cap uint)
     (debt-ceiling uint)
+    (accrued-to-treasury uint)
     (is-active bool)
     (is-frozen bool)))
 
@@ -193,6 +194,7 @@
     (supply-cap uint)
     (borrow-cap uint)
     (debt-ceiling uint)
+    (accrued-to-treasury uint)
     (is-active bool)
     (is-frozen bool))))
   (begin
@@ -363,6 +365,18 @@
 (define-read-only (get-origination-fee-prc-read (asset principal))
   (map-get? origination-fee-prc asset))
 
+(define-map reserve-factor principal uint)
+(define-public (set-reserve-factor (asset principal) (factor uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-reserve-factor", payload: { key: asset, data: factor } })
+    (ok (map-set reserve-factor asset factor))))
+
+(define-public (get-reserve-factor (asset principal))
+  (ok (map-get? reserve-factor asset)))
+(define-read-only (get-reserve-factor-read (asset principal))
+  (map-get? reserve-factor asset))
+
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)
 (define-public (set-contract-owner (owner principal))
@@ -451,3 +465,10 @@
 (map-set origination-fee-prc .xusd u250000)
 (map-set origination-fee-prc .usda u250000)
 (map-set origination-fee-prc .wstx u250000)
+
+(map-set reserve-factor .ststx u15000000)
+(map-set reserve-factor .sbtc u10000000)
+(map-set reserve-factor .diko u10000000)
+(map-set reserve-factor .xusd u10000000)
+(map-set reserve-factor .usda u10000000)
+(map-set reserve-factor .wstx u10000000)

@@ -88,7 +88,8 @@
               user-collateral-balance)))
         (max-collateral-to-liquidate (get collateral-amount available-collateral-principal))
         (debt-needed (get debt-needed available-collateral-principal))
-        (origination-fee (get-user-origination-fee user debt-asset))
+        ;; (origination-fee (get-user-origination-fee user debt-asset))
+        (origination-fee u0)
         (required-fees
           (if (> origination-fee u0)
             ;; if fees, take into account when calcualting available collateral
@@ -109,8 +110,10 @@
           (if purchasing-all-underlying-collateral
             debt-needed
             debt-to-liquidate))
-        (fee-liquidated (get debt-needed required-fees))
-        (liquidated-collateral-for-fee (get collateral-amount required-fees))
+        ;; (fee-liquidated (get debt-needed required-fees))
+        (fee-liquidated u0)
+        ;; (liquidated-collateral-for-fee (get collateral-amount required-fees))
+        (liquidated-collateral-for-fee u0)
       )
         ;; if liquidator wants underlying asset, check there is enough collateral
         (if (not to-receive-atoken)
@@ -139,12 +142,13 @@
             (try! (contract-call? .pool-0-reserve transfer-to-user collateral tx-sender max-collateral-to-liquidate))))
         (try! (contract-call? .pool-0-reserve transfer-to-reserve debt-asset tx-sender actual-debt-to-liquidate))
       
-        (if (> fee-liquidated u0)
-          (begin
-            ;; burn users' lp and transfer to fee collection address
-            (try! (contract-call? lp-token burn-on-liquidation liquidated-collateral-for-fee user))
-            (try! (contract-call? .pool-0-reserve transfer-to-user collateral (contract-call? .pool-0-reserve get-collection-address) liquidated-collateral-for-fee)))
-          u0)
+        ;; (if (> fee-liquidated u0)
+        ;;   (begin
+        ;;     ;; burn users' lp and transfer to fee collection address
+        ;;     (try! (contract-call? lp-token burn-on-liquidation liquidated-collateral-for-fee user))
+        ;;     (try! (contract-call? .pool-0-reserve transfer-to-user collateral (contract-call? .pool-0-reserve get-collection-address) liquidated-collateral-for-fee)))
+        ;;   u0
+        ;; )
       )
     )
     (ok u0)

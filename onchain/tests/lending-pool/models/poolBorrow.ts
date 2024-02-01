@@ -279,6 +279,21 @@ class PoolBorrow {
       caller
     );
   }
+
+  getReserveState(
+    assetDeployer: string,
+    assetContractName: string,
+    caller: string
+  ) {
+    return simnet.callReadOnlyFn(
+      this.contractName,
+      "get-reserve-state",
+      [
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+      ],
+      caller
+    );
+  }
 }
 
 export { PoolBorrow };

@@ -437,12 +437,14 @@ describe("Supply and redeem", () => {
       .getAssetsMap()
       .get(".ststx.ststx")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
-    expect(
-      simnet
-        .getAssetsMap()
-        .get(".sbtc.sbtc")
-        ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!
-    ).toBe(8379050n);
+    callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
+    expect(cvToValue(callResponse.result)["value"]["accrued-to-treasury"]["value"]).toBe("9097289");
+    // expect(
+    //   simnet
+    //     .getAssetsMap()
+    //     .get(".sbtc.sbtc")
+    //     ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!
+    // ).toBe(8379050n);
     expect(BigInt(currVaultBalance) - BigInt(prevVaultBalance)).toBe(159601564083n);
 
     // console.log("Max Borrow amount: ", maxBorrowAmount);

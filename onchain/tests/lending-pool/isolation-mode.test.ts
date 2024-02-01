@@ -774,8 +774,8 @@ describe("Isolated mode", () => {
       Borrower_1
     );
     let afterNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
-    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112500701");
-    expect(afterNonIsolatedSupply["health-factor"].value).toBe("112500699");
+    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112781953");
+    expect(afterNonIsolatedSupply["health-factor"].value).toBe("112781950");
   });
   it(`Supply and borrow supplying only isolated asset.
   Supply non-isolated asset when enabled as collateral,
@@ -1072,7 +1072,7 @@ describe("Isolated mode", () => {
       Borrower_1
     );
 
-    expect(callResponse.result).toBeOk(Cl.uint(499610074));
+    expect(callResponse.result).toBeOk(Cl.uint(500440672));
 
     borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -1293,12 +1293,12 @@ describe("Isolated mode", () => {
       Cl.tuple({
         "current-liquidation-threshold": Cl.uint(90000000),
         "current-ltv": Cl.uint(80000000),
-        "health-factor": Cl.uint(100098100),
+        "health-factor": Cl.uint(100140175),
         "is-health-factor-below-treshold": Cl.bool(false),
         "total-borrow-balanceUSD": Cl.uint(57456004000),
-        "total-collateral-balanceUSD": Cl.uint(64062388160),
-        "total-liquidity-balanceUSD": Cl.uint(64062388160),
-        "user-total-feesUSD": Cl.uint(143640000),
+        "total-collateral-balanceUSD": Cl.uint(63929492480),
+        "total-liquidity-balanceUSD": Cl.uint(63929492480),
+        "user-total-feesUSD": Cl.uint(0),
       })
     );
 
@@ -1309,7 +1309,7 @@ describe("Isolated mode", () => {
       Borrower_1,
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(575996440));
+    expect(callResponse.result).toBeOk(Cl.uint(574560040));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -1345,8 +1345,8 @@ describe("Isolated mode", () => {
         ),
         "is-health-factor-below-treshold": Cl.bool(false),
         "total-borrow-balanceUSD": Cl.uint(0),
-        "total-collateral-balanceUSD": Cl.uint(64062388160),
-        "total-liquidity-balanceUSD": Cl.uint(64062388160),
+        "total-collateral-balanceUSD": Cl.uint(63929492480),
+        "total-liquidity-balanceUSD": Cl.uint(63929492480),
         "user-total-feesUSD": Cl.uint(0),
       })
     );

@@ -749,6 +749,8 @@ describe("Supply and Redeem", () => {
       ],
       LP_3
     );
+    callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
+    // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(simnet.getAssetsMap());
 
 
@@ -764,7 +766,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200_500_086));
+    expect(callResponse.result).toBeOk(Cl.uint(200_000_086));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -776,7 +778,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200_500_012));
+    expect(callResponse.result).toBeOk(Cl.uint(200_000_012));
 
     callResponse = simnet.callPublicFn(
       "lp-ststx",

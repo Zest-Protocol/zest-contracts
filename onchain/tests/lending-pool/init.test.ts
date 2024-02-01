@@ -413,7 +413,7 @@ describe("Supply and redeem", () => {
       stSTX,
       deployerAddress,
       lpstSTX,
-      100_000_000,
+      150_000_000,
       deployerAddress,
       "fees-calculator",
       0,
@@ -657,7 +657,7 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(99999858));
+    expect(callResponse.result).toBeOk(Cl.uint(99750483));
   });
   it("Borrower supplies sBTC, borrow stSTX pay back with interest. LPer gets their stSTX back", () => {
     const poolReserve0 = new PoolReserve(
@@ -862,7 +862,7 @@ describe("Supply and redeem", () => {
       Borrower_1
     );
 
-    expect(callResponse.result).toBeOk(Cl.uint(100250114));
+    expect(callResponse.result).toBeOk(Cl.uint(100000114));
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -936,14 +936,14 @@ describe("Supply and redeem", () => {
       LP_1
     );
 
-    expect(callResponse.result).toBeOk(Cl.uint(1_000_000_110n));
+    expect(callResponse.result).toBeOk(Cl.uint(1_000_000_100n));
 
     expect(simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Borrower_1)).toBe(
       0n
     );
     expect(simnet.getAssetsMap().get(".lp-ststx.lp-ststx")?.get(LP_1)).toBe(0n);
     expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(LP_1)).toBe(
-      1_000_000_110n
+      1_000_000_100n
     );
   });
   it("Borrower supplies sBTC, borrow stSTX pay back with high interests. LPer gets their stSTX back", () => {
@@ -1217,6 +1217,6 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(100250019));
+    expect(callResponse.result).toBeOk(Cl.uint(100000019));
   });
 });

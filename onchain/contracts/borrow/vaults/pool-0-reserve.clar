@@ -367,6 +367,10 @@
 (define-read-only (get-reserve-state (asset principal))
   (ok (unwrap! (contract-call? .pool-reserve-data get-reserve-state-read asset) ERR_DOES_NOT_EXIST)))
 
+(define-read-only (get-reserve-factor (asset principal))
+  (ok (unwrap! (contract-call? .pool-reserve-data get-reserve-factor-read asset) ERR_DOES_NOT_EXIST))
+)
+
 (define-read-only (get-reserve-state-optional (asset principal))
   (contract-call? .pool-reserve-data get-reserve-state-read asset))
 
@@ -418,6 +422,7 @@
       (supply-cap uint)
       (borrow-cap uint)
       (debt-ceiling uint)
+      (accrued-to-treasury uint)
       (is-active bool)
       (is-frozen bool)
     )))
@@ -425,6 +430,40 @@
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     (contract-call? .pool-reserve-data set-reserve-state asset state)
   )
+)
+
+(define-private (set-reserve-internal
+  (asset principal)
+  (state
+    (tuple
+      (last-liquidity-cumulative-index uint)
+      (current-liquidity-rate uint)
+      (total-borrows-stable uint)
+      (total-borrows-variable uint)
+      (current-variable-borrow-rate uint)
+      (current-stable-borrow-rate uint)
+      (current-average-stable-borrow-rate uint)
+      (last-variable-borrow-cumulative-index uint)
+      (base-ltv-as-collateral uint)
+      (liquidation-threshold uint)
+      (liquidation-bonus uint)
+      (decimals uint)
+      (a-token-address principal)
+      (oracle principal)
+      (interest-rate-strategy-address principal)
+      (flashloan-enabled bool)
+      (last-updated-block uint)
+      (borrowing-enabled bool)
+      (usage-as-collateral-enabled bool)
+      (is-stable-borrow-rate-enabled bool)
+      (supply-cap uint)
+      (borrow-cap uint)
+      (debt-ceiling uint)
+      (accrued-to-treasury uint)
+      (is-active bool)
+      (is-frozen bool)
+    )))
+  (contract-call? .pool-reserve-data set-reserve-state asset state)
 )
 
 (define-public (set-user-reserve
@@ -455,12 +494,20 @@
   )
   (begin
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-    (try! (update-cumulative-indexes (contract-of asset)))
-    (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
+    (let (
+      (indexes (try! (update-cumulative-indexes (contract-of asset))))
+    )
+      (try! 
+        (accrue-to-treasury
+          (get curr-variable-borrow-cumulative-index indexes)
+          (get next-variable-borrow-cumulative-index indexes)
+          (contract-of asset)))
+      (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
 
-    (if is-first-deposit
-      (add-supplied-asset who (contract-of asset))
-      (ok true)
+      (if is-first-deposit
+        (add-supplied-asset who (contract-of asset))
+        (ok true)
+      )
     )
   )
 )
@@ -476,10 +523,16 @@
   )
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
+    (indexes (try! (update-cumulative-indexes (contract-of asset))))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
+    (try!
+      (accrue-to-treasury
+        (get curr-variable-borrow-cumulative-index indexes)
+        (get next-variable-borrow-cumulative-index indexes)
+        (contract-of asset)))
     (try! (transfer-fee-to-collection asset receiver protocol-fee (get-collection-address)))
-    (try! (update-cumulative-indexes (contract-of asset)))
+
     (try! (cumulate-to-liquidity-index
         (+ available-liquidity-before (get total-borrows-variable reserve-data))
         income
@@ -520,12 +573,20 @@
   (repaid-whole-loan bool))
   (begin
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-    (try! (update-cumulative-indexes (contract-of asset)))
-    (try! (update-reserve-state-on-repay who payback-amount-minus-fees balance-increase asset))
-    (try! (update-user-state-on-repay asset who payback-amount-minus-fees origination-fee-repaid balance-increase repaid-whole-loan))
+    (let (
+      (indexes (try! (update-cumulative-indexes (contract-of asset))))
+    )
+      (try!
+        (accrue-to-treasury
+          (get curr-variable-borrow-cumulative-index indexes)
+          (get next-variable-borrow-cumulative-index indexes)
+          (contract-of asset))) 
+      (try! (update-reserve-state-on-repay who payback-amount-minus-fees balance-increase asset))
+      (try! (update-user-state-on-repay asset who payback-amount-minus-fees u0 balance-increase repaid-whole-loan))
 
-    (try! (update-reserve-interest-rates-and-timestamp asset payback-amount-minus-fees u0))
-    (ok true)
+      (try! (update-reserve-interest-rates-and-timestamp asset payback-amount-minus-fees u0))
+      (ok true)
+    )
   )
 )
 
@@ -540,16 +601,24 @@
   )
   (begin
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-    (try! (update-cumulative-indexes (contract-of asset)))
-    (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
+    (let (
+      (indexes (try! (update-cumulative-indexes (contract-of asset))))
+    )
+      (try!
+        (accrue-to-treasury
+          (get curr-variable-borrow-cumulative-index indexes)
+          (get next-variable-borrow-cumulative-index indexes)
+          (contract-of asset)))
+      (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
 
-    (if user-redeemed-everything
-      (begin
-        ;; (try! (reset-data-on-zero-balance-internal who (contract-of asset)))
-        (try! (remove-supplied-asset who (contract-of asset)))
-        (set-user-reserve-as-collateral-internal who asset false)
+      (if user-redeemed-everything
+        (begin
+          ;; (try! (reset-data-on-zero-balance-internal who (contract-of asset)))
+          (try! (remove-supplied-asset who (contract-of asset)))
+          (set-user-reserve-as-collateral-internal who asset false)
+        )
+        (ok true)
       )
-      (ok true)
     )
   )
 )
@@ -572,24 +641,44 @@
   (liquidator-receives-aToken bool))
   (begin
     (asserts! (is-liquidator contract-caller) ERR_UNAUTHORIZED)
+    (let (
+      (principal-indexes (try! (update-cumulative-indexes (contract-of principal-reserve))))
+    )
+      (try! (update-principal-reserve-state-on-liquidation principal-reserve borrower principal-amount-to-liquidate balance-increase))
+      (try!
+        (accrue-to-treasury
+          (get curr-variable-borrow-cumulative-index principal-indexes)
+          (get next-variable-borrow-cumulative-index principal-indexes)
+          (contract-of principal-reserve)))
 
-    (try! (update-principal-reserve-state-on-liquidation principal-reserve borrower principal-amount-to-liquidate balance-increase))
-    (try! (update-cumulative-indexes (contract-of collateral-reserve)))
+      (try! (update-user-state-on-liquidation principal-reserve borrower principal-amount-to-liquidate
+        ;; fee-liquidated
+        u0
+        balance-increase))
+      (try! (update-reserve-interest-rates-and-timestamp principal-reserve principal-amount-to-liquidate u0))
 
-    (try! (update-user-state-on-liquidation principal-reserve borrower principal-amount-to-liquidate fee-liquidated balance-increase))
-    (try! (update-reserve-interest-rates-and-timestamp principal-reserve principal-amount-to-liquidate u0))
+      (if purchased-all-collateral
+        (try! (remove-supplied-asset borrower (contract-of collateral-reserve)))
+        false)
 
-    (if purchased-all-collateral
-      (try! (remove-supplied-asset borrower (contract-of collateral-reserve)))
-      false)
-
-    (if (not liquidator-receives-aToken)
-      (update-reserve-interest-rates-and-timestamp collateral-reserve u0 (+ collateral-to-liquidate liquidated-collateral-for-fee))
-      (begin
-        (try! (add-supplied-asset liquidator-addr (contract-of collateral-reserve)))
-        (ok false)
+      (if (not liquidator-receives-aToken)
+        (let (
+          (indexes-collateral (try! (update-cumulative-indexes (contract-of collateral-reserve))))
+        )
+          (try!
+            (accrue-to-treasury
+              (get curr-variable-borrow-cumulative-index indexes-collateral)
+              (get next-variable-borrow-cumulative-index indexes-collateral)
+              (contract-of collateral-reserve)))
+          (update-reserve-interest-rates-and-timestamp collateral-reserve u0 (+ collateral-to-liquidate liquidated-collateral-for-fee))
+        )
+        (begin
+          (try! (add-supplied-asset liquidator-addr (contract-of collateral-reserve)))
+          (ok false)
+        )
       )
     )
+
   )
 )
 
@@ -636,9 +725,11 @@
     )
     (last-variable-borrow-cumulative-index (get last-variable-borrow-cumulative-index reserve-data))
     (origination-fee
-      (if (> fee-liquidated u0)
-        (- (get origination-fee user-data) fee-liquidated)
-        (get origination-fee user-data))
+      ;; (if (> fee-liquidated u0)
+      ;;   (- (get origination-fee user-data) fee-liquidated)
+      ;;   (get origination-fee user-data)
+      ;; )
+      u0
     ))
     (asserts! (is-liquidator contract-caller) ERR_UNAUTHORIZED)
 
@@ -650,7 +741,7 @@
         {
           principal-borrow-balance: principal-borrow-balance,
           last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
-          origination-fee: origination-fee,
+          ;; origination-fee: origination-fee,
           last-updated-block: burn-block-height }))))
 
 (define-private (reset-data-on-zero-balance-internal (who principal) (asset principal))
@@ -716,7 +807,7 @@
         (get last-variable-borrow-cumulative-index reserve-data)
       )
     )
-    (origination-fee (- (get origination-fee user-data) origination-fee-repaid))
+    ;; (origination-fee (- (get origination-fee user-data) origination-fee-repaid))
     (last-updated-block burn-block-height))
 
   (try! (contract-call? .pool-reserve-data set-user-reserve-data
@@ -726,7 +817,7 @@
       {
         principal-borrow-balance: principal-borrow-balance,
         last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
-        origination-fee: origination-fee,
+        ;; origination-fee: origination-fee,
         last-updated-block: last-updated-block
       })))
   (if repaid-whole-loan
@@ -771,7 +862,7 @@
       stable-borrow-rate: u0,
       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
       principal-borrow-balance: (+ (get principal-borrow-balance user-data) amount-borrowed balance-increase),
-      origination-fee: (+ (get origination-fee user-data) fee),
+      ;; origination-fee: (+ (get origination-fee user-data) fee),
       last-updated-block: burn-block-height }))
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     
@@ -1125,7 +1216,7 @@
           )
         )
       )
-        (contract-call? .pool-reserve-data
+        (try! (contract-call? .pool-reserve-data
           set-reserve-state
           asset
           (merge
@@ -1135,9 +1226,24 @@
               last-variable-borrow-cumulative-index: new-last-variable-borrow-liquidity-cumulative-index
             }
           )
+        ))
+        (ok
+          {
+            curr-liquidity-cumulative-index: (get last-liquidity-cumulative-index reserve-data),
+            next-liquidity-cumulative-index: new-last-liquidity-cumulative-index,
+            curr-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
+            next-variable-borrow-cumulative-index: new-last-variable-borrow-liquidity-cumulative-index
+          }
         )
       )
-      (ok false)
+      (ok
+        {
+          curr-liquidity-cumulative-index: (get last-liquidity-cumulative-index reserve-data),
+          next-liquidity-cumulative-index: (get last-liquidity-cumulative-index reserve-data),
+          curr-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
+          next-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data)
+        }
+      )
     )
   )
 )
@@ -1188,7 +1294,7 @@
       (ok {
         underlying-balance: underlying-balance,
         compounded-borrow-balance: compounded-borrow-balance,
-        origination-fee: (get origination-fee user-data),
+        origination-fee: u0,
         use-as-collateral: (get use-as-collateral user-data)
       })
     )
@@ -1322,11 +1428,11 @@
               (get total-borrow-balanceUSD aggregate)
               (mul-to-fixed-precision (get compounded-borrow-balance user-reserve-state) (get decimals reserve-data) reserve-unit-price)
             ),
-          user-total-feesUSD:
-            (+
-              (get user-total-feesUSD aggregate)
-              (mul-to-fixed-precision (get origination-fee user-reserve-state) (get decimals reserve-data) reserve-unit-price)
-            )
+          user-total-feesUSD: u0
+            ;; (+
+            ;;   (get user-total-feesUSD aggregate)
+            ;;   (mul-to-fixed-precision (get origination-fee user-reserve-state) (get decimals reserve-data) reserve-unit-price)
+            ;; )
         }
         {
           total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),
@@ -1433,10 +1539,10 @@
   (current-ltv uint)
   )
   (let (
-    (requested-borrow-amount-USD (mul-to-fixed-precision (+ amount borrow-fee) decimals asset-price))
+    (requested-borrow-amount-USD (mul-to-fixed-precision (+ amount u0) decimals asset-price))
     (collateral-needed-in-USD
       (div
-        (+ current-user-borrow-balance-USD current-fees-USD requested-borrow-amount-USD)
+        (+ current-user-borrow-balance-USD u0 requested-borrow-amount-USD)
         current-ltv))
     )
     {
@@ -1461,7 +1567,7 @@
         total-collateral-balanceUSD
         current-liquidation-threshold
       )
-      (+ total-borrow-balanceUSD total-feesUSD)
+      (+ total-borrow-balanceUSD u0)
     )
   )
 )
@@ -1538,9 +1644,12 @@
             ))))
           {
             current-liquidity-rate:
-              (mul 
-                new-variable-borrow-rate
-                utilization-rate
+              (mul
+                (mul 
+                  new-variable-borrow-rate
+                  utilization-rate
+                )
+                (- one-8 (unwrap-panic (get-reserve-factor asset)))
               ),
             current-variable-borrow-rate: new-variable-borrow-rate,
             utilization-rate: utilization-rate,
@@ -1550,6 +1659,37 @@
   )
 )
 
+(define-private (accrue-to-treasury
+  (current-variable-borrow-cumulative-index uint)
+  (next-variable-borrow-cumulative-index uint)
+  (asset principal)
+  )
+  (let (
+    (reserve-data (try! (get-reserve-state asset)))
+    (reserve-factor (try! (get-reserve-factor asset)))
+    (decimals (get decimals reserve-data))
+    (prev-total-variable-debt
+      (mul-to-fixed-precision
+        (get total-borrows-variable reserve-data)
+        decimals
+        current-variable-borrow-cumulative-index))
+    (curr-total-variable-debt
+      (mul-to-fixed-precision
+        (get total-borrows-variable reserve-data)
+        decimals
+        next-variable-borrow-cumulative-index))
+    (debt-accrued (- curr-total-variable-debt prev-total-variable-debt))
+    (amount-to-mint (mul-precision-with-factor debt-accrued decimals reserve-factor))
+  )
+    (if (> amount-to-mint u0)
+      (begin
+        (try! (set-reserve-internal asset (merge reserve-data { accrued-to-treasury: (+ amount-to-mint (get accrued-to-treasury reserve-data)) })))
+        (ok amount-to-mint)
+      )
+      (ok u0)
+    )
+  )
+)
 
 (define-read-only (get-collection-address)
   (contract-call? .pool-reserve-data get-protocol-treasury-addr-read))

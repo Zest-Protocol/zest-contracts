@@ -246,6 +246,7 @@ describe("Flashloans", () => {
           "current-stable-borrow-rate": Cl.uint(0),
           "current-variable-borrow-rate": Cl.uint(0),
           "debt-ceiling": Cl.uint(0),
+          "accrued-to-treasury": Cl.uint(0),
           decimals: Cl.uint(8),
           "flashloan-enabled": Cl.bool(true),
           "interest-rate-strategy-address": Cl.contractPrincipal(

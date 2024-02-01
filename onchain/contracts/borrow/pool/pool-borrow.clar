@@ -158,7 +158,8 @@
 
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
-      (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner asset amount-to-be-borrowed (get decimals reserve-state))))
+      ;; (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner asset amount-to-be-borrowed (get decimals reserve-state))))
+      (borrow-fee u0)
       (borrow-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-balance-reserve-data lp asset-to-borrow owner oracle)))
       (amount-collateral-needed
         (contract-call? .pool-0-reserve calculate-collateral-needed-in-USD
@@ -170,7 +171,7 @@
           (get total-borrow-balanceUSD user-global-data)
           (get user-total-feesUSD user-global-data)
           (get current-ltv user-global-data))))
-      (asserts! (> borrow-fee u0) ERR_NOT_ZERO)
+      ;; (asserts! (> borrow-fee u0) ERR_NOT_ZERO)
       (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) ERR_NOT_ZERO)
       (asserts! (<= (get collateral-needed-in-USD amount-collateral-needed) (get total-collateral-balanceUSD user-global-data)) ERR_NOT_ENOUGH_COLLATERAL)
       (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
@@ -194,7 +195,7 @@
       (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))
       (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
 
-      (print { type: "borrow", payload: { key: owner, data: { amount-to-be-borrowed: amount-to-be-borrowed, borrow-fee: borrow-fee,  } } })
+      (print { type: "borrow", payload: { key: owner, data: { amount-to-be-borrowed: amount-to-be-borrowed } } })
 
       (ok amount-to-be-borrowed))))
 
@@ -205,7 +206,8 @@
   )
   (let (
     (ret (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance on-behalf-of asset)))
-    (origination-fee (contract-call? .pool-0-reserve get-user-origination-fee on-behalf-of asset))
+    ;; (origination-fee (contract-call? .pool-0-reserve get-user-origination-fee on-behalf-of asset))
+    (origination-fee u0)
     (amount-due (+ (get compounded-balance ret) origination-fee))
     (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state (contract-of asset))))
     (payback-amount
@@ -218,64 +220,22 @@
     (asserts! (get is-active reserve-state) ERR_INACTIVE)
     (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
     
-    ;; if payback-amount is smaller than fees, just pay fees
-    (if (<= payback-amount origination-fee)
-      (begin
-        (try!
-          (contract-call? .pool-0-reserve update-state-on-repay
-            asset
-            on-behalf-of
-            u0
-            payback-amount
-            (get balance-increase ret)
-            false
-          )
+    ;; paying back the balance
+    (begin
+      (try!
+        (contract-call? .pool-0-reserve update-state-on-repay
+          asset
+          on-behalf-of
+          payback-amount
+          origination-fee
+          (get balance-increase ret)
+          (is-eq (get compounded-balance ret) payback-amount)
         )
-        (try!
-          (contract-call? .pool-0-reserve transfer-fee-to-collection
-            asset
-            on-behalf-of
-            payback-amount
-            (contract-call? .pool-0-reserve get-collection-address)
-          )
-        )
-        
-        (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount, origination-fee: payback-amount } } })
-        (ok payback-amount)
       )
-      ;; paying back the balance
-      (let (
-        (payback-amount-minus-fees (- payback-amount origination-fee))
-      )
-        (try!
-          (contract-call? .pool-0-reserve update-state-on-repay
-            asset
-            on-behalf-of
-            payback-amount-minus-fees
-            origination-fee
-            (get balance-increase ret)
-            (is-eq (get compounded-balance ret) payback-amount-minus-fees)
-          )
-        )
-        (if (> origination-fee u0)
-          (begin
-            (try!
-              (contract-call? .pool-0-reserve transfer-fee-to-collection
-                asset
-                tx-sender
-                origination-fee
-                (contract-call? .pool-0-reserve get-collection-address)
-              )
-            )
-            u0
-          )
-          u0
-        )
-        (try! (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount-minus-fees))
+      (try! (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount))
 
-        (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount-minus-fees, origination-fee: origination-fee } } })
-        (ok payback-amount)
-      )
+      (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount } } })
+      (ok payback-amount)
     )
   )
 )
@@ -448,6 +408,7 @@
         supply-cap: supply-cap,
         borrow-cap: borrow-cap,
         debt-ceiling: u0,
+        accrued-to-treasury: u0,
         usage-as-collateral-enabled: false,
         is-stable-borrow-rate-enabled: false,
         is-active: true,
@@ -484,6 +445,7 @@
       (supply-cap uint)
       (borrow-cap uint)
       (debt-ceiling uint)
+      (accrued-to-treasury uint)
       (is-active bool)
       (is-frozen bool)
     )))
