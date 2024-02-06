@@ -359,7 +359,12 @@
 )
 
 (define-public (get-reserve-available-liquidity (asset <ft>))
-  (contract-call? asset get-balance (get-reserve-vault asset)))
+  (let (
+    (reserve-data (try! (get-reserve-state (contract-of asset))))
+  )
+    (ok (- (try! (contract-call? asset get-balance (get-reserve-vault asset))) (get accrued-to-treasury reserve-data) ))
+  )
+)
 
 (define-read-only (get-user-index (who principal) (asset principal))
   (ok (default-to (get last-liquidity-cumulative-index (try! (get-reserve-state asset))) (contract-call? .pool-reserve-data get-user-index-read who asset))))
@@ -596,7 +601,7 @@
 (define-public (update-state-on-redeem
   (asset <ft>)
   (who principal)
-  (amount-deposited uint)
+  (amount-claimed uint)
   (user-redeemed-everything bool)
   )
   (begin
@@ -609,7 +614,7 @@
           (get curr-variable-borrow-cumulative-index indexes)
           (get next-variable-borrow-cumulative-index indexes)
           (contract-of asset)))
-      (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
+      (try! (update-reserve-interest-rates-and-timestamp asset u0 amount-claimed))
 
       (if user-redeemed-everything
         (begin
@@ -1175,12 +1180,12 @@
         (get current-liquidity-rate reserve-data)
         (get last-updated-block reserve-data)
         (get last-liquidity-cumulative-index reserve-data))))
-      (ok (from-fixed-to-precision
-        (mul-to-fixed-precision
+      (ok 
+        (mul-precision-with-factor
           asset-balance
           asset-decimals
           (div reserve-normalized-income (try! (get-user-index who asset-principal))))
-        asset-decimals))
+      )
   )
 )
 
@@ -1586,9 +1591,9 @@
   (current-liquidity-rate uint)
   (delta uint))
   (let (
-    (years-elapsed (* delta (get-sb-by-sy)))
+    (rate (get-rt-by-block current-liquidity-rate delta))
   )
-    (+ one-8 (mul years-elapsed current-liquidity-rate))
+    (+ one-8 rate)
   )
 )
 
@@ -1669,12 +1674,12 @@
     (reserve-factor (try! (get-reserve-factor asset)))
     (decimals (get decimals reserve-data))
     (prev-total-variable-debt
-      (mul-to-fixed-precision
+      (mul-precision-with-factor
         (get total-borrows-variable reserve-data)
         decimals
         current-variable-borrow-cumulative-index))
     (curr-total-variable-debt
-      (mul-to-fixed-precision
+      (mul-precision-with-factor
         (get total-borrows-variable reserve-data)
         decimals
         next-variable-borrow-cumulative-index))

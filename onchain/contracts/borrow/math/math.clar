@@ -141,7 +141,7 @@
 ;; rate in 8-fixed
 ;; n-blocks
 (define-read-only (get-rt-by-block (rate uint) (blocks uint))
-  (mul rate (* blocks sb-by-sy))
+  (/ (* rate (* blocks sb-by-sy)) one-8)
 )
 
 (define-read-only (get-sb-by-sy)
