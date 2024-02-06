@@ -5,7 +5,7 @@
 (define-read-only (get-asset-price (token <ft>))
   (match (map-get? tickers (contract-of token))
     ret (ok ret)
-    (err u99999)
+    ERR_NOT_FOUND
   )
 )
 
@@ -14,8 +14,4 @@
 
 (define-map tickers principal uint)
 
-;; (map-set tickers .stSTX u160000000)
-;; (map-set tickers .sBTC u4000000000000)
-;; (map-set tickers .diko u40000000)
-;; (map-set tickers .USDA u99000000)
-;; (map-set tickers .xUSD u100000000)
+(define-constant ERR_NOT_FOUND (err u900000))

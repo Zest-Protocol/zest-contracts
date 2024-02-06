@@ -22,10 +22,10 @@ const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
 const lpdiko = "lp-diko";
-const lpsBTC = "lp-sBTC";
-const lpstSTX = "lp-stSTX";
-const lpUSDA = "lp-USDA";
-const lpxUSD = "lp-xUSD";
+const lpsBTC = "lp-sbtc";
+const lpstSTX = "lp-ststx";
+const lpUSDA = "lp-usda";
+const lpxUSD = "lp-xusd";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -33,10 +33,10 @@ const feesCalculator = "fees-calculator";
 const interestRateStrategyDefault = "interest-rate-strategy-default";
 const oracle = "oracle";
 const diko = "diko";
-const sBTC = "sBTC";
-const stSTX = "stSTX";
-const USDA = "USDA";
-const xUSD = "xUSD";
+const sBTC = "sbtc";
+const stSTX = "ststx";
+const USDA = "usda";
+const xUSD = "xusd";
 
 describe("Liquidation tests", () => {
   it("Supply sBTC, borrow xUSD, price goes below health factor", () => {
@@ -122,6 +122,12 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
+    poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
+      deployerAddress
+    );
+
     callResponse = poolBorrow.init(
       deployerAddress,
       lpxUSD,
@@ -134,6 +140,12 @@ describe("Liquidation tests", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    poolBorrow.addAsset(
+      deployerAddress,
+      xUSD,
       deployerAddress
     );
 
@@ -214,14 +226,14 @@ describe("Liquidation tests", () => {
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.contractPrincipal(deployerAddress, lpxUSD),
         Cl.list([
-          // Cl.tuple({
-          //   asset: Cl.contractPrincipal(deployerAddress, xUSD),
-          //   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-          //   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          // }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -384,6 +396,11 @@ describe("Liquidation tests", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
+      deployerAddress
+    );
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -397,6 +414,11 @@ describe("Liquidation tests", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+    poolBorrow.addAsset(
+      deployerAddress,
+      xUSD,
       deployerAddress
     );
 
@@ -479,6 +501,11 @@ describe("Liquidation tests", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -633,6 +660,11 @@ describe("Liquidation tests", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
+      deployerAddress
+    );
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -646,6 +678,11 @@ describe("Liquidation tests", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+    poolBorrow.addAsset(
+      deployerAddress,
+      xUSD,
       deployerAddress
     );
 
@@ -730,6 +767,11 @@ describe("Liquidation tests", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),

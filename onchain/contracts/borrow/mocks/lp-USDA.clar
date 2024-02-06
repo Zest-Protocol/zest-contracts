@@ -8,11 +8,11 @@
 (define-fungible-token lp-usda)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP USDA")
-(define-data-var token-symbol (string-ascii 32) "LP-USDA")
+(define-data-var token-name (string-ascii 32) "LP usda")
+(define-data-var token-symbol (string-ascii 32) "LP-usda")
 
 (define-constant pool-id u0)
-(define-constant asset-addr .USDA)
+(define-constant asset-addr .usda)
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply lp-usda)))
@@ -24,7 +24,7 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u8))
+  (ok u6))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
@@ -40,10 +40,10 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u6
-            asset-addr
+            .usda
             current-principal-balance
             u6)))
-        (ok cumulated-balance)
+        cumulated-balance
       )
     )
   )
@@ -53,19 +53,19 @@
   (ok (ft-get-balance lp-usda account)))
 
 (define-public (set-token-uri (value (string-utf8 256)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-uri value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-uri value))))
 
 (define-public (set-token-name (value (string-ascii 32)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-name value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok   (var-set token-name value))))
 
 (define-public (set-token-symbol (value (string-ascii 32)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-symbol value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-symbol value))))
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
@@ -138,7 +138,7 @@
   (let (
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (contract-call? .pool-0-reserve get-reserve-state asset-addr))
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
@@ -159,7 +159,7 @@
 
 (define-constant max-value (contract-call? .math get-max-value))
 
-(define-public (redeem
+(define-public (withdraw
   (pool-reserve principal)
   (asset <sip10>)
   (oracle <oracle-trait>)
@@ -203,11 +203,11 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
-    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .USDA))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .usda))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
-        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .USDA))
-        (contract-call? .pool-0-reserve reset-user-index tx-sender .USDA)
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .usda))
+        (contract-call? .pool-0-reserve reset-user-index tx-sender .usda)
       )
       (ok true)
     )

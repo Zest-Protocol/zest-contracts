@@ -3,8 +3,8 @@
 
 (define-public (execute (asset <ft>) (receiver principal) (amount uint))
   (begin
-    ;; (try! (contract-call? .sBTC mint amount tx-sender))
-    (try! (contract-call? .sBTC transfer amount tx-sender .pool-vault none))
+    ;; (try! (contract-call? .sbtc mint amount tx-sender))
+    (try! (contract-call? .sbtc transfer amount tx-sender .pool-vault none))
     (ok true)
   )
 )

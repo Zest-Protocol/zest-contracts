@@ -5,17 +5,17 @@
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
-(define-fungible-token lp-xUSD)
+(define-fungible-token lp-xusd)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP xUSD")
-(define-data-var token-symbol (string-ascii 32) "LP-xUSD")
+(define-data-var token-name (string-ascii 32) "LP xusd")
+(define-data-var token-symbol (string-ascii 32) "LP-xusd")
 
 (define-constant pool-id u0)
-(define-constant asset-addr .xUSD)
+(define-constant asset-addr .xusd)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-xUSD)))
+  (ok (ft-get-supply lp-xusd)))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))
@@ -24,14 +24,14 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u8))
+  (ok u6))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
 
 (define-read-only (get-balance (account principal))
   (let (
-    (current-principal-balance (ft-get-balance lp-xUSD account))
+    (current-principal-balance (ft-get-balance lp-xusd account))
   )
     (if (is-eq current-principal-balance u0)
       (ok u0)
@@ -40,37 +40,37 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u6
-            .xUSD
+            .xusd
             current-principal-balance
             u6)))
-        (ok cumulated-balance)
+        cumulated-balance
       )
     )
   )
 )
 
 (define-read-only (get-principal-balance (account principal))
-  (ok (ft-get-balance lp-xUSD account)))
+  (ok (ft-get-balance lp-xusd account)))
+
 
 (define-public (set-token-uri (value (string-utf8 256)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-uri value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-uri value))))
 
 (define-public (set-token-name (value (string-ascii 32)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-name value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok   (var-set token-name value))))
 
 (define-public (set-token-symbol (value (string-ascii 32)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-symbol value))
-    ERR_UNAUTHORIZED))
-
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-symbol value))))
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (match (ft-transfer? lp-xUSD amount sender recipient)
+    (match (ft-transfer? lp-xusd amount sender recipient)
       response (begin
         (print memo)
         (ok response)
@@ -96,11 +96,11 @@
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (ft-burn? lp-xUSD amount owner)
+  (ft-burn? lp-xusd amount owner)
 )
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (ft-mint? lp-xUSD amount owner)
+  (ft-mint? lp-xusd amount owner)
 )
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
@@ -140,7 +140,7 @@
   (let (
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (contract-call? .pool-0-reserve get-reserve-state asset-addr))
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
@@ -161,7 +161,7 @@
 
 (define-constant max-value (contract-call? .math get-max-value))
 
-(define-public (redeem
+(define-public (withdraw
   (pool-reserve principal)
   (asset <sip10>)
   (oracle <oracle-trait>)
@@ -175,7 +175,7 @@
   )
     (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
     (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
-    (asserts! (is-eq (contract-of asset) .xUSD) ERR_UNAUTHORIZED)
+    (asserts! (is-eq (contract-of asset) .xusd) ERR_UNAUTHORIZED)
     
     (try! (burn-internal amount-to-redeem tx-sender))
 
@@ -229,7 +229,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-xUSD", payload: owner })
+    (print { type: "set-contract-owner-lp-xusd", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))

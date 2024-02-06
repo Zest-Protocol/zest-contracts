@@ -22,10 +22,10 @@ const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
 const lpdiko = "lp-diko";
-const lpsBTC = "lp-sBTC";
-const lpstSTX = "lp-stSTX";
-const lpUSDA = "lp-USDA";
-const lpxUSD = "lp-xUSD";
+const lpsBTC = "lp-sbtc";
+const lpstSTX = "lp-ststx";
+const lpUSDA = "lp-usda";
+const lpxUSD = "lp-xusd";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -33,10 +33,10 @@ const feesCalculator = "fees-calculator";
 const interestRateStrategyDefault = "interest-rate-strategy-default";
 const oracle = "oracle";
 const diko = "diko";
-const sBTC = "sBTC";
-const stSTX = "stSTX";
-const USDA = "USDA";
-const xUSD = "xUSD";
+const sBTC = "sbtc";
+const stSTX = "ststx";
+const USDA = "usda";
+const xUSD = "xusd";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
@@ -69,6 +69,11 @@ describe("Isolated mode", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -84,6 +89,11 @@ describe("Isolated mode", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      sBTC,
+      deployerAddress
+    );
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -97,6 +107,11 @@ describe("Isolated mode", () => {
       oracle,
       deployerAddress,
       interestRateStrategyDefault,
+      deployerAddress
+    );
+    callResponse = poolBorrow.addAsset(
+      deployerAddress,
+      xUSD,
       deployerAddress
     );
 
@@ -159,13 +174,13 @@ describe("Isolated mode", () => {
     callResponse = poolBorrow.addIsolatedAsset(
       deployerAddress,
       stSTX,
+      1_000_000_000_000,
       deployerAddress
     );
 
     callResponse = poolBorrow.setBorroweableIsolated(
       deployerAddress,
       xUSD,
-      1_000_000_000_000,
       deployerAddress
     );
 
@@ -238,6 +253,16 @@ describe("Isolated mode", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
         Cl.uint(200_000_000),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
@@ -280,13 +305,13 @@ describe("Isolated mode", () => {
     callResponse = poolBorrow.addIsolatedAsset(
       deployerAddress,
       stSTX,
+      1_000_000_000_000,
       deployerAddress
     );
 
     callResponse = poolBorrow.setBorroweableIsolated(
       deployerAddress,
       xUSD,
-      1_000_000_000_000,
       deployerAddress
     );
 
@@ -364,6 +389,16 @@ describe("Isolated mode", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -384,6 +419,16 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -412,6 +457,11 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -431,6 +481,11 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
@@ -474,13 +529,13 @@ describe("Isolated mode", () => {
     callResponse = poolBorrow.addIsolatedAsset(
       deployerAddress,
       stSTX,
+      1_000_000_000_000,
       deployerAddress
     );
 
     callResponse = poolBorrow.setBorroweableIsolated(
       deployerAddress,
       xUSD,
-      1_000_000_000_000,
       deployerAddress
     );
 
@@ -559,6 +614,16 @@ describe("Isolated mode", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -580,6 +645,16 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -605,6 +680,11 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -623,6 +703,11 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
@@ -723,13 +808,13 @@ describe("Isolated mode", () => {
     callResponse = poolBorrow.addIsolatedAsset(
       deployerAddress,
       stSTX,
+      1_000_000_000_000,
       deployerAddress
     );
 
     callResponse = poolBorrow.setBorroweableIsolated(
       deployerAddress,
       xUSD,
-      1_000_000_000_000,
       deployerAddress
     );
 
@@ -807,6 +892,16 @@ describe("Isolated mode", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -827,6 +922,16 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -851,6 +956,11 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -872,6 +982,11 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
@@ -901,6 +1016,11 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -923,8 +1043,8 @@ describe("Isolated mode", () => {
     // );
 
     callResponse = simnet.callPublicFn(
-      "lp-stSTX",
-      "redeem",
+      "lp-ststx",
+      "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -935,6 +1055,11 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
@@ -966,6 +1091,11 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
@@ -1197,6 +1327,11 @@ describe("Isolated mode", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -1249,6 +1384,11 @@ describe("Isolated mode", () => {
           "lp-token": { deployerAddress, contractName: lpsBTC },
           oracle: { deployerAddress, contractName: "oracle" },
         },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: lpxUSD },
+          oracle: { deployerAddress, contractName: "oracle" },
+        },
       ]
     );
 
@@ -1274,6 +1414,11 @@ describe("Isolated mode", () => {
           "lp-token": { deployerAddress, contractName: lpsBTC },
           oracle: { deployerAddress, contractName: "oracle" },
         },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: lpxUSD },
+          oracle: { deployerAddress, contractName: "oracle" },
+        },
       ]
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
@@ -1293,6 +1438,11 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1327,6 +1477,11 @@ describe("Isolated mode", () => {
           "lp-token": { deployerAddress, contractName: lpsBTC },
           oracle: { deployerAddress, contractName: "oracle" },
         },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: lpxUSD },
+          oracle: { deployerAddress, contractName: "oracle" },
+        },
       ]
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
@@ -1346,6 +1501,11 @@ describe("Isolated mode", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1368,8 +1528,8 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "lp-stSTX",
-      "redeem",
+      "lp-ststx",
+      "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -1384,6 +1544,11 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1392,7 +1557,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    expect(simnet.getAssetsMap().get(".stSTX.stSTX")?.get(Borrower_1)).toBe(
+    expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(Borrower_1)).toBe(
       BigInt(1_000_000_000_000_000)
     );
   });

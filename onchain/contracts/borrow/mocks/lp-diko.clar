@@ -25,7 +25,7 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u8))
+  (ok u6))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
@@ -44,7 +44,7 @@
             asset-addr
             current-principal-balance
             u6)))
-        (ok cumulated-balance)
+        cumulated-balance
       )
     )
   )
@@ -54,20 +54,19 @@
   (ok (ft-get-balance lp-diko account)))
 
 (define-public (set-token-uri (value (string-utf8 256)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-uri value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-uri value))))
 
 (define-public (set-token-name (value (string-ascii 32)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-name value))
-    ERR_UNAUTHORIZED))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok   (var-set token-name value))))
 
 (define-public (set-token-symbol (value (string-ascii 32)))
-  (if (is-eq tx-sender (get pool-delegate (try! (contract-call? .pool-v2-0 get-pool u0))))
-    (ok (var-set token-symbol value))
-    ERR_UNAUTHORIZED))
-
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-symbol value))))
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
@@ -142,7 +141,7 @@
   (let (
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (contract-call? .pool-0-reserve get-reserve-state asset-addr))
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
@@ -162,7 +161,7 @@
 
 (define-constant max-value (contract-call? .math get-max-value))
 
-(define-public (redeem
+(define-public (withdraw
   (pool-reserve principal)
   (asset <sip10>)
   (oracle <oracle-trait>)

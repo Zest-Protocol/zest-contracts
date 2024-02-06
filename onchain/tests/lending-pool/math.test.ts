@@ -22,10 +22,10 @@ const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
 const lpdiko = "lp-diko";
-const lpsBTC = "lp-sBTC";
-const lpstSTX = "lp-stSTX";
-const lpUSDA = "lp-USDA";
-const lpxUSD = "lp-xUSD";
+const lpsBTC = "lp-sbtc";
+const lpstSTX = "lp-ststx";
+const lpUSDA = "lp-usda";
+const lpxUSD = "lp-xusd";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -34,9 +34,9 @@ const interestRateStrategyDefault = "interest-rate-strategy-default";
 const oracle = "oracle";
 const diko = "diko";
 const sBTC = "sBTC";
-const stSTX = "stSTX";
-const USDA = "USDA";
-const xUSD = "xUSD";
+const stSTX = "ststx";
+const USDA = "usda";
+const xUSD = "xusd";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 

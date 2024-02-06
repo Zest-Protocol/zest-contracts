@@ -3,50 +3,217 @@
 
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
-(define-read-only (div (x uint) (y uint))
-  (contract-call? .math div x y)
-)
-
-(define-read-only (mul (x uint) (y uint))
-  (contract-call? .math mul x y)
-)
-
-(define-read-only (taylor-6 (x uint))
-  (contract-call? .math taylor-6 x)
-)
-
-(define-read-only (is-in-isolation-mode (who principal))
-  (begin
-    (contract-call? .pool-0-reserve is-in-isolation-mode who)
-  )
-)
+;; How to check when user is in isolation mode
+;; 1) Get assets supplied with (get-user-assets)
+;; 2) Filter supplied assets by assets that are isolated
+;; 3) Filter isolated supplied assets by being enabled as collateral
 
 (define-read-only (is-borroweable (asset principal))
-  (and
-    (contract-call? .pool-0-reserve is-active asset)
-    (not (contract-call? .pool-0-reserve is-frozen asset))
-    (contract-call? .pool-0-reserve is-borrowing-enabled asset)
+  (let ((reserve-state (get-reserve-data asset)))
+    (and
+      (get is-active reserve-state)
+      (not (get is-frozen reserve-state))
+      (get borrowing-enabled reserve-state)
+    )
   )
-)
-
-(define-public (test-this)
-  (contract-call? .lp-stSTX get-balance tx-sender)
 )
 
 (define-read-only (is-active (asset principal))
-  (and (contract-call? .pool-0-reserve is-active asset) (not (contract-call? .pool-0-reserve is-frozen asset)))
+  (let (
+    (reserve-state (get-reserve-data asset))
+  )
+    (and (get is-active reserve-state) (not (get is-frozen reserve-state)))
+  )
 )
 
-(define-constant available-assets (list .diko .sBTC .stSTX .xUSD .USDA ))
+(define-constant available-assets (list .diko .sbtc .wstx .ststx .xusd .usda ))
 
 (define-read-only (get-supplieable-assets)
-  (filter is-active available-assets)
+  ;; (filter is-active available-assets)
+  available-assets
 )
 
 (define-read-only (get-borroweable-assets)
-  (filter is-borroweable available-assets)
+  ;; (filter is-borroweable available-assets)
+  available-assets
 )
 
+(define-read-only (get-assets-used-by (who principal))
+  (let (
+    (ret (get-user-assets who)))
+    (unwrap-panic (as-max-len? (concat (get assets-supplied ret) (get assets-borrowed ret)) u100))))
+
+(define-read-only (is-isolated-asset (asset principal))
+  (contract-call? .pool-0-reserve is-isolated-type asset)
+)
+
+(define-read-only (get-isolated-mode-assets)
+  (filter is-isolated-asset available-assets)
+)
+
+(define-read-only (is-borroweable-in-isolation (asset principal))
+  (contract-call? .pool-0-reserve is-borroweable-isolated asset)
+)
+
+(define-read-only (get-borroweable-assets-in-isolated-mode)
+  (filter is-borroweable-in-isolation available-assets)
+)
+
+(define-read-only (is-used-as-collateral (who principal) (asset principal))
+  (get use-as-collateral (get-user-reserve-data who asset))
+)
+
+(define-read-only (get-user-reserve-data (who principal) (asset principal))
+  (unwrap-panic (contract-call? .pool-reserve-data get-user-reserve-data-read who asset))
+)
+
+(define-read-only (get-asset-borrow-apy (reserve principal))
+  (let (
+    (reserve-resp (get-reserve-data reserve))
+  )
+    (calculate-compounded-interest
+      (get current-variable-borrow-rate reserve-resp)
+      (* u144 u365)
+    )
+  )
+)
+
+(define-read-only (token-to-usd (amount uint) (decimals uint) (unit-price uint))
+  (contract-call? .math mul-to-fixed-precision amount decimals unit-price)
+)
+
+;; Define a helper function to get reserve data
+(define-read-only (get-reserve-data (asset principal))
+  (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read asset))
+)
+
+(define-read-only (get-max-borroweable
+  (useable-collateral uint)
+  (borrowed-collateral uint)
+  (decimals uint)
+  (asset-to-borrow <ft>))
+  (let ((price (unwrap-panic (contract-call? .oracle get-asset-price asset-to-borrow))))
+    (contract-call? .math mul-to-fixed-precision (- useable-collateral borrowed-collateral) decimals price)
+  )
+)
+
+(define-read-only (get-user-assets (who principal))
+  (default-to
+    { assets-supplied: (list), assets-borrowed: (list) }
+    (contract-call? .pool-reserve-data get-user-assets-read who)))
+
+(define-read-only (is-isolated-type (asset principal))
+  (default-to false (contract-call? .pool-reserve-data get-isolated-assets-read asset)))
+
+(define-read-only (get-borrowed-balance-user-usd-diko (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-diko who))
+    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .diko)))
+  )
+    (token-to-usd (get compounded-balance balance) u6 unit-price)
+  )
+)
+
+(define-read-only (get-borrowed-balance-user-usd-sbtc (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-sbtc who))
+    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .sbtc)))
+  )
+    (token-to-usd (get compounded-balance balance) u8 unit-price)
+  )
+)
+
+(define-read-only (get-borrowed-balance-user-usd-wstx (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-wstx who))
+    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .wstx)))
+  )
+    (token-to-usd (get compounded-balance balance) u6 unit-price)
+  )
+)
+
+(define-read-only (get-borrowed-balance-user-usd-ststx (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-ststx who))
+    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .ststx)))
+  )
+    (token-to-usd (get compounded-balance balance) u6 unit-price)
+  )
+)
+
+(define-read-only (get-borrowed-balance-user-usd-usda (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-usda who))
+    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .usda)))
+  )
+    (token-to-usd (get compounded-balance balance) u6 unit-price)
+  )
+)
+
+(define-read-only (get-borrowed-balance-user-usd-xusd (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-xusd who))
+    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .xusd)))
+  )
+    (token-to-usd (get compounded-balance balance) u6 unit-price)
+  )
+)
+
+(define-read-only (get-borrowed-balance-user-diko (who principal))
+  (get-user-borrow-balance who .diko)
+)
+
+(define-read-only (get-borrowed-balance-user-sbtc (who principal))
+  (get-user-borrow-balance who .sbtc)
+)
+
+(define-read-only (get-borrowed-balance-user-wstx (who principal))
+  (get-user-borrow-balance who .wstx)
+)
+
+(define-read-only (get-borrowed-balance-user-ststx (who principal))
+  (get-user-borrow-balance who .ststx)
+)
+
+(define-read-only (get-borrowed-balance-user-xusd (who principal))
+  (get-user-borrow-balance who .xusd)
+)
+
+(define-read-only (get-borrowed-balance-user-usda (who principal))
+  (get-user-borrow-balance who .usda)
+)
+
+(define-read-only (get-borrowed-balance (asset principal))
+  (get total-borrows-variable (get-reserve-data asset))
+)
+
+;; util functions
+(define-public (borrowing-power-in-asset
+  (asset <ft>)
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (asset-principal (contract-of asset))
+    (reserve-state (unwrap-panic (contract-call? .pool-0-reserve get-reserve-state asset-principal)))
+    (user-assets (contract-call? .pool-0-reserve get-user-assets user))
+    (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
+    (asset-price (try! (contract-call? .oracle get-asset-price asset)))
+  )
+    (calculate-available-borrowing-power-in-asset
+      asset
+      (get decimals reserve-state)
+      asset-price
+      (get total-collateral-balanceUSD user-global-data)
+      (get total-borrow-balanceUSD user-global-data)
+      (get user-total-feesUSD user-global-data)
+      (get current-ltv user-global-data)
+      user
+    )
+  )
+)
+
+;; calculate how much a user can borrow of a specific asset using the available collateral
 (define-read-only (calculate-available-borrowing-power-in-asset
   (borrowing-asset <ft>)
   (decimals uint)
@@ -76,782 +243,14 @@
         decimals
       )
     )
-    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user borrow-power-in-asset-amount decimals)))
+    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user (contract-of borrowing-asset) borrow-power-in-asset-amount decimals)))
   )
     (ok (- borrow-power-in-asset-amount borrow-fee))
   )
 )
 
-(define-read-only (is-isolated-asset (asset principal))
-  (contract-call? .pool-0-reserve is-isolated-type asset)
-)
 
-(define-read-only (get-isolated-mode-assets)
-  (filter is-isolated-asset available-assets)
-)
-
-(define-read-only (is-borroweable-in-isolation (asset principal))
-  (contract-call? .pool-0-reserve is-borroweable-isolated asset)
-)
-
-(define-read-only (get-borroweable-assets-in-isolated-mode)
-  (filter is-borroweable-in-isolation available-assets)
-)
-
-(define-public (borrowing-power-in-asset
-  (asset <ft>)
-  (user principal)
-  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  )
-  (let (
-    (asset-principal (contract-of asset))
-    (reserve-state (contract-call? .pool-0-reserve get-reserve-state asset-principal))
-    (user-assets (contract-call? .pool-0-reserve get-user-assets user))
-    (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
-    (asset-price (try! (contract-call? .oracle get-asset-price asset)))
-  )
-    (calculate-available-borrowing-power-in-asset
-      asset
-      (get decimals reserve-state)
-      asset-price
-      (get total-collateral-balanceUSD user-global-data)
-      (get total-borrow-balanceUSD user-global-data)
-      (get user-total-feesUSD user-global-data)
-      (get current-ltv user-global-data)
-      user
-    )
-  )
-)
-
-(define-read-only (is-used-as-collateral (who principal) (asset principal))
-  (get use-as-collateral (contract-call? .pool-0-reserve get-user-reserve-data who asset))
-)
-
-(define-read-only (get-user-reserve-data (who principal) (asset principal))
-  (contract-call? .pool-0-reserve get-user-reserve-data who asset)
-)
-
-(define-read-only (get-reserve-state (reserve principal))
-  (contract-call? .pool-0-reserve get-reserve-state-optional reserve)
-)
-
-(define-read-only (get-asset-supply-apy
-    (reserve principal)
-  )
-  (let (
-    (reserve-resp (get-reserve-state reserve))
-  )
-    (match reserve-resp
-      reserve-data (begin
-        (some
-          (taylor-6 (get current-variable-borrow-rate reserve-data))
-        )
-      )
-      none
-    )
-  )
-)
-
-(define-read-only (get-asset-borrow-apy
-    (reserve principal)
-  )
-  (let (
-    (reserve-resp (get-reserve-state reserve))
-  )
-    (match reserve-resp
-      reserve-data (begin
-        (some
-          (+ u100000000 (get current-liquidity-rate reserve-data))
-        )
-      )
-      none
-    )
-  )
-)
-
-(define-read-only (get-user-assets (who principal))
-  (let (
-    (assets (contract-call? .pool-0-reserve get-user-assets who))
-  )
-    assets
-  )
-)
-
-(define-read-only (get-collateral-available
-  (assets (list 100 { asset: principal, amount: uint}))
-  (oracle principal)
-  )
-  (begin
-    ;; (map token-to-available-collateral assets)
-    u0
-    ;; (mul (get amount item) (contract-call? .oracle get-unit-price (get asset item) ))
-    ;; (contract-call? .pool-0-reserve get-collateral-available assets oracle)
-  )
-)
-
-(define-read-only (get-borrow-balance-amount (who principal) (asset <ft>))
-  (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who (contract-of asset)))
-)
-
-(define-read-only (token-to-usd
-  (asset <ft>)
-  (oracle principal)
-  (amount uint)
-  )
-  (let (
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price asset)))
-  )
-    (mul amount unit-price)
-  )
-)
-
-(define-read-only (get-borrow-balance-value (who principal) (asset <ft>) (oracle principal))
-  (token-to-usd
-    asset
-    oracle
-    (get principal-borrow-balance (contract-call? .pool-0-reserve get-user-reserve-data who (contract-of asset)))
-  )
-)
-
-(define-private (token-to-usd-internal
-  (item { asset: <ft>, amount: uint})
-)
-  (mul (get amount item) (unwrap-panic (contract-call? .oracle get-asset-price (get asset item) )))
-)
-
-;; (define-read-only (get-balance (asset <ft>) (who principal))
-;;   (contract-call? asset get-balance who)
-;; )
-
-
-;; Define a helper function to get reserve data
-(define-read-only (get-reserve-data (asset principal))
-  (contract-call? .pool-0-reserve get-reserve-state asset)
-)
-
-;; Getter for each field in the tuple
-
-(define-read-only (get-last-liquidity-cumulative-index (asset principal))
-  (get last-liquidity-cumulative-index (get-reserve-data asset))
-)
-
-(define-read-only (get-current-liquidity-rate (asset principal))
-  (get current-liquidity-rate (contract-call? .pool-0-reserve get-reserve-state asset))
-)
-
-(define-read-only (get-total-borrows-stable (asset principal))
-  (get total-borrows-stable (contract-call? .pool-0-reserve get-reserve-state asset))
-)
-
-(define-read-only (get-total-borrows-variable (asset principal))
-  (get total-borrows-variable (get-reserve-data asset))
-)
-
-(define-read-only (get-current-variable-borrow-rate (asset principal))
-  (get current-variable-borrow-rate (get-reserve-data asset))
-)
-
-(define-read-only (get-current-stable-borrow-rate (asset principal))
-  (get current-stable-borrow-rate (get-reserve-data asset))
-)
-
-(define-read-only (get-current-average-stable-borrow-rate (asset principal))
-  (get current-average-stable-borrow-rate (get-reserve-data asset))
-)
-
-(define-read-only (get-last-variable-borrow-cumulative-index (asset principal))
-  (get last-variable-borrow-cumulative-index (get-reserve-data asset))
-)
-
-(define-read-only (get-base-ltv-as-collateral (asset principal))
-  (get base-ltv-as-collateral (get-reserve-data asset))
-)
-
-(define-read-only (get-liquidation-threshold (asset principal))
-  (get liquidation-threshold (get-reserve-data asset))
-)
-
-(define-read-only (get-liquidation-bonus (asset principal))
-  (get liquidation-bonus (get-reserve-data asset))
-)
-
-(define-read-only (get-decimals (asset principal))
-  (get decimals (get-reserve-data asset))
-)
-
-(define-read-only (get-a-token-address (asset principal))
-  (get a-token-address (get-reserve-data asset))
-)
-
-(define-read-only (get-interest-rate-strategy-address (asset principal))
-  (get interest-rate-strategy-address (get-reserve-data asset))
-)
-
-(define-read-only (get-last-updated-block (asset principal))
-  (get last-updated-block (get-reserve-data asset))
-)
-
-(define-read-only (get-borrowing-enabled (asset principal))
-  (get borrowing-enabled (get-reserve-data asset))
-)
-
-(define-read-only (get-usage-as-collateral-enabled (asset principal))
-  (get usage-as-collateral-enabled (get-reserve-data asset))
-)
-
-(define-read-only (get-is-stable-borrow-rate-enabled (asset principal))
-  (get is-stable-borrow-rate-enabled (get-reserve-data asset))
-)
-
-(define-read-only (get-is-active (asset principal))
-  (get is-active (get-reserve-data asset))
-)
-
-(define-read-only (get-is-frozen (asset principal))
-  (get is-frozen (get-reserve-data asset))
-)
-
-(define-read-only (get-user-borrow-balance-diko (who principal))
-  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko))))
-)
-
-(define-read-only (get-user-borrow-balance-sBTC (who principal))
-  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC))))
-)
-
-(define-read-only (get-user-borrow-balance-stSTX (who principal))
-  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX))))
-)
-
-(define-read-only (get-user-borrow-balance-USDA (who principal))
-  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA))))
-)
-
-(define-read-only (get-user-borrow-balance-xUSD (who principal))
-  (ok (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD))))
-)
-
-;; (define-read-only (get-cumulated-balance-diko
-;;   (who principal)
-;;   (lp-token <ft-mint-trait>)
-;;   (asset principal)
-;;   )
-;;   (let (
-;;     (lp-balance (unwrap-panic (contract-call? .diko get-balance who)))
-;;   )
-;;     (ok (get new-user-balance (try! (contract-call? .pool-0-reserve get-cumulated-balance-read who lp-token .diko lp-balance))))
-;;   )
-;; )
-
-;; (define-read-only (get-cumulated-balance-sBTC
-;;   (who principal)
-;;   (lp-token <ft-mint-trait>)
-;;   (asset principal)
-;;   )
-;;   (let (
-;;     (lp-balance (unwrap-panic (contract-call? .sBTC get-balance who)))
-;;   )
-;;     (ok (get new-user-balance (try! (contract-call? .pool-0-reserve get-cumulated-balance-read who lp-token .sBTC lp-balance))))
-;;   )
-;; )
-
-;; (define-read-only (get-cumulated-balance-stSTX
-;;   (who principal)
-;;   (lp-token <ft-mint-trait>)
-;;   (asset principal)
-;;   )
-;;   (let (
-;;     (lp-balance (unwrap-panic (contract-call? .stSTX get-balance who)))
-;;   )
-;;     (ok (get new-user-balance (try! (contract-call? .pool-0-reserve get-cumulated-balance-read who lp-token .stSTX lp-balance))))
-;;   )
-;; )
-
-;; (define-read-only (get-cumulated-balance-USDA
-;;   (who principal)
-;;   (lp-token <ft-mint-trait>)
-;;   (asset principal)
-;;   )
-;;   (let (
-;;     (lp-balance (unwrap-panic (contract-call? .USDA get-balance who)))
-;;   )
-;;     (ok (get new-user-balance (try! (contract-call? .pool-0-reserve get-cumulated-balance-read who lp-token .USDA lp-balance))))
-;;   )
-;; )
-
-;; (define-read-only (get-cumulated-balance-xUSD
-;;   (who principal)
-;;   (lp-token <ft-mint-trait>)
-;;   (asset principal)
-;;   )
-;;   (let (
-;;     (lp-balance (unwrap-panic (contract-call? .xUSD get-balance who)))
-;;   )
-;;     (ok (get new-user-balance (try! (contract-call? .pool-0-reserve get-cumulated-balance-read who lp-token .xUSD lp-balance))))
-;;   )
-;; )
-
-;; (define-read-only (get-max-borroweable (who principal) (oracle principal) (asset <ft>))
-;;   (let (
-;;     (useable-collateral (get-useable-collateral-usd who))
-;;     (borrowed-collateral (get-borrowed-balance-user-usd who))
-;;     (total-useable-value
-;;       (+ 
-;;         (get diko-useable-collateral-usd useable-collateral)
-;;         (get sBTC-useable-collateral-usd useable-collateral)
-;;         (get stSTX-useable-collateral-usd useable-collateral)
-;;         (get USDA-useable-collateral-usd useable-collateral)
-;;         (get xUSD-useable-collateral-usd useable-collateral)
-;;       )
-;;     )
-;;     (total-borrowed-value
-;;       (+ 
-;;         (get diko-compounded-balance borrowed-collateral)
-;;         (get sBTC-compounded-balance borrowed-collateral)
-;;         (get stSTX-compounded-balance borrowed-collateral)
-;;         (get USDA-compounded-balance borrowed-collateral)
-;;         (get xUSD-compounded-balance borrowed-collateral)
-;;       )
-;;     )
-;;     (price (contract-call? .oracle get-asset-price asset))
-;;   )
-;;     (if (< total-useable-value total-borrowed-value)
-;;       u0
-;;       (div (- total-useable-value total-borrowed-value) price)
-;;     )
-;;   )
-;; )
-
-(define-read-only (get-max-borroweable
-  (useable-collateral uint)
-  (borrowed-collateral uint)
-  (asset-to-borrow <ft>))
-  (let (
-    (price (unwrap-panic (contract-call? .oracle get-asset-price .xUSD)))
-  )
-    (if (< useable-collateral borrowed-collateral)
-      u0
-      (div (- useable-collateral borrowed-collateral) price)
-    )
-  )
-)
-
-(define-public (calculate-interest-rates-test (asset <ft>))
-  (let (
-    (reserve-data (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
-  )
-    (ok 
-      (merge
-          (contract-call? .interest-rate-strategy-default
-          calculate-interest-rates
-          (unwrap-panic (contract-call? asset get-balance .pool-vault))
-          (get total-borrows-stable reserve-data)
-          (get total-borrows-variable reserve-data)
-          (get current-average-stable-borrow-rate reserve-data)
-          (contract-of asset)
-          (get decimals reserve-data)
-      )
-      {
-        available-liquidity: (unwrap-panic (contract-call? asset get-balance .pool-vault)),
-        total-borrows-stable: (get total-borrows-stable reserve-data),
-        total-borrows-variable: (get total-borrows-variable reserve-data),
-        current-average-stable-borrow-rate: (get current-average-stable-borrow-rate reserve-data),
-        decimals: (get decimals reserve-data)
-      }
-      )
-    )
-  )
-)
-
-;; (define-read-only (get-useable-collateral-usd (who principal))
-;;   (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
-;;     (let (
-;;       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
-;;     )
-;;       {
-;;         diko-useable-collateral-usd:
-;;           (if (is-eq isolated-asset .diko)
-;;             (mul
-;;               (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .diko))
-;;               (token-to-usd
-;;                 .diko
-;;                 .oracle
-;;                 (get new-user-balance
-;;                   (unwrap-panic (contract-call? .pool-0-reserve
-;;                     get-cumulated-balance-read
-;;                     who
-;;                     .lp-diko
-;;                     .diko
-;;                     (unwrap-panic (contract-call? .lp-diko get-balance who))
-;;                     ))))
-;;             )
-;;             u0
-;;           )
-;;           ,
-;;         sBTC-useable-collateral-usd:
-;;           (if (is-eq isolated-asset .sBTC)
-;;             (mul
-;;               (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .sBTC))
-;;               (token-to-usd
-;;                 .sBTC
-;;                 .oracle
-;;                 (get new-user-balance
-;;                   (unwrap-panic (contract-call? .pool-0-reserve
-;;                     get-cumulated-balance-read
-;;                     who
-;;                     .lp-sBTC
-;;                     .sBTC
-;;                     (unwrap-panic (contract-call? .lp-sBTC get-balance who))
-;;                     ))))
-;;             )
-;;             u0
-;;           )
-;;           ,
-;;         stSTX-useable-collateral-usd:
-;;           (if (is-eq isolated-asset .stSTX)
-;;             (mul
-;;               (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .stSTX))
-;;               (token-to-usd
-;;                 .stSTX
-;;                 .oracle
-;;                 (get new-user-balance
-;;                   (unwrap-panic (contract-call? .pool-0-reserve
-;;                     get-cumulated-balance-read
-;;                     who
-;;                     .lp-stSTX
-;;                     .stSTX
-;;                     (unwrap-panic (contract-call? .lp-stSTX get-balance who))
-;;                     ))))
-;;             )
-;;             u0
-;;           )
-;;           ,
-;;         USDA-useable-collateral-usd:
-;;           (if (is-eq isolated-asset .USDA)
-;;             (mul
-;;               (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .USDA))
-;;               (token-to-usd
-;;                 .USDA
-;;                 .oracle
-;;                 (get new-user-balance
-;;                   (unwrap-panic (contract-call? .pool-0-reserve
-;;                     get-cumulated-balance-read
-;;                     who
-;;                     .lp-USDA
-;;                     .USDA
-;;                     (unwrap-panic (contract-call? .lp-USDA get-balance who))
-;;                     ))))
-;;             )
-;;             u0
-;;           )
-;;           ,
-;;         xUSD-useable-collateral-usd:
-;;           (if (is-eq isolated-asset .xUSD)
-;;             (mul
-;;               (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .xUSD))
-;;               (token-to-usd
-;;                 .xUSD
-;;                 .oracle
-;;                 (get new-user-balance
-;;                   (unwrap-panic (contract-call? .pool-0-reserve
-;;                     get-cumulated-balance-read
-;;                     who
-;;                     .lp-xUSD
-;;                     .xUSD
-;;                     (unwrap-panic (contract-call? .lp-xUSD get-balance who))
-;;                     ))))
-;;             )
-;;             u0
-;;           )
-;;       }
-;;     )
-;;   (begin
-;;     {
-;;       diko-useable-collateral-usd:
-;;         (mul
-;;               (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .diko))
-;;               (token-to-usd
-;;                 .diko
-;;                 .oracle
-;;                 (get new-user-balance
-;;                   (unwrap-panic (contract-call? .pool-0-reserve
-;;                     get-cumulated-balance-read
-;;                     who
-;;                     .lp-diko
-;;                     .diko
-;;                     (unwrap-panic (contract-call? .lp-diko get-balance who))
-;;                     ))))
-;;             )
-;;         ,
-;;       sBTC-useable-collateral-usd:
-;;         (mul
-;;           (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .sBTC))
-;;           (token-to-usd
-;;             .sBTC
-;;             .oracle
-;;             (get new-user-balance
-;;               (unwrap-panic (contract-call? .pool-0-reserve
-;;                 get-cumulated-balance-read
-;;                 who
-;;                 .lp-sBTC
-;;                 .sBTC
-;;                 (unwrap-panic (contract-call? .lp-sBTC get-balance who))
-;;                 )
-;;               )
-;;             )
-;;           )
-;;         )
-;;         ,
-;;       stSTX-useable-collateral-usd:
-;;         ;; (mul
-;;         ;;   (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .stSTX))
-;;         ;;   (token-to-usd who .stSTX .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX))))
-;;         ;; )
-;;         ;; 0 because cannot be used unless in isolation mode
-;;         u0
-;;         ,
-;;       USDA-useable-collateral-usd:
-;;         (mul
-;;           (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .USDA))
-;;           (token-to-usd
-;;             .USDA
-;;             .oracle
-;;             (get new-user-balance
-;;               (unwrap-panic (contract-call? .pool-0-reserve
-;;                 get-cumulated-balance-read
-;;                 who
-;;                 .lp-USDA
-;;                 .USDA
-;;                 (unwrap-panic (contract-call? .lp-USDA get-balance who))
-;;                 )
-;;               )
-;;             )
-;;           )
-;;         )
-;;         ,
-;;       xUSD-useable-collateral-usd:
-;;         (mul
-;;           (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .xUSD))
-;;           (token-to-usd
-;;             .xUSD
-;;             .oracle
-;;             (get new-user-balance
-;;               (unwrap-panic (contract-call? .pool-0-reserve
-;;                 get-cumulated-balance-read
-;;                 who
-;;                 .lp-xUSD
-;;                 .xUSD
-;;                 (unwrap-panic (contract-call? .lp-xUSD get-balance who))
-;;                 )
-;;               )
-;;             )
-;;           )
-;;         )
-;;         ,
-;;     }
-;;   )
-;;   )
-;; )
-
-;; (define-read-only (get-useable-collateral-usd-diko (who principal))
-;;   (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
-;;     (let (
-;;       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
-;;     )
-;;       (if (is-eq isolated-asset .diko)
-;;         (mul
-;;           (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .diko))
-;;           (token-to-usd
-;;             .diko
-;;             .oracle
-;;             (get new-user-balance
-;;               (unwrap-panic (contract-call? .pool-0-reserve
-;;                 get-cumulated-balance-read
-;;                 who
-;;                 .lp-diko
-;;                 .diko
-;;                 (unwrap-panic (contract-call? .lp-diko get-balance who))
-;;                 ))))
-;;         )
-;;         u0
-;;       )
-;;     )
-;;     (begin
-;;       (mul
-;;         (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .diko))
-;;         (token-to-usd
-;;           .diko
-;;           .oracle
-;;           (get new-user-balance
-;;             (unwrap-panic (contract-call? .pool-0-reserve
-;;               get-cumulated-balance-read
-;;               who
-;;               .lp-diko
-;;               .diko
-;;               (unwrap-panic (contract-call? .lp-diko get-balance who))
-;;               ))))
-;;       )
-;;     )
-;;   )
-;; )
-
-;; (define-read-only (get-useable-collateral-usd-sBTC (who principal))
-;;   (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
-;;     (let (
-;;       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
-;;     )
-;;       (if (is-eq isolated-asset .sBTC)
-;;         (mul
-;;           (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .sBTC))
-;;           (token-to-usd
-;;             .sBTC
-;;             .oracle
-;;             (get new-user-balance
-;;               (unwrap-panic (contract-call? .pool-0-reserve
-;;                 get-cumulated-balance-read
-;;                 who
-;;                 .lp-sBTC
-;;                 .sBTC
-;;                 (unwrap-panic (contract-call? .lp-sBTC get-balance who))
-;;                 ))))
-;;         )
-;;         u0
-;;       )
-;;     )
-;;     (begin
-;;       (mul
-;;         (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .sBTC))
-;;         (token-to-usd
-;;           .sBTC
-;;           .oracle
-;;           (get new-user-balance
-;;             (unwrap-panic (contract-call? .pool-0-reserve
-;;               get-cumulated-balance-read
-;;               who
-;;               .lp-sBTC
-;;               .sBTC
-;;               (unwrap-panic (contract-call? .lp-sBTC get-balance who))
-;;               ))))
-;;       )
-;;     )
-;;   )
-;; )
-
-;; (define-read-only (get-useable-collateral-usd-stSTX (who principal))
-;;   (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
-;;     (let (
-;;       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
-;;     )
-;;       (if (is-eq isolated-asset .stSTX)
-;;         (mul
-;;           (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .stSTX))
-;;           (token-to-usd
-;;             .stSTX
-;;             .oracle
-;;             (get new-user-balance
-;;               (unwrap-panic (contract-call? .pool-0-reserve
-;;                 get-cumulated-balance-read
-;;                 who
-;;                 .lp-stSTX
-;;                 .stSTX
-;;                 (unwrap-panic (contract-call? .lp-stSTX get-balance who))
-;;                 ))))
-;;         )
-;;         u0
-;;       )
-;;     )
-;;     (begin
-;;       u0
-;;     )
-;;   )
-;; )
-
-
-;; (define-read-only (get-useable-collateral-usd-USDA (who principal))
-;;   (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
-;;     (let (
-;;       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
-;;     )
-;;       (if (is-eq isolated-asset .USDA)
-;;         (mul
-;;           (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .USDA))
-;;           (token-to-usd
-;;             .USDA
-;;             .oracle
-;;             (get new-user-balance
-;;               (unwrap-panic (contract-call? .pool-0-reserve
-;;                 get-cumulated-balance-read
-;;                 who
-;;                 .lp-USDA
-;;                 .USDA
-;;                 (unwrap-panic (contract-call? .lp-USDA get-balance who))
-;;                 ))))
-;;         )
-;;         u0
-;;       )
-;;     )
-;;     (begin
-;;       (mul
-;;         (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .USDA))
-;;         (token-to-usd
-;;           .USDA
-;;           .oracle
-;;           (get new-user-balance
-;;             (unwrap-panic (contract-call? .pool-0-reserve
-;;               get-cumulated-balance-read
-;;               who
-;;               .lp-USDA
-;;               .USDA
-;;               (unwrap-panic (contract-call? .lp-USDA get-balance who))
-;;               ))))
-;;       )
-;;     )
-;;   )
-;; )
-
-;; (define-read-only (get-useable-collateral-usd-xUSD (who principal))
-;;   (if (is-some (contract-call? .pool-0-reserve is-in-isolation-mode who))
-;;     (let (
-;;       (isolated-asset (contract-call? .pool-0-reserve get-isolated-asset who))
-;;     )
-;;       (if (is-eq isolated-asset .xUSD)
-;;         (mul
-;;           (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .xUSD))
-;;           (token-to-usd
-;;             .xUSD
-;;             .oracle
-;;             (get new-user-balance
-;;               (unwrap-panic (contract-call? .pool-0-reserve
-;;                 get-cumulated-balance-read
-;;                 who
-;;                 .lp-xUSD
-;;                 .xUSD
-;;                 (unwrap-panic (contract-call? .lp-xUSD get-balance who))
-;;                 ))))
-;;         )
-;;         u0
-;;       )
-;;     )
-;;     (begin
-;;       (mul
-;;         (get base-ltv-as-collateral (contract-call? .pool-0-reserve get-reserve-state .xUSD))
-;;         (token-to-usd
-;;           .xUSD
-;;           .oracle
-;;           (get new-user-balance
-;;             (unwrap-panic (contract-call? .pool-0-reserve
-;;               get-cumulated-balance-read
-;;               who
-;;               .lp-xUSD
-;;               .xUSD
-;;               (unwrap-panic (contract-call? .lp-xUSD get-balance who))
-;;               ))))
-;;       )
-;;     )
-;;   )
-;; )
-
-;; check if balance decrease sets position health factor under 1e18
+;; get amount that user can decrease based on asset that user wishes to borrow
 (define-public (get-decrease-balance-allowed
   (asset <ft>)
   (oracle <oracle-trait>)
@@ -859,7 +258,7 @@
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
   )
   (let (
-    (reserve-data (unwrap-panic (get-reserve-state (contract-of asset))))
+    (reserve-data (get-reserve-data (contract-of asset)))
     (user-data (get-user-reserve-data user (contract-of asset)))
     (user-global-data (unwrap-panic (contract-call? .pool-0-reserve calculate-user-global-data user assets-to-calculate)))
     (asset-price (unwrap-panic (contract-call? oracle get-asset-price asset)))
@@ -880,294 +279,255 @@
   )
 )
 
-(define-read-only (get-borrowed-balance-user-usd (who principal))
-  (begin
-    {
-      diko-compounded-balance:
-        (token-to-usd .diko .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko)))),
-      diko-principal-balance:
-        (token-to-usd .diko .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko)))),
-      sBTC-compounded-balance:
-        (token-to-usd .sBTC .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC)))),
-      sBTC-principal-balance:
-        (token-to-usd .sBTC .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC)))),
-      stSTX-compounded-balance:
-        (token-to-usd .stSTX .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX)))),
-      stSTX-principal-balance:
-        (token-to-usd .stSTX .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX)))),
-      USDA-compounded-balance:
-        (token-to-usd .USDA .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA)))),
-      USDA-principal-balance:
-        (token-to-usd .USDA .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA)))),
-      xUSD-compounded-balance: 
-        (token-to-usd .xUSD .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD)))),
-      xUSD-principal-balance: 
-        (token-to-usd .xUSD .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD)))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-usd-diko (who principal))
-  (begin
-    {
-      compounded-balance: (token-to-usd .diko .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko)))),
-      principal-balance: (token-to-usd .diko .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko)))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-usd-sBTC (who principal))
-  (begin
-    {
-      compounded-balance: (token-to-usd .sBTC .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC)))),
-      principal-balance: (token-to-usd .sBTC .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC)))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-usd-stSTX (who principal))
-  (begin
-    {
-      compounded-balance: (token-to-usd .stSTX .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX)))),
-      principal-balance: (token-to-usd .stSTX .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX)))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-usd-USDA (who principal))
-  (begin
-    {
-      compounded-balance: (token-to-usd .USDA .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA)))),
-      principal-balance: (token-to-usd .USDA .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA)))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-usd-xUSD (who principal))
-  (begin
-    {
-      compounded-balance: (token-to-usd .xUSD .oracle (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD)))),
-      principal-balance: (token-to-usd .xUSD .oracle (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD)))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user (who principal))
-  (begin
-    {
-      diko-borrowed-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko))),
-      diko-principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko))),
-      sBTC-borrowed-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC))),
-      sBTC-principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC))),
-      stSTX-borrowed-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX))),
-      stSTX-principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX))),
-      USDA-borrowed-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA))),
-      USDA-principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA))),
-      xUSD-borrowed-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD))),
-      xUSD-principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-diko (who principal))
-  (begin
-    {
-      compounded-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko))),
-      principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .diko))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-sBTC (who principal))
-  (begin
-    {
-      compounded-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC))),
-      principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .sBTC))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-stSTX (who principal))
-  (begin
-    {
-      compounded-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX))),
-      principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .stSTX))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-USDA (who principal))
-  (begin
-    {
-      compounded-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA))),
-      principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .USDA))),
-    }
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-xUSD (who principal))
-  (begin
-    {
-      compounded-balance: (get compounded-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD))),
-      principal-balance: (get principal (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance who .xUSD))),
-    }
-  )
-)
-
-(define-read-only (get-supplied-balance-user-usd (who principal) (oracle principal))
-  (begin
-    {
-      diko-supplied-balance: (token-to-usd .diko .oracle (unwrap-panic (contract-call? .lp-diko get-balance who))),
-      sBTC-supplied-balance: (token-to-usd .sBTC .oracle  (unwrap-panic (contract-call? .lp-sBTC get-balance who))),
-      stSTX-supplied-balance: (token-to-usd .stSTX .oracle  (unwrap-panic (contract-call? .lp-stSTX get-balance who))),
-      USDA-supplied-balance: (token-to-usd .USDA .oracle (unwrap-panic (contract-call? .lp-USDA get-balance who))),
-      xUSD-supplied-balance: (token-to-usd .xUSD .oracle (unwrap-panic (contract-call? .lp-xUSD get-balance who))),
-    }
-  )
-)
-
-(define-read-only (get-supplied-balance-user-usd-diko (who principal) (oracle principal))
-  (token-to-usd .diko .oracle (unwrap-panic (contract-call? .lp-diko get-balance who)))
-)
-
-(define-read-only (get-supplied-balance-user-usd-sBTC (who principal) (oracle principal))
-  (token-to-usd .sBTC .oracle (unwrap-panic (contract-call? .lp-sBTC get-balance who)))
-)
-
-(define-read-only (get-supplied-balance-user-usd-stSTX (who principal) (oracle principal))
-  (token-to-usd .stSTX .oracle (unwrap-panic (contract-call? .lp-stSTX get-balance who)))
-)
-
-(define-read-only (get-supplied-balance-user-usd-USDA (who principal) (oracle principal))
-  (token-to-usd .USDA .oracle (unwrap-panic (contract-call? .lp-USDA get-balance who)))
-)
-
-(define-read-only (get-supplied-balance-user-usd-xUSD (who principal) (oracle principal))
-  (token-to-usd .xUSD .oracle (unwrap-panic (contract-call? .lp-xUSD get-balance who)))
-)
-
-(define-read-only (get-supplied-balance-user (who principal))
-  (begin
-    {
-      diko-supplied-balance: (unwrap-panic (contract-call? .lp-diko get-balance who)),
-      sBTC-supplied-balance: (unwrap-panic (contract-call? .lp-sBTC get-balance who)),
-      stSTX-supplied-balance: (unwrap-panic (contract-call? .lp-stSTX get-balance who)),
-      USDA-supplied-balance: (unwrap-panic (contract-call? .lp-USDA get-balance who)),
-      xUSD-supplied-balance: (unwrap-panic (contract-call? .lp-xUSD get-balance who)),
-    }
-  )
-)
-
-(define-read-only (get-supplied-balance-user-diko (who principal))
-  (unwrap-panic (contract-call? .lp-diko get-balance who))
-)
-
-(define-read-only (get-supplied-balance-user-sBTC (who principal))
-  (unwrap-panic (contract-call? .lp-sBTC get-balance who))
-)
-
-(define-read-only (get-supplied-balance-user-stSTX (who principal))
-  (unwrap-panic (contract-call? .lp-stSTX get-balance who))
-)
-
-(define-read-only (get-supplied-balance-user-USDA (who principal))
-  (unwrap-panic (contract-call? .lp-USDA get-balance who))
-)
-
-(define-read-only (get-supplied-balance-user-xUSD (who principal))
-  (unwrap-panic (contract-call? .lp-xUSD get-balance who))
-)
-
-(define-read-only (get-supplied-balance-usd)
-  (begin
-    {
-      diko-supplied-balance: (token-to-usd .diko .oracle (unwrap-panic (contract-call? .diko get-balance .pool-0-reserve))),
-      sBTC-supplied-balance: (token-to-usd .sBTC .oracle (unwrap-panic (contract-call? .sBTC get-balance .pool-0-reserve))),
-      stSTX-supplied-balance: (token-to-usd .stSTX .oracle (unwrap-panic (contract-call? .stSTX get-balance .pool-0-reserve))),
-      USDA-supplied-balance: (token-to-usd .USDA .oracle (unwrap-panic (contract-call? .USDA get-balance .pool-0-reserve))),
-      xUSD-supplied-balance: (token-to-usd .xUSD .oracle (unwrap-panic (contract-call? .xUSD get-balance .pool-0-reserve))),
-    }
-  )
-)
-
-(define-read-only (get-supplied-balance-usd-diko)
-  (token-to-usd .diko .oracle (unwrap-panic (contract-call? .diko get-balance .pool-0-reserve)))
-)
-
-(define-read-only (get-supplied-balance-usd-sBTC)
-  (token-to-usd .sBTC .oracle (unwrap-panic (contract-call? .sBTC get-balance .pool-0-reserve)))
-)
-
-(define-read-only (get-supplied-balance-usd-stSTX)
-  (token-to-usd .stSTX .oracle (unwrap-panic (contract-call? .stSTX get-balance .pool-0-reserve)))
-)
-
-(define-read-only (get-supplied-balance-usd-USDA)
-  (token-to-usd .USDA .oracle (unwrap-panic (contract-call? .USDA get-balance .pool-0-reserve)))
-)
-
-(define-read-only (get-supplied-balance-usd-xUSD)
-  (token-to-usd .xUSD .oracle (unwrap-panic (contract-call? .xUSD get-balance .pool-0-reserve)))
-)
-
-(define-read-only (get-supplied-balance)
-  (begin
-    {
-      diko-supplied-balance: (unwrap-panic (contract-call? .diko get-balance .pool-0-reserve)),
-      sBTC-supplied-balance: (unwrap-panic (contract-call? .sBTC get-balance .pool-0-reserve)),
-      stSTX-supplied-balance: (unwrap-panic (contract-call? .stSTX get-balance .pool-0-reserve)),
-      USDA-supplied-balance: (unwrap-panic (contract-call? .USDA get-balance .pool-0-reserve)),
-      xUSD-supplied-balance: (unwrap-panic (contract-call? .xUSD get-balance .pool-0-reserve)),
-    }
-  )
-)
-
-(define-read-only (get-supplied-balance-diko)
-  (unwrap-panic (contract-call? .diko get-balance .pool-0-reserve))
-)
-
-(define-read-only (get-supplied-balance-sBTC)
-  (unwrap-panic (contract-call? .sBTC get-balance .pool-0-reserve))
-)
-
-(define-read-only (get-supplied-balance-stSTX)
-  (unwrap-panic (contract-call? .stSTX get-balance .pool-0-reserve))
-)
-
-(define-read-only (get-supplied-balance-USDA)
-  (unwrap-panic (contract-call? .USDA get-balance .pool-0-reserve))
-)
-
-(define-read-only (get-supplied-balance-xUSD)
-  (unwrap-panic (contract-call? .xUSD get-balance .pool-0-reserve))
-)
-
-;; (define-read-only (get-borroweable-assets)
-;;   (let (
-;;     (all-assets (contract-call? .pool-0-reserve get-assets))
-;;     (borroweable-assets (fold filter-asset all-assets (list)))
-;;   )
-;;     borroweable-assets
-;;   )
-;; )
-
-(define-read-only (filter-asset (asset principal) (ret (list 100 principal)))
+(define-read-only (get-user-borrow-balance (who principal) (reserve principal))
   (let (
-    (asset-state (contract-call? .pool-0-reserve get-reserve-state asset))
+    (user-data (unwrap-panic (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve)))
+    (reserve-data (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read reserve)))
+    (principal (get principal-borrow-balance user-data))
+    (cumulated-balance 
+      (get-compounded-borrow-balance
+        (get principal-borrow-balance user-data)
+        (get stable-borrow-rate user-data)
+        (get last-updated-block user-data)
+        (get last-variable-borrow-cumulative-index user-data)
+        (get current-variable-borrow-rate reserve-data)
+        (get last-variable-borrow-cumulative-index reserve-data)
+        (get last-updated-block reserve-data)
+      )))
+    {
+      principal-balance: principal,
+      compounded-balance: cumulated-balance,
+      balance-increase: (- cumulated-balance principal),
+    }
   )
-    (if (get borrowing-enabled asset-state)
-      ;; add back to list
-      (unwrap-panic (as-max-len? (append ret asset) u100))
-      ;; ignore, do not add
-      ret
+)
+
+(define-read-only (get-compounded-borrow-balance
+  ;; user-data
+  (principal-borrow-balance uint)
+  (stable-borrow-rate uint)
+  (last-updated-block uint)
+  (last-variable-borrow-cumulative-index uint)
+  ;; reserve-data
+  (current-variable-borrow-rate uint)
+  (last-variable-borrow-cumulative-index-reserve uint)
+  (last-updated-block-reserve uint)
+  )
+  (let (
+    (user-cumulative-index
+      (if (is-eq last-variable-borrow-cumulative-index u0)
+        last-variable-borrow-cumulative-index-reserve
+        last-variable-borrow-cumulative-index
+      )
+    )
+    (cumulated-interest
+      (div
+        (mul
+          (calculate-compounded-interest
+            current-variable-borrow-rate
+            (- burn-block-height last-updated-block-reserve))
+          last-variable-borrow-cumulative-index-reserve)
+        user-cumulative-index))
+    (compounded-balance (mul principal-borrow-balance cumulated-interest)))
+    (if (is-eq compounded-balance principal-borrow-balance)
+      (if (is-eq last-updated-block burn-block-height)
+        (+ principal-borrow-balance u1)
+        compounded-balance
+      )
+      compounded-balance
     )
   )
 )
 
-(define-read-only (stSTX-supply-balance (who principal))
+;; MATH
+(define-constant sb-by-sy u1903)
+(define-constant one-8 u100000000)
+(define-constant one-12 u1000000000000)
+(define-constant fixed-precision u8)
+(define-constant max-value u340282366920938463463374607431768211455)
+(define-read-only (get-max-value) max-value)
+
+(define-read-only (calculate-compounded-interest
+  (current-liquidity-rate uint)
+  (delta uint))
   (begin
-    (contract-call? .stSTX get-balance who)
+    (taylor-6 (get-rt-by-block current-liquidity-rate delta))
   )
 )
 
+(define-read-only (mul (x uint) (y uint))
+  (/ (+ (* x y) (/ one-8 u2)) one-8))
 
+(define-read-only (div (x uint) (y uint))
+  (/ (+ (* x one-8) (/ y u2)) y))
+
+(define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (mul (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+    (mul (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+  )
+)
+
+(define-read-only (div-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (div (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+    (div (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+  )
+)
+
+;; assumes assets used do not have more than 12 decimals
+(define-read-only (div-precision-to-fixed (a uint) (b uint) (decimals uint))
+  (let (
+    (adjustment-difference (- one-12 decimals))
+    (result (/ (* a (pow u10 decimals)) b)))
+    (to-fixed result decimals)
+  )
+)
+
+(define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
+  (from-fixed-to-precision (mul-to-fixed-precision a decimals-a b-fixed) decimals-a)
+)
+
+(define-read-only (add-precision-to-fixed (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (+ (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+    (+ (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+  )
+)
+
+(define-read-only (sub-precision-to-fixed (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (- (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+    (- (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+  )
+)
+
+(define-read-only (to-fixed (a uint) (decimals-a uint))
+  (if (> decimals-a fixed-precision)
+    (/ a (pow u10 (- decimals-a fixed-precision)))
+    (* a (pow u10 (- fixed-precision decimals-a)))
+  )
+)
+
+(define-read-only (mul-perc (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    (begin
+      (*
+        (mul (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
+        (pow u10 (- decimals-a fixed-precision))
+      )
+    )
+    (begin
+      (/
+        (mul (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
+        (pow u10 (- fixed-precision decimals-a))
+      )
+    )
+  )
+)
+
+(define-read-only (fix-precision (a uint) (decimals-a uint) (b uint) (decimals-b uint))
+  (let (
+    (a-standard
+      (if (> decimals-a fixed-precision)
+        (/ a (pow u10 (- decimals-a fixed-precision)))
+        (* a (pow u10 (- fixed-precision decimals-a)))
+      ))
+    (b-standard
+      (if (> decimals-b fixed-precision)
+        (/ b (pow u10 (- decimals-b fixed-precision)))
+        (* b (pow u10 (- fixed-precision decimals-b)))
+      ))
+  )
+    {
+      a: a-standard,
+      decimals-a: decimals-a,
+      b: b-standard,
+      decimals-b: decimals-b,
+    }
+  )
+)
+
+(define-read-only (from-fixed-to-precision (a uint) (decimals-a uint))
+  (if (> decimals-a fixed-precision)
+    (* a (pow u10 (- decimals-a fixed-precision)))
+    (/ a (pow u10 (- fixed-precision decimals-a)))
+  )
+)
+
+(define-read-only (get-y-from-x
+  (x uint)
+  (x-decimals uint)
+  (y-decimals uint)
+  (x-price uint)
+  (y-price uint)
+  )
+  (from-fixed-to-precision
+    (mul-to-fixed-precision x x-decimals (div x-price y-price))
+    y-decimals
+  )
+)
+
+(define-read-only (is-odd (x uint))
+  (not (is-even x))
+)
+
+(define-read-only (is-even (x uint))
+  (is-eq (mod x u2) u0)
+)
+
+;; rate in 8-fixed
+;; n-blocks
+(define-read-only (get-rt-by-block (rate uint) (blocks uint))
+  (begin
+    (mul rate (* blocks sb-by-sy))
+  )
+)
+
+;; block-seconds/year-seconds in fixed precision
+
+(define-read-only (get-sb-by-sy)
+  sb-by-sy
+)
+
+(define-read-only (get-e) e)
+(define-read-only (get-one) one-8)
+
+(define-constant e 271828182)
+(define-constant seconds-in-year u31536000
+  ;; (* u144 u365 u10 u60)
+)
+(define-constant seconds-in-block u600
+  ;; (* 10 60)
+)
+
+(define-read-only (get-seconds-in-year)
+  seconds-in-year
+)
+
+(define-read-only (get-seconds-in-block)
+  seconds-in-block
+)
+
+(define-constant fact_2 u200000000)
+(define-constant fact_3 (mul u300000000 u200000000))
+(define-constant fact_4 (mul u400000000 (mul u300000000 u200000000)))
+(define-constant fact_5 (mul u500000000 (mul u400000000 (mul u300000000 u200000000))))
+(define-constant fact_6 (mul u600000000 (mul u500000000 (mul u400000000 (mul u300000000 u200000000)))))
+
+(define-read-only (x_2 (x uint)) (mul x x))
+(define-read-only (x_3 (x uint)) (mul x (mul x x)))
+(define-read-only (x_4 (x uint)) (mul x (mul x (mul x x))))
+(define-read-only (x_5 (x uint)) (mul x (mul x (mul x (mul x x)))))
+(define-read-only (x_6 (x uint)) (mul x (mul x (mul x (mul x (mul x x))))))
+
+(define-read-only (taylor-6 (x uint))
+  (+
+    one-8 x
+    (div (x_2 x) fact_2)
+    (div (x_3 x) fact_3)
+    (div (x_4 x) fact_4)
+    (div (x_5 x) fact_5)
+    (div (x_6 x) fact_6)
+  )
+)

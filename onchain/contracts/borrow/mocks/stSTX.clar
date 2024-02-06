@@ -3,13 +3,12 @@
 (define-constant err-unauthorised (err u3000))
 (define-constant err-not-token-owner (err u4))
 
-(define-fungible-token sBTC)
-(define-fungible-token sBTC-locked)
+(define-fungible-token ststx)
 
-(define-data-var token-name (string-ascii 32) "sBTC")
-(define-data-var token-symbol (string-ascii 10) "sBTC")
+(define-data-var token-name (string-ascii 32) "stSTX")
+(define-data-var token-symbol (string-ascii 10) "stSTX")
 (define-data-var token-uri (optional (string-utf8 256)) none)
-(define-data-var token-decimals uint u8)
+(define-data-var token-decimals uint u6)
 
 ;; --- Public functions
 
@@ -18,7 +17,7 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
 	(begin
 		(asserts! (or (is-eq tx-sender sender) (is-eq contract-caller sender)) err-not-token-owner)
-		(ft-transfer? sBTC amount sender recipient)
+		(ft-transfer? ststx amount sender recipient)
 	)
 )
 
@@ -35,11 +34,11 @@
 )
 
 (define-read-only (get-balance (who principal))
-	(ok (+ (ft-get-balance sBTC who) (ft-get-balance sBTC-locked who)))
+	(ok (ft-get-balance ststx who))
 )
 
 (define-read-only (get-total-supply)
-	(ok (+ (ft-get-supply sBTC) (ft-get-supply sBTC-locked)))
+	(ok (ft-get-supply ststx))
 )
 
 (define-read-only (get-token-uri)
@@ -47,5 +46,5 @@
 )
 
 (define-public (mint (amount uint) (recipient principal))
-  (ft-mint? sBTC amount recipient)
+  (ft-mint? ststx amount recipient)
 )

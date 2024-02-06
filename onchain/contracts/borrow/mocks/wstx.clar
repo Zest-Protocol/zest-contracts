@@ -3,7 +3,7 @@
 (define-constant err-unauthorised (err u3000))
 (define-constant err-not-token-owner (err u4))
 
-(define-fungible-token wSTX)
+(define-fungible-token wstx)
 
 (define-data-var token-name (string-ascii 32) "wSTX")
 (define-data-var token-symbol (string-ascii 10) "wSTX")

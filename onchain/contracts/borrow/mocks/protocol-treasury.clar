@@ -24,14 +24,6 @@
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
     (as-contract (contract-call? f-t transfer amount tx-sender recipient none))))
 
-(define-read-only (is-approved-contract (contract principal))
-  (if (or
-    (contract-call? .globals is-pool-contract contract)
-    (contract-call? .globals is-loan-contract contract)
-    (contract-call? .globals is-cover-pool-contract contract))
-    (ok true)
-    ERR_UNAUTHORIZED))
-
 ;; ERROR START 17000
 
 (define-constant ERR_UNAUTHORIZED (err u17000))
