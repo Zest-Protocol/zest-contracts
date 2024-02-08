@@ -131,5 +131,62 @@ describe("Math", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeUint(25_925_925_690);
+
+  });
+
+  it("calculate-linear-interest", () => {
+    let callResponse = simnet.callReadOnlyFn(
+      `pool-0-reserve`,
+      "calculate-linear-interest",
+      [
+        Cl.uint(5000000),
+        Cl.uint(144 * 365),
+      ],
+      deployerAddress
+    );
+    expect(callResponse.result).toBeUint(105001084);
+
+    callResponse = simnet.callReadOnlyFn(
+      `pool-0-reserve`,
+      "calculate-compounded-interest",
+      [
+        Cl.uint(5_000_000),
+        Cl.uint(144 * 365),
+      ],
+      deployerAddress
+    );
+    expect(callResponse.result).toBeUint(105128249);
+    callResponse = simnet.callReadOnlyFn(
+      `pool-0-reserve`,
+      "calculate-compounded-interest",
+      [
+        Cl.uint(100_000_000),
+        Cl.uint(144 * 365),
+      ],
+      deployerAddress
+    );
+    expect(callResponse.result).toBeUint(271_864_460);
+
+    callResponse = simnet.callReadOnlyFn(
+      `pool-0-reserve`,
+      "div-precision-to-fixed",
+      [
+        Cl.uint(100_000_000_000),
+        Cl.uint(BigInt("2000000000000000")),
+        Cl.uint(6),
+      ],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callReadOnlyFn(
+      `lp-ststx`,
+      "get-balance",
+      [
+        Cl.standardPrincipal("ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"),
+      ],
+      deployerAddress
+    );
+    console.log(Cl.prettyPrint(callResponse.result));
   });
 });

@@ -937,6 +937,7 @@
         (compounded-balance 
           (get-compounded-borrow-balance
             (get principal-borrow-balance user-data)
+            (get decimals reserve-data)
             (get stable-borrow-rate user-data)
             (get last-updated-block user-data)
             (get last-variable-borrow-cumulative-index user-data)
@@ -1032,6 +1033,7 @@
 (define-read-only (get-compounded-borrow-balance
   ;; user-data
   (principal-borrow-balance uint)
+  (decimals uint)
   (stable-borrow-rate uint)
   (last-updated-block uint)
   (last-variable-borrow-cumulative-index uint)
@@ -1058,9 +1060,10 @@
             last-variable-borrow-cumulative-index-reserve)
           user-cumulative-index)
       ))
-    (compounded-balance (mul principal-borrow-balance cumulated-interest)))
+    (compounded-balance (mul-precision-with-factor principal-borrow-balance decimals cumulated-interest)))
     (if (is-eq compounded-balance principal-borrow-balance)
-      (if (is-eq last-updated-block burn-block-height)
+      ;; add 1 in case of rounding down
+      (if (not (is-eq last-updated-block burn-block-height))
         (+ principal-borrow-balance u1)
         compounded-balance
       )
@@ -1279,6 +1282,7 @@
     (compounded-borrow-balance
       (get-compounded-borrow-balance
         (get principal-borrow-balance user-data)
+        (get decimals reserve-data)
         (get stable-borrow-rate user-data)
         (get last-updated-block user-data)
         (get last-variable-borrow-cumulative-index user-data)

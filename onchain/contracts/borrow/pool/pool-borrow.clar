@@ -233,6 +233,7 @@
         )
       )
       (try! (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount))
+      (print { ret: ret })
 
       (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount } } })
       (ok payback-amount)

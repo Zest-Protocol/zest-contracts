@@ -294,6 +294,23 @@ class PoolBorrow {
       caller
     );
   }
+
+  getUserReserveData(
+    user: string,
+    assetDeployer: string,
+    assetContractName: string,
+    caller: string
+  ) {
+    return simnet.callReadOnlyFn(
+      this.contractName,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(user),
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+      ],
+      caller
+    );
+  }
 }
 
 export { PoolBorrow };
