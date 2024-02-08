@@ -431,7 +431,7 @@ describe("Supply and redeem", () => {
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     expect(callResponse.result).toBeOk(Cl.uint(0));
     expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)).toBe(
-      1675816423n
+      1675816406n
     );
     let currVaultBalance = simnet
       .getAssetsMap()
@@ -443,7 +443,7 @@ describe("Supply and redeem", () => {
         .get(".sbtc.sbtc")
         ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!
     ).toBe(8379050n);
-    expect(BigInt(currVaultBalance) - BigInt(prevVaultBalance)).toBe(159601564083n);
+    expect(BigInt(currVaultBalance) - BigInt(prevVaultBalance)).toBe(159601562487n);
 
     // console.log("Max Borrow amount: ", maxBorrowAmount);
     let prevLiquidatorCollateralBalance = simnet
@@ -817,7 +817,7 @@ describe("Supply and redeem", () => {
     );
     expect(
       simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Liquidator_1)
-    ).toBe(1675816423n);
+    ).toBe(1675816406n);
 
     expect(callResponse.result).toBeList([
       Cl.contractPrincipal(deployerAddress, sBTC),

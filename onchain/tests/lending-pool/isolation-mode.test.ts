@@ -1072,7 +1072,7 @@ describe("Isolated mode", () => {
       Borrower_1
     );
 
-    expect(callResponse.result).toBeOk(Cl.uint(499610074));
+    expect(callResponse.result).toBeOk(Cl.uint(499610078));
 
     borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -1295,9 +1295,9 @@ describe("Isolated mode", () => {
         "current-ltv": Cl.uint(80000000),
         "health-factor": Cl.uint(100098100),
         "is-health-factor-below-treshold": Cl.bool(false),
-        "total-borrow-balanceUSD": Cl.uint(57456004000),
-        "total-collateral-balanceUSD": Cl.uint(64062388160),
-        "total-liquidity-balanceUSD": Cl.uint(64062388160),
+        "total-borrow-balanceUSD": Cl.uint(57456003400),
+        "total-collateral-balanceUSD": Cl.uint(64062387520),
+        "total-liquidity-balanceUSD": Cl.uint(64062387520),
         "user-total-feesUSD": Cl.uint(143640000),
       })
     );
@@ -1345,8 +1345,8 @@ describe("Isolated mode", () => {
         ),
         "is-health-factor-below-treshold": Cl.bool(false),
         "total-borrow-balanceUSD": Cl.uint(0),
-        "total-collateral-balanceUSD": Cl.uint(64062388160),
-        "total-liquidity-balanceUSD": Cl.uint(64062388160),
+        "total-collateral-balanceUSD": Cl.uint(64062387520),
+        "total-liquidity-balanceUSD": Cl.uint(64062387520),
         "user-total-feesUSD": Cl.uint(0),
       })
     );

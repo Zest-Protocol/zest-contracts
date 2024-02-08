@@ -44,6 +44,8 @@
   )
 )
 
+;; Multiply a number with arbitrary decimals with a fixed-precision number, then return to 
+;; number with arbitrary decimals
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
   (from-fixed-to-precision (mul-to-fixed-precision a decimals-a b-fixed) decimals-a)
 )
@@ -141,7 +143,7 @@
 ;; rate in 8-fixed
 ;; n-blocks
 (define-read-only (get-rt-by-block (rate uint) (blocks uint))
-  (mul rate (* blocks sb-by-sy))
+  (/ (* rate (* blocks sb-by-sy)) one-8)
 )
 
 (define-read-only (get-sb-by-sy)

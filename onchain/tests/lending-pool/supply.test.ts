@@ -776,7 +776,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200_500_012));
+    expect(callResponse.result).toBeOk(Cl.uint(200_500_008));
 
     callResponse = simnet.callPublicFn(
       "lp-ststx",
