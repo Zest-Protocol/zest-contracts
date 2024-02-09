@@ -79,10 +79,12 @@
 )
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (begin
-    (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (execute-transfer-internal amount sender recipient)
-  )
+  ERR_UNAUTHORIZED
+  ;; (begin
+  ;;   (asserts! false ERR_UNAUTHORIZED)
+    ;; (ok true)
+    ;; (execute-transfer-internal amount sender recipient)
+  ;; )
 )
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
@@ -108,7 +110,11 @@
       (try! (burn-internal amount owner))
 
       (if (is-eq (- (get current-balance ret) amount) u0)
-        (try! (contract-call? .pool-0-reserve reset-user-index owner .ststx))
+        (begin
+          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner .ststx false))
+          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner .ststx))
+          (try! (contract-call? .pool-0-reserve reset-user-index owner .ststx))
+        )
         false
       )
       (ok amount)
@@ -147,7 +153,8 @@
 
     (if (is-eq balance-increase u0)
       false
-      (try! (mint-internal balance-increase account)))
+      (try! (mint-internal balance-increase account))
+    )
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -170,18 +177,22 @@
     (ret (try! (cumulate-balance-internal tx-sender)))
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
-    (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
+    (asserts! (and (> amount-to-redeem u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
     (asserts! (try! (is-transfer-allowed .ststx oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
     (asserts! (is-eq (contract-of asset) .ststx) ERR_UNAUTHORIZED)
     
     (try! (burn-internal amount-to-redeem tx-sender))
 
     (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
-      (try! (contract-call? .pool-0-reserve reset-user-index tx-sender .ststx))
+      (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner .ststx false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner .ststx))
+        (try! (contract-call? .pool-0-reserve reset-user-index owner .ststx))
+      )
       false
     )
 
-    (contract-call? .pool-borrow redeem-underlying
+    (contract-call? .pool-borrow withdraw
       pool-reserve
       .ststx
       oracle
@@ -204,7 +215,11 @@
   )
     (try! (transfer-internal amount sender recipient none))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
-      (contract-call? .pool-0-reserve reset-user-index tx-sender .ststx)
+      (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender .ststx false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .ststx))
+        (contract-call? .pool-0-reserve reset-user-index sender .ststx)
+      )
       (ok true)
     )
   )

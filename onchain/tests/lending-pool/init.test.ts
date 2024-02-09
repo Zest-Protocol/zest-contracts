@@ -657,7 +657,7 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(99750483));
+    expect(callResponse.result).toBeOk(Cl.uint(99750482));
   });
   it("Borrower supplies sBTC, borrow stSTX pay back with interest. LPer gets their stSTX back", () => {
     const poolReserve0 = new PoolReserve(
@@ -967,7 +967,7 @@ describe("Supply and redeem", () => {
       ],
       LP_1
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     expect(callResponse.result).toBeOk(Cl.uint(1_000_000_090n));
 

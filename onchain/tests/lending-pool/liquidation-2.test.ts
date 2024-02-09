@@ -384,7 +384,6 @@ describe("Supply and redeem", () => {
       Borrower_1
     );
 
-
     callResponse = stSTXToken.mint(
       BigInt("10000000000000000"),
       Liquidator_1,
@@ -395,6 +394,19 @@ describe("Supply and redeem", () => {
       .getAssetsMap()
       .get(".ststx.ststx")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
+
+
+    callResponse = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-borrow-balance",
+      [Cl.standardPrincipal(Borrower_1), Cl.contractPrincipal(deployerAddress, stSTX)],
+      Borrower_1
+    );
+    // const userDebtBefore1stList = cvToValue(callResponse.result).value["compounded-balance"].value;
+    callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
+    // console.log(cvToValue(callResponse.result));
+    // const debtBeforeLiq = Number(cvToValue(callResponse.result).value["total-borrows-variable"].value);
+
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -428,7 +440,13 @@ describe("Supply and redeem", () => {
       ],
       Liquidator_1
     );
+    // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    const debtPurchased = BigInt((callResponse.events[11].data.amount));
     expect(callResponse.result).toBeOk(Cl.uint(0));
     expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)).toBe(
       1675816406n
@@ -444,8 +462,13 @@ describe("Supply and redeem", () => {
     //     .getAssetsMap()
     //     .get(".sbtc.sbtc")
     //     ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!
-    // ).toBe(8379050n);
-    expect(BigInt(currVaultBalance) - BigInt(prevVaultBalance)).toBe(159601562487n);
+    // ).toBe(8379050n);u159601441190
+    
+    expect(BigInt(currVaultBalance) - BigInt(prevVaultBalance)).toBe(debtPurchased);
+
+    callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
+    // console.log(cvToValue(callResponse.result));
+    expect(Math.ceil(319203124975 / 2)).toBe(Number(cvToValue(callResponse.result).value["total-borrows-variable"].value));
 
     // console.log("Max Borrow amount: ", maxBorrowAmount);
     let prevLiquidatorCollateralBalance = simnet
@@ -520,9 +543,44 @@ describe("Supply and redeem", () => {
     expect(
       simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")!?.get(Borrower_1)!
     ).toBe(0n);
+
+    callResponse = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, sBTC)
+      ],
+      Borrower_1
+    );
+    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(2_000_000_000n);
+    // console.log(cvToValue(callResponse.result).value);
+    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(false);
+
+    callResponse = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(Liquidator_1),
+        Cl.contractPrincipal(deployerAddress, sBTC)
+      ],
+      Liquidator_1
+    );
+    expect((cvToValue(callResponse.result).value["use-as-collateral"].value)).toBe(false);
+
+    callResponse = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, stSTX)
+      ],
+      Borrower_1
+    );
+    expect(Number(cvToValue(callResponse.result).value["principal-borrow-balance"].value)).toBeGreaterThan(0);
   });
-  it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated. Liquidator
-  claims ztokens`, () => {
+
+  it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated. Liquidator claims ztokens. Can redeem underlying assets from ztokens in the pool vault.`, () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
@@ -541,6 +599,7 @@ describe("Supply and redeem", () => {
 
     let callResponse = stSTXToken.mint(400_000_000_000, LP_1, deployerAddress);
     callResponse = sBTCToken.mint(2_000_000_000, Borrower_1, deployerAddress);
+    callResponse = sBTCToken.mint(2_000_000_000, deployerAddress, deployerAddress);
 
     callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
@@ -548,10 +607,25 @@ describe("Supply and redeem", () => {
       true,
       deployerAddress
     );
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      sBTC,
+      true,
+      deployerAddress
+    );
 
     callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
       sBTC,
+      true,
+      80000000,
+      90000000,
+      5000000,
+      deployerAddress
+    );
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
+      deployerAddress,
+      stSTX,
       true,
       80000000,
       90000000,
@@ -571,6 +645,7 @@ describe("Supply and redeem", () => {
       LP_1
     );
 
+    const suppliedSbtcByDeployer = 2_000_000_000;
     callResponse = poolBorrow.supply(
       deployerAddress,
       lpsBTC,
@@ -578,7 +653,20 @@ describe("Supply and redeem", () => {
       pool0Reserve,
       deployerAddress,
       sBTC,
-      2_000_000_000,
+      suppliedSbtcByDeployer,
+      deployerAddress,
+      deployerAddress
+    );
+
+    const suppliedSbtcByBorrower = 2_000_000_000;
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpsBTC,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      sBTC,
+      suppliedSbtcByBorrower,
       Borrower_1,
       Borrower_1
     );
@@ -678,8 +766,70 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-
     expect(callResponse.result).toBeOk(Cl.uint(maxBorrowAmount));
+
+    // callResponse = simnet.callPublicFn(
+    //   "pool-read",
+    //   "borrowing-power-in-asset",
+    //   [
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //     Cl.standardPrincipal(LP_1),
+    //     Cl.list([
+    //       Cl.tuple({
+    //         asset: Cl.contractPrincipal(deployerAddress, stSTX),
+    //         "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+    //         oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+    //       }),
+    //       Cl.tuple({
+    //         asset: Cl.contractPrincipal(deployerAddress, sBTC),
+    //         "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+    //         oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+    //       }),
+    //       Cl.tuple({
+    //         asset: Cl.contractPrincipal(deployerAddress, xUSD),
+    //         "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+    //         oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+    //       }),
+    //     ]),
+    //   ],
+    //   Borrower_1
+    // );
+
+    callResponse = poolBorrow.borrow(
+      deployerAddress,
+      "pool-0-reserve",
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      sBTC,
+      deployerAddress,
+      lpsBTC,
+      Math.floor(1000000000),
+      deployerAddress,
+      "fees-calculator",
+      0,
+      LP_1,
+      [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: sBTC },
+          "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: zxUSD },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+      ],
+      LP_1
+    );
+    expect(Number(cvToValue(callResponse.result)["value"])).toBe(1000000000);
+
 
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -808,6 +958,10 @@ describe("Supply and redeem", () => {
       ],
       Liquidator_1
     );
+    // console.log("after 1st liq")
+    // console.log(simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc"));
+    // console.log("hhh")
+    // console.log(simnet.getAssetsMap().get(".sbtc.sbtc"));
 
     // console.log("Liquidator_1");
     // console.log(Liquidator_1);
@@ -819,7 +973,7 @@ describe("Supply and redeem", () => {
     );
     expect(
       simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Liquidator_1)
-    ).toBe(1675816406n);
+    ).toBe(1675817680n);
 
     expect(callResponse.result).toBeList([
       Cl.contractPrincipal(deployerAddress, sBTC),
@@ -875,6 +1029,30 @@ describe("Supply and redeem", () => {
       Liquidator_1
     );
 
+    // console.log("after 2nd liq")
+    // console.log(simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc"));
+    // console.log("hhh")
+    // console.log(simnet.getAssetsMap().get(".sbtc.sbtc"));
+
+    callResponse = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve`,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(Liquidator_1),
+        Cl.contractPrincipal(deployerAddress, sBTC)
+      ],
+      Liquidator_1
+    );
+    expect((cvToValue(callResponse.result).value["use-as-collateral"].value)).toBe(false);
+
+    callResponse = simnet.callReadOnlyFn(
+      `${deployerAddress}.lp-sbtc`,
+      "get-balance",
+      [Cl.standardPrincipal(Liquidator_1)],
+      Liquidator_1
+    );
+    const boughtLpSbtc = Number(cvToValue(callResponse.result)["value"]);
+
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "liquidation-call",
@@ -909,16 +1087,11 @@ describe("Supply and redeem", () => {
     );
 
     expect(callResponse.result).toBeErr(Cl.uint(90001));
-    // console.log("sBTC");
-    // console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
-    // console.log("lp-sBTC");
+
     expect(
       simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Liquidator_1)
     ).toBe(
-      simnet
-        .getAssetsMap()
-        .get(".sbtc.sbtc")
-        ?.get(`${deployerAddress}.pool-vault`)
+      BigInt(suppliedSbtcByBorrower + 640)
     );
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -930,7 +1103,37 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = sBTCZToken.withdraw(
+      deployerAddress,
+      "pool-0-reserve",
+      deployerAddress,
+      sBTC,
+      deployerAddress,
+      oracle,
+      max_value,
+      Liquidator_1,
+      [
+        {
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: zStSTX },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: sBTC },
+          "lp-token": { deployerAddress, contractName: zsBTC },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: zxUSD },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+      ],
+      Liquidator_1
+    );
+
+    expect(Number(cvToValue(callResponse.result)["value"])).toBeGreaterThan(boughtLpSbtc);
   });
   it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated.
   There are assets still available in the reserves, the reserve assets remain untouched.`, () => {

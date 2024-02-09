@@ -166,27 +166,5 @@ describe("Math", () => {
       deployerAddress
     );
     expect(callResponse.result).toBeUint(271_864_460);
-
-    callResponse = simnet.callReadOnlyFn(
-      `pool-0-reserve`,
-      "div-precision-to-fixed",
-      [
-        Cl.uint(100_000_000_000),
-        Cl.uint(BigInt("2000000000000000")),
-        Cl.uint(6),
-      ],
-      deployerAddress
-    );
-    console.log(Cl.prettyPrint(callResponse.result));
-
-    callResponse = simnet.callReadOnlyFn(
-      `lp-ststx`,
-      "get-balance",
-      [
-        Cl.standardPrincipal("ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"),
-      ],
-      deployerAddress
-    );
-    console.log(Cl.prettyPrint(callResponse.result));
   });
 });
