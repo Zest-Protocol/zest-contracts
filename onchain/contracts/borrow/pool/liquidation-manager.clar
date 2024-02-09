@@ -141,14 +141,6 @@
             (try! (contract-call? lp-token burn-on-liquidation max-collateral-to-liquidate user))
             (try! (contract-call? .pool-0-reserve transfer-to-user collateral tx-sender max-collateral-to-liquidate))))
         (try! (contract-call? .pool-0-reserve transfer-to-reserve debt-asset tx-sender actual-debt-to-liquidate))
-      
-        ;; (if (> fee-liquidated u0)
-        ;;   (begin
-        ;;     ;; burn users' lp and transfer to fee collection address
-        ;;     (try! (contract-call? lp-token burn-on-liquidation liquidated-collateral-for-fee user))
-        ;;     (try! (contract-call? .pool-0-reserve transfer-to-user collateral (contract-call? .pool-0-reserve get-collection-address) liquidated-collateral-for-fee)))
-        ;;   u0
-        ;; )
       )
     )
     (ok u0)
