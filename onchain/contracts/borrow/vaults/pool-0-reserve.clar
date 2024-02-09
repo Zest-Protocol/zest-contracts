@@ -506,6 +506,7 @@
         (accrue-to-treasury
           (get curr-variable-borrow-cumulative-index indexes)
           (get next-variable-borrow-cumulative-index indexes)
+          (get next-liquidity-cumulative-index indexes)
           (contract-of asset)))
       (try! (update-reserve-interest-rates-and-timestamp asset amount-deposited u0))
 
@@ -535,6 +536,7 @@
       (accrue-to-treasury
         (get curr-variable-borrow-cumulative-index indexes)
         (get next-variable-borrow-cumulative-index indexes)
+        (get next-liquidity-cumulative-index indexes)
         (contract-of asset)))
     (try! (transfer-fee-to-collection asset receiver protocol-fee (get-collection-address)))
 
@@ -585,6 +587,7 @@
         (accrue-to-treasury
           (get curr-variable-borrow-cumulative-index indexes)
           (get next-variable-borrow-cumulative-index indexes)
+          (get next-liquidity-cumulative-index indexes)
           (contract-of asset))) 
       (try! (update-reserve-state-on-repay who payback-amount-minus-fees balance-increase asset))
       (try! (update-user-state-on-repay asset who payback-amount-minus-fees u0 balance-increase repaid-whole-loan))
@@ -613,15 +616,12 @@
         (accrue-to-treasury
           (get curr-variable-borrow-cumulative-index indexes)
           (get next-variable-borrow-cumulative-index indexes)
+          (get next-liquidity-cumulative-index indexes)
           (contract-of asset)))
       (try! (update-reserve-interest-rates-and-timestamp asset u0 amount-claimed))
 
       (if user-redeemed-everything
-        (begin
-          ;; (try! (reset-data-on-zero-balance-internal who (contract-of asset)))
-          (try! (remove-supplied-asset who (contract-of asset)))
-          (set-user-reserve-as-collateral-internal who asset false)
-        )
+        (remove-supplied-asset who (contract-of asset))
         (ok true)
       )
     )
@@ -654,6 +654,7 @@
         (accrue-to-treasury
           (get curr-variable-borrow-cumulative-index principal-indexes)
           (get next-variable-borrow-cumulative-index principal-indexes)
+          (get next-liquidity-cumulative-index principal-indexes)
           (contract-of principal-reserve)))
 
       (try! (update-user-state-on-liquidation principal-reserve borrower principal-amount-to-liquidate
@@ -674,6 +675,7 @@
             (accrue-to-treasury
               (get curr-variable-borrow-cumulative-index indexes-collateral)
               (get next-variable-borrow-cumulative-index indexes-collateral)
+              (get next-liquidity-cumulative-index indexes-collateral)
               (contract-of collateral-reserve)))
           (update-reserve-interest-rates-and-timestamp collateral-reserve u0 (+ collateral-to-liquidate liquidated-collateral-for-fee))
         )
@@ -737,6 +739,11 @@
       u0
     ))
     (asserts! (is-liquidator contract-caller) ERR_UNAUTHORIZED)
+    ;; if purchased entire borrowed balance
+    (if (is-eq principal-borrow-balance u0)
+      (try! (remove-borrowed-asset user (contract-of reserve)))
+      true
+    )
 
     (contract-call? .pool-reserve-data
       set-user-reserve-data
@@ -958,7 +965,44 @@
   )
 )
 
-;; check if balance decrease sets position health factor under 1e18
+
+(define-public (sum-total-debt-in-base-currency
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
+  (begin
+    (try! (validate-assets-order assets-to-calculate))
+    (fold aggregate-debt
+      assets-to-calculate
+      (ok u0)
+    )
+  )
+)
+
+(define-public (aggregate-debt
+  (reserve { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })
+  (total (response uint uint)))
+  (let (
+    (result (try! total))
+    (asset (get asset reserve))
+    (reserve-state (try! (get-reserve-state (contract-of asset)))))
+    (if (and (is-borroweable-isolated (contract-of asset)))
+      ;; add up debt
+      (let (
+        (oracle (get oracle reserve))
+        (curr-total-variable-debt
+          (mul-precision-with-factor
+            (get total-borrows-variable reserve-state)
+            (get decimals reserve-state)
+            (get last-variable-borrow-cumulative-index reserve-state)))
+        (debt-in-base-currency (mul-to-fixed-precision curr-total-variable-debt (get decimals reserve-state) (try! (contract-call? oracle get-asset-price asset))))
+      )
+        (ok (+ debt-in-base-currency result))
+      )
+      (ok result)
+    )
+  )
+)
+
+;; check if balance decrease sets position health factor under 1e8
 (define-public (check-balance-decrease-allowed
   (asset <ft>)
   (oracle <oracle-trait>)
@@ -970,6 +1014,7 @@
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (user-data (unwrap-panic (get-user-reserve-data user (contract-of asset))))
   )
+    (try! (validate-assets-order assets-to-calculate))
     (if (or (not (get usage-as-collateral-enabled reserve-data)) (not (get use-as-collateral user-data)))
       ;; do nothing
       (ok true) ;; if reserve is not used as collaeteral, allow the transfer
@@ -1102,9 +1147,41 @@
 )
 
 (define-public (set-user-reserve-as-collateral (user principal) (asset <ft>) (use-as-collateral bool))
-  (begin
-    (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
+  (let (
+    (reserve-data (try! (get-reserve-state (contract-of asset)))))
+    (asserts! (or (is-eq contract-caller (get a-token-address reserve-data)) (is-lending-pool contract-caller)) ERR_UNAUTHORIZED)
     (set-user-reserve-as-collateral-internal user asset use-as-collateral)
+  )
+)
+
+(define-public (mint-to-treasury
+  (lp <ft-mint-trait>)
+  (pool-reserve principal)
+  (asset <ft>)
+  )
+  (let (
+    (asset-principal (contract-of asset))
+    (reserve-state (try! (get-reserve-state asset-principal)))
+    (vault-principal (get-reserve-vault asset))
+    (amount-to-mint
+      (try! 
+        (calculate-cumulated-balance 
+          vault-principal
+          (get decimals reserve-state)
+          asset
+          (get accrued-to-treasury reserve-state)
+          (get decimals reserve-state)
+        )
+      )
+    )
+    )
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (asserts! (> amount-to-mint u0) ERR_NON_ZERO)
+    (try! (contract-call? lp mint amount-to-mint vault-principal))
+    (try! (contract-call? .pool-reserve-data set-reserve-state (contract-of asset) (merge reserve-state { accrued-to-treasury: u0 })))
+
+    (print { type: "mint-to-treasury", payload: { key: vault-principal, data: { amount: amount-to-mint } } })
+    (ok amount-to-mint)
   )
 )
 
@@ -1468,7 +1545,6 @@
     (unwrap-panic (as-max-len? (concat (get assets-supplied ret) (get assets-borrowed ret)) u100))))
 
 (define-read-only (validate-assets-order
-  (who principal)
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (let ((assets-used (get-assets)))
     (fold check-assets assets-used (ok { idx: u0, assets: assets-to-calculate }))
@@ -1491,7 +1567,7 @@
   (user principal)
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (begin
-    (try! (validate-assets-order user assets-to-calculate))
+    (try! (validate-assets-order assets-to-calculate))
     (let (
       (aggregate (try!
           (fold
@@ -1608,7 +1684,6 @@
 (define-read-only (div-precision-to-fixed (a uint) (b uint) (decimals uint))
   (contract-call? .math div-precision-to-fixed a b decimals))
 
-
 ;; returns current liquidity rate
 (define-read-only (calculate-interest-rates
     (available-liquidity uint)
@@ -1671,6 +1746,7 @@
 (define-private (accrue-to-treasury
   (current-variable-borrow-cumulative-index uint)
   (next-variable-borrow-cumulative-index uint)
+  (new-last-liquidity-cumulative-index uint)
   (asset principal)
   )
   (let (
@@ -1688,7 +1764,7 @@
         decimals
         next-variable-borrow-cumulative-index))
     (debt-accrued (- curr-total-variable-debt prev-total-variable-debt))
-    (amount-to-mint (mul-precision-with-factor debt-accrued decimals reserve-factor))
+    (amount-to-mint (mul-precision-with-factor debt-accrued decimals (div reserve-factor new-last-liquidity-cumulative-index)))
   )
     (if (> amount-to-mint u0)
       (begin
@@ -1709,3 +1785,5 @@
 (define-constant ERR_INVALID_ORACLE (err u7002))
 (define-constant ERR_NON_CORRESPONDING_ASSETS (err u7003))
 (define-constant ERR_DOES_NOT_EXIST (err u7004))
+(define-constant ERR_NON_ZERO (err u7005))
+
