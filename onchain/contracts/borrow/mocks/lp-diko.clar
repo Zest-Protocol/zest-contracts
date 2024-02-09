@@ -81,10 +81,7 @@
 )
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (begin
-    (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (execute-transfer-internal amount sender recipient)
-  )
+  ERR_UNAUTHORIZED
 )
 
 
@@ -111,7 +108,11 @@
       (try! (burn-internal amount owner))
 
       (if (is-eq (- (get current-balance ret) amount) u0)
-        (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+        (begin
+          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+          (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+        )
         false
       )
       (ok amount)
@@ -141,15 +142,16 @@
   (let (
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state .ststx)))
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
-        (get last-liquidity-cumulative-index reserve-state)
-    ))
-  )
-    (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
+        (get last-liquidity-cumulative-index reserve-state))))
+    (try! (contract-call? .pool-0-reserve set-user-index account .ststx new-user-index))
 
+    (if (is-eq balance-increase u0)
+      false
+      (try! (mint-internal balance-increase account)))
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -179,11 +181,15 @@
     (try! (burn-internal amount tx-sender))
 
     (if (is-eq (- (get current-balance ret) amount) u0)
-      (try! (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr))
+      (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+        (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+      )
       false
     )
 
-    (contract-call? .pool-borrow redeem-underlying
+    (contract-call? .pool-borrow withdraw
       pool-reserve
       asset-addr
       oracle
@@ -206,7 +212,11 @@
   )
     (try! (transfer-internal amount sender recipient none))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
-      (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr)
+      (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender asset-addr))
+        (contract-call? .pool-0-reserve reset-user-index sender asset-addr)
+      )
       (ok true)
     )
   )

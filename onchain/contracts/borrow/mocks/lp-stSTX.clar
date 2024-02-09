@@ -12,6 +12,7 @@
 (define-data-var token-symbol (string-ascii 32) "LP-ststx")
 
 (define-constant pool-id u0)
+(define-constant asset-addr .ststx)
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply lp-ststx)))
@@ -80,10 +81,7 @@
 )
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (begin
-    (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (execute-transfer-internal amount sender recipient)
-  )
+  ERR_UNAUTHORIZED
 )
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
@@ -109,7 +107,11 @@
       (try! (burn-internal amount owner))
 
       (if (is-eq (- (get current-balance ret) amount) u0)
-        (try! (contract-call? .pool-0-reserve reset-user-index owner .ststx))
+        (begin
+          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner .ststx false))
+          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner .ststx))
+          (try! (contract-call? .pool-0-reserve reset-user-index owner .ststx))
+        )
         false
       )
       (ok amount)
@@ -179,11 +181,15 @@
     (try! (burn-internal amount-to-redeem tx-sender))
 
     (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
-      (try! (contract-call? .pool-0-reserve reset-user-index tx-sender .ststx))
+      (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+        (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+      )
       false
     )
 
-    (contract-call? .pool-borrow redeem-underlying
+    (contract-call? .pool-borrow withdraw
       pool-reserve
       .ststx
       oracle
@@ -208,8 +214,9 @@
     (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .ststx))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender .ststx false))
         (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .ststx))
-        (contract-call? .pool-0-reserve reset-user-index tx-sender .ststx)
+        (contract-call? .pool-0-reserve reset-user-index sender .ststx)
       )
       (ok true)
     )

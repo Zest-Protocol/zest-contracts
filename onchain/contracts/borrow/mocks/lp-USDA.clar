@@ -80,10 +80,7 @@
 )
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (begin
-    (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
-    (execute-transfer-internal amount sender recipient)
-  )
+  ERR_UNAUTHORIZED
 )
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
@@ -108,7 +105,11 @@
       (try! (burn-internal amount owner))
 
       (if (is-eq (- (get current-balance ret) amount) u0)
-        (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+        (begin
+          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+          (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+        )
         false
       )
       (ok amount)
@@ -177,11 +178,15 @@
     (try! (burn-internal amount tx-sender))
 
     (if (is-eq (- (get current-balance ret) amount) u0)
-      (try! (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr))
+      (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+        (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+      )
       false
     )
 
-    (contract-call? .pool-borrow redeem-underlying
+    (contract-call? .pool-borrow withdraw
       pool-reserve
       asset-addr
       oracle
@@ -206,8 +211,9 @@
     (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .usda))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender .usda false))
         (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .usda))
-        (contract-call? .pool-0-reserve reset-user-index tx-sender .usda)
+        (contract-call? .pool-0-reserve reset-user-index sender .usda)
       )
       (ok true)
     )

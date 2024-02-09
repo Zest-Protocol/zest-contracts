@@ -175,6 +175,10 @@
   (get-user-borrow-balance who .ststx)
 )
 
+(define-read-only (get-borrowed-balance-user-ststx-doo (who principal))
+  (get-user-borrow-balance-doo who .ststx)
+)
+
 (define-read-only (get-borrowed-balance-user-xusd (who principal))
   (get-user-borrow-balance who .xusd)
 )
@@ -299,6 +303,75 @@
       principal-balance: principal,
       compounded-balance: cumulated-balance,
       balance-increase: (- cumulated-balance principal),
+    }
+  )
+)
+(define-read-only (get-user-borrow-balance-doo (who principal) (reserve principal))
+  (let (
+    (user-data (unwrap-panic (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve)))
+    (reserve-data (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read reserve)))
+    (principal (get principal-borrow-balance user-data))
+    (cumulated-balance 
+      (get-compounded-borrow-balance-doo
+        (get principal-borrow-balance user-data)
+        (get decimals reserve-data)
+        (get stable-borrow-rate user-data)
+        (get last-updated-block user-data)
+        (get last-variable-borrow-cumulative-index user-data)
+        (get current-variable-borrow-rate reserve-data)
+        (get last-variable-borrow-cumulative-index reserve-data)
+        (get last-updated-block reserve-data)
+      )))
+    {
+      principal-balance: principal,
+      compounded-balance: (get cumulated-balance cumulated-balance),
+      balance-increase: (- (get cumulated-balance cumulated-balance) principal),
+      cumulated-balance: cumulated-balance
+    }
+  )
+)
+;; TODO:
+(define-read-only (get-compounded-borrow-balance-doo
+  ;; user-data
+  (principal-borrow-balance uint)
+  (decimals uint)
+  (stable-borrow-rate uint)
+  (last-updated-block uint)
+  (last-variable-borrow-cumulative-index uint)
+  ;; reserve-data
+  (current-variable-borrow-rate uint)
+  (last-variable-borrow-cumulative-index-reserve uint)
+  (last-updated-block-reserve uint)
+  )
+  (let (
+    (user-cumulative-index
+      (if (is-eq last-variable-borrow-cumulative-index u0)
+        last-variable-borrow-cumulative-index-reserve
+        last-variable-borrow-cumulative-index
+      )
+    )
+    (cumulated-interest
+      (div
+        (mul
+          (calculate-compounded-interest
+            current-variable-borrow-rate
+            (- burn-block-height last-updated-block-reserve))
+          last-variable-borrow-cumulative-index-reserve)
+        user-cumulative-index))
+    (compounded-balance (mul-precision-with-factor principal-borrow-balance decimals cumulated-interest)))
+    ;; (if (is-eq compounded-balance principal-borrow-balance)
+    ;;   (if (not (is-eq last-updated-block burn-block-height))
+    ;;     (+ principal-borrow-balance u1)
+    ;;     compounded-balance
+    ;;   )
+    ;;   compounded-balance
+    ;; )
+    {
+      cumulated-balance: (mul-precision-with-factor principal-borrow-balance decimals cumulated-interest),
+      user-cumulative-index: user-cumulative-index,
+      current-variable-borrow-rate: current-variable-borrow-rate,
+      cumulated-interest: cumulated-interest,
+      last-variable-borrow-cumulative-index-reserve: last-variable-borrow-cumulative-index-reserve,
     }
   )
 )
