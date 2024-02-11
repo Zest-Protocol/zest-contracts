@@ -132,7 +132,7 @@
   (contract-call? .pool-reserve-data get-flashloan-fee-protocol-read asset))
 
 (define-read-only (get-origination-fee-prc (asset principal))
-  (contract-call? .pool-reserve-data get-origination-fee-prc-read asset))
+  (default-to u0 (contract-call? .pool-reserve-data get-origination-fee-prc-read asset)))
 
 (define-read-only (get-user-reserve-data (who principal) (reserve principal))
   (ok (default-to default-user-reserve-data (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve)))
@@ -1438,6 +1438,7 @@
   (let (
     (user (get user aggregate))
     (user-reserve-state (unwrap-panic (get-user-reserve-data user (contract-of asset))))
+    (reserve-data (try! (get-reserve-state (contract-of asset))))
     (default-reserve-value
       {
         total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
@@ -1515,10 +1516,6 @@
               (mul-to-fixed-precision (get compounded-borrow-balance user-reserve-state) (get decimals reserve-data) reserve-unit-price)
             ),
           user-total-feesUSD: u0
-            ;; (+
-            ;;   (get user-total-feesUSD aggregate)
-            ;;   (mul-to-fixed-precision (get origination-fee user-reserve-state) (get decimals reserve-data) reserve-unit-price)
-            ;; )
         }
         {
           total-borrow-balanceUSD: (get total-borrow-balanceUSD aggregate),

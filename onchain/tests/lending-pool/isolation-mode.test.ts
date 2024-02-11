@@ -774,8 +774,8 @@ describe("Isolated mode", () => {
       Borrower_1
     );
     let afterNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
-    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112781953");
-    expect(afterNonIsolatedSupply["health-factor"].value).toBe("112781950");
+    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112499998");
+    expect(afterNonIsolatedSupply["health-factor"].value).toBe("112499996");
   });
   it(`Supply and borrow supplying only isolated asset.
   Supply non-isolated asset when enabled as collateral,
@@ -1072,7 +1072,7 @@ describe("Isolated mode", () => {
       Borrower_1
     );
 
-    expect(callResponse.result).toBeOk(Cl.uint(500440676));
+    expect(callResponse.result).toBeOk(Cl.uint(499607996));
 
     borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -1293,11 +1293,11 @@ describe("Isolated mode", () => {
       Cl.tuple({
         "current-liquidation-threshold": Cl.uint(90000000),
         "current-ltv": Cl.uint(80000000),
-        "health-factor": Cl.uint(100140176),
+        "health-factor": Cl.uint(100097995),
         "is-health-factor-below-treshold": Cl.bool(false),
-        "total-borrow-balanceUSD": Cl.uint(57456003400),
-        "total-collateral-balanceUSD": Cl.uint(63929491840),
-        "total-liquidity-balanceUSD": Cl.uint(63929491840),
+        "total-borrow-balanceUSD": Cl.uint(57600003400),
+        "total-collateral-balanceUSD": Cl.uint(64062720640),
+        "total-liquidity-balanceUSD": Cl.uint(64062720640),
         "user-total-feesUSD": Cl.uint(0),
       })
     );
@@ -1309,7 +1309,7 @@ describe("Isolated mode", () => {
       Borrower_1,
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(574560040));
+    expect(callResponse.result).toBeOk(Cl.uint(576000040));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -1345,8 +1345,8 @@ describe("Isolated mode", () => {
         ),
         "is-health-factor-below-treshold": Cl.bool(false),
         "total-borrow-balanceUSD": Cl.uint(0),
-        "total-collateral-balanceUSD": Cl.uint(63929491840),
-        "total-liquidity-balanceUSD": Cl.uint(63929491840),
+        "total-collateral-balanceUSD": Cl.uint(64062720640),
+        "total-liquidity-balanceUSD": Cl.uint(64062720640),
         "user-total-feesUSD": Cl.uint(0),
       })
     );
@@ -1580,7 +1580,7 @@ describe("Isolated mode", () => {
     expect(callResponse.result).toBeErr(Cl.uint(30022));
 
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, stSTX, Borrower_1);
-    console.log(cvToValue(callResponse.result));
+    // console.log(cvToValue(callResponse.result));
 
     // console.log("After repayment and sBTC enabled as collateral");
     callResponse = simnet.callPublicFn(
@@ -1682,7 +1682,7 @@ describe("Isolated mode", () => {
     callResponse = poolBorrow.addIsolatedAsset(
       deployerAddress,
       stSTX,
-      114912001080,
+      115_200_000_000,
       deployerAddress
     );
 
@@ -1751,7 +1751,7 @@ describe("Isolated mode", () => {
       pool0Reserve,
       deployerAddress,
       stSTX,
-      900_000_000,
+      1_000_000_000,
       Borrower_2,
       Borrower_2
     );
@@ -1854,7 +1854,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    availableBorrow = Number(cvToValue(callResponse.result)["value"]);
+    // availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -1889,7 +1889,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_2
     );
-    expect((callResponse.result)).toBeOk(Cl.uint(638400000));
+    expect((callResponse.result)).toBeOk(Cl.uint(640000000));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -1939,7 +1939,7 @@ describe("Isolated mode", () => {
       Borrower_1,
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(638400025));
+    expect(callResponse.result).toBeOk(Cl.uint(640000025));
 
     // can borrow back to the debt ceiling after repaying (slightly less because of interest accrued)
     callResponse = simnet.callPublicFn(
@@ -1968,14 +1968,14 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.uint(Math.floor(availableBorrow / 2) - 13),
+        Cl.uint(Math.floor(availableBorrow / 2) - 25),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
       ],
       Borrower_2
     );
-    expect((callResponse.result)).toBeOk(Cl.uint(Math.floor(availableBorrow / 2) - 13));
+    expect((callResponse.result)).toBeOk(Cl.uint(Math.floor(availableBorrow / 2) - 25));
     
   });
 });

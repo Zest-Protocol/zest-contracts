@@ -210,7 +210,8 @@
       asset-price
       (get total-collateral-balanceUSD user-global-data)
       (get total-borrow-balanceUSD user-global-data)
-      (get user-total-feesUSD user-global-data)
+      ;; (get user-total-feesUSD user-global-data)
+      u0
       (get current-ltv user-global-data)
       user
     )
@@ -230,10 +231,10 @@
   )
   (let (
     (available-borrow-power-in-base-currency
-      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD current-fees-USD))
+      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD u0))
         (-
           (mul current-user-collateral-balance-USD current-ltv)
-          (+ current-user-borrow-balance-USD current-fees-USD)
+          (+ current-user-borrow-balance-USD u0)
         )
         u0
       )
@@ -247,7 +248,7 @@
         decimals
       )
     )
-    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user (contract-of borrowing-asset) borrow-power-in-asset-amount decimals)))
+    (borrow-fee u0)
   )
     (ok (- borrow-power-in-asset-amount borrow-fee))
   )

@@ -459,12 +459,12 @@
 (map-set flashloan-fee-protocol .sbtc u3000)
 
 ;; 0.0025%
-(map-set origination-fee-prc .ststx u250000)
-(map-set origination-fee-prc .sbtc u250000)
-(map-set origination-fee-prc .diko u250000)
-(map-set origination-fee-prc .xusd u250000)
-(map-set origination-fee-prc .usda u250000)
-(map-set origination-fee-prc .wstx u250000)
+(map-set origination-fee-prc .ststx u25)
+(map-set origination-fee-prc .sbtc u25)
+(map-set origination-fee-prc .diko u25)
+(map-set origination-fee-prc .xusd u25)
+(map-set origination-fee-prc .usda u25)
+(map-set origination-fee-prc .wstx u25)
 
 (map-set reserve-factor .ststx u15000000)
 (map-set reserve-factor .sbtc u10000000)
