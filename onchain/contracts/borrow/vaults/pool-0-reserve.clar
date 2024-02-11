@@ -819,7 +819,6 @@
         (get last-variable-borrow-cumulative-index reserve-data)
       )
     )
-    ;; (origination-fee (- (get origination-fee user-data) origination-fee-repaid))
     (last-updated-block burn-block-height))
 
   (try! (contract-call? .pool-reserve-data set-user-reserve-data
@@ -1163,25 +1162,25 @@
   (let (
     (asset-principal (contract-of asset))
     (reserve-state (try! (get-reserve-state asset-principal)))
-    (vault-principal (get-reserve-vault asset))
+    (collection-principal (get-collection-address))
+    (normalized-income (get-normalized-income
+        (get current-liquidity-rate reserve-state)
+        (get last-updated-block reserve-state)
+        (get last-liquidity-cumulative-index reserve-state)))
     (amount-to-mint
-      (try! 
-        (calculate-cumulated-balance 
-          vault-principal
-          (get decimals reserve-state)
-          asset
-          (get accrued-to-treasury reserve-state)
-          (get decimals reserve-state)
-        )
+      (mul-precision-with-factor
+        (get accrued-to-treasury reserve-state)
+        (get decimals reserve-state)
+        normalized-income
       )
     )
     )
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (asserts! (> amount-to-mint u0) ERR_NON_ZERO)
-    (try! (contract-call? lp mint amount-to-mint vault-principal))
+    (try! (contract-call? lp mint amount-to-mint collection-principal))
     (try! (contract-call? .pool-reserve-data set-reserve-state (contract-of asset) (merge reserve-state { accrued-to-treasury: u0 })))
 
-    (print { type: "mint-to-treasury", payload: { key: vault-principal, data: { amount: amount-to-mint } } })
+    (print { type: "mint-to-treasury", payload: { key: collection-principal, data: { amount: amount-to-mint } } })
     (ok amount-to-mint)
   )
 )

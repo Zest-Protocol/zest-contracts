@@ -328,7 +328,7 @@ describe("Flashloans", () => {
       simnet
         .getAssetsMap()
         .get(".sbtc.sbtc")
-        ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")
+        ?.get("ST2ZW2EKBWATT2Z7FZ2XY9KYYVFBYBDCZBRZMFNR9")
     ).toBe(protocolFee);
   });
 });

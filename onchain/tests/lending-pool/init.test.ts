@@ -1,6 +1,6 @@
 import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { describe, expect, it, beforeEach } from "vitest";
-import { Cl, cvToJSON } from "@stacks/transactions";
+import { Cl, cvToJSON, cvToValue } from "@stacks/transactions";
 import { readFileSync } from "fs";
 import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
@@ -654,6 +654,7 @@ describe("Supply and redeem", () => {
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.uint(max_value),
         Cl.standardPrincipal(LP_1),
+        Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
     );
@@ -857,6 +858,7 @@ describe("Supply and redeem", () => {
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(max_value),
+        Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
@@ -1182,6 +1184,7 @@ describe("Supply and redeem", () => {
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
+        Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
     );
@@ -1248,6 +1251,7 @@ describe("Supply and redeem", () => {
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(max_value),
+        Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1

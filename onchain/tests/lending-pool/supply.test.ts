@@ -752,25 +752,37 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(200_000_086),
         Cl.standardPrincipal(Borrower_1),
+        Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
     );
     expect(callResponse.result).toBeOk(Cl.uint(200_000_086));
-
-    // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, stSTX, Borrower_1);
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.uint(200_000_008),
+        Cl.uint(200_000_008 / 2),
+        Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200_000_008));
+    expect(callResponse.result).toBeOk(Cl.uint(200_000_008 / 2));
+
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "repay",
+      [
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.uint(max_value),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.standardPrincipal(Borrower_1),
+      ],
+      Borrower_1
+    );
+    expect(callResponse.result).toBeOk(Cl.uint(100_000_005));
 
     callResponse = simnet.callPublicFn(
       "lp-ststx",
@@ -1515,6 +1527,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
+        Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
     );
@@ -1724,6 +1737,7 @@ describe("Supply and Redeem", () => {
       [
         Cl.contractPrincipal(deployerAddress, USDA),
         Cl.uint(200_000_008),
+        Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
       ],
       Borrower_1
@@ -2037,6 +2051,36 @@ describe("Supply and Redeem", () => {
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, USDA, Borrower_1);
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
 
+    callResponse = simnet.callPublicFn(
+      "pool-borrow",
+      "borrow",
+      [
+        // Cl.contractPrincipal(deployerAddress, debtToken0),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+        Cl.uint(10_000_000),
+        Cl.contractPrincipal(deployerAddress, feesCalculator),
+        Cl.uint(0),
+        Cl.standardPrincipal(Borrower_1),
+      ],
+      Borrower_1
+    );
+    expect(callResponse.result).toBeOk(Cl.uint(10_000_000));
+
     // check only ststx borrowing power is reduced
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -2255,6 +2299,7 @@ describe("Supply and Redeem", () => {
       [
         Cl.contractPrincipal(deployerAddress, USDA),
         Cl.uint(max_value),
+        Cl.standardPrincipal(LP_2),
         Cl.standardPrincipal(LP_2),
       ],
       LP_2

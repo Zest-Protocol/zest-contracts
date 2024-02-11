@@ -43,10 +43,10 @@
 (define-read-only (get-health-factor-liquidation-threshold-read)
   (var-get health-factor-liquidation-threshold))
 
-(define-data-var protocol-treasury-addr principal .protocol-treasury)
+(define-data-var protocol-treasury-addr principal 'ST2ZW2EKBWATT2Z7FZ2XY9KYYVFBYBDCZBRZMFNR9)
 (define-public (set-protocol-treasury-addr (protocol-treasury principal))
   (begin
-    (try! (is-approved-contract contract-caller))
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
     (print { type: "set-protocol-treasury-addr", payload: { key: "protocol-treasury", data: { protocol-treasury: protocol-treasury } } })
     (ok (var-set protocol-treasury-addr protocol-treasury))))
 

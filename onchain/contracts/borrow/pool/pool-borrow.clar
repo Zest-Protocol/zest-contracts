@@ -40,7 +40,7 @@
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
     (asserts! (>= (get supply-cap reserve-state) (+ amount current-available-liquidity (get total-borrows-variable reserve-state))) ERR_EXCEED_SUPPLY_CAP)
 
-    (map-insert users-id (var-get last-user-id) tx-sender)
+    (map-insert users-id (var-get last-user-id) owner)
     (var-set last-user-id (+ u1 (var-get last-user-id)))
 
     ;; if first supply
@@ -158,7 +158,6 @@
 
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
-      (borrow-fee u0)
       (borrow-balance (try! (contract-call? .pool-0-reserve get-user-balance-reserve-data lp asset-to-borrow owner oracle)))
       (amount-collateral-needed
         (contract-call? .pool-0-reserve calculate-collateral-needed-in-USD
@@ -166,13 +165,13 @@
           amount-to-be-borrowed
           (get decimals reserve-state)
           (try! (contract-call? oracle get-asset-price asset-to-borrow))
-          borrow-fee
+          u0
           (get total-borrow-balanceUSD user-global-data)
           (get user-total-feesUSD user-global-data)
           (get current-ltv user-global-data))))
       (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) ERR_NOT_ZERO)
       (asserts! (<= (get collateral-needed-in-USD amount-collateral-needed) (get total-collateral-balanceUSD user-global-data)) ERR_NOT_ENOUGH_COLLATERAL)
-      (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
+      (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) u0 amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
 
       (match is-in-isolation-mode
         isolated-asset
@@ -193,7 +192,7 @@
       )
 
       ;; conditions passed, can borrow
-      (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))
+      (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed u0))
       (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
 
       (print { type: "borrow", payload: { key: owner, data: { amount-to-be-borrowed: amount-to-be-borrowed } } })
@@ -204,11 +203,11 @@
   (asset <ft>)
   (amount-to-repay uint)
   (on-behalf-of principal)
+  (payer principal)
   )
   (let (
     (ret (try! (contract-call? .pool-0-reserve get-user-borrow-balance on-behalf-of asset)))
-    (origination-fee u0)
-    (amount-due (+ (get compounded-balance ret) origination-fee))
+    (amount-due (get compounded-balance ret))
     (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state (contract-of asset))))
     (payback-amount
       (if (is-eq amount-to-repay max-value)
@@ -227,12 +226,12 @@
           asset
           on-behalf-of
           payback-amount
-          origination-fee
+          u0
           (get balance-increase ret)
           (is-eq (get compounded-balance ret) payback-amount)
         )
       )
-      (try! (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount))
+      (try! (contract-call? .pool-0-reserve transfer-to-reserve asset payer payback-amount))
 
       (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount } } })
       (ok payback-amount)

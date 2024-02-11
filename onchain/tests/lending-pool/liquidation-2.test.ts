@@ -18,7 +18,9 @@ const LP_3 = accounts.get("wallet_5")!;
 const Borrower_1 = accounts.get("wallet_2")!;
 const Delegate_1 = accounts.get("wallet_3")!;
 const Borrower_2 = accounts.get("wallet_4")!;
+
 const Liquidator_1 = accounts.get("wallet_5")!;
+const Collector = accounts.get("wallet_15")!;
 
 const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
@@ -459,7 +461,7 @@ describe("Liquidations", () => {
       simnet
         .getAssetsMap()
         .get(".sbtc.sbtc")
-        ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!
+        ?.get(Collector)!
     ).toBe((200000n));
     
     expect(BigInt(currVaultBalance) - BigInt(prevVaultBalance)).toBe(debtPurchased);
@@ -811,7 +813,7 @@ describe("Liquidations", () => {
     const liquidationBonus = maxCollateralToLiquidate - collateralWithoutBonus
     const protocolFee = BigInt(Math.floor(liquidationBonus * protocolFeeBps / 10000))
 
-    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!).toBe(protocolFee);
+    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Collector)!).toBe(protocolFee);
   });
   it("Borrower_1 falls below health factor threshold and gets collateral liquidated, verify protocol does not get the fee protocol when it is set to 0", () => {
     const poolReserve0 = new PoolReserve(
@@ -1455,7 +1457,7 @@ describe("Liquidations", () => {
       simnet.getAssetsMap().get(".lp-sbtc.lp-sbtc")?.get(Liquidator_1)
     ).toBe(BigInt(maxCollateralToLiquidate - protocolFee));
     expect(
-      simnet.getAssetsMap().get(".sbtc.sbtc")?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")
+      simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Collector)
     ).toBe(BigInt(protocolFee));
 
     expect(callResponse.result).toBeList([

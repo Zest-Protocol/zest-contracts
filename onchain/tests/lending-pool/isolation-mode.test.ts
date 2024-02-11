@@ -1307,6 +1307,7 @@ describe("Isolated mode", () => {
       xUSD,
       max_value,
       Borrower_1,
+      Borrower_1,
       Borrower_1
     );
     expect(callResponse.result).toBeOk(Cl.uint(576000040));
@@ -1936,6 +1937,7 @@ describe("Isolated mode", () => {
       deployerAddress,
       xUSD,
       max_value,
+      Borrower_1,
       Borrower_1,
       Borrower_1
     );

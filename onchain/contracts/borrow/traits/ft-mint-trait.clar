@@ -25,14 +25,15 @@
 		;; an optional URI that represents metadata of this token
 		(get-token-uri () (response (optional (string-utf8 256)) uint))
 
-		(get-redeem (
-      principal
-      <ft>
-      <oracle-trait>
-      (list 100 (tuple (asset <ft>) (lp-token <ft>) (oracle <oracle-trait>)
-      amount
-      principal
-      ) ()))) (response uint uint))
+		(withdraw redeem
+      (
+        principal
+        <ft>
+        <oracle-trait>
+        (list 100 (tuple (asset <ft>) (lp-token <ft>) (oracle <oracle-trait>) amount principal))
+        (response uint uint)
+      )
+    )
 
     (mint (uint principal) (response bool uint))
     (burn (uint principal) (response bool uint))

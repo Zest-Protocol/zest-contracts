@@ -266,7 +266,8 @@ class PoolBorrow {
     assetContractName: string,
     amountToRepay: IntegerType,
     onBehalfOf: string,
-    caller: string
+    payer: string,
+    caller: string,
   ) {
     return simnet.callPublicFn(
       this.contractName,
@@ -275,6 +276,7 @@ class PoolBorrow {
         Cl.contractPrincipal(assetDeployer, assetContractName),
         Cl.uint(amountToRepay),
         Cl.standardPrincipal(onBehalfOf),
+        Cl.standardPrincipal(payer),
       ],
       caller
     );
