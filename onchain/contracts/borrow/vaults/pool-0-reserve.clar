@@ -31,8 +31,8 @@
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-reserve-data set-origination-fee-prc asset fee)))
 
-(define-public (get-health-factor-liquidation-threshold)
-  (contract-call? .pool-reserve-data get-health-factor-liquidation-threshold))
+(define-read-only (get-health-factor-liquidation-threshold)
+  (contract-call? .pool-reserve-data get-health-factor-liquidation-threshold-read))
 
 (define-public (set-health-factor-liquidation-treshold (hf uint))
   (begin
@@ -126,10 +126,10 @@
     ERR_UNAUTHORIZED))
 
 (define-read-only (get-flashloan-fee-total (asset principal))
-  (contract-call? .pool-reserve-data get-flashloan-fee-total-read asset))
+  (ok (unwrap! (contract-call? .pool-reserve-data get-flashloan-fee-total-read asset) ERR_FLASHLOAN_FEE_TOTAL_NOT_SET)))
 
 (define-read-only (get-flashloan-fee-protocol (asset principal))
-  (contract-call? .pool-reserve-data get-flashloan-fee-protocol-read asset))
+  (ok (unwrap! (contract-call? .pool-reserve-data get-flashloan-fee-protocol-read asset) ERR_FLASHLOAN_FEE_PROTOCOL_NOT_SET)))
 
 (define-read-only (get-origination-fee-prc (asset principal))
   (default-to u0 (contract-call? .pool-reserve-data get-origination-fee-prc-read asset)))
@@ -164,13 +164,13 @@
     (contract-call? .pool-reserve-data set-liquidation-close-factor-percent asset rate)))
 
 (define-read-only (get-optimal-utilization-rate (asset principal))
-  (unwrap-panic (contract-call? .pool-reserve-data get-optimal-utilization-rate-read asset)))
+  (ok (unwrap! (contract-call? .pool-reserve-data get-optimal-utilization-rate-read asset) ERR_OPTIMAL_UTILIZATION_RATE_NOT_SET)))
 (define-read-only (get-base-variable-borrow-rate (asset principal))
-  (unwrap-panic (contract-call? .pool-reserve-data get-base-variable-borrow-rate-read asset)))
+  (ok (unwrap! (contract-call? .pool-reserve-data get-base-variable-borrow-rate-read asset) ERR_BASE_VARIABLE_BORROW_RATE_NOT_SET)))
 (define-read-only (get-variable-rate-slope-1 (asset principal))
-  (unwrap-panic (contract-call? .pool-reserve-data get-variable-rate-slope-1-read asset)))
+  (ok (unwrap! (contract-call? .pool-reserve-data get-variable-rate-slope-1-read asset) ERR_VARIABLE_RATE_SLOPE_1_NOT_SET)))
 (define-read-only (get-variable-rate-slope-2 (asset principal))
-  (unwrap-panic (contract-call? .pool-reserve-data get-variable-rate-slope-2-read asset)))
+  (ok (unwrap! (contract-call? .pool-reserve-data get-variable-rate-slope-2-read asset) ERR_VARIABLE_RATE_SLOPE_2_NOT_SET)) )
 
 (define-read-only (is-borroweable-isolated (asset principal))
   (match (index-of? (contract-call? .pool-reserve-data get-borroweable-isolated-read) asset)
@@ -373,7 +373,7 @@
   (ok (unwrap! (contract-call? .pool-reserve-data get-reserve-state-read asset) ERR_DOES_NOT_EXIST)))
 
 (define-read-only (get-reserve-factor (asset principal))
-  (ok (unwrap! (contract-call? .pool-reserve-data get-reserve-factor-read asset) ERR_DOES_NOT_EXIST))
+  (default-to u0 (contract-call? .pool-reserve-data get-reserve-factor-read asset))
 )
 
 (define-read-only (get-reserve-state-optional (asset principal))
@@ -775,7 +775,7 @@
   (amount-borrowed uint)
   (borrow-fee uint))
   (let (
-    (ret (unwrap-panic (get-user-borrow-balance who asset))))
+    (ret (try! (get-user-borrow-balance who asset))))
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     (try!
       (update-reserve-state-on-borrow
@@ -1054,7 +1054,7 @@
                     )
                   )
                 )
-                (ok (> health-factor-after-decrease (unwrap-panic (contract-call? .pool-reserve-data get-health-factor-liquidation-threshold))))
+                (ok (> health-factor-after-decrease (get-health-factor-liquidation-threshold)))
               )
             )
           )
@@ -1129,6 +1129,7 @@
       (is-liquidator tx-sender)
       (is-liquidator contract-caller)
       ) ERR_UNAUTHORIZED)
+    (try! (get-reserve-state (contract-of asset)))
     (try! (as-contract (contract-call? .pool-vault transfer amount who asset)))
     (ok u0)
   )
@@ -1193,13 +1194,15 @@
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (ret
-      (calculate-interest-rates
-        (- (+ (try! (get-reserve-available-liquidity asset)) liquidity-added) liquidity-taken)
-        (get total-borrows-stable reserve-data)
-        (get total-borrows-variable reserve-data)
-        (get current-average-stable-borrow-rate reserve-data)
-        (contract-of asset)
-        (get decimals reserve-data)
+      (try! 
+        (calculate-interest-rates
+          (- (+ (try! (get-reserve-available-liquidity asset)) liquidity-added) liquidity-taken)
+          (get total-borrows-stable reserve-data)
+          (get total-borrows-variable reserve-data)
+          (get current-average-stable-borrow-rate reserve-data)
+          (contract-of asset)
+          (get decimals reserve-data)
+        )
       )
     )
     (new-reserve-state
@@ -1595,7 +1598,7 @@
           (get total-borrow-balanceUSD aggregate)
           (get user-total-feesUSD aggregate)
           current-liquidation-threshold))
-      (is-health-factor-below-treshold (< health-factor (unwrap-panic (contract-call? .pool-reserve-data get-health-factor-liquidation-threshold)))))
+      (is-health-factor-below-treshold (< health-factor (get-health-factor-liquidation-threshold))))
       (ok {
         total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),
         total-collateral-balanceUSD: total-collateral-balanceUSD,
@@ -1609,7 +1612,6 @@
     )
   )
 )
-
 
 (define-read-only (calculate-collateral-needed-in-USD
   (borrowing-asset <ft>)
@@ -1693,7 +1695,7 @@
   )
   (let (
     (total-borrows total-borrows-variable)
-    (optimal-utilization-rate (get-optimal-utilization-rate asset))
+    (optimal-utilization-rate (try! (get-optimal-utilization-rate asset)))
     (utilization-rate
       (if (is-eq total-borrows u0)
         u0
@@ -1703,39 +1705,43 @@
         (excess-utilization-rate-ratio (div (- utilization-rate optimal-utilization-rate) (- one-8 optimal-utilization-rate)))
         (new-variable-borrow-rate
           (+
-            (+ (get-base-variable-borrow-rate asset) (get-variable-rate-slope-1 asset))
-            (mul (get-variable-rate-slope-2 asset) excess-utilization-rate-ratio))
+            (+ (try! (get-base-variable-borrow-rate asset)) (try! (get-variable-rate-slope-1 asset)))
+            (mul (try! (get-variable-rate-slope-2 asset)) excess-utilization-rate-ratio))
           ))
-          {
-            current-liquidity-rate:
-            (mul
-              new-variable-borrow-rate
-              utilization-rate
-            ),
-            current-variable-borrow-rate: new-variable-borrow-rate,
-            utilization-rate: utilization-rate,
-          }
+          (ok 
+            {
+              current-liquidity-rate:
+              (mul
+                new-variable-borrow-rate
+                utilization-rate
+              ),
+              current-variable-borrow-rate: new-variable-borrow-rate,
+              utilization-rate: utilization-rate,
+            }
+          )
       )
       (let (
         (new-variable-borrow-rate
           (+
-            (get-base-variable-borrow-rate asset)
+            (try! (get-base-variable-borrow-rate asset))
             (mul
               (div utilization-rate optimal-utilization-rate)
-              (get-variable-rate-slope-1 asset)
+              (try! (get-variable-rate-slope-1 asset))
             ))))
-          {
-            current-liquidity-rate:
-              (mul
-                (mul 
-                  new-variable-borrow-rate
-                  utilization-rate
-                )
-                (- one-8 (unwrap-panic (get-reserve-factor asset)))
-              ),
-            current-variable-borrow-rate: new-variable-borrow-rate,
-            utilization-rate: utilization-rate,
-          }
+          (ok 
+            {
+              current-liquidity-rate:
+                (mul
+                  (mul 
+                    new-variable-borrow-rate
+                    utilization-rate
+                  )
+                  (- one-8 (get-reserve-factor asset))
+                ),
+              current-variable-borrow-rate: new-variable-borrow-rate,
+              utilization-rate: utilization-rate,
+            }
+          )
       )
     )
   )
@@ -1749,7 +1755,7 @@
   )
   (let (
     (reserve-data (try! (get-reserve-state asset)))
-    (reserve-factor (try! (get-reserve-factor asset)))
+    (reserve-factor (get-reserve-factor asset))
     (decimals (get decimals reserve-data))
     (prev-total-variable-debt
       (mul-precision-with-factor
@@ -1784,4 +1790,10 @@
 (define-constant ERR_NON_CORRESPONDING_ASSETS (err u7003))
 (define-constant ERR_DOES_NOT_EXIST (err u7004))
 (define-constant ERR_NON_ZERO (err u7005))
-
+(define-constant ERR_OPTIMAL_UTILIZATION_RATE_NOT_SET (err u7006))
+(define-constant ERR_BASE_VARIABLE_BORROW_RATE_NOT_SET (err u7007))
+(define-constant ERR_VARIABLE_RATE_SLOPE_1_NOT_SET (err u7008))
+(define-constant ERR_VARIABLE_RATE_SLOPE_2_NOT_SET (err u7009))
+(define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u7010))
+(define-constant ERR_FLASHLOAN_FEE_TOTAL_NOT_SET (err u7011))
+(define-constant ERR_FLASHLOAN_FEE_PROTOCOL_NOT_SET (err u7012))

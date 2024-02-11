@@ -159,7 +159,7 @@
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
       (borrow-fee u0)
-      (borrow-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-balance-reserve-data lp asset-to-borrow owner oracle)))
+      (borrow-balance (try! (contract-call? .pool-0-reserve get-user-balance-reserve-data lp asset-to-borrow owner oracle)))
       (amount-collateral-needed
         (contract-call? .pool-0-reserve calculate-collateral-needed-in-USD
           asset-to-borrow
@@ -206,7 +206,7 @@
   (on-behalf-of principal)
   )
   (let (
-    (ret (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance on-behalf-of asset)))
+    (ret (try! (contract-call? .pool-0-reserve get-user-borrow-balance on-behalf-of asset)))
     (origination-fee u0)
     (amount-due (+ (get compounded-balance ret) origination-fee))
     (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state (contract-of asset))))
@@ -233,7 +233,6 @@
         )
       )
       (try! (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount))
-      (print { ret: ret })
 
       (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount } } })
       (ok payback-amount)
@@ -284,8 +283,8 @@
   (flashloan <flash-loan>))
   (let  (
     (available-liquidity-before (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
-    (total-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-total (contract-of asset))))
-    (protocol-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-protocol (contract-of asset))))
+    (total-fee-bps (try! (contract-call? .pool-0-reserve get-flashloan-fee-total (contract-of asset))))
+    (protocol-fee-bps (try! (contract-call? .pool-0-reserve get-flashloan-fee-protocol (contract-of asset))))
     (amount-fee (/ (* amount total-fee-bps) u10000))
     (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
     (reserve-data (try! (get-reserve-state (contract-of asset))))
@@ -359,12 +358,12 @@
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
     ;; if in isolation mode, can only disable isolated asset
-    (if (is-some isolation-mode-asset)
-      (begin
+    (match isolation-mode-asset
+      isolated-asset (begin
         ;; repay before changing
         (asserts! (is-eq (get total-borrow-balanceUSD user-global-data) u0) ERR_REPAY_BEFORE_DISABLING)
         ;; if repaid, must be updating the isolated collateral asset
-        (asserts! (is-eq (unwrap-panic isolation-mode-asset) (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
+        (asserts! (is-eq isolated-asset (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
         ;; if isolated asset is enabled, can only disable it
         (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false }))
       )

@@ -247,7 +247,6 @@
 (define-read-only (is-contract-owner (caller principal))
   (is-eq caller (var-get contract-owner)))
 
-;; TODO: should use the pool logic designated by the Pool Delegate
 ;; -- permissions
 (define-map approved-contracts principal bool)
 

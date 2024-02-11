@@ -1508,18 +1508,6 @@ describe("Supply and Redeem", () => {
 
     // simnet.mineEmptyBlocks(1);
 
-    callResponse = simnet.callReadOnlyFn(
-      "pool-read",
-      "get-borrowed-balance-user-ststx-doo",
-      [
-        Cl.standardPrincipal(Borrower_1)
-      ],
-      Borrower_1
-    );
-    // console.log("Borrower balance 1 block after borrowed")
-    // console.log(Borrower_1);
-    // console.log(Cl.prettyPrint(callResponse.result));
-
     callResponse = simnet.callPublicFn(
       "pool-borrow",
       "repay",
