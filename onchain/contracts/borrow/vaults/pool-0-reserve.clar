@@ -135,7 +135,7 @@
   (default-to u0 (contract-call? .pool-reserve-data get-origination-fee-prc-read asset)))
 
 (define-read-only (get-user-reserve-data (who principal) (reserve principal))
-  (ok (default-to default-user-reserve-data (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve)))
+  (default-to default-user-reserve-data (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve))
 )
 
 (define-public (set-optimal-utilization-rate (asset principal) (rate uint))
@@ -251,7 +251,7 @@
 
 ;; util function
 (define-read-only (count-collateral-enabled (asset principal) (ret { who: principal, enabled-count: uint, enabled-assets: (list 100 principal) }))
-  (if (get use-as-collateral (unwrap-panic (get-user-reserve-data (get who ret) asset)))
+  (if (get use-as-collateral (get-user-reserve-data (get who ret) asset))
     (merge ret {
         enabled-count: (+ (get enabled-count ret) u1),
         enabled-assets: (unwrap-panic (as-max-len? (append (get enabled-assets ret) asset) u100))
@@ -353,7 +353,7 @@
 
 (define-read-only (get-user-origination-fee (who principal) (asset <ft>))
   (let (
-    (user-data (unwrap-panic (get-user-reserve-data who (contract-of asset)))))
+    (user-data (get-user-reserve-data who (contract-of asset))))
     (get origination-fee user-data)
   )
 )
@@ -723,7 +723,7 @@
   (balance-increase uint))
   (let (
     (reserve-data (try! (get-reserve-state (contract-of reserve))))
-    (user-data (unwrap-panic (get-user-reserve-data user (contract-of reserve))))
+    (user-data (get-user-reserve-data user (contract-of reserve)))
     (principal-borrow-balance
       (-
         (+ (get principal-borrow-balance user-data) balance-increase)
@@ -810,7 +810,7 @@
   (repaid-whole-loan bool))
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
-    (user-data (unwrap-panic (get-user-reserve-data who (contract-of asset))))
+    (user-data (get-user-reserve-data who (contract-of asset)))
     (principal-borrow-balance
       (- (+ (get principal-borrow-balance user-data) balance-increase) payback-amount-minus-fees))
     (last-variable-borrow-cumulative-index
@@ -850,7 +850,7 @@
   (asset <ft>))
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
-    (user-data (unwrap-panic (get-user-reserve-data who (contract-of asset)))))
+    (user-data (get-user-reserve-data who (contract-of asset))))
     (contract-call? .pool-reserve-data
       set-reserve-state
       (contract-of asset)
@@ -869,7 +869,7 @@
   (fee uint))
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
-    (user-data (unwrap-panic (get-user-reserve-data who (contract-of asset))))
+    (user-data (get-user-reserve-data who (contract-of asset)))
     (new-user-data {
       stable-borrow-rate: u0,
       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
@@ -930,7 +930,7 @@
   (asset <ft>)
 )
   (let (
-    (user-data (unwrap-panic (get-user-reserve-data who (contract-of asset))))
+    (user-data (get-user-reserve-data who (contract-of asset)))
     (reserve-data (try! (get-reserve-state (contract-of asset))))
   )
     (if (is-eq (get principal-borrow-balance user-data) u0)
@@ -1012,7 +1012,7 @@
   )
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
-    (user-data (unwrap-panic (get-user-reserve-data user (contract-of asset))))
+    (user-data (get-user-reserve-data user (contract-of asset)))
   )
     (try! (validate-assets-order assets-to-calculate))
     (if (or (not (get usage-as-collateral-enabled reserve-data)) (not (get use-as-collateral user-data)))
@@ -1136,7 +1136,7 @@
 
 (define-private (set-user-reserve-as-collateral-internal (user principal) (asset <ft>) (use-as-collateral bool))
   (let (
-    (user-data (unwrap-panic (get-user-reserve-data user (contract-of asset))))
+    (user-data (get-user-reserve-data user (contract-of asset)))
   )
     (contract-call? .pool-reserve-data 
       set-user-reserve-data
@@ -1353,7 +1353,7 @@
   (oracle <oracle-trait>)
   )
   (let (
-    (user-data (unwrap-panic (get-user-reserve-data user (contract-of asset))))
+    (user-data (get-user-reserve-data user (contract-of asset)))
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (underlying-balance (try! (get-user-underlying-asset-balance lp-token asset user)))
     (compounded-borrow-balance
@@ -1437,7 +1437,7 @@
   )
   (let (
     (user (get user aggregate))
-    (user-reserve-state (unwrap-panic (get-user-reserve-data user (contract-of asset))))
+    (user-reserve-state (get-user-reserve-data user (contract-of asset)))
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (default-reserve-value
       {
@@ -1609,6 +1609,7 @@
     )
   )
 )
+
 
 (define-read-only (calculate-collateral-needed-in-USD
   (borrowing-asset <ft>)

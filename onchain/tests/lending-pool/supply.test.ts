@@ -1974,7 +1974,7 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, stSTX, Borrower_1);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(true);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(true);
 
     callResponse = poolBorrow.supply(
       deployerAddress,
@@ -1989,7 +1989,7 @@ describe("Supply and Redeem", () => {
     );
     
     callResponse = poolBorrow.getUserReserveData(LP_2, deployerAddress, USDA, LP_2);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(false);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
 
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -2047,7 +2047,7 @@ describe("Supply and Redeem", () => {
     expect(callResponse.result).toBeOk(Cl.uint(200_000_000));
 
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, USDA, Borrower_1);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(false);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
 
     // check only ststx borrowing power is reduced
     callResponse = simnet.callPublicFn(
@@ -2176,9 +2176,9 @@ describe("Supply and Redeem", () => {
       LP_2
     );
     callResponse = poolBorrow.getUserReserveData(LP_2, deployerAddress, stSTX, LP_2);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(true);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(true);
     callResponse = poolBorrow.getUserReserveData(LP_2, deployerAddress, USDA, LP_2);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(false);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
     // console.log(cvToValue(callResponse.result));
 
     // check only ststx is used as collateral
@@ -2235,7 +2235,7 @@ describe("Supply and Redeem", () => {
     expect(callResponse.result).toBeOk(Cl.uint(100_000_000));
 
     callResponse = poolBorrow.getUserReserveData(LP_2, deployerAddress, USDA, LP_2);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(false);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
 
     // check only ststx is used as collateral
     callResponse = simnet.callPublicFn(
@@ -2294,7 +2294,7 @@ describe("Supply and Redeem", () => {
     );
     expect(Number(cvToValue(callResponse.result).value["total-borrow-balanceUSD"].value)).toBe(0);
     callResponse = poolBorrow.getUserReserveData(LP_2, deployerAddress, USDA, LP_2);
-    expect(Number(cvToValue(callResponse.result).value["principal-borrow-balance"].value)).toBe(0);
+    expect(Number(cvToValue(callResponse.result)["principal-borrow-balance"].value)).toBe(0);
   });
   it("Supply multiple assets and check TVL and threshold values are average weighted sum", () => {
     const poolReserve0 = new PoolReserve(

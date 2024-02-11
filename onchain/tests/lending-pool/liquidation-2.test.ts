@@ -480,7 +480,7 @@ describe("Liquidations", () => {
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
 
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, sBTC, Borrower_1);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(true);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(true);
 
     callResponse = simnet.callPublicFn(
       "pool-borrow",
@@ -567,7 +567,7 @@ describe("Liquidations", () => {
     expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(1999760001n);
 
     // console.log(cvToValue(callResponse.result).value);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(false);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -578,7 +578,7 @@ describe("Liquidations", () => {
       ],
       Liquidator_1
     );
-    expect((cvToValue(callResponse.result).value["use-as-collateral"].value)).toBe(false);
+    expect((cvToValue(callResponse.result)["use-as-collateral"].value)).toBe(false);
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -589,9 +589,9 @@ describe("Liquidations", () => {
       ],
       Borrower_1
     );
-    expect(Number(cvToValue(callResponse.result).value["principal-borrow-balance"].value)).toBeGreaterThan(0);
+    expect(Number(cvToValue(callResponse.result)["principal-borrow-balance"].value)).toBeGreaterThan(0);
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, sBTC, Borrower_1);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(false);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
   });
   it("Borrower_1 falls below health factor threshold and gets collateral liquidated, verify protocol fee goes to collection address", () => {
     const poolReserve0 = new PoolReserve(
@@ -1520,7 +1520,7 @@ describe("Liquidations", () => {
       ],
       Liquidator_1
     );
-    expect((cvToValue(callResponse.result).value["use-as-collateral"].value)).toBe(false);
+    expect((cvToValue(callResponse.result)["use-as-collateral"].value)).toBe(false);
 
     callResponse = poolBorrow.setUserUseReserveAsCollateral(
       Liquidator_1,
@@ -1551,7 +1551,7 @@ describe("Liquidations", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
     callResponse = poolBorrow.getUserReserveData(Liquidator_1, deployerAddress, sBTC, Liquidator_1);
-    expect(cvToValue(callResponse.result).value["use-as-collateral"].value).toBe(true);
+    expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(true);
     // console.log(cvToValue(callResponse.result));
 
     callResponse = simnet.callReadOnlyFn(

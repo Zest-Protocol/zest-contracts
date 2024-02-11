@@ -243,7 +243,7 @@
   (contract-call? .pool-0-reserve get-reserve-state (contract-of asset))
 )
 (define-public (get-user-reserve-state (user principal) (asset <ft>))
-  (contract-call? .pool-0-reserve get-user-reserve-data user (contract-of asset))
+  (ok (contract-call? .pool-0-reserve get-user-reserve-data user (contract-of asset)))
 )
 
 (define-public (get-user-underlying-asset-balance

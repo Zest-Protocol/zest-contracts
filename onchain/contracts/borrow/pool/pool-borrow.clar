@@ -113,7 +113,7 @@
     (asserts! (> amount u0) ERR_NOT_ZERO)
     (asserts! (is-eq contract-caller (get a-token-address reserve-state)) ERR_UNAUTHORIZED)
     (asserts! (is-eq (contract-of oracle) (get oracle reserve-state)) ERR_INVALID_ORACLE)
-    (asserts! (get is-active reserve-state) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (>= current-available-liquidity amount) ERR_EXCEEDED_LIQ)
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
 
@@ -143,10 +143,11 @@
     (user-assets (contract-call? .pool-0-reserve get-user-assets owner))
   )
     (asserts! (get borrowing-enabled reserve-state) ERR_BORROWING_DISABLED)
+    (asserts! (get is-active reserve-state) ERR_FROZEN)
+    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (>= available-liquidity amount-to-be-borrowed) ERR_EXCEEDED_LIQ)
     (asserts! (is-eq tx-sender owner) ERR_UNAUTHORIZED)
     (asserts! (> amount-to-be-borrowed u0) ERR_NOT_ZERO)
-    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
 
     (if (is-some is-in-isolation-mode)
       (asserts! (contract-call? .pool-0-reserve is-borroweable-isolated asset) ERR_NOT_SILOED_ASSET)
@@ -216,7 +217,7 @@
           amount-due
           amount-to-repay ))))
     (asserts! (> (get compounded-balance ret) u0) ERR_NOT_ZERO)
-    (asserts! (get is-active reserve-state) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
     
     ;; paying back the balance
@@ -254,8 +255,9 @@
     (reserve-data (try! (get-reserve-state (contract-of debt-asset))))
     (collateral-data (try! (get-reserve-state (contract-of collateral-to-liquidate))))
   )
-    (asserts! (get is-active reserve-data) ERR_INACTIVE)
-    (asserts! (get is-active collateral-data) ERR_INACTIVE)
+    ;; only disabled in emergency mode
+    (asserts! (not (get is-frozen collateral-data)) ERR_FROZEN)
+    (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
     (asserts! (is-eq (contract-of collateral-lp) (get a-token-address collateral-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (contract-of collateral-oracle) (get oracle collateral-data)) ERR_INVALID_ORACLE)
     (asserts! (is-eq (contract-of debt-oracle) (get oracle reserve-data)) ERR_INVALID_ORACLE)
@@ -291,6 +293,8 @@
     (asserts! (>= available-liquidity-before amount) ERR_EXCEEDED_LIQ)
     (asserts! (and (> amount-fee u0) (> protocol-fee u0)) ERR_NOT_ZERO)
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
+    (asserts! (get is-active reserve-data) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
     (try! (contract-call? .pool-0-reserve transfer-to-user asset receiver amount))
@@ -344,7 +348,7 @@
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (underlying-balance (try! (contract-call? lp-token get-balance who)))
-    (user-data (unwrap-panic (get-user-reserve-data who (contract-of asset))))
+    (user-data (get-user-reserve-data who (contract-of asset)))
     (isolation-mode-asset (contract-call? .pool-0-reserve is-in-isolation-mode who))
     (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data who assets-to-calculate))))
     (asserts! (is-eq tx-sender who) ERR_UNAUTHORIZED)
