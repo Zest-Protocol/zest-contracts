@@ -731,13 +731,7 @@
       )
     )
     (last-variable-borrow-cumulative-index (get last-variable-borrow-cumulative-index reserve-data))
-    (origination-fee
-      ;; (if (> fee-liquidated u0)
-      ;;   (- (get origination-fee user-data) fee-liquidated)
-      ;;   (get origination-fee user-data)
-      ;; )
-      u0
-    ))
+    (origination-fee u0))
     (asserts! (is-liquidator contract-caller) ERR_UNAUTHORIZED)
     ;; if purchased entire borrowed balance
     (if (is-eq principal-borrow-balance u0)
@@ -873,7 +867,6 @@
       stable-borrow-rate: u0,
       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
       principal-borrow-balance: (+ (get principal-borrow-balance user-data) amount-borrowed balance-increase),
-      ;; origination-fee: (+ (get origination-fee user-data) fee),
       last-updated-block: burn-block-height }))
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     
