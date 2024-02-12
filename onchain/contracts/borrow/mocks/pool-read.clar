@@ -206,7 +206,8 @@
       asset-price
       (get total-collateral-balanceUSD user-global-data)
       (get total-borrow-balanceUSD user-global-data)
-      (get user-total-feesUSD user-global-data)
+      ;; (get user-total-feesUSD user-global-data)
+      u0
       (get current-ltv user-global-data)
       user
     )
@@ -226,10 +227,10 @@
   )
   (let (
     (available-borrow-power-in-base-currency
-      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD current-fees-USD))
+      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD u0))
         (-
           (mul current-user-collateral-balance-USD current-ltv)
-          (+ current-user-borrow-balance-USD current-fees-USD)
+          (+ current-user-borrow-balance-USD u0)
         )
         u0
       )
@@ -243,7 +244,7 @@
         decimals
       )
     )
-    (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee user (contract-of borrowing-asset) borrow-power-in-asset-amount decimals)))
+    (borrow-fee u0)
   )
     (ok (- borrow-power-in-asset-amount borrow-fee))
   )
@@ -287,6 +288,7 @@
     (cumulated-balance 
       (get-compounded-borrow-balance
         (get principal-borrow-balance user-data)
+        (get decimals reserve-data)
         (get stable-borrow-rate user-data)
         (get last-updated-block user-data)
         (get last-variable-borrow-cumulative-index user-data)
@@ -305,6 +307,7 @@
 (define-read-only (get-compounded-borrow-balance
   ;; user-data
   (principal-borrow-balance uint)
+  (decimals uint)
   (stable-borrow-rate uint)
   (last-updated-block uint)
   (last-variable-borrow-cumulative-index uint)
@@ -328,9 +331,9 @@
             (- burn-block-height last-updated-block-reserve))
           last-variable-borrow-cumulative-index-reserve)
         user-cumulative-index))
-    (compounded-balance (mul principal-borrow-balance cumulated-interest)))
+    (compounded-balance (mul-precision-with-factor principal-borrow-balance decimals cumulated-interest)))
     (if (is-eq compounded-balance principal-borrow-balance)
-      (if (is-eq last-updated-block burn-block-height)
+      (if (not (is-eq last-updated-block burn-block-height))
         (+ principal-borrow-balance u1)
         compounded-balance
       )

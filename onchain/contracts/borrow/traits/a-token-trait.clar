@@ -25,6 +25,7 @@
 		(transfer-on-liquidation (uint principal principal) (response uint uint))
 
 		(burn-on-liquidation (uint principal) (response uint uint))
+    
 	)
 )
 

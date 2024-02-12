@@ -246,6 +246,7 @@ describe("Flashloans", () => {
           "current-stable-borrow-rate": Cl.uint(0),
           "current-variable-borrow-rate": Cl.uint(0),
           "debt-ceiling": Cl.uint(0),
+          "accrued-to-treasury": Cl.uint(0),
           decimals: Cl.uint(8),
           "flashloan-enabled": Cl.bool(true),
           "interest-rate-strategy-address": Cl.contractPrincipal(
@@ -327,7 +328,7 @@ describe("Flashloans", () => {
       simnet
         .getAssetsMap()
         .get(".sbtc.sbtc")
-        ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")
+        ?.get("ST2ZW2EKBWATT2Z7FZ2XY9KYYVFBYBDCZBRZMFNR9")
     ).toBe(protocolFee);
   });
 });

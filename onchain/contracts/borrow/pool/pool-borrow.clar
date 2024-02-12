@@ -40,7 +40,7 @@
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
     (asserts! (>= (get supply-cap reserve-state) (+ amount current-available-liquidity (get total-borrows-variable reserve-state))) ERR_EXCEED_SUPPLY_CAP)
 
-    (map-insert users-id (var-get last-user-id) tx-sender)
+    (map-insert users-id (var-get last-user-id) owner)
     (var-set last-user-id (+ u1 (var-get last-user-id)))
 
     ;; if first supply
@@ -96,7 +96,7 @@
     )
 )
 
-(define-public (redeem-underlying
+(define-public (withdraw
   (pool-reserve principal)
   (asset <ft>)
   (oracle <oracle-trait>)
@@ -113,15 +113,14 @@
     (asserts! (> amount u0) ERR_NOT_ZERO)
     (asserts! (is-eq contract-caller (get a-token-address reserve-state)) ERR_UNAUTHORIZED)
     (asserts! (is-eq (contract-of oracle) (get oracle reserve-state)) ERR_INVALID_ORACLE)
-    (asserts! (get is-active reserve-state) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (>= current-available-liquidity amount) ERR_EXCEEDED_LIQ)
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
 
     (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount redeems-everything))
     (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
 
-
-    (print { type: "redeem-underlying", payload: { key: owner, data: { amount: amount } } })
+    (print { type: "withdraw", payload: { key: owner, data: { amount: amount } } })
     (ok amount)
   )
 )
@@ -144,10 +143,11 @@
     (user-assets (contract-call? .pool-0-reserve get-user-assets owner))
   )
     (asserts! (get borrowing-enabled reserve-state) ERR_BORROWING_DISABLED)
+    (asserts! (get is-active reserve-state) ERR_FROZEN)
+    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (>= available-liquidity amount-to-be-borrowed) ERR_EXCEEDED_LIQ)
     (asserts! (is-eq tx-sender owner) ERR_UNAUTHORIZED)
     (asserts! (> amount-to-be-borrowed u0) ERR_NOT_ZERO)
-    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
 
     (if (is-some is-in-isolation-mode)
       (asserts! (contract-call? .pool-0-reserve is-borroweable-isolated asset) ERR_NOT_SILOED_ASSET)
@@ -158,32 +158,33 @@
 
     (let (
       (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data owner assets)))
-      (borrow-fee (try! (contract-call? .fees-calculator calculate-origination-fee owner asset amount-to-be-borrowed (get decimals reserve-state))))
-      (borrow-balance (unwrap-panic (contract-call? .pool-0-reserve get-user-balance-reserve-data lp asset-to-borrow owner oracle)))
+      (borrow-balance (try! (contract-call? .pool-0-reserve get-user-balance-reserve-data lp asset-to-borrow owner oracle)))
       (amount-collateral-needed
         (contract-call? .pool-0-reserve calculate-collateral-needed-in-USD
           asset-to-borrow
           amount-to-be-borrowed
           (get decimals reserve-state)
           (try! (contract-call? oracle get-asset-price asset-to-borrow))
-          borrow-fee
+          u0
           (get total-borrow-balanceUSD user-global-data)
           (get user-total-feesUSD user-global-data)
           (get current-ltv user-global-data))))
-      (asserts! (> borrow-fee u0) ERR_NOT_ZERO)
       (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) ERR_NOT_ZERO)
       (asserts! (<= (get collateral-needed-in-USD amount-collateral-needed) (get total-collateral-balanceUSD user-global-data)) ERR_NOT_ENOUGH_COLLATERAL)
-      (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) borrow-fee amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
+      (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) u0 amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
 
       (match is-in-isolation-mode
         isolated-asset
           (let (
-            (isolated-reserve (try! (contract-call? .pool-0-reserve get-reserve-state asset)))
+            (isolated-reserve (try! (contract-call? .pool-0-reserve get-reserve-state isolated-asset)))
+            (amount-to-be-borrowed-in-base-currency (contract-call? .pool-0-reserve mul-to-fixed-precision
+              amount-to-be-borrowed
+              (get decimals reserve-state)
+              (try! (contract-call? oracle get-asset-price asset-to-borrow))))
+            (total-isolated-debt (try! (contract-call? .pool-0-reserve sum-total-debt-in-base-currency assets)))
           )
             (if (> (get debt-ceiling isolated-reserve) u0)
-              (asserts! (<=
-                (+ (get requested-borrow-amount-USD amount-collateral-needed) (get total-borrow-balanceUSD user-global-data))
-                (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
+              (asserts! (<= (+ amount-to-be-borrowed-in-base-currency total-isolated-debt) (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
               true
             )
           )
@@ -191,10 +192,10 @@
       )
 
       ;; conditions passed, can borrow
-      (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed borrow-fee))
+      (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed u0))
       (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
 
-      (print { type: "borrow", payload: { key: owner, data: { amount-to-be-borrowed: amount-to-be-borrowed, borrow-fee: borrow-fee,  } } })
+      (print { type: "borrow", payload: { key: owner, data: { amount-to-be-borrowed: amount-to-be-borrowed } } })
 
       (ok amount-to-be-borrowed))))
 
@@ -202,11 +203,11 @@
   (asset <ft>)
   (amount-to-repay uint)
   (on-behalf-of principal)
+  (payer principal)
   )
   (let (
-    (ret (unwrap-panic (contract-call? .pool-0-reserve get-user-borrow-balance on-behalf-of asset)))
-    (origination-fee (contract-call? .pool-0-reserve get-user-origination-fee on-behalf-of asset))
-    (amount-due (+ (get compounded-balance ret) origination-fee))
+    (ret (try! (contract-call? .pool-0-reserve get-user-borrow-balance on-behalf-of asset)))
+    (amount-due (get compounded-balance ret))
     (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state (contract-of asset))))
     (payback-amount
       (if (is-eq amount-to-repay max-value)
@@ -215,67 +216,25 @@
           amount-due
           amount-to-repay ))))
     (asserts! (> (get compounded-balance ret) u0) ERR_NOT_ZERO)
-    (asserts! (get is-active reserve-state) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
     
-    ;; if payback-amount is smaller than fees, just pay fees
-    (if (<= payback-amount origination-fee)
-      (begin
-        (try!
-          (contract-call? .pool-0-reserve update-state-on-repay
-            asset
-            on-behalf-of
-            u0
-            payback-amount
-            (get balance-increase ret)
-            false
-          )
-        )
-        (try!
-          (contract-call? .pool-0-reserve transfer-fee-to-collection
-            asset
-            on-behalf-of
-            payback-amount
-            (contract-call? .pool-0-reserve get-collection-address)
-          )
-        )
-        
-        (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount, origination-fee: payback-amount } } })
-        (ok payback-amount)
-      )
-      ;; paying back the balance
-      (let (
-        (payback-amount-minus-fees (- payback-amount origination-fee))
-      )
-        (try!
-          (contract-call? .pool-0-reserve update-state-on-repay
-            asset
-            on-behalf-of
-            payback-amount-minus-fees
-            origination-fee
-            (get balance-increase ret)
-            (is-eq (get compounded-balance ret) payback-amount-minus-fees)
-          )
-        )
-        (if (> origination-fee u0)
-          (begin
-            (try!
-              (contract-call? .pool-0-reserve transfer-fee-to-collection
-                asset
-                tx-sender
-                origination-fee
-                (contract-call? .pool-0-reserve get-collection-address)
-              )
-            )
-            u0
-          )
+    ;; paying back the balance
+    (begin
+      (try!
+        (contract-call? .pool-0-reserve update-state-on-repay
+          asset
+          on-behalf-of
+          payback-amount
           u0
+          (get balance-increase ret)
+          (is-eq (get compounded-balance ret) payback-amount)
         )
-        (try! (contract-call? .pool-0-reserve transfer-to-reserve asset tx-sender payback-amount-minus-fees))
-
-        (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount-minus-fees, origination-fee: origination-fee } } })
-        (ok payback-amount)
       )
+      (try! (contract-call? .pool-0-reserve transfer-to-reserve asset payer payback-amount))
+
+      (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount } } })
+      (ok payback-amount)
     )
   )
 )
@@ -294,8 +253,9 @@
     (reserve-data (try! (get-reserve-state (contract-of debt-asset))))
     (collateral-data (try! (get-reserve-state (contract-of collateral-to-liquidate))))
   )
-    (asserts! (get is-active reserve-data) ERR_INACTIVE)
-    (asserts! (get is-active collateral-data) ERR_INACTIVE)
+    ;; only disabled in emergency mode
+    (asserts! (not (get is-frozen collateral-data)) ERR_FROZEN)
+    (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
     (asserts! (is-eq (contract-of collateral-lp) (get a-token-address collateral-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (contract-of collateral-oracle) (get oracle collateral-data)) ERR_INVALID_ORACLE)
     (asserts! (is-eq (contract-of debt-oracle) (get oracle reserve-data)) ERR_INVALID_ORACLE)
@@ -322,8 +282,8 @@
   (flashloan <flash-loan>))
   (let  (
     (available-liquidity-before (try! (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)))
-    (total-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-total (contract-of asset))))
-    (protocol-fee-bps (unwrap-panic (contract-call? .pool-0-reserve get-flashloan-fee-protocol (contract-of asset))))
+    (total-fee-bps (try! (contract-call? .pool-0-reserve get-flashloan-fee-total (contract-of asset))))
+    (protocol-fee-bps (try! (contract-call? .pool-0-reserve get-flashloan-fee-protocol (contract-of asset))))
     (amount-fee (/ (* amount total-fee-bps) u10000))
     (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
     (reserve-data (try! (get-reserve-state (contract-of asset))))
@@ -331,6 +291,8 @@
     (asserts! (>= available-liquidity-before amount) ERR_EXCEEDED_LIQ)
     (asserts! (and (> amount-fee u0) (> protocol-fee u0)) ERR_NOT_ZERO)
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
+    (asserts! (get is-active reserve-data) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
     (try! (contract-call? .pool-0-reserve transfer-to-user asset receiver amount))
@@ -384,8 +346,9 @@
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (underlying-balance (try! (contract-call? lp-token get-balance who)))
-    (user-data (unwrap-panic (get-user-reserve-data who (contract-of asset))))
-    (isolation-mode-asset (contract-call? .pool-0-reserve is-in-isolation-mode who)))
+    (user-data (get-user-reserve-data who (contract-of asset)))
+    (isolation-mode-asset (contract-call? .pool-0-reserve is-in-isolation-mode who))
+    (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data who assets-to-calculate))))
     (asserts! (is-eq tx-sender who) ERR_UNAUTHORIZED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
@@ -394,20 +357,26 @@
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
     ;; if in isolation mode, can only disable isolated asset
-    (if (is-some isolation-mode-asset)
-      (begin
+    (match isolation-mode-asset
+      isolated-asset (begin
         ;; repay before changing
-        (asserts! (not (contract-call? .pool-0-reserve is-borrowing-assets who)) ERR_REPAY_BEFORE_DISABLING)
+        (asserts! (is-eq (get total-borrow-balanceUSD user-global-data) u0) ERR_REPAY_BEFORE_DISABLING)
         ;; if repaid, must be updating the isolated collateral asset
-        (asserts! (is-eq (unwrap-panic isolation-mode-asset) (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
+        (asserts! (is-eq isolated-asset (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
         ;; if isolated asset is enabled, can only disable it
-        (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false })))
+        (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false }))
+      )
       (begin
         (if (not enable-as-collateral)
           ;; if disabling as collateral, check user is not using deposited collateral
           (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) ERR_INVALID_DECREASE)
-          true)
-
+          (if (> (get total-collateral-balanceUSD user-global-data) u0)
+            ;; if using anything else as collateral, check it's not enabling an isolated asset
+            (asserts! (not (contract-call? .pool-read is-isolated-asset (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
+            ;; if enabling an asset as collateral and not using anything else as collateral, can enable any asset
+            true
+          )
+        )
         (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: enable-as-collateral }))
       )
     )
@@ -448,6 +417,7 @@
         supply-cap: supply-cap,
         borrow-cap: borrow-cap,
         debt-ceiling: u0,
+        accrued-to-treasury: u0,
         usage-as-collateral-enabled: false,
         is-stable-borrow-rate-enabled: false,
         is-active: true,
@@ -484,6 +454,7 @@
       (supply-cap uint)
       (borrow-cap uint)
       (debt-ceiling uint)
+      (accrued-to-treasury uint)
       (is-active bool)
       (is-frozen bool)
     )))
@@ -594,3 +565,4 @@
 (define-constant ERR_MUST_DISABLE_ISOLATED_ASSET (err u30019))
 (define-constant ERR_EXCEED_SUPPLY_CAP (err u30020))
 (define-constant ERR_COLLATERAL_DISABLED (err u30021))
+(define-constant ERR_CANNOT_ENABLE_ISOLATED_ASSET (err u30022))

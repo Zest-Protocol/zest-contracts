@@ -43,10 +43,10 @@
 (define-read-only (get-health-factor-liquidation-threshold-read)
   (var-get health-factor-liquidation-threshold))
 
-(define-data-var protocol-treasury-addr principal .protocol-treasury)
+(define-data-var protocol-treasury-addr principal 'ST2ZW2EKBWATT2Z7FZ2XY9KYYVFBYBDCZBRZMFNR9)
 (define-public (set-protocol-treasury-addr (protocol-treasury principal))
   (begin
-    (try! (is-approved-contract contract-caller))
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
     (print { type: "set-protocol-treasury-addr", payload: { key: "protocol-treasury", data: { protocol-treasury: protocol-treasury } } })
     (ok (var-set protocol-treasury-addr protocol-treasury))))
 
@@ -163,6 +163,7 @@
     (supply-cap uint)
     (borrow-cap uint)
     (debt-ceiling uint)
+    (accrued-to-treasury uint)
     (is-active bool)
     (is-frozen bool)))
 
@@ -193,6 +194,7 @@
     (supply-cap uint)
     (borrow-cap uint)
     (debt-ceiling uint)
+    (accrued-to-treasury uint)
     (is-active bool)
     (is-frozen bool))))
   (begin
@@ -363,6 +365,18 @@
 (define-read-only (get-origination-fee-prc-read (asset principal))
   (map-get? origination-fee-prc asset))
 
+(define-map reserve-factor principal uint)
+(define-public (set-reserve-factor (asset principal) (factor uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-reserve-factor", payload: { key: asset, data: factor } })
+    (ok (map-set reserve-factor asset factor))))
+
+(define-public (get-reserve-factor (asset principal))
+  (ok (map-get? reserve-factor asset)))
+(define-read-only (get-reserve-factor-read (asset principal))
+  (map-get? reserve-factor asset))
+
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)
 (define-public (set-contract-owner (owner principal))
@@ -445,9 +459,16 @@
 (map-set flashloan-fee-protocol .sbtc u3000)
 
 ;; 0.0025%
-(map-set origination-fee-prc .ststx u250000)
-(map-set origination-fee-prc .sbtc u250000)
-(map-set origination-fee-prc .diko u250000)
-(map-set origination-fee-prc .xusd u250000)
-(map-set origination-fee-prc .usda u250000)
-(map-set origination-fee-prc .wstx u250000)
+(map-set origination-fee-prc .ststx u25)
+(map-set origination-fee-prc .sbtc u25)
+(map-set origination-fee-prc .diko u25)
+(map-set origination-fee-prc .xusd u25)
+(map-set origination-fee-prc .usda u25)
+(map-set origination-fee-prc .wstx u25)
+
+(map-set reserve-factor .ststx u15000000)
+(map-set reserve-factor .sbtc u10000000)
+(map-set reserve-factor .diko u10000000)
+(map-set reserve-factor .xusd u10000000)
+(map-set reserve-factor .usda u10000000)
+(map-set reserve-factor .wstx u10000000)

@@ -28,6 +28,11 @@ path = "contracts/borrow/mocks/stx-oracle.clar"
 clarity_version = 2
 epoch = 2.1
 
+[contracts.xusd-oracle]
+path = "contracts/borrow/mocks/xusd-oracle.clar"
+clarity_version = 2
+epoch = 2.1
+
 [contracts.coll-vault-trait]
 path = "contracts/v2_sbtc/trait/coll-vault-trait.clar"
 clarity_version = 2
