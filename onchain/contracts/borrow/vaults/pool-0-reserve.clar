@@ -16,6 +16,22 @@
   }
 )
 
+
+;; ERROR START 7000
+(define-constant ERR_UNAUTHORIZED (err u7000))
+(define-constant ERR_INVALID_Z_TOKEN (err u7001))
+(define-constant ERR_INVALID_ORACLE (err u7002))
+(define-constant ERR_NON_CORRESPONDING_ASSETS (err u7003))
+(define-constant ERR_DOES_NOT_EXIST (err u7004))
+(define-constant ERR_NON_ZERO (err u7005))
+(define-constant ERR_OPTIMAL_UTILIZATION_RATE_NOT_SET (err u7006))
+(define-constant ERR_BASE_VARIABLE_BORROW_RATE_NOT_SET (err u7007))
+(define-constant ERR_VARIABLE_RATE_SLOPE_1_NOT_SET (err u7008))
+(define-constant ERR_VARIABLE_RATE_SLOPE_2_NOT_SET (err u7009))
+(define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u7010))
+(define-constant ERR_FLASHLOAN_FEE_TOTAL_NOT_SET (err u7011))
+(define-constant ERR_FLASHLOAN_FEE_PROTOCOL_NOT_SET (err u7012))
+
 (define-public (set-flashloan-fee-total (asset principal) (fee uint))
   (begin
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
@@ -1775,17 +1791,3 @@
 (define-read-only (get-collection-address)
   (contract-call? .pool-reserve-data get-protocol-treasury-addr-read))
 
-;; ERROR START 7000
-(define-constant ERR_UNAUTHORIZED (err u7000))
-(define-constant ERR_INVALID_Z_TOKEN (err u7001))
-(define-constant ERR_INVALID_ORACLE (err u7002))
-(define-constant ERR_NON_CORRESPONDING_ASSETS (err u7003))
-(define-constant ERR_DOES_NOT_EXIST (err u7004))
-(define-constant ERR_NON_ZERO (err u7005))
-(define-constant ERR_OPTIMAL_UTILIZATION_RATE_NOT_SET (err u7006))
-(define-constant ERR_BASE_VARIABLE_BORROW_RATE_NOT_SET (err u7007))
-(define-constant ERR_VARIABLE_RATE_SLOPE_1_NOT_SET (err u7008))
-(define-constant ERR_VARIABLE_RATE_SLOPE_2_NOT_SET (err u7009))
-(define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u7010))
-(define-constant ERR_FLASHLOAN_FEE_TOTAL_NOT_SET (err u7011))
-(define-constant ERR_FLASHLOAN_FEE_PROTOCOL_NOT_SET (err u7012))

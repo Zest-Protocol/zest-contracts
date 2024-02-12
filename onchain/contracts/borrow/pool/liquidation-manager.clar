@@ -2,6 +2,15 @@
 (use-trait a-token .a-token-trait.a-token-trait)
 (use-trait oracle .oracle-trait.oracle-trait)
 
+(define-constant ERR_HEALTH_FACTOR_GT_1 (err u90000))
+(define-constant ERR_NOT_DEPOSITED (err u90001))
+(define-constant ERR_UNAUTHORIZED (err u90002))
+(define-constant ERR_NOT_ENABLED_AS_COLL (err u90003))
+(define-constant ERR_NO_COLLATERAL (err u90004))
+(define-constant ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE (err u90005))
+
+(define-constant one-8 (contract-call? .math get-one))
+
 (define-read-only (get-liquidation-close-factor-percent (asset principal))
   (unwrap-panic (contract-call? .pool-reserve-data get-liquidation-close-factor-percent-read asset)))
 
@@ -11,7 +20,6 @@
 (define-read-only (div (x uint) (y uint))
   (contract-call? .math div x y))
 
-(define-constant one-8 (contract-call? .math get-one))
 
 (define-public (calculate-user-global-data
   (user principal)
@@ -257,9 +265,3 @@
   (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)
 )
 
-(define-constant ERR_HEALTH_FACTOR_GT_1 (err u90000))
-(define-constant ERR_NOT_DEPOSITED (err u90001))
-(define-constant ERR_UNAUTHORIZED (err u90002))
-(define-constant ERR_NOT_ENABLED_AS_COLL (err u90003))
-(define-constant ERR_NO_COLLATERAL (err u90004))
-(define-constant ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE (err u90005))

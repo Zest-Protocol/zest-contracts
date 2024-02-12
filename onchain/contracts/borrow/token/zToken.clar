@@ -7,11 +7,15 @@
 
 (define-fungible-token lp-ststx)
 
+(define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))
+
+(define-constant max-value (contract-call? .math get-max-value))
+
 (define-data-var token-uri (string-utf8 256) u"")
 (define-data-var token-name (string-ascii 32) "LP ststx")
 (define-data-var token-symbol (string-ascii 32) "LP-ststx")
 
-(define-constant max-value (contract-call? .math get-max-value))
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply lp-ststx)))
@@ -265,6 +269,3 @@
 (map-set approved-contracts .pool-borrow true)
 (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
-
-(define-constant ERR_UNAUTHORIZED (err u14401))
-(define-constant ERR_INVALID_TRANSFER (err u14402))
