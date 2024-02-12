@@ -4,7 +4,7 @@
 (define-public (transfer (amount uint) (recipient principal) (f-t <ft>))
   (begin
     (try! (is-approved-contract contract-caller))
-    (print { type: "transfer-pool-vautl", payload: { amount: amount, recipient: recipient, asset: f-t } })
+    (print { type: "transfer-pool-vault", payload: { amount: amount, recipient: recipient, asset: f-t } })
     (as-contract (contract-call? f-t transfer amount tx-sender recipient none))))
 
 ;; -- ownable-trait --
@@ -16,7 +16,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-usda", payload: owner })
+    (print { type: "set-contract-owner-pool-vault", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))

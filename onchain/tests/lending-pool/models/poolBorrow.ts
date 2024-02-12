@@ -88,20 +88,22 @@ class PoolBorrow {
     );
   }
 
-  addIsolatedAsset(
+  addAsset(
     assetDeployer: string,
     assetContractName: string,
     caller: string
   ) {
     return simnet.callPublicFn(
       this.contractName,
-      "add-isolated-asset",
-      [Cl.contractPrincipal(assetDeployer, assetContractName)],
+      "add-asset",
+      [
+        Cl.contractPrincipal(assetDeployer, assetContractName)
+      ],
       caller
     );
   }
 
-  setBorroweableIsolated(
+  addIsolatedAsset(
     assetDeployer: string,
     assetContractName: string,
     debtCeiling: IntegerType,
@@ -109,10 +111,25 @@ class PoolBorrow {
   ) {
     return simnet.callPublicFn(
       this.contractName,
+      "add-isolated-asset",
+      [
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+        Cl.uint(debtCeiling)
+      ],
+      caller
+    );
+  }
+
+  setBorroweableIsolated(
+    assetDeployer: string,
+    assetContractName: string,
+    caller: string
+  ) {
+    return simnet.callPublicFn(
+      this.contractName,
       "set-borroweable-isolated",
       [
         Cl.contractPrincipal(assetDeployer, assetContractName),
-        Cl.uint(debtCeiling),
       ],
       caller
     );
@@ -249,7 +266,8 @@ class PoolBorrow {
     assetContractName: string,
     amountToRepay: IntegerType,
     onBehalfOf: string,
-    caller: string
+    payer: string,
+    caller: string,
   ) {
     return simnet.callPublicFn(
       this.contractName,
@@ -258,6 +276,39 @@ class PoolBorrow {
         Cl.contractPrincipal(assetDeployer, assetContractName),
         Cl.uint(amountToRepay),
         Cl.standardPrincipal(onBehalfOf),
+        Cl.standardPrincipal(payer),
+      ],
+      caller
+    );
+  }
+
+  getReserveState(
+    assetDeployer: string,
+    assetContractName: string,
+    caller: string
+  ) {
+    return simnet.callReadOnlyFn(
+      this.contractName,
+      "get-reserve-state",
+      [
+        Cl.contractPrincipal(assetDeployer, assetContractName),
+      ],
+      caller
+    );
+  }
+
+  getUserReserveData(
+    user: string,
+    assetDeployer: string,
+    assetContractName: string,
+    caller: string
+  ) {
+    return simnet.callReadOnlyFn(
+      this.contractName,
+      "get-user-reserve-data",
+      [
+        Cl.standardPrincipal(user),
+        Cl.contractPrincipal(assetDeployer, assetContractName),
       ],
       caller
     );

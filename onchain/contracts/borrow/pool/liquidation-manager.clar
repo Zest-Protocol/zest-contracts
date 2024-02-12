@@ -2,6 +2,15 @@
 (use-trait a-token .a-token-trait.a-token-trait)
 (use-trait oracle .oracle-trait.oracle-trait)
 
+(define-constant ERR_HEALTH_FACTOR_GT_1 (err u90000))
+(define-constant ERR_NOT_DEPOSITED (err u90001))
+(define-constant ERR_UNAUTHORIZED (err u90002))
+(define-constant ERR_NOT_ENABLED_AS_COLL (err u90003))
+(define-constant ERR_NO_COLLATERAL (err u90004))
+(define-constant ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE (err u90005))
+
+(define-constant one-8 (contract-call? .math get-one))
+
 (define-read-only (get-liquidation-close-factor-percent (asset principal))
   (unwrap-panic (contract-call? .pool-reserve-data get-liquidation-close-factor-percent-read asset)))
 
@@ -11,7 +20,6 @@
 (define-read-only (div (x uint) (y uint))
   (contract-call? .math div x y))
 
-(define-constant one-8 (contract-call? .math get-one))
 
 (define-public (calculate-user-global-data
   (user principal)
@@ -44,6 +52,8 @@
   (let (
     (ret (try! (calculate-user-global-data user assets)))
     (user-collateral-balance (try! (get-user-underlying-asset-balance lp-token collateral user)))
+    (collateral-reserve-data (try! (get-reserve-state collateral)))
+    (borrower-reserve-data (unwrap-panic (get-user-reserve-state user collateral)))
   )
     ;; has deposited collateral
     (asserts! (> user-collateral-balance u0) ERR_NOT_DEPOSITED)
@@ -51,8 +61,8 @@
     (asserts! (get is-health-factor-below-treshold ret) ERR_HEALTH_FACTOR_GT_1)
     ;; collateral is enabled in asset reserve and by user
     (asserts! (and
-        (is-reserve-collateral-enabled-as-collateral (contract-of collateral))
-        (is-user-collateral-enabled-as-collateral user collateral)
+        (get usage-as-collateral-enabled collateral-reserve-data)
+        (get use-as-collateral borrower-reserve-data)
       ) ERR_NOT_ENABLED_AS_COLL)
     
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
@@ -84,35 +94,24 @@
               debt-asset-oracle
               debt-to-liquidate
               user-collateral-balance)))
-        (max-collateral-to-liquidate (get collateral-amount available-collateral-principal))
+        (origination-fee (get-origination-fee-prc (contract-of collateral)))
+        (protocol-fee (/ (* origination-fee (get liquidation-bonus-collateral available-collateral-principal)) u10000))
+        (collateral-to-liquidator (- (get collateral-amount available-collateral-principal) protocol-fee))
         (debt-needed (get debt-needed available-collateral-principal))
-        (origination-fee (get-user-origination-fee user debt-asset))
-        (required-fees
-          (if (> origination-fee u0)
-            ;; if fees, take into account when calcualting available collateral
-            (try!
-              (calculate-available-collateral-to-liquidate
-                collateral
-                debt-asset
-                collateral-oracle
-                debt-asset-oracle
-                origination-fee
-                (- user-collateral-balance max-collateral-to-liquidate)))
-            { collateral-amount: u0, debt-needed: u0}
-          )
-        )
         (purchasing-all-underlying-collateral (< debt-needed debt-to-liquidate))
         ;; if borrower holds less collateral than there is purchasing power for, only purchase for available collateral
         (actual-debt-to-liquidate
           (if purchasing-all-underlying-collateral
             debt-needed
             debt-to-liquidate))
-        (fee-liquidated (get debt-needed required-fees))
-        (liquidated-collateral-for-fee (get collateral-amount required-fees))
+        ;; (fee-liquidated (get debt-needed required-fees))
+        (fee-liquidated u0)
+        ;; (liquidated-collateral-for-fee (get collateral-amount required-fees))
+        (liquidated-collateral-for-fee u0)
       )
         ;; if liquidator wants underlying asset, check there is enough collateral
         (if (not to-receive-atoken)
-          (asserts! (>= (try! (get-reserve-available-liquidity collateral)) max-collateral-to-liquidate) ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE)
+          (asserts! (>= (try! (get-reserve-available-liquidity collateral)) collateral-to-liquidator) ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE)
           false)
 
         (try!
@@ -122,7 +121,7 @@
             user
             tx-sender
             actual-debt-to-liquidate
-            max-collateral-to-liquidate
+            (+ protocol-fee collateral-to-liquidator)
             fee-liquidated
             liquidated-collateral-for-fee
             user-borrow-balance-increase
@@ -131,17 +130,17 @@
           )
         )
         (if to-receive-atoken
-          (try! (contract-call? lp-token transfer-on-liquidation max-collateral-to-liquidate user tx-sender))
+          (try! (contract-call? lp-token transfer-on-liquidation collateral-to-liquidator user tx-sender))
           (begin
-            (try! (contract-call? lp-token burn-on-liquidation max-collateral-to-liquidate user))
-            (try! (contract-call? .pool-0-reserve transfer-to-user collateral tx-sender max-collateral-to-liquidate))))
+            (try! (contract-call? lp-token burn-on-liquidation collateral-to-liquidator user))
+            (try! (contract-call? .pool-0-reserve transfer-to-user collateral tx-sender collateral-to-liquidator))))
         (try! (contract-call? .pool-0-reserve transfer-to-reserve debt-asset tx-sender actual-debt-to-liquidate))
-      
-        (if (> fee-liquidated u0)
+
+        (if (> protocol-fee u0)
           (begin
             ;; burn users' lp and transfer to fee collection address
-            (try! (contract-call? lp-token burn-on-liquidation liquidated-collateral-for-fee user))
-            (try! (contract-call? .pool-0-reserve transfer-to-user collateral (contract-call? .pool-0-reserve get-collection-address) liquidated-collateral-for-fee)))
+            (try! (contract-call? lp-token burn-on-liquidation protocol-fee user))
+            (try! (contract-call? .pool-0-reserve transfer-to-user collateral (contract-call? .pool-0-reserve get-collection-address) protocol-fee)))
           u0)
       )
     )
@@ -156,6 +155,9 @@
 (define-read-only (div-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
   (contract-call? .math div-to-fixed-precision a decimals-a b-fixed)
 )
+
+(define-read-only (get-origination-fee-prc (asset principal))
+  (contract-call? .pool-0-reserve get-origination-fee-prc asset))
 
 (define-read-only (get-y-from-x
   (x uint)
@@ -182,17 +184,19 @@
   (let (
     (collateral-price (try! (contract-call? collateral-oracle get-asset-price collateral)))
     (debt-currency-price (try! (contract-call? principal-oracle get-asset-price principal-asset)))
-    (liquidation-bonus (get-liquidation-bonus collateral))
     (collateral-reserve-data (unwrap-panic (get-reserve-state collateral)))
     (principal-reserve-data (unwrap-panic (get-reserve-state principal-asset)))
+    (liquidation-bonus (get liquidation-bonus collateral-reserve-data))
+    (original-collateral-purchasing-power
+      (contract-call? .math get-y-from-x
+        debt-to-liquidate
+        (get decimals principal-reserve-data)
+        (get decimals collateral-reserve-data)
+        debt-currency-price
+        collateral-price))
     (max-collateral-amount-from-debt
       (contract-call? .math mul-perc
-        (contract-call? .math get-y-from-x
-          debt-to-liquidate
-          (get decimals principal-reserve-data)
-          (get decimals collateral-reserve-data)
-          debt-currency-price
-          collateral-price)
+        original-collateral-purchasing-power
         (get decimals collateral-reserve-data)
         (+ one-8 (get liquidation-bonus collateral-reserve-data)))))
     (ok
@@ -210,9 +214,22 @@
               )
               (get decimals principal-reserve-data)
               (- one-8 (get liquidation-bonus collateral-reserve-data))
-            )
+            ),
+          liquidation-bonus-collateral:
+            (contract-call? .math mul-perc
+              user-collateral-balance
+              (get decimals collateral-reserve-data)
+              (get liquidation-bonus collateral-reserve-data)),
+          collateral-price: collateral-price,
+          debt-currency-price: debt-currency-price
         }
-        { collateral-amount: max-collateral-amount-from-debt, debt-needed: debt-to-liquidate }
+        {
+          collateral-amount: max-collateral-amount-from-debt,
+          debt-needed: debt-to-liquidate,
+          liquidation-bonus-collateral: (- max-collateral-amount-from-debt original-collateral-purchasing-power),
+          collateral-price: collateral-price,
+          debt-currency-price: debt-currency-price
+        }
       )
     )
   )
@@ -223,7 +240,7 @@
 )
 
 (define-read-only (get-liquidation-bonus (asset <ft>))
-  (contract-call? .pool-0-reserve get-reserve-liquidation-bonus asset)
+  (ok (get liquidation-bonus (try! (get-reserve-state asset))))
 )
 
 (define-public (get-user-borrow-balance (who principal) (asset <ft>))
@@ -231,7 +248,10 @@
 )
 
 (define-public (get-reserve-state (asset <ft>))
-  (ok (contract-call? .pool-0-reserve get-reserve-state (contract-of asset)))
+  (contract-call? .pool-0-reserve get-reserve-state (contract-of asset))
+)
+(define-public (get-user-reserve-state (user principal) (asset <ft>))
+  (ok (contract-call? .pool-0-reserve get-user-reserve-data user (contract-of asset)))
 )
 
 (define-public (get-user-underlying-asset-balance
@@ -245,17 +265,3 @@
   (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)
 )
 
-(define-read-only (is-reserve-collateral-enabled-as-collateral (asset principal))
-  (contract-call? .pool-0-reserve is-reserve-collateral-enabled-as-collateral asset)
-)
-
-(define-read-only (is-user-collateral-enabled-as-collateral (user principal) (asset <ft>))
-  (contract-call? .pool-0-reserve is-user-collateral-enabled-as-collateral user asset)
-)
-
-(define-constant ERR_HEALTH_FACTOR_GT_1 (err u90000))
-(define-constant ERR_NOT_DEPOSITED (err u90001))
-(define-constant ERR_UNAUTHORIZED (err u90002))
-(define-constant ERR_NOT_ENABLED_AS_COLL (err u90003))
-(define-constant ERR_NO_COLLATERAL (err u90004))
-(define-constant ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE (err u90005))

@@ -4,9 +4,8 @@
 
 (define-constant one-8 (contract-call? .math get-one))
 (define-constant max-value (contract-call? .math get-max-value))
-(define-constant one-3 u1000)
 
-(define-read-only (get-one-3) one-3)
+(define-constant ERR_UNAUTHORIZED (err u7000))
 
 (define-map flashloan-fee-total principal uint)
 (define-public (set-flashloan-fee-total (asset principal) (fee uint))
@@ -44,10 +43,10 @@
 (define-read-only (get-health-factor-liquidation-threshold-read)
   (var-get health-factor-liquidation-threshold))
 
-(define-data-var protocol-treasury-addr principal .protocol-treasury)
+(define-data-var protocol-treasury-addr principal 'ST2ZW2EKBWATT2Z7FZ2XY9KYYVFBYBDCZBRZMFNR9)
 (define-public (set-protocol-treasury-addr (protocol-treasury principal))
   (begin
-    (try! (is-approved-contract contract-caller))
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
     (print { type: "set-protocol-treasury-addr", payload: { key: "protocol-treasury", data: { protocol-treasury: protocol-treasury } } })
     (ok (var-set protocol-treasury-addr protocol-treasury))))
 
@@ -102,10 +101,11 @@
     (print { type: "delete-user-reserve-data", payload: { key: { user: user, reserve: reserve }, data: none } })
     (ok (map-delete user-reserve-data { user:user, reserve: reserve }))))
 
-(define-public (get-user-reserve-data
+(define-read-only (get-user-reserve-data
   (user principal)
   (reserve principal))
-  (ok (map-get? user-reserve-data { user: user, reserve: reserve })))
+  (ok (map-get? user-reserve-data { user: user, reserve: reserve }))
+)
 (define-read-only (get-user-reserve-data-read
   (user principal)
   (reserve principal))
@@ -163,6 +163,7 @@
     (supply-cap uint)
     (borrow-cap uint)
     (debt-ceiling uint)
+    (accrued-to-treasury uint)
     (is-active bool)
     (is-frozen bool)))
 
@@ -193,6 +194,7 @@
     (supply-cap uint)
     (borrow-cap uint)
     (debt-ceiling uint)
+    (accrued-to-treasury uint)
     (is-active bool)
     (is-frozen bool))))
   (begin
@@ -214,27 +216,32 @@
   (reserve principal))
   (map-get? reserve-state reserve))
 
-(define-map user-index principal uint)
+(define-map user-index { user: principal, asset: principal } uint)
 (define-public (set-user-index
   (user principal)
+  (asset principal)
   (data uint))
   (begin
     (try! (is-approved-contract contract-caller))
     (print { type: "set-user-index", payload: { key: user, data: data } })
-    (ok (map-set user-index user data))))
+    (ok (map-set user-index { user: user, asset: asset } data))))
 (define-public (delete-user-index
-  (user principal))
+  (user principal)
+  (asset principal))
   (begin
     (try! (is-approved-contract contract-caller))
     (print { type: "delete-user-index", payload: { key: user, data: none } })
-    (ok (map-delete user-index user))))
+    (ok (map-delete user-index { user: user, asset: asset }))))
 
 (define-public (get-user-index
-  (user principal))
-    (ok (map-get? user-index user)))
+  (user principal)
+  (asset principal)
+  )
+    (ok (map-get? user-index { user: user, asset: asset })))
 (define-read-only (get-user-index-read
-  (user principal))
-  (map-get? user-index user))
+  (user principal)
+  (asset principal))
+  (map-get? user-index { user: user, asset: asset }))
 
 (define-data-var assets (list 100 principal) (list))
 (define-public (set-assets
@@ -346,6 +353,30 @@
 (define-read-only (get-liquidation-close-factor-percent-read (asset principal))
   (map-get? liquidation-close-factor-percent asset))
 
+(define-map origination-fee-prc principal uint)
+(define-public (set-origination-fee-prc (asset principal) (prc uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-origination-fee-prc", payload: { key: asset, data: prc } })
+    (ok (map-set origination-fee-prc asset prc))))
+
+(define-public (get-origination-fee-prc (asset principal))
+  (ok (map-get? origination-fee-prc asset)))
+(define-read-only (get-origination-fee-prc-read (asset principal))
+  (map-get? origination-fee-prc asset))
+
+(define-map reserve-factor principal uint)
+(define-public (set-reserve-factor (asset principal) (factor uint))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (print { type: "set-reserve-factor", payload: { key: asset, data: factor } })
+    (ok (map-set reserve-factor asset factor))))
+
+(define-public (get-reserve-factor (asset principal))
+  (ok (map-get? reserve-factor asset)))
+(define-read-only (get-reserve-factor-read (asset principal))
+  (map-get? reserve-factor asset))
+
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)
 (define-public (set-contract-owner (owner principal))
@@ -384,40 +415,60 @@
 ;; (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
 
-;; ERROR START 7000
-(define-constant ERR_UNAUTHORIZED (err u7000))
+(map-set base-variable-borrow-rates .ststx u0)
+(map-set variable-rate-slopes-1 .ststx u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .ststx u300000000) ;; 300%
+(map-set optimal-utilization-rates .ststx u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .stSTX u0)
-(map-set variable-rate-slopes-1 .stSTX u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .stSTX u300000000) ;; 300%
-(map-set optimal-utilization-rates .stSTX u80000000) ;; 80%
-
-(map-set base-variable-borrow-rates .sBTC u0)
-(map-set variable-rate-slopes-1 .sBTC u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .sBTC u300000000) ;; 300%
-(map-set optimal-utilization-rates .sBTC u80000000) ;; 80%
+(map-set base-variable-borrow-rates .sbtc u0)
+(map-set variable-rate-slopes-1 .sbtc u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .sbtc u300000000) ;; 300%
+(map-set optimal-utilization-rates .sbtc u80000000) ;; 80%
 
 (map-set base-variable-borrow-rates .diko u0)
 (map-set variable-rate-slopes-1 .diko u4000000) ;; 4%
 (map-set variable-rate-slopes-2 .diko u300000000) ;; 300%
 (map-set optimal-utilization-rates .diko u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .xUSD u0)
-(map-set variable-rate-slopes-1 .xUSD u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .xUSD u300000000) ;; 300%
-(map-set optimal-utilization-rates .xUSD u80000000) ;; 80%
+(map-set base-variable-borrow-rates .xusd u0)
+(map-set variable-rate-slopes-1 .xusd u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .xusd u300000000) ;; 300%
+(map-set optimal-utilization-rates .xusd u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .USDA u0)
-(map-set variable-rate-slopes-1 .USDA u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .USDA u300000000) ;; 300%
-(map-set optimal-utilization-rates .USDA u80000000) ;; 80%
+(map-set base-variable-borrow-rates .usda u0)
+(map-set variable-rate-slopes-1 .usda u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .usda u300000000) ;; 300%
+(map-set optimal-utilization-rates .usda u80000000) ;; 80%
 
-(map-set liquidation-close-factor-percent .stSTX u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .sBTC  u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .xUSD  u50000000) ;; 50%
+(map-set base-variable-borrow-rates .wstx u0)
+(map-set variable-rate-slopes-1 .wstx u4000000) ;; 4%
+(map-set variable-rate-slopes-2 .wstx u300000000) ;; 300%
+(map-set optimal-utilization-rates .wstx u80000000) ;; 80%
 
-(map-set flashloan-fee-total .stSTX u35)
-(map-set flashloan-fee-protocol .stSTX u3000)
+(map-set liquidation-close-factor-percent .ststx u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .sbtc  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .diko  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .xusd  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .usda  u50000000) ;; 50%
+(map-set liquidation-close-factor-percent .wstx  u50000000) ;; 50%
 
-(map-set flashloan-fee-total .sBTC u35)
-(map-set flashloan-fee-protocol .sBTC u3000)
+(map-set flashloan-fee-total .ststx u35)
+(map-set flashloan-fee-protocol .ststx u3000)
+
+(map-set flashloan-fee-total .sbtc u35)
+(map-set flashloan-fee-protocol .sbtc u3000)
+
+;; 0.0025%
+(map-set origination-fee-prc .ststx u25)
+(map-set origination-fee-prc .sbtc u25)
+(map-set origination-fee-prc .diko u25)
+(map-set origination-fee-prc .xusd u25)
+(map-set origination-fee-prc .usda u25)
+(map-set origination-fee-prc .wstx u25)
+
+(map-set reserve-factor .ststx u15000000)
+(map-set reserve-factor .sbtc u10000000)
+(map-set reserve-factor .diko u10000000)
+(map-set reserve-factor .xusd u10000000)
+(map-set reserve-factor .usda u10000000)
+(map-set reserve-factor .wstx u10000000)
