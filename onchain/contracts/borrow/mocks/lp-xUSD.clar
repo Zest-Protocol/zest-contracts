@@ -5,13 +5,15 @@
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
+(define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))
+
 (define-fungible-token lp-xusd)
 
 (define-data-var token-uri (string-utf8 256) u"")
 (define-data-var token-name (string-ascii 32) "LP xusd")
 (define-data-var token-symbol (string-ascii 32) "LP-xusd")
 
-(define-constant pool-id u0)
 (define-constant asset-addr .xusd)
 
 (define-read-only (get-total-supply)
@@ -40,7 +42,7 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u6
-            .xusd
+            asset-addr
             current-principal-balance
             u6)))
         cumulated-balance
@@ -105,7 +107,6 @@
     (try! (is-approved-contract contract-caller))
     (let ((ret (try! (cumulate-balance-internal owner))))
       (try! (burn-internal amount owner))
-
       (if (is-eq (- (get current-balance ret) amount) u0)
         (begin
           (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
@@ -176,7 +177,7 @@
   )
     (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
     (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
-    (asserts! (is-eq (contract-of asset) .xusd) ERR_UNAUTHORIZED)
+    (asserts! (is-eq (contract-of asset) asset-addr) ERR_UNAUTHORIZED)
     
     (try! (burn-internal amount-to-redeem tx-sender))
 
@@ -186,7 +187,8 @@
         (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
         (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
       )
-      false)
+      false
+    )
     (contract-call? .pool-borrow withdraw
       pool-reserve
       asset-addr
@@ -209,6 +211,7 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
         (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
@@ -262,6 +265,3 @@
 (map-set approved-contracts .pool-borrow true)
 (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
-
-(define-constant ERR_UNAUTHORIZED (err u14401))
-(define-constant ERR_INVALID_TRANSFER (err u14402))

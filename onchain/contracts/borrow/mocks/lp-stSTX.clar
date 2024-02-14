@@ -5,13 +5,15 @@
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
+(define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))
+
 (define-fungible-token lp-ststx)
 
 (define-data-var token-uri (string-utf8 256) u"")
 (define-data-var token-name (string-ascii 32) "LP ststx")
 (define-data-var token-symbol (string-ascii 32) "LP-ststx")
 
-(define-constant pool-id u0)
 (define-constant asset-addr .ststx)
 
 (define-read-only (get-total-supply)
@@ -105,7 +107,6 @@
     (try! (is-approved-contract contract-caller))
     (let ((ret (try! (cumulate-balance-internal owner))))
       (try! (burn-internal amount owner))
-
       (if (is-eq (- (get current-balance ret) amount) u0)
         (begin
           (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner .ststx false))
@@ -211,12 +212,12 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
-    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .ststx))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
-        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender .ststx false))
-        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .ststx))
-        (contract-call? .pool-0-reserve reset-user-index sender .ststx)
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender asset-addr))
+        (contract-call? .pool-0-reserve reset-user-index sender asset-addr)
       )
       (ok true)
     )
@@ -265,6 +266,3 @@
 (map-set approved-contracts .pool-borrow true)
 (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
-
-(define-constant ERR_UNAUTHORIZED (err u14401))
-(define-constant ERR_INVALID_TRANSFER (err u14402))
