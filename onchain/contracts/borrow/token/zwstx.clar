@@ -5,20 +5,16 @@
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
-(define-constant ERR_UNAUTHORIZED (err u14401))
-(define-constant ERR_INVALID_TRANSFER (err u14402))
-
-(define-fungible-token lp-usda)
+(define-fungible-token zwstx)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP usda")
-(define-data-var token-symbol (string-ascii 32) "LP-usda")
+(define-data-var token-name (string-ascii 32) "Z wstx")
+(define-data-var token-symbol (string-ascii 32) "Z-wstx")
 
-(define-constant pool-id u0)
-(define-constant asset-addr .usda)
+(define-constant asset-addr .wstx)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-usda)))
+  (ok (ft-get-supply zwstx)))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))
@@ -34,7 +30,7 @@
 
 (define-read-only (get-balance (account principal))
   (let (
-    (current-principal-balance (ft-get-balance lp-usda account))
+    (current-principal-balance (ft-get-balance zwstx account))
   )
     (if (is-eq current-principal-balance u0)
       (ok u0)
@@ -43,7 +39,7 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u6
-            .usda
+            .wstx
             current-principal-balance
             u6)))
         cumulated-balance
@@ -53,7 +49,8 @@
 )
 
 (define-read-only (get-principal-balance (account principal))
-  (ok (ft-get-balance lp-usda account)))
+  (ok (ft-get-balance zwstx account)))
+
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (begin
@@ -72,7 +69,7 @@
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (match (ft-transfer? lp-usda amount sender recipient)
+    (match (ft-transfer? zwstx amount sender recipient)
       response (begin
         (print memo)
         (ok response)
@@ -95,11 +92,11 @@
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (ft-burn? lp-usda amount owner)
+  (ft-burn? zwstx amount owner)
 )
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (ft-mint? lp-usda amount owner)
+  (ft-mint? zwstx amount owner)
 )
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
@@ -179,7 +176,7 @@
     (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
     (asserts! (is-eq (contract-of asset) asset-addr) ERR_UNAUTHORIZED)
     
-    (try! (burn-internal amount tx-sender))
+    (try! (burn-internal amount-to-redeem tx-sender))
 
     (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
       (begin
@@ -242,7 +239,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-usda", payload: owner })
+    (print { type: "set-contract-owner-zwstx", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))
@@ -266,3 +263,6 @@
 (map-set approved-contracts .pool-borrow true)
 (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
+
+(define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))

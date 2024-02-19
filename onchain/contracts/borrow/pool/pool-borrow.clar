@@ -396,7 +396,7 @@
           (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) ERR_INVALID_DECREASE)
           (if (> (get total-collateral-balanceUSD user-global-data) u0)
             ;; if using anything else as collateral, check it's not enabling an isolated asset
-            (asserts! (not (contract-call? .pool-read is-isolated-asset (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
+            (asserts! (not (contract-call? .pool-0-reserve is-isolated-type (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
             ;; if enabling an asset as collateral and not using anything else as collateral, can enable any asset
             true
           )

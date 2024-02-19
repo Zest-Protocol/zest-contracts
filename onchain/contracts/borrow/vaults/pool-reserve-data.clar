@@ -412,45 +412,44 @@
     ERR_UNAUTHORIZED))
 
 (map-set approved-contracts .pool-borrow true)
-;; (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
 
-(map-set base-variable-borrow-rates .ststx u0)
-(map-set variable-rate-slopes-1 .ststx u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .ststx u300000000) ;; 300%
-(map-set optimal-utilization-rates .ststx u80000000) ;; 80%
+;; (map-set base-variable-borrow-rates .ststx u0)
+;; (map-set variable-rate-slopes-1 .ststx u4000000) ;; 4%
+;; (map-set variable-rate-slopes-2 .ststx u300000000) ;; 300%
+;; (map-set optimal-utilization-rates .ststx u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .sbtc u0)
-(map-set variable-rate-slopes-1 .sbtc u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .sbtc u300000000) ;; 300%
-(map-set optimal-utilization-rates .sbtc u80000000) ;; 80%
+;; (map-set base-variable-borrow-rates .sbtc u0)
+;; (map-set variable-rate-slopes-1 .sbtc u4000000) ;; 4%
+;; (map-set variable-rate-slopes-2 .sbtc u300000000) ;; 300%
+;; (map-set optimal-utilization-rates .sbtc u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .diko u0)
-(map-set variable-rate-slopes-1 .diko u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .diko u300000000) ;; 300%
-(map-set optimal-utilization-rates .diko u80000000) ;; 80%
+;; (map-set base-variable-borrow-rates .diko u0)
+;; (map-set variable-rate-slopes-1 .diko u4000000) ;; 4%
+;; (map-set variable-rate-slopes-2 .diko u300000000) ;; 300%
+;; (map-set optimal-utilization-rates .diko u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .xusd u0)
-(map-set variable-rate-slopes-1 .xusd u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .xusd u300000000) ;; 300%
-(map-set optimal-utilization-rates .xusd u80000000) ;; 80%
+;; (map-set base-variable-borrow-rates .xusd u0)
+;; (map-set variable-rate-slopes-1 .xusd u4000000) ;; 4%
+;; (map-set variable-rate-slopes-2 .xusd u300000000) ;; 300%
+;; (map-set optimal-utilization-rates .xusd u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .usda u0)
-(map-set variable-rate-slopes-1 .usda u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .usda u300000000) ;; 300%
-(map-set optimal-utilization-rates .usda u80000000) ;; 80%
+;; (map-set base-variable-borrow-rates .usda u0)
+;; (map-set variable-rate-slopes-1 .usda u4000000) ;; 4%
+;; (map-set variable-rate-slopes-2 .usda u300000000) ;; 300%
+;; (map-set optimal-utilization-rates .usda u80000000) ;; 80%
 
-(map-set base-variable-borrow-rates .wstx u0)
-(map-set variable-rate-slopes-1 .wstx u4000000) ;; 4%
-(map-set variable-rate-slopes-2 .wstx u300000000) ;; 300%
-(map-set optimal-utilization-rates .wstx u80000000) ;; 80%
+;; (map-set base-variable-borrow-rates .wstx u0)
+;; (map-set variable-rate-slopes-1 .wstx u4000000) ;; 4%
+;; (map-set variable-rate-slopes-2 .wstx u300000000) ;; 300%
+;; (map-set optimal-utilization-rates .wstx u80000000) ;; 80%
 
-(map-set liquidation-close-factor-percent .ststx u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .sbtc  u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .diko  u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .xusd  u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .usda  u50000000) ;; 50%
-(map-set liquidation-close-factor-percent .wstx  u50000000) ;; 50%
+;; (map-set liquidation-close-factor-percent .ststx u50000000) ;; 50%
+;; (map-set liquidation-close-factor-percent .sbtc  u50000000) ;; 50%
+;; (map-set liquidation-close-factor-percent .diko  u50000000) ;; 50%
+;; (map-set liquidation-close-factor-percent .xusd  u50000000) ;; 50%
+;; (map-set liquidation-close-factor-percent .usda  u50000000) ;; 50%
+;; (map-set liquidation-close-factor-percent .wstx  u50000000) ;; 50%
 
 (map-set flashloan-fee-total .ststx u35)
 (map-set flashloan-fee-protocol .ststx u3000)
