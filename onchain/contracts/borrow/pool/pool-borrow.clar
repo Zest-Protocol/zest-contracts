@@ -91,7 +91,7 @@
     (try! (contract-call? lp mint amount owner))
     (try! (contract-call? .pool-0-reserve transfer-to-reserve asset owner amount))
 
-    (print { type: "supply", payload: { key: owner, data: { amount: amount } } })
+    (print { type: "supply", payload: { key: owner, data: { amount: amount, lp: lp, asset: asset } } })
     (ok true)
   )
 )
@@ -144,7 +144,7 @@
     (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount redeems-everything))
     (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
 
-    (print { type: "withdraw", payload: { key: owner, data: { amount: amount } } })
+    (print { type: "withdraw", payload: { key: owner, data: { amount: amount, asset: asset } } })
     (ok amount)
   )
 )
@@ -219,7 +219,7 @@
       (try! (contract-call? .pool-0-reserve update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed u0))
       (try! (contract-call? .pool-0-reserve transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
 
-      (print { type: "borrow", payload: { key: owner, data: { amount-to-be-borrowed: amount-to-be-borrowed } } })
+      (print { type: "borrow", payload: { key: owner, data: { amount-to-be-borrowed: amount-to-be-borrowed, asset-to-borrow: asset-to-borrow, lp: lp } } })
 
       (ok amount-to-be-borrowed))))
 
@@ -257,7 +257,7 @@
       )
       (try! (contract-call? .pool-0-reserve transfer-to-reserve asset payer payback-amount))
 
-      (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount } } })
+      (print { type: "repay", payload: { key: on-behalf-of, data: { payback-amount: payback-amount, asset: asset } } })
       (ok payback-amount)
     )
   )
@@ -284,6 +284,9 @@
     (asserts! (is-eq (contract-of collateral-oracle) (get oracle collateral-data)) ERR_INVALID_ORACLE)
     (asserts! (is-eq (contract-of debt-oracle) (get oracle reserve-data)) ERR_INVALID_ORACLE)
     
+    (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
+      collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
+
     (contract-call? .liquidation-manager liquidation-call
       assets
       collateral-lp
@@ -380,6 +383,7 @@
     (asserts! (get usage-as-collateral-enabled reserve-data) ERR_COLLATERAL_DISABLED)
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
+    (print { type: "set-user-use-reserve-as-collateral", payload: { key: who, data: { lp-token: lp-token, asset: asset, enable-as-collateral: enable-as-collateral } } })
     ;; if in isolation mode, can only disable isolated asset
     (match isolation-mode-asset
       isolated-asset (begin
