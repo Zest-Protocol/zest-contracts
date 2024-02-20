@@ -3,12 +3,18 @@ name = "stacks-lending"
 authors = []
 description = ""
 telemetry = false
-requirements = [
-  "SP2T5JKWWP3FYYX4YRK8GK5BG2YCNGEAEY2P2PKN0.pyth-oracle-v2",
-  "SP2T5JKWWP3FYYX4YRK8GK5BG2YCNGEAEY2P2PKN0.pyth-store-v1",
-  "SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token",
-]
-cache_dir = ".requirements"
+cache_dir = '.requirements'
+[[project.requirements]]
+contract_id = 'SP2T5JKWWP3FYYX4YRK8GK5BG2YCNGEAEY2P2PKN0.pyth-oracle-v2'
+[[project.requirements]]
+contract_id = 'SP2T5JKWWP3FYYX4YRK8GK5BG2YCNGEAEY2P2PKN0.pyth-store-v1'
+[[project.requirements]]
+contract_id = 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token'
+[[project.requirements]]
+contract_id = 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-v1'
+[[project.requirements]]
+contract_id = 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.reserve-v1'
+
 cache_location = ".requirements"
 boot_contracts = ["pox", "costs-v1", "bns"]
 
@@ -19,6 +25,11 @@ epoch = 2.4
 
 [contracts.stx-oracle]
 path = "contracts/borrow/mocks/stx-oracle.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.ststx-oracle]
+path = "contracts/borrow/mocks/ststx-oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
@@ -37,10 +48,10 @@ epoch = 2.4
 # clarity_version = 2
 # epoch = 2.4
 
-# [contracts.zststx]
-# path = "contracts/borrow/token/zststx.clar"
-# clarity_version = 2
-# epoch = 2.4
+[contracts.zststx]
+path = "contracts/borrow/token/zststx.clar"
+clarity_version = 2
+epoch = 2.4
 
 [contracts.zwstx]
 path = "contracts/borrow/token/zwstx.clar"

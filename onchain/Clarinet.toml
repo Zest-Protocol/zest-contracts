@@ -78,6 +78,11 @@ path = "contracts/borrow/mocks/lp-diko.clar"
 clarity_version = 2
 epoch = 2.4
 
+# [contracts.after-deployment-simnet]
+# path = "contracts/v2_sbtc/after-deployment-simnet.clar"
+# clarity_version = 2
+# epoch = 2.4
+
 [contracts.diko]
 path = "contracts/borrow/mocks/diko.clar"
 clarity_version = 2

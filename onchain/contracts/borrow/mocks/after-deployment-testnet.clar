@@ -232,6 +232,62 @@
 (contract-call? .oracle set-price .usda u90000000)
 (contract-call? .oracle set-price .xusd u100000000)
 
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .ststx u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .wstx u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .sbtc u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .diko u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .usda u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .xusd u0)
+
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .ststx u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .wstx u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .sbtc u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .diko u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .usda u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .xusd u4000000)
+
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .ststx u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .wstx u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .sbtc u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .diko u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .usda u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .xusd u300000000)
+
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .ststx u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .wstx u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .sbtc u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .diko u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .usda u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .xusd u80000000)
+
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .ststx u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .wstx u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .sbtc u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .diko u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .usda u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .xusd u50000000)
+
+(contract-call? .pool-0-reserve set-flashloan-fee-total .ststx u35)
+(contract-call? .pool-0-reserve set-flashloan-fee-total .sbtc u35)
+
+(contract-call? .pool-0-reserve set-flashloan-fee-protocol .ststx u3000)
+(contract-call? .pool-0-reserve set-flashloan-fee-protocol .sbtc u3000)
+
+(contract-call? .pool-reserve-data set-origination-fee-prc .ststx u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .wstx u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .sbtc u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .diko u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .usda u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .xusd u25)
+
+(contract-call? .pool-reserve-data set-reserve-factor .ststx u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .wstx u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .sbtc u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .diko u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .usda u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .xusd u15000000)
+
+
 (contract-call? .pool-borrow supply
   .lp-diko
   .pool-0-reserve

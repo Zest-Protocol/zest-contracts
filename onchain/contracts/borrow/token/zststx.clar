@@ -42,7 +42,7 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u6
-            'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token
+            asset-addr
             current-principal-balance
             u6)))
         cumulated-balance
@@ -109,9 +109,9 @@
       (try! (burn-internal amount owner))
       (if (is-eq (- (get current-balance ret) amount) u0)
         (begin
-          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner .ststx false))
-          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner .ststx))
-          (try! (contract-call? .pool-0-reserve reset-user-index owner .ststx))
+          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+          (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
         )
         false
       )
@@ -142,12 +142,12 @@
   (let (
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state .ststx)))
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
-    (try! (contract-call? .pool-0-reserve set-user-index account .ststx new-user-index))
+    (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
 
     (if (is-eq balance-increase u0)
       false
@@ -176,8 +176,8 @@
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
     (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
-    (asserts! (try! (is-transfer-allowed .ststx oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
-    (asserts! (is-eq (contract-of asset) .ststx) ERR_UNAUTHORIZED)
+    (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
+    (asserts! (is-eq (contract-of asset) asset-addr) ERR_UNAUTHORIZED)
     
     (try! (burn-internal amount-to-redeem tx-sender))
 
@@ -192,7 +192,7 @@
 
     (contract-call? .pool-borrow withdraw
       pool-reserve
-      .ststx
+      asset-addr
       oracle
       assets
       amount-to-redeem
