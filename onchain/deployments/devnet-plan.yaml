@@ -23,87 +23,10 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
-            contract-name: coll-vault-trait
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 4710
-            path: contracts/v2_sbtc/trait/coll-vault-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: ownable-trait
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 1430
-            path: contracts/v2_sbtc/trait/ownable-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: coll-vault
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 58260
-            path: contracts/v2_sbtc/loan/coll-vault.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
             contract-name: diko
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 11770
             path: contracts/borrow/mocks/diko.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: extension-trait
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 940
-            path: contracts/v2_sbtc/dao/traits/extension-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: proposal-trait
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 820
-            path: contracts/v2_sbtc/dao/traits/proposal-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: executor-dao
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 25470
-            path: contracts/v2_sbtc/dao/executor-dao.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: math
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 52890
-            path: contracts/borrow/math/math.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: oracle-trait
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 1210
-            path: contracts/borrow/traits/oracle-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: ft-mint-trait
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 10560
-            path: contracts/v2_sbtc/trait/ft-mint-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: pool-reserve-data
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 183000
-            path: contracts/borrow/vaults/pool-reserve-data.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: fees-calculator
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 5090
-            path: contracts/borrow/pool/fees-calculator.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
@@ -142,17 +65,31 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
-            contract-name: governance-token-trait
+            contract-name: oracle-trait
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 4900
-            path: contracts/v2_sbtc/dao/traits/governance-token-trait.clar
+            cost: 1210
+            path: contracts/borrow/traits/oracle-trait.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
-            contract-name: interest-rate-strategy-default
+            contract-name: ft-mint-trait
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 61050
-            path: contracts/v2_sbtc/pool/interest-rate-strategy-default.clar
+            cost: 10560
+            path: contracts/v2_sbtc/trait/ft-mint-trait.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: math
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 52890
+            path: contracts/borrow/math/math.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 159660
+            path: contracts/borrow/vaults/pool-reserve-data.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
@@ -183,62 +120,17 @@ plan:
             path: contracts/borrow/pool/liquidation-manager.clar
             anchor-block-only: true
             clarity-version: 2
-      epoch: "2.1"
-    - id: 1
-      transactions:
         - contract-publish:
-            contract-name: liquidity-vault-trait
+            contract-name: ownable-trait
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 4830
-            path: contracts/v2_sbtc/trait/liquidity-vault-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: oracle
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 4360
-            path: contracts/borrow/pool/oracle.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: ststx
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11840
-            path: contracts/borrow/mocks/ststx.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: usda
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11770
-            path: contracts/borrow/mocks/usda.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: wstx
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11420
-            path: contracts/borrow/mocks/wstx.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: xusd
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11770
-            path: contracts/borrow/mocks/xusd.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: pool-read
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 164430
-            path: contracts/borrow/mocks/pool-read.clar
+            cost: 1430
+            path: contracts/v2_sbtc/trait/ownable-trait.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
             contract-name: pool-borrow
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 228370
+            cost: 228410
             path: contracts/borrow/pool/pool-borrow.clar
             anchor-block-only: true
             clarity-version: 2
@@ -257,6 +149,13 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
+            contract-name: ststx
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 11840
+            path: contracts/borrow/mocks/ststx.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
             contract-name: lp-ststx
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 83050
@@ -271,24 +170,62 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
+            contract-name: usda
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 11770
+            path: contracts/borrow/mocks/usda.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
             contract-name: lp-usda
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 83480
+            cost: 83430
             path: contracts/borrow/mocks/lp-usda.clar
+            anchor-block-only: true
+            clarity-version: 2
+      epoch: "2.4"
+    - id: 1
+      transactions:
+        - contract-publish:
+            contract-name: wstx
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 11420
+            path: contracts/borrow/mocks/wstx.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
             contract-name: lp-wstx
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 83580
+            cost: 83530
             path: contracts/borrow/mocks/lp-wstx.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: xusd
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 11770
+            path: contracts/borrow/mocks/xusd.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
             contract-name: lp-xusd
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 83290
+            cost: 83240
             path: contracts/borrow/mocks/lp-xusd.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: oracle
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 4360
+            path: contracts/borrow/pool/oracle.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: pool-read
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 184760
+            path: contracts/borrow/mocks/pool-read.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
@@ -306,31 +243,10 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
-            contract-name: protocol-treasury
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 8860
-            path: contracts/borrow/mocks/protocol-treasury.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: pyth-oracle-v2
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11980
-            path: contracts/borrow/mocks/pyth-oracle-v2.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: stx-oracle
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 7380
-            path: contracts/borrow/mocks/stx-oracle.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
             contract-name: supply-wrapped
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 7870
-            path: contracts/borrow/mocks/supply-wrapped.clar
+            path: contracts/borrow/pool/supply-wrapped.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
@@ -347,7 +263,14 @@ plan:
             path: contracts/borrow/token/zToken.clar
             anchor-block-only: true
             clarity-version: 2
-      epoch: "2.1"
+        - contract-publish:
+            contract-name: after-deployment-simnet
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 82870
+            path: contracts/v2_sbtc/after-deployment-simnet.clar
+            anchor-block-only: true
+            clarity-version: 2
+      epoch: "2.4"
     - id: 2
       transactions:
         - contract-call:

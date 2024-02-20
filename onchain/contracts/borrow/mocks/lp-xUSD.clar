@@ -42,7 +42,7 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u6
-            asset-addr
+            .xusd
             current-principal-balance
             u6)))
         cumulated-balance

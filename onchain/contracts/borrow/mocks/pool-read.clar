@@ -206,7 +206,6 @@
       asset-price
       (get total-collateral-balanceUSD user-global-data)
       (get total-borrow-balanceUSD user-global-data)
-      ;; (get user-total-feesUSD user-global-data)
       u0
       (get current-ltv user-global-data)
       user
@@ -244,12 +243,77 @@
         decimals
       )
     )
-    (borrow-fee u0)
   )
-    (ok (- borrow-power-in-asset-amount borrow-fee))
+    (ok borrow-power-in-asset-amount)
   )
 )
 
+(define-public (borrowing-power-in-asset-test
+  (asset <ft>)
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (asset-principal (contract-of asset))
+    (reserve-state (unwrap-panic (contract-call? .pool-0-reserve get-reserve-state asset-principal)))
+    (user-assets (contract-call? .pool-0-reserve get-user-assets user))
+    (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
+    (asset-price (try! (contract-call? .oracle get-asset-price asset)))
+  )
+    (calculate-available-borrowing-power-in-asset-test
+      asset
+      (get decimals reserve-state)
+      asset-price
+      (get total-collateral-balanceUSD user-global-data)
+      (get total-borrow-balanceUSD user-global-data)
+      u0
+      (get current-ltv user-global-data)
+      user
+    )
+  )
+)
+
+;; calculate how much a user can borrow of a specific asset using the available collateral
+(define-read-only (calculate-available-borrowing-power-in-asset-test
+  (borrowing-asset <ft>)
+  (decimals uint)
+  (asset-price uint)
+  (current-user-collateral-balance-USD uint)
+  (current-user-borrow-balance-USD uint)
+  (current-fees-USD uint)
+  (current-ltv uint)
+  (user principal)
+  )
+  (let (
+    (available-borrow-power-in-base-currency
+      (if (> (mul current-user-collateral-balance-USD current-ltv) current-user-borrow-balance-USD)
+        (-
+          (mul current-user-collateral-balance-USD current-ltv)
+          current-user-borrow-balance-USD
+        )
+        u0
+      )
+    )
+    (borrow-power-in-asset-amount
+      (contract-call? .math from-fixed-to-precision
+        (div
+          available-borrow-power-in-base-currency
+          asset-price
+        )
+        decimals
+      )
+    )
+  )
+    (ok
+      {
+        available-borrow-power-in-base-currency: available-borrow-power-in-base-currency,
+        borrow-power-in-asset-amount: borrow-power-in-asset-amount,
+        user-borrow-balance-USD: current-user-borrow-balance-USD,
+        user-collat-balance-USD: (mul current-user-collateral-balance-USD current-ltv),
+      }
+    )
+  )
+)
 
 ;; get amount that user can decrease based on asset that user wishes to borrow
 (define-public (get-decrease-balance-allowed
