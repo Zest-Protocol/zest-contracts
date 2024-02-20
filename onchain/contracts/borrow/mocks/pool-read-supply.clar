@@ -391,9 +391,9 @@
   (current-liquidity-rate uint)
   (delta uint))
   (let (
-    (years-elapsed (* delta u1903))
+    (rate (get-rt-by-block current-liquidity-rate delta))
   )
-    (+ one-8 (mul years-elapsed current-liquidity-rate))
+    (+ one-8 rate)
   )
 )
 
@@ -521,7 +521,7 @@
 ;; rate in 8-fixed
 ;; n-blocks
 (define-read-only (get-rt-by-block (rate uint) (blocks uint))
-  (mul rate (* blocks sb-by-sy))
+  (/ (* rate (* blocks sb-by-sy)) one-8)
 )
 
 ;; block-seconds/year-seconds in fixed precision

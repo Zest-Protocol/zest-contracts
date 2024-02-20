@@ -5,13 +5,15 @@
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
+(define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))
+
 (define-fungible-token lp-sbtc)
 
 (define-data-var token-uri (string-utf8 256) u"")
 (define-data-var token-name (string-ascii 32) "LP sbtc")
 (define-data-var token-symbol (string-ascii 32) "LP sbtc")
 
-(define-constant pool-id u0)
 (define-constant asset-addr .sbtc)
 
 (define-read-only (get-total-supply)
@@ -40,7 +42,7 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u8
-            .sbtc
+            asset-addr
             current-principal-balance
             u8)))
         cumulated-balance
@@ -146,9 +148,7 @@
 
     (if (is-eq balance-increase u0)
       false
-      (try! (mint-internal balance-increase account))
-    )
-
+      (try! (mint-internal balance-increase account)))
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -173,8 +173,8 @@
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
     (asserts! (and (> amount-to-redeem u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
-    (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) (err u998887))
-    (asserts! (is-eq (contract-of asset) .sbtc) ERR_UNAUTHORIZED)
+    (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
+    (asserts! (is-eq (contract-of asset) asset-addr) ERR_UNAUTHORIZED)
     
     (try! (burn-internal amount-to-redeem tx-sender))
     
@@ -209,6 +209,7 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
         (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
@@ -262,5 +263,3 @@
 (map-set approved-contracts .pool-borrow true)
 (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
-
-(define-constant ERR_UNAUTHORIZED (err u14401))

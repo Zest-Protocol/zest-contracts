@@ -237,6 +237,7 @@
     (compounded-borrow-balance
       (get-compounded-borrow-balance
         (get principal-borrow-balance user-reserve-data)
+        (get decimals reserve-data)
         (get stable-borrow-rate user-reserve-data)
         (get last-updated-block user-reserve-data)
         (get last-variable-borrow-cumulative-index user-reserve-data)
@@ -345,9 +346,9 @@
   (current-liquidity-rate uint)
   (delta uint))
   (let (
-    (years-elapsed (* delta u1903))
+    (rate (get-rt-by-block current-liquidity-rate delta))
   )
-    (+ one-8 (mul years-elapsed current-liquidity-rate))
+    (+ one-8 rate)
   )
 )
 
@@ -359,6 +360,7 @@
     (cumulated-balance 
       (get-compounded-borrow-balance
         (get principal-borrow-balance user-data)
+        (get decimals reserve-data)
         (get stable-borrow-rate user-data)
         (get last-updated-block user-data)
         (get last-variable-borrow-cumulative-index user-data)
@@ -377,6 +379,7 @@
 (define-read-only (get-compounded-borrow-balance
   ;; user-data
   (principal-borrow-balance uint)
+  (decimals uint)
   (stable-borrow-rate uint)
   (last-updated-block uint)
   (last-variable-borrow-cumulative-index uint)
@@ -400,9 +403,9 @@
             (- burn-block-height last-updated-block))
           last-variable-borrow-cumulative-index-reserve)
         user-cumulative-index))
-    (compounded-balance (mul principal-borrow-balance cumulated-interest)))
+    (compounded-balance (mul-precision-with-factor principal-borrow-balance decimals cumulated-interest)))
     (if (is-eq compounded-balance principal-borrow-balance)
-      (if (is-eq last-updated-block burn-block-height)
+      (if (not (is-eq last-updated-block burn-block-height))
         (+ principal-borrow-balance u1)
         compounded-balance
       )
@@ -551,9 +554,7 @@
 ;; rate in 8-fixed
 ;; n-blocks
 (define-read-only (get-rt-by-block (rate uint) (blocks uint))
-  (begin
-    (mul rate (* blocks sb-by-sy))
-  )
+  (/ (* rate (* blocks sb-by-sy)) one-8)
 )
 
 ;; block-seconds/year-seconds in fixed precision

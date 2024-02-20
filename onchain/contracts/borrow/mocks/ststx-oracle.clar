@@ -15,20 +15,6 @@
     )
   )
     ;; STX price already comes in 8 decimals
-    (ok
-      (contract-call? .math mul
-        ;; bring to 8 decimals, we know stx-ststx ratio has 6 decimals
-        (* stx-ststx u100)
-        (to-uint (get price pyth-entry))
-      )
-    )
+    (ok (/ (* stx-ststx (to-uint (get price pyth-entry))) u1000000))
   )
 )
-
-;; (define-read-only (get-price (token <ft>))
-;;   (contract-call? 'SP2T5JKWWP3FYYX4YRK8GK5BG2YCNGEAEY2P2PKN0.pyth-oracle-v2
-;;     read-feed-price
-;;     0xec7a775f46379b5e943c3526b1c8d54cd49749176b0b98e02dde68d1bd335c17
-;;     'SP2T5JKWWP3FYYX4YRK8GK5BG2YCNGEAEY2P2PKN0.pyth-store-v1
-;;   )
-;; )
