@@ -499,7 +499,7 @@ describe("Liquidations", () => {
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));1675806369
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    const debtPurchased = BigInt((callResponse.events[11].data.amount));
+    const debtPurchased = BigInt((callResponse.events[12].data.amount));
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
 
     // console.log(Cl.prettyPrint(callResponse.events[callResponse.events.length - 1].data.value!));
