@@ -48,3 +48,7 @@
 (define-public (mint (amount uint) (recipient principal))
   (err u1)
 )
+
+(define-public (burn (amount uint) (owner principal))
+  (err u1)
+)

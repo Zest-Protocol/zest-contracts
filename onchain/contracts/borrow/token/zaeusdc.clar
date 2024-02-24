@@ -5,20 +5,19 @@
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
-(define-fungible-token lp-ststx)
-
 (define-constant ERR_UNAUTHORIZED (err u14401))
 (define-constant ERR_INVALID_TRANSFER (err u14402))
 
-(define-constant max-value (contract-call? .math get-max-value))
+(define-fungible-token zaeusdc)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP ststx")
-(define-data-var token-symbol (string-ascii 32) "LP-ststx")
+(define-data-var token-name (string-ascii 32) "Z aeusdc")
+(define-data-var token-symbol (string-ascii 32) "Z-aeusdc")
 
+(define-constant asset-addr 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-ststx)))
+  (ok (ft-get-supply zaeusdc)))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))
@@ -34,7 +33,7 @@
 
 (define-read-only (get-balance (account principal))
   (let (
-    (current-principal-balance (ft-get-balance lp-ststx account))
+    (current-principal-balance (ft-get-balance zaeusdc account))
   )
     (if (is-eq current-principal-balance u0)
       (ok u0)
@@ -43,7 +42,7 @@
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
             u6
-            .ststx
+            asset-addr
             current-principal-balance
             u6)))
         cumulated-balance
@@ -53,7 +52,8 @@
 )
 
 (define-read-only (get-principal-balance (account principal))
-  (ok (ft-get-balance lp-ststx account)))
+  (ok (ft-get-balance zaeusdc account)))
+
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (begin
@@ -72,7 +72,7 @@
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (match (ft-transfer? lp-ststx amount sender recipient)
+    (match (ft-transfer? zaeusdc amount sender recipient)
       response (begin
         (print memo)
         (ok response)
@@ -84,11 +84,6 @@
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   ERR_UNAUTHORIZED
-  ;; (begin
-  ;;   (asserts! false ERR_UNAUTHORIZED)
-    ;; (ok true)
-    ;; (execute-transfer-internal amount sender recipient)
-  ;; )
 )
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
@@ -100,11 +95,11 @@
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (ft-burn? lp-ststx amount owner)
+  (ft-burn? zaeusdc amount owner)
 )
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (ft-mint? lp-ststx amount owner)
+  (ft-mint? zaeusdc amount owner)
 )
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
@@ -112,12 +107,11 @@
     (try! (is-approved-contract contract-caller))
     (let ((ret (try! (cumulate-balance-internal owner))))
       (try! (burn-internal amount owner))
-
       (if (is-eq (- (get current-balance ret) amount) u0)
         (begin
-          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner .ststx false))
-          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner .ststx))
-          (try! (contract-call? .pool-0-reserve reset-user-index owner .ststx))
+          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+          (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
         )
         false
       )
@@ -148,17 +142,16 @@
   (let (
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state .ststx)))
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
     (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
-    (try! (contract-call? .pool-0-reserve set-user-index account .ststx new-user-index))
+    (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
 
     (if (is-eq balance-increase u0)
       false
-      (try! (mint-internal balance-increase account))
-    )
+      (try! (mint-internal balance-increase account)))
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -167,6 +160,8 @@
     })
   )
 )
+
+(define-constant max-value (contract-call? .math get-max-value))
 
 (define-public (withdraw
   (pool-reserve principal)
@@ -180,24 +175,24 @@
     (ret (try! (cumulate-balance-internal tx-sender)))
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
-    (asserts! (and (> amount-to-redeem u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
-    (asserts! (try! (is-transfer-allowed .ststx oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
-    (asserts! (is-eq (contract-of asset) .ststx) ERR_UNAUTHORIZED)
+    (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
+    (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
+    (asserts! (is-eq (contract-of asset) asset-addr) ERR_UNAUTHORIZED)
     
     (try! (burn-internal amount-to-redeem tx-sender))
 
     (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
       (begin
-        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner .ststx false))
-        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner .ststx))
-        (try! (contract-call? .pool-0-reserve reset-user-index owner .ststx))
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+        (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
       )
       false
     )
 
     (contract-call? .pool-borrow withdraw
       pool-reserve
-      .ststx
+      asset-addr
       oracle
       assets
       amount-to-redeem
@@ -217,12 +212,12 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
-    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient .ststx))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
-        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender .ststx false))
-        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender .ststx))
-        (contract-call? .pool-0-reserve reset-user-index sender .ststx)
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender asset-addr))
+        (contract-call? .pool-0-reserve reset-user-index sender asset-addr)
       )
       (ok true)
     )
@@ -247,12 +242,13 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-ststx", payload: owner })
+    (print { type: "set-contract-owner-zaeusdc", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))
   (is-eq caller (var-get contract-owner)))
 
+;; -- permissions
 (define-map approved-contracts principal bool)
 
 (define-public (set-approved-contract (contract principal) (enabled bool))

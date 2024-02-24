@@ -1219,7 +1219,7 @@ describe("Supply and redeem", () => {
     // console.log(cvToJSON(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.uint(100_000_000));
 
-    simnet.mineEmptyBlocks(10);
+    simnet.mineEmptyBlocks(100);
 
     callResponse = simnet.callPublicFn(
       stSTX,
@@ -1239,7 +1239,23 @@ describe("Supply and redeem", () => {
       ],
       Borrower_1
     );
-    // console.log(cvToJSON(callResponse.result));
+    console.log(cvToValue(callResponse.result));
+
+    // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, stSTX, Borrower_1);
+    // callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
+    // console.log(Cl.prettyPrint(callResponse.result));
+
+    // callResponse = simnet.callPublicFn(
+    //   "pool-0-reserve",
+    //   "mint-to-treasury",
+    //   [
+    //     Cl.contractPrincipal(deployerAddress, lpstSTX),
+    //     Cl.contractPrincipal(deployerAddress, pool0Reserve),
+    //     Cl.contractPrincipal(deployerAddress, stSTX),
+    //   ],
+    //   deployerAddress
+    // );
+    // console.log(cvToValue(callResponse.result));
 
     callResponse = poolBorrow.borrow(
       deployerAddress,
