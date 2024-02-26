@@ -8,7 +8,7 @@ You can find the Zest Borrow smart contracts [here](https://github.com/Zest-Prot
 
 | Date | Report | Repo Link |
 | ----------- | ------ | --------- |
-| 08/08/2022 | [Coinfabrik report](https://drive.google.com/file/d/13ukhohDfitummRIXNyXCLzFRn51gt4fp/view?usp=sharing) | [Link](https://github.com/Trust-Machines/zest-contracts/tree/8a206a8568acc5092e1a074e118fc4a8e9bbde4e)
+| 19/02/2024 | [Coinfabrik report](https://drive.google.com/file/d/13ukhohDfitummRIXNyXCLzFRn51gt4fp/view?usp=sharing) | [Link](https://github.com/Trust-Machines/zest-contracts/tree/8a206a8568acc5092e1a074e118fc4a8e9bbde4e)
 
 
 ## <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" alt="Bitcoin Icon" height="25"/> Zest Earn - BTC Yield
