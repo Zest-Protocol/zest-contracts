@@ -1,4 +1,18 @@
-# Audit reports
+# Zest Protocol Contracts
+
+# <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/4847.png" alt="Stacks Icon" height="25"/> Zest Borrow - Stacks market
+
+You can find the Zest Borrow smart contracts [here](https://github.com/Zest-Protocol/zest-contracts/tree/next/audit/onchain/contracts/borrow).
+
+## Audit report
+
+| Date | Report | Repo Link |
+| ----------- | ------ | --------- |
+| 08/08/2022 | [Coinfabrik report](https://drive.google.com/file/d/13ukhohDfitummRIXNyXCLzFRn51gt4fp/view?usp=sharing) | [Link](https://github.com/Trust-Machines/zest-contracts/tree/8a206a8568acc5092e1a074e118fc4a8e9bbde4e)
+
+
+## <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" alt="Bitcoin Icon" height="25"/> Zest Earn - BTC Yield
+### Audit reports
 
 | Date | Report | Repo Link |
 | ----------- | ------ | --------- |
