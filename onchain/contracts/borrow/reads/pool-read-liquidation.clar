@@ -56,96 +56,26 @@
 )
 
 
-(define-read-only (get-user-asset-debt-data-diko (user principal))
-  (let ((unit-price (unwrap-panic (contract-call? .oracle get-asset-price .diko))))
-    (calculate-user-asset-debt user .diko unit-price)
-  )
-)
-
-(define-read-only (get-user-asset-debt-data-sbtc (user principal))
-  (let ((unit-price (unwrap-panic (contract-call? .oracle get-asset-price .sbtc))))
-    (calculate-user-asset-debt user .sbtc unit-price)
-  )
-)
-
 (define-read-only (get-user-asset-debt-data-ststx (user principal))
-  (let ((unit-price (unwrap-panic (contract-call? .oracle get-asset-price .ststx))))
-    (calculate-user-asset-debt user .ststx unit-price)
+  (let ((unit-price (get-ststx-price)))
+    (calculate-user-asset-debt user 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token unit-price)
   )
 )
 
-(define-read-only (get-user-asset-debt-data-usda (user principal))
-  (let ((unit-price (unwrap-panic (contract-call? .oracle get-asset-price .usda))))
-    (calculate-user-asset-debt user .usda unit-price)
-  )
-)
-
-(define-read-only (get-user-asset-debt-data-wstx (user principal))
-  (let ((unit-price (unwrap-panic (contract-call? .oracle get-asset-price .wstx))))
-    (calculate-user-asset-debt user .wstx unit-price)
-  )
-)
-
-(define-read-only (get-user-asset-debt-data-xusd (user principal))
-  (let ((unit-price (unwrap-panic (contract-call? .oracle get-asset-price .xusd))))
-    (calculate-user-asset-debt user .xusd unit-price)
-  )
-)
-
-;; check if can be used as collateral before calling this
-(define-read-only (get-user-asset-collateral-data-diko (user principal))
-  (let (
-    (reserve-data (get-reserve-data .diko))
-    (user-index (get-user-index user .diko))
-    (principal-balance (unwrap-panic (contract-call? .lp-diko get-principal-balance user)))
-    (decimals (get decimals reserve-data))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .diko)))
-  )
-    (calculate-user-asset-collateral
-      principal-balance
-      decimals
-      (get current-liquidity-rate reserve-data)
-      (get last-updated-block reserve-data)
-      (get last-liquidity-cumulative-index reserve-data)
-      user-index
-      unit-price
-      (get base-ltv-as-collateral reserve-data)
-      (get liquidation-threshold reserve-data)
-    )
-  )
-)
-
-;; check if can be used as collateral before calling this
-(define-read-only (get-user-asset-collateral-data-sbtc (user principal))
-  (let (
-    (reserve-data (get-reserve-data .sbtc))
-    (user-index (get-user-index user .sbtc))
-    (principal-balance (unwrap-panic (contract-call? .lp-sbtc get-principal-balance user)))
-    (decimals (get decimals reserve-data))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .sbtc)))
-  )
-    (calculate-user-asset-collateral
-      principal-balance
-      decimals
-      (get current-liquidity-rate reserve-data)
-      (get last-updated-block reserve-data)
-      (get last-liquidity-cumulative-index reserve-data)
-      user-index
-      unit-price
-      (get base-ltv-as-collateral reserve-data)
-      (get liquidation-threshold reserve-data)
-    )
+(define-read-only (get-user-asset-debt-data-aeusdc (user principal))
+  (let ((unit-price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.aeusdc-oracle-v1-0 get-price)))
+    (calculate-user-asset-debt user 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc unit-price)
   )
 )
 
 ;; check if can be used as collateral before calling this
 (define-read-only (get-user-asset-collateral-data-ststx (user principal))
   (let (
-    (reserve-data (get-reserve-data .ststx))
-    (user-index (get-user-index user .ststx))
-    (principal-balance (unwrap-panic (contract-call? .lp-ststx get-principal-balance user)))
+    (reserve-data (get-reserve-data 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token))
+    (user-index (get-user-index user 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token))
+    (principal-balance (unwrap-panic (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zststx get-principal-balance user)))
     (decimals (get decimals reserve-data))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .ststx)))
+    (unit-price (get-ststx-price))
   )
     (calculate-user-asset-collateral
       principal-balance
@@ -162,13 +92,13 @@
 )
 
 ;; check if can be used as collateral before calling this
-(define-read-only (get-user-asset-collateral-data-usda (user principal))
+(define-read-only (get-user-asset-collateral-data-aeusdc (user principal))
   (let (
-    (reserve-data (get-reserve-data .usda))
-    (user-index (get-user-index user .usda))
-    (principal-balance (unwrap-panic (contract-call? .lp-usda get-principal-balance user)))
+    (reserve-data (get-reserve-data 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc))
+    (user-index (get-user-index user 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc))
+    (principal-balance (unwrap-panic (contract-call? .zaeusdc get-principal-balance user)))
     (decimals (get decimals reserve-data))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .usda)))
+    (unit-price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.aeusdc-oracle-v1-0 get-price))
   )
     (calculate-user-asset-collateral
       principal-balance
@@ -184,49 +114,13 @@
   )
 )
 
-;; check if can be used as collateral before calling this
-(define-read-only (get-user-asset-collateral-data-wstx (user principal))
+(define-read-only (get-ststx-price)
   (let (
-    (reserve-data (get-reserve-data .wstx))
-    (user-index (get-user-index user .wstx))
-    (principal-balance (unwrap-panic (contract-call? .lp-wstx get-principal-balance user)))
-    (decimals (get decimals reserve-data))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .wstx)))
+    (stx-price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "STX")))
+    (stx-amount-in-reserve (unwrap-panic (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.reserve-v1 get-total-stx)))
+    (stx-ststx (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-v1 get-stx-per-ststx-helper stx-amount-in-reserve))
   )
-    (calculate-user-asset-collateral
-      principal-balance
-      decimals
-      (get current-liquidity-rate reserve-data)
-      (get last-updated-block reserve-data)
-      (get last-liquidity-cumulative-index reserve-data)
-      user-index
-      unit-price
-      (get base-ltv-as-collateral reserve-data)
-      (get liquidation-threshold reserve-data)
-    )
-  )
-)
-
-;; check if can be used as collateral before calling this
-(define-read-only (get-user-asset-collateral-data-xusd (user principal))
-  (let (
-    (reserve-data (get-reserve-data .xusd))
-    (user-index (get-user-index user .xusd))
-    (principal-balance (unwrap-panic (contract-call? .lp-xusd get-principal-balance user)))
-    (decimals (get decimals reserve-data))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .xusd)))
-  )
-    (calculate-user-asset-collateral
-      principal-balance
-      decimals
-      (get current-liquidity-rate reserve-data)
-      (get last-updated-block reserve-data)
-      (get last-liquidity-cumulative-index reserve-data)
-      user-index
-      unit-price
-      (get base-ltv-as-collateral reserve-data)
-      (get liquidation-threshold reserve-data)
-    )
+    (/ (* stx-ststx stx-price) u10000)
   )
 )
 

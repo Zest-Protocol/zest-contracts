@@ -1,0 +1,191 @@
+[project]
+name = "stacks-lending"
+authors = []
+description = ""
+telemetry = false
+cache_dir = '.requirements'
+[[project.requirements]]
+contract_id = 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zststx'
+[[project.requirements]]
+contract_id = 'SP2T5JKWWP3FYYX4YRK8GK5BG2YCNGEAEY2P2PKN0.pyth-oracle-v2'
+[[project.requirements]]
+contract_id = 'SP2T5JKWWP3FYYX4YRK8GK5BG2YCNGEAEY2P2PKN0.pyth-store-v1'
+[[project.requirements]]
+contract_id = 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token'
+[[project.requirements]]
+contract_id = 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-v1'
+[[project.requirements]]
+contract_id = 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.reserve-v1'
+[[project.requirements]]
+contract_id = 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3'
+[[project.requirements]]
+contract_id = 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc'
+[[project.requirements]]
+contract_id = 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.stx-oracle-v1-2'
+[[project.requirements]]
+contract_id = 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.ststx-oracle-v1-2'
+[[project.requirements]]
+contract_id = 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.aeusdc-oracle-v1-0'
+[[project.requirements]]
+contract_id = 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zwstx'
+[[project.requirements]]
+contract_id = 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zaeusdc'
+[[project.requirements]]
+contract_id = 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.pool-read-supply'
+
+
+cache_location = ".requirements"
+boot_contracts = ["pox", "costs-v1", "bns"]
+
+[contracts.a-token-trait]
+path = "contracts/borrow/traits/a-token-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.update-aeusdc-rate]
+path = "contracts/borrow/deployment/update-aeusdc-rate.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.update-aeusdc]
+path = "contracts/borrow/deployment/update-aeusdc.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.stx-oracle-v1-0]
+path = "contracts/borrow/oracle/stx-oracle.clar"
+clarity_version = 2
+epoch = 2.4
+
+# [contracts.update-ststx-oracle]
+# path = "contracts/borrow/deployment/update-ststx-oracle.clar"
+# clarity_version = 2
+# epoch = 2.4
+
+[contracts.aeusdc-oracle-v1-0]
+path = "contracts/borrow/oracle/aeusdc-oracle.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.ststx-oracle-v1-3]
+path = "contracts/borrow/oracle/ststx-oracle-v1-3.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-read]
+path = "contracts/borrow/reads/pool-read.clar"
+clarity_version = 2
+epoch = 2.4
+
+# [contracts.pool-read-supply]
+# path = "contracts/borrow/reads/pool-read-supply.clar"
+# clarity_version = 2
+# epoch = 2.4
+
+# [contracts.pool-read-liquidation]
+# path = "contracts/borrow/reads/pool-read-liquidation.clar"
+# clarity_version = 2
+# epoch = 2.4
+
+[contracts.zststx]
+path = "contracts/borrow/token/zststx.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.zaeusdc]
+path = "contracts/borrow/token/zaeusdc.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.zwstx]
+path = "contracts/borrow/token/zwstx.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.wstx]
+path = 'contracts/borrow/token/wstx.clar'
+clarity_version = 2
+epoch = 2.4
+
+[contracts.supply-wrapped]
+path = "contracts/borrow/wrappers/supply-wrapped.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-borrow]
+path = "contracts/borrow/pool/pool-borrow.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-0-reserve]
+path = "contracts/borrow/vaults/pool-0-reserve.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-reserve-data]
+path = "contracts/borrow/vaults/pool-reserve-data.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-vault]
+path = "contracts/borrow/vaults/pool-vault.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.liquidation-manager]
+path = "contracts/borrow/pool/liquidation-manager.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.math]
+path = "contracts/borrow/math/math.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.lp-token-trait]
+path = "contracts/v2_sbtc/trait/lp-token-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.ownable-trait]
+path = "contracts/v2_sbtc/trait/ownable-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.ft-trait]
+path = "contracts/v2_sbtc/trait/ft-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.ft-mint-trait]
+path = "contracts/v2_sbtc/trait/ft-mint-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.vault-trait]
+path = "contracts/borrow/traits/vault-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.oracle-trait]
+path = "contracts/borrow/traits/oracle-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.flash-loan-trait]
+path = "contracts/borrow/traits/flash-loan-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
+[repl]
+costs_version = 1
+parser_version = 2
+
+[repl.analysis]
+passes = []
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false

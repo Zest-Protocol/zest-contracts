@@ -26,16 +26,19 @@
   )
 )
 
-(define-constant available-assets (list .diko .sbtc .wstx .ststx .xusd .usda ))
+(define-constant available-assets (list
+  'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token
+  'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
+))
 
 (define-read-only (get-supplieable-assets)
-  ;; (filter is-active available-assets)
   available-assets
 )
 
 (define-read-only (get-borroweable-assets)
-  ;; (filter is-borroweable available-assets)
-  available-assets
+  (list 
+    'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
+  )
 )
 
 (define-read-only (get-assets-used-by (who principal))
@@ -91,8 +94,9 @@
   (useable-collateral uint)
   (borrowed-collateral uint)
   (decimals uint)
-  (asset-to-borrow <ft>))
-  (let ((price (unwrap-panic (contract-call? .oracle get-asset-price asset-to-borrow))))
+  (asset-to-borrow <ft>)
+  )
+  (let ((price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.aeusdc-oracle-v1-0 get-price)))
     (contract-call? .math mul-to-fixed-precision (- useable-collateral borrowed-collateral) decimals price)
   )
 )
@@ -105,243 +109,34 @@
 (define-read-only (is-isolated-type (asset principal))
   (default-to false (contract-call? .pool-reserve-data get-isolated-assets-read asset)))
 
-(define-read-only (get-borrowed-balance-user-usd-diko (who principal))
-  (let (
-    (balance (get-borrowed-balance-user-diko who))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .diko)))
-  )
-    (token-to-usd (get compounded-balance balance) u6 unit-price)
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-usd-sbtc (who principal))
-  (let (
-    (balance (get-borrowed-balance-user-sbtc who))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .sbtc)))
-  )
-    (token-to-usd (get compounded-balance balance) u8 unit-price)
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-usd-wstx (who principal))
-  (let (
-    (balance (get-borrowed-balance-user-wstx who))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .wstx)))
-  )
-    (token-to-usd (get compounded-balance balance) u6 unit-price)
-  )
-)
-
 (define-read-only (get-borrowed-balance-user-usd-ststx (who principal))
   (let (
     (balance (get-borrowed-balance-user-ststx who))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .ststx)))
+    (unit-price (get-ststx-price))
   )
     (token-to-usd (get compounded-balance balance) u6 unit-price)
   )
 )
 
-(define-read-only (get-borrowed-balance-user-usd-usda (who principal))
+(define-read-only (get-borrowed-balance-user-usd-aeusdc (who principal))
   (let (
-    (balance (get-borrowed-balance-user-usda who))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .usda)))
+    (balance (get-borrowed-balance-user-aeusdc who))
+    (unit-price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.aeusdc-oracle-v1-0 get-price))
   )
     (token-to-usd (get compounded-balance balance) u6 unit-price)
   )
-)
-
-(define-read-only (get-borrowed-balance-user-usd-xusd (who principal))
-  (let (
-    (balance (get-borrowed-balance-user-xusd who))
-    (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .xusd)))
-  )
-    (token-to-usd (get compounded-balance balance) u6 unit-price)
-  )
-)
-
-(define-read-only (get-borrowed-balance-user-diko (who principal))
-  (get-user-borrow-balance who .diko)
-)
-
-(define-read-only (get-borrowed-balance-user-sbtc (who principal))
-  (get-user-borrow-balance who .sbtc)
-)
-
-(define-read-only (get-borrowed-balance-user-wstx (who principal))
-  (get-user-borrow-balance who .wstx)
 )
 
 (define-read-only (get-borrowed-balance-user-ststx (who principal))
-  (get-user-borrow-balance who .ststx)
+  (get-user-borrow-balance who 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token)
 )
 
-(define-read-only (get-borrowed-balance-user-xusd (who principal))
-  (get-user-borrow-balance who .xusd)
-)
-
-(define-read-only (get-borrowed-balance-user-usda (who principal))
-  (get-user-borrow-balance who .usda)
+(define-read-only (get-borrowed-balance-user-aeusdc (who principal))
+  (get-user-borrow-balance who 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc)
 )
 
 (define-read-only (get-borrowed-balance (asset principal))
   (get total-borrows-variable (get-reserve-data asset))
-)
-
-;; util functions
-(define-public (borrowing-power-in-asset
-  (asset <ft>)
-  (user principal)
-  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  )
-  (let (
-    (asset-principal (contract-of asset))
-    (reserve-state (unwrap-panic (contract-call? .pool-0-reserve get-reserve-state asset-principal)))
-    (user-assets (contract-call? .pool-0-reserve get-user-assets user))
-    (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
-    (asset-price (try! (contract-call? .oracle get-asset-price asset)))
-  )
-    (calculate-available-borrowing-power-in-asset
-      asset
-      (get decimals reserve-state)
-      asset-price
-      (get total-collateral-balanceUSD user-global-data)
-      (get total-borrow-balanceUSD user-global-data)
-      u0
-      (get current-ltv user-global-data)
-      user
-    )
-  )
-)
-
-;; calculate how much a user can borrow of a specific asset using the available collateral
-(define-read-only (calculate-available-borrowing-power-in-asset
-  (borrowing-asset <ft>)
-  (decimals uint)
-  (asset-price uint)
-  (current-user-collateral-balance-USD uint)
-  (current-user-borrow-balance-USD uint)
-  (current-fees-USD uint)
-  (current-ltv uint)
-  (user principal)
-  )
-  (let (
-    (available-borrow-power-in-base-currency
-      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD u0))
-        (-
-          (mul current-user-collateral-balance-USD current-ltv)
-          (+ current-user-borrow-balance-USD u0)
-        )
-        u0
-      )
-    )
-    (borrow-power-in-asset-amount
-      (contract-call? .math from-fixed-to-precision
-        (div
-          available-borrow-power-in-base-currency
-          asset-price
-        )
-        decimals
-      )
-    )
-  )
-    (ok borrow-power-in-asset-amount)
-  )
-)
-
-(define-public (borrowing-power-in-asset-test
-  (asset <ft>)
-  (user principal)
-  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  )
-  (let (
-    (asset-principal (contract-of asset))
-    (reserve-state (unwrap-panic (contract-call? .pool-0-reserve get-reserve-state asset-principal)))
-    (user-assets (contract-call? .pool-0-reserve get-user-assets user))
-    (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets)))
-    (asset-price (try! (contract-call? .oracle get-asset-price asset)))
-  )
-    (calculate-available-borrowing-power-in-asset-test
-      asset
-      (get decimals reserve-state)
-      asset-price
-      (get total-collateral-balanceUSD user-global-data)
-      (get total-borrow-balanceUSD user-global-data)
-      u0
-      (get current-ltv user-global-data)
-      user
-    )
-  )
-)
-
-;; calculate how much a user can borrow of a specific asset using the available collateral
-(define-read-only (calculate-available-borrowing-power-in-asset-test
-  (borrowing-asset <ft>)
-  (decimals uint)
-  (asset-price uint)
-  (current-user-collateral-balance-USD uint)
-  (current-user-borrow-balance-USD uint)
-  (current-fees-USD uint)
-  (current-ltv uint)
-  (user principal)
-  )
-  (let (
-    (available-borrow-power-in-base-currency
-      (if (> (mul current-user-collateral-balance-USD current-ltv) current-user-borrow-balance-USD)
-        (-
-          (mul current-user-collateral-balance-USD current-ltv)
-          current-user-borrow-balance-USD
-        )
-        u0
-      )
-    )
-    (borrow-power-in-asset-amount
-      (contract-call? .math from-fixed-to-precision
-        (div
-          available-borrow-power-in-base-currency
-          asset-price
-        )
-        decimals
-      )
-    )
-  )
-    (ok
-      {
-        available-borrow-power-in-base-currency: available-borrow-power-in-base-currency,
-        borrow-power-in-asset-amount: borrow-power-in-asset-amount,
-        user-borrow-balance-USD: current-user-borrow-balance-USD,
-        user-collat-balance-USD: (mul current-user-collateral-balance-USD current-ltv),
-      }
-    )
-  )
-)
-
-;; get amount that user can decrease based on asset that user wishes to borrow
-(define-public (get-decrease-balance-allowed
-  (asset <ft>)
-  (oracle <oracle-trait>)
-  (user principal)
-  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-  )
-  (let (
-    (reserve-data (get-reserve-data (contract-of asset)))
-    (user-data (get-user-reserve-data user (contract-of asset)))
-    (user-global-data (unwrap-panic (contract-call? .pool-0-reserve calculate-user-global-data user assets-to-calculate)))
-    (asset-price (unwrap-panic (contract-call? oracle get-asset-price asset)))
-    (useable-collateral-in-base-currency
-      (mul
-        (- (get total-collateral-balanceUSD user-global-data) (+ (get total-borrow-balanceUSD user-global-data) (get user-total-feesUSD user-global-data)))
-        (get current-liquidation-threshold user-global-data)))
-    (amount-to-decrease
-      (contract-call? .math from-fixed-to-precision
-        (div
-          useable-collateral-in-base-currency
-          asset-price
-        )
-        (get decimals reserve-data)
-      ))
-  )
-    (ok { amount-to-decrease: amount-to-decrease, useable-collateral-in-base-currency: useable-collateral-in-base-currency })
-  )
 )
 
 (define-read-only (get-user-borrow-balance (who principal) (reserve principal))
@@ -403,6 +198,16 @@
       )
       compounded-balance
     )
+  )
+)
+
+(define-read-only (get-ststx-price)
+  (let (
+    (stx-price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "STX")))
+    (stx-amount-in-reserve (unwrap-panic (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.reserve-v1 get-total-stx)))
+    (stx-ststx (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-v1 get-stx-per-ststx-helper stx-amount-in-reserve))
+  )
+    (/ (* stx-ststx stx-price) u10000)
   )
 )
 

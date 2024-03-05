@@ -15,44 +15,58 @@
 ;; testnet
 ;; (try! (contract-call? .executor-dao construct .zgp000-bootstrap))
 
-(try! (contract-call? .sbtc mint u1000000000000000 'ST32SNM4KMBYNF5NFZKTM77EP54HJR6R8J93HQ5EQ))
-(try! (contract-call? .ststx mint u1000000000000000 'ST32SNM4KMBYNF5NFZKTM77EP54HJR6R8J93HQ5EQ))
-(try! (contract-call? .diko mint u1000000000000000 'ST32SNM4KMBYNF5NFZKTM77EP54HJR6R8J93HQ5EQ))
-(try! (contract-call? .usda mint u1000000000000000 'ST32SNM4KMBYNF5NFZKTM77EP54HJR6R8J93HQ5EQ))
-(try! (contract-call? .xusd mint u1000000000000000 'ST32SNM4KMBYNF5NFZKTM77EP54HJR6R8J93HQ5EQ))
+(try! (contract-call? .sbtc mint u1000000000000000 'ST20QDTNW597G92232Z14XPRPNGEHHQ71CAZDJP52))
+(try! (contract-call? .ststx mint u1000000000000000 'ST20QDTNW597G92232Z14XPRPNGEHHQ71CAZDJP52))
+(try! (contract-call? .diko mint u1000000000000000 'ST20QDTNW597G92232Z14XPRPNGEHHQ71CAZDJP52))
+(try! (contract-call? .usda mint u1000000000000000 'ST20QDTNW597G92232Z14XPRPNGEHHQ71CAZDJP52))
+(try! (contract-call? .xusd mint u1000000000000000 'ST20QDTNW597G92232Z14XPRPNGEHHQ71CAZDJP52))
 
-(try! (contract-call? .sbtc mint u1000000000000000 'ST1QTXYSN8T09AH4MCBBQDJR6BE0K1H3BM4YEX9F9))
-(try! (contract-call? .ststx mint u1000000000000000 'ST1QTXYSN8T09AH4MCBBQDJR6BE0K1H3BM4YEX9F9))
-(try! (contract-call? .diko mint u1000000000000000 'ST1QTXYSN8T09AH4MCBBQDJR6BE0K1H3BM4YEX9F9))
-(try! (contract-call? .usda mint u1000000000000000 'ST1QTXYSN8T09AH4MCBBQDJR6BE0K1H3BM4YEX9F9))
-(try! (contract-call? .xusd mint u1000000000000000 'ST1QTXYSN8T09AH4MCBBQDJR6BE0K1H3BM4YEX9F9))
+(try! (contract-call? .sbtc mint u1000000000000000 'ST20FYG50PTXQMF0TJ9WA4P7WV4Y1WQVRQTR988KN))
+(try! (contract-call? .ststx mint u1000000000000000 'ST20FYG50PTXQMF0TJ9WA4P7WV4Y1WQVRQTR988KN))
+(try! (contract-call? .diko mint u1000000000000000 'ST20FYG50PTXQMF0TJ9WA4P7WV4Y1WQVRQTR988KN))
+(try! (contract-call? .usda mint u1000000000000000 'ST20FYG50PTXQMF0TJ9WA4P7WV4Y1WQVRQTR988KN))
+(try! (contract-call? .xusd mint u1000000000000000 'ST20FYG50PTXQMF0TJ9WA4P7WV4Y1WQVRQTR988KN))
 
-(try! (contract-call? .sbtc mint u1000000000000000 'ST3Y3K8W3RRAHJF2E5SMYPSWYVQYQ6PB28CDY58BE))
-(try! (contract-call? .ststx mint u1000000000000000 'ST3Y3K8W3RRAHJF2E5SMYPSWYVQYQ6PB28CDY58BE))
-(try! (contract-call? .diko mint u1000000000000000 'ST3Y3K8W3RRAHJF2E5SMYPSWYVQYQ6PB28CDY58BE))
-(try! (contract-call? .usda mint u1000000000000000 'ST3Y3K8W3RRAHJF2E5SMYPSWYVQYQ6PB28CDY58BE))
-(try! (contract-call? .xusd mint u1000000000000000 'ST3Y3K8W3RRAHJF2E5SMYPSWYVQYQ6PB28CDY58BE))
+(try! (contract-call? .sbtc mint u1000000000000000 'ST2VB13Q8D8FB1P0CWE1MC8TTC56WEFQQ2MY5799Q))
+(try! (contract-call? .ststx mint u1000000000000000 'ST2VB13Q8D8FB1P0CWE1MC8TTC56WEFQQ2MY5799Q))
+(try! (contract-call? .diko mint u1000000000000000 'ST2VB13Q8D8FB1P0CWE1MC8TTC56WEFQQ2MY5799Q))
+(try! (contract-call? .usda mint u1000000000000000 'ST2VB13Q8D8FB1P0CWE1MC8TTC56WEFQQ2MY5799Q))
+(try! (contract-call? .xusd mint u1000000000000000 'ST2VB13Q8D8FB1P0CWE1MC8TTC56WEFQQ2MY5799Q))
 
-(try! (contract-call? .sbtc mint u1000000000000000 'ST22396A61X19AJ83CV32TR4W9KNGAYDJH4JYNKSD))
-(try! (contract-call? .ststx mint u1000000000000000 'ST22396A61X19AJ83CV32TR4W9KNGAYDJH4JYNKSD))
-(try! (contract-call? .diko mint u1000000000000000 'ST22396A61X19AJ83CV32TR4W9KNGAYDJH4JYNKSD))
-(try! (contract-call? .usda mint u1000000000000000 'ST22396A61X19AJ83CV32TR4W9KNGAYDJH4JYNKSD))
-(try! (contract-call? .xusd mint u1000000000000000 'ST22396A61X19AJ83CV32TR4W9KNGAYDJH4JYNKSD))
+(try! (contract-call? .sbtc mint u1000000000000000 'STSEYAVNAX0B7WWF16ZZ01PF0S0BZYC6D9MBN0RV))
+(try! (contract-call? .ststx mint u1000000000000000 'STSEYAVNAX0B7WWF16ZZ01PF0S0BZYC6D9MBN0RV))
+(try! (contract-call? .diko mint u1000000000000000 'STSEYAVNAX0B7WWF16ZZ01PF0S0BZYC6D9MBN0RV))
+(try! (contract-call? .usda mint u1000000000000000 'STSEYAVNAX0B7WWF16ZZ01PF0S0BZYC6D9MBN0RV))
+(try! (contract-call? .xusd mint u1000000000000000 'STSEYAVNAX0B7WWF16ZZ01PF0S0BZYC6D9MBN0RV))
 
-(try! (contract-call? .sbtc mint u1000000000000000 'ST2F8GC8NFMKT8ZSYNSQYMPNGGPNTJXVXAVESGDAF))
-(try! (contract-call? .ststx mint u1000000000000000 'ST2F8GC8NFMKT8ZSYNSQYMPNGGPNTJXVXAVESGDAF))
-(try! (contract-call? .diko mint u1000000000000000 'ST2F8GC8NFMKT8ZSYNSQYMPNGGPNTJXVXAVESGDAF))
-(try! (contract-call? .usda mint u1000000000000000 'ST2F8GC8NFMKT8ZSYNSQYMPNGGPNTJXVXAVESGDAF))
-(try! (contract-call? .xusd mint u1000000000000000 'ST2F8GC8NFMKT8ZSYNSQYMPNGGPNTJXVXAVESGDAF))
+(try! (contract-call? .sbtc mint u1000000000000000 'ST22YKNGHD4Q4BFMM4RY4EQENR16R0MY6EH7P8ZNF))
+(try! (contract-call? .ststx mint u1000000000000000 'ST22YKNGHD4Q4BFMM4RY4EQENR16R0MY6EH7P8ZNF))
+(try! (contract-call? .diko mint u1000000000000000 'ST22YKNGHD4Q4BFMM4RY4EQENR16R0MY6EH7P8ZNF))
+(try! (contract-call? .usda mint u1000000000000000 'ST22YKNGHD4Q4BFMM4RY4EQENR16R0MY6EH7P8ZNF))
+(try! (contract-call? .xusd mint u1000000000000000 'ST22YKNGHD4Q4BFMM4RY4EQENR16R0MY6EH7P8ZNF))
 
-(try! (contract-call? .sbtc mint u1000000000000000 'ST2MTTF23XV2VCDW10D0BN99MN2A3FGBV2F90SBPG))
-(try! (contract-call? .ststx mint u1000000000000000 'ST2MTTF23XV2VCDW10D0BN99MN2A3FGBV2F90SBPG))
-(try! (contract-call? .diko mint u1000000000000000 'ST2MTTF23XV2VCDW10D0BN99MN2A3FGBV2F90SBPG))
-(try! (contract-call? .usda mint u1000000000000000 'ST2MTTF23XV2VCDW10D0BN99MN2A3FGBV2F90SBPG))
-(try! (contract-call? .xusd mint u1000000000000000 'ST2MTTF23XV2VCDW10D0BN99MN2A3FGBV2F90SBPG))
+(try! (contract-call? .sbtc mint u1000000000000000 'ST5X8GCCDPVJ0DNPSS5QD1MEWB93DXSNZCYX8ZNG))
+(try! (contract-call? .ststx mint u1000000000000000 'ST5X8GCCDPVJ0DNPSS5QD1MEWB93DXSNZCYX8ZNG))
+(try! (contract-call? .diko mint u1000000000000000 'ST5X8GCCDPVJ0DNPSS5QD1MEWB93DXSNZCYX8ZNG))
+(try! (contract-call? .usda mint u1000000000000000 'ST5X8GCCDPVJ0DNPSS5QD1MEWB93DXSNZCYX8ZNG))
+(try! (contract-call? .xusd mint u1000000000000000 'ST5X8GCCDPVJ0DNPSS5QD1MEWB93DXSNZCYX8ZNG))
 
 
 (define-constant max-value u340282366920938463463374607431768211455)
+(define-constant ststx-supply-cap u10000000000000)
+(define-constant ststx-borrow-cap u10000000000000)
+
+(define-constant sbtc-supply-cap u1000000000000)
+(define-constant sbtc-borrow-cap u900000000000)
+
+(define-constant diko-supply-cap u200000000000000)
+(define-constant diko-borrow-cap u150000000000000)
+
+(define-constant usda-supply-cap u10000000000000)
+(define-constant usda-borrow-cap u10000000000000)
+
+(define-constant xusd-supply-cap u10000000000000)
+(define-constant xusd-borrow-cap u10000000000000)
 
 (try!
   (contract-call? .pool-borrow
@@ -60,12 +74,14 @@
     .lp-ststx
     .ststx
     u6
-    max-value
-    max-value
+    ststx-supply-cap
+    ststx-borrow-cap
     .oracle
     .interest-rate-strategy-default
   )
 )
+
+(contract-call? .pool-borrow add-asset .ststx)
 
 (try!
   (contract-call? .pool-borrow
@@ -73,25 +89,29 @@
     .lp-wstx
     .wstx
     u6
-    max-value
-    max-value
+    ststx-supply-cap
+    ststx-borrow-cap
     .oracle
     .interest-rate-strategy-default
   )
 )
+
+(contract-call? .pool-borrow add-asset .wstx)
 
 (try!
   (contract-call? .pool-borrow
     init
     .lp-sbtc
     .sbtc
-    u6
-    max-value
-    max-value
+    u8
+    sbtc-supply-cap
+    sbtc-borrow-cap
     .oracle
     .interest-rate-strategy-default
   )
 )
+
+(contract-call? .pool-borrow add-asset .sbtc)
 
 (try!
   (contract-call? .pool-borrow
@@ -99,12 +119,14 @@
     .lp-diko
     .diko
     u6
-    max-value
-    max-value
+    diko-supply-cap
+    diko-borrow-cap
     .oracle
     .interest-rate-strategy-default
   )
 )
+
+(contract-call? .pool-borrow add-asset .diko)
 
 (try!
   (contract-call? .pool-borrow
@@ -112,12 +134,14 @@
     .lp-usda
     .usda
     u6
-    max-value
-    max-value
+    usda-supply-cap
+    usda-borrow-cap
     .oracle
     .interest-rate-strategy-default
   )
 )
+
+(contract-call? .pool-borrow add-asset .usda)
 
 (try!
   (contract-call? .pool-borrow
@@ -125,12 +149,14 @@
     .lp-xusd
     .xusd
     u6
-    max-value
-    max-value
+    xusd-supply-cap
+    xusd-supply-cap
     .oracle
     .interest-rate-strategy-default
   )
 )
+
+(contract-call? .pool-borrow add-asset .xusd)
 
 (try! 
   (contract-call? .pool-borrow set-usage-as-collateral-enabled
@@ -150,7 +176,7 @@
     u5000000
   )
 )
-(try! 
+(try!
   (contract-call? .pool-borrow set-usage-as-collateral-enabled
     .sbtc
     true
@@ -159,42 +185,42 @@
     u5000000
   )
 )
-(try! 
-  (contract-call? .pool-borrow set-usage-as-collateral-enabled
-    .diko
-    true
-    u60000000
-    u90000000
-    u5000000
-  )
-)
-(try! 
-  (contract-call? .pool-borrow set-usage-as-collateral-enabled
-    .usda
-    true
-    u70000000
-    u90000000
-    u5000000
-  )
-)
-(try! 
-  (contract-call? .pool-borrow set-usage-as-collateral-enabled
-    .xusd
-    true
-    u80000000
-    u90000000
-    u5000000
-  )
-)
+;; (try! 
+;;   (contract-call? .pool-borrow set-usage-as-collateral-enabled
+;;     .diko
+;;     true
+;;     u60000000
+;;     u90000000
+;;     u5000000
+;;   )
+;; )
+;; (try! 
+;;   (contract-call? .pool-borrow set-usage-as-collateral-enabled
+;;     .usda
+;;     true
+;;     u70000000
+;;     u90000000
+;;     u5000000
+;;   )
+;; )
+;; (try! 
+;;   (contract-call? .pool-borrow set-usage-as-collateral-enabled
+;;     .xusd
+;;     true
+;;     u80000000
+;;     u90000000
+;;     u5000000
+;;   )
+;; )
 
-(contract-call? .pool-borrow set-borrowing-enabled .ststx true)
+;; (contract-call? .pool-borrow set-borrowing-enabled .ststx true)
 (contract-call? .pool-borrow set-borrowing-enabled .wstx true)
 (contract-call? .pool-borrow set-borrowing-enabled .sbtc true)
 (contract-call? .pool-borrow set-borrowing-enabled .diko true)
 (contract-call? .pool-borrow set-borrowing-enabled .usda true)
 (contract-call? .pool-borrow set-borrowing-enabled .xusd true)
 
-(contract-call? .pool-borrow add-isolated-asset .ststx u1000000000000)
+(contract-call? .pool-borrow add-isolated-asset .ststx u1000000000000000)
 
 (contract-call? .pool-borrow set-borroweable-isolated .xusd)
 (contract-call? .pool-borrow set-borroweable-isolated .usda)
@@ -205,6 +231,61 @@
 (contract-call? .oracle set-price .diko u40000000)
 (contract-call? .oracle set-price .usda u90000000)
 (contract-call? .oracle set-price .xusd u100000000)
+
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .ststx u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .wstx u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .sbtc u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .diko u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .usda u0)
+(contract-call? .pool-reserve-data set-base-variable-borrow-rate .xusd u0)
+
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .ststx u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .wstx u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .sbtc u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .diko u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .usda u4000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-1 .xusd u4000000)
+
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .ststx u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .wstx u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .sbtc u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .diko u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .usda u300000000)
+(contract-call? .pool-reserve-data set-variable-rate-slope-2 .xusd u300000000)
+
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .ststx u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .wstx u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .sbtc u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .diko u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .usda u80000000)
+(contract-call? .pool-reserve-data set-optimal-utilization-rate .xusd u80000000)
+
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .ststx u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .wstx u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .sbtc u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .diko u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .usda u50000000)
+(contract-call? .pool-reserve-data set-liquidation-close-factor-percent .xusd u50000000)
+
+(contract-call? .pool-0-reserve set-flashloan-fee-total .ststx u35)
+(contract-call? .pool-0-reserve set-flashloan-fee-total .sbtc u35)
+
+(contract-call? .pool-0-reserve set-flashloan-fee-protocol .ststx u3000)
+(contract-call? .pool-0-reserve set-flashloan-fee-protocol .sbtc u3000)
+
+(contract-call? .pool-reserve-data set-origination-fee-prc .ststx u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .wstx u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .sbtc u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .diko u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .usda u25)
+(contract-call? .pool-reserve-data set-origination-fee-prc .xusd u25)
+
+(contract-call? .pool-reserve-data set-reserve-factor .ststx u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .wstx u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .sbtc u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .diko u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .usda u15000000)
+(contract-call? .pool-reserve-data set-reserve-factor .xusd u15000000)
 
 
 (contract-call? .pool-borrow supply
@@ -222,6 +303,7 @@
   u100000000000
   tx-sender
 )
+
 
 (contract-call? .pool-borrow supply
   .lp-ststx

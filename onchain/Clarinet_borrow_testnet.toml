@@ -43,20 +43,20 @@ path = "contracts/borrow/traits/flash-loan-trait.clar"
 clarity_version = 2
 epoch = 2.1
 
-[contracts.flashloan-script]
-path = "contracts/borrow/mocks/flashloan-script.clar"
-clarity_version = 2
-epoch = 2.1
+# [contracts.flashloan-script]
+# path = "contracts/borrow/mocks/flashloan-script.clar"
+# clarity_version = 2
+# epoch = 2.1
 
-[contracts.flashloan-script-1]
-path = "contracts/borrow/mocks/flashloan-script-1.clar"
-clarity_version = 2
-epoch = 2.1
+# [contracts.flashloan-script-1]
+# path = "contracts/borrow/mocks/flashloan-script-1.clar"
+# clarity_version = 2
+# epoch = 2.1
 
-[contracts.flashloan-script-2]
-path = "contracts/borrow/mocks/flashloan-script-2.clar"
-clarity_version = 2
-epoch = 2.1
+# [contracts.flashloan-script-2]
+# path = "contracts/borrow/mocks/flashloan-script-2.clar"
+# clarity_version = 2
+# epoch = 2.1
 
 [contracts.pool-read-liquidation]
 path = "contracts/borrow/mocks/pool-read-liquidation.clar"
