@@ -149,7 +149,7 @@ clarity_version = 2
 epoch = 2.4
 
 [contracts.borrow-helper]
-path = "contracts/borrow/wrappers/borrow-helper.clar"
+path = "contracts/borrow/mocks/borrow-helper.clar"
 clarity_version = 2
 epoch = 2.4
 

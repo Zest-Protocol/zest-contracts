@@ -57,6 +57,11 @@ path = "contracts/borrow/oracle/stx-oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.borrow-helper]
+path = "contracts/borrow/wrappers/borrow-helper.clar"
+clarity_version = 2
+epoch = 2.4
+
 # [contracts.update-ststx-oracle]
 # path = "contracts/borrow/deployment/update-ststx-oracle.clar"
 # clarity_version = 2
