@@ -8,7 +8,7 @@
 ;; prices are fixed to 8 decimals
 (define-public (get-asset-price (token <ft>))
   (let (
-    (oracle-data (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-2
+    (oracle-data (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3
       get-price
       "STX"
     ))
@@ -22,7 +22,7 @@
 ;; prices are fixed to 8 decimals
 (define-read-only (get-price)
   (let (
-    (oracle-data (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-2
+    (oracle-data (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3
       get-price
       "STX"
     ))

@@ -44,6 +44,8 @@
   (var-get health-factor-liquidation-threshold))
 
 (define-data-var protocol-treasury-addr principal 'ST2ZW2EKBWATT2Z7FZ2XY9KYYVFBYBDCZBRZMFNR9)
+;; (define-data-var protocol-treasury-addr principal 'SP1ZRM218P3CVZ94YNRBY375AG4VWAY2J1RHZH8BW)
+
 (define-public (set-protocol-treasury-addr (protocol-treasury principal))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)

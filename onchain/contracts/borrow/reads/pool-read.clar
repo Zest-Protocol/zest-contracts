@@ -109,15 +109,6 @@
 (define-read-only (is-isolated-type (asset principal))
   (default-to false (contract-call? .pool-reserve-data get-isolated-assets-read asset)))
 
-(define-read-only (get-borrowed-balance-user-usd-stx (who principal))
-  (let (
-    (balance (get-borrowed-balance-user-stx who))
-    (unit-price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.stx-oracle-v1-2 get-price))
-  )
-    (token-to-usd (get compounded-balance balance) u6 unit-price)
-  )
-)
-
 (define-read-only (get-borrowed-balance-user-usd-ststx (who principal))
   (let (
     (balance (get-borrowed-balance-user-ststx who))
@@ -134,10 +125,6 @@
   )
     (token-to-usd (get compounded-balance balance) u6 unit-price)
   )
-)
-
-(define-read-only (get-borrowed-balance-user-stx (who principal))
-  (get-user-borrow-balance who .wstx)
 )
 
 (define-read-only (get-borrowed-balance-user-ststx (who principal))
@@ -216,7 +203,7 @@
 
 (define-read-only (get-ststx-price)
   (let (
-    (stx-price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-2 get-price "STX")))
+    (stx-price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "STX")))
     (stx-amount-in-reserve (unwrap-panic (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.reserve-v1 get-total-stx)))
     (stx-ststx (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-v1 get-stx-per-ststx-helper stx-amount-in-reserve))
   )
