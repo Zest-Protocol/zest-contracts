@@ -117,7 +117,7 @@
   (assets (list 100 { asset: <ft-mint-trait>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
   )
   (let (
-    (asset-principal .zststx))
+    (asset-principal 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token))
     (try! (contract-call? .zststx withdraw pool-reserve asset oracle amount owner assets))
     (print { type: "ststx-withdraw-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
@@ -138,7 +138,7 @@
   (assets (list 100 { asset: <ft-mint-trait>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
   )
   (let (
-    (asset-principal .zaeusdc))
+    (asset-principal 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc))
     (try! (contract-call? .zaeusdc withdraw pool-reserve asset oracle amount owner assets))
     (print { type: "aeusdc-withdraw-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
