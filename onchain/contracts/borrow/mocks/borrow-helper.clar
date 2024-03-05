@@ -114,10 +114,10 @@
   (oracle <oracle-trait>)
   (amount uint)
   (owner principal)
-  (assets (list 100 { asset: <ft-mint-trait>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
+  (assets (list 100 { asset: <ft>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
   )
   (let (
-    (asset-principal .lp-ststx))
+    (asset-principal .ststx))
     (try! (contract-call? .lp-ststx withdraw pool-reserve asset oracle amount owner assets))
     (print { type: "ststx-withdraw-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
@@ -135,10 +135,10 @@
   (oracle <oracle-trait>)
   (amount uint)
   (owner principal)
-  (assets (list 100 { asset: <ft-mint-trait>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
+  (assets (list 100 { asset: <ft>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
   )
   (let (
-    (asset-principal .lp-xusd))
+    (asset-principal .xusd))
     (try! (contract-call? .lp-xusd withdraw pool-reserve asset oracle amount owner assets))
     (print { type: "xusd-withdraw-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),

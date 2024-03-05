@@ -274,10 +274,10 @@ plan:
     - id: 2
       transactions:
         - contract-publish:
-            contract-name: zest-borrow-helper
+            contract-name: borrow-helper
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 1000000
-            path: contracts/borrow/wrappers/borrow-helper.clar
+            path: contracts/borrow/mocks/borrow-helper.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-call:
@@ -728,6 +728,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
               - u100000000000
               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+              - "(some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -740,6 +741,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
               - u100000000000
               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+              - "(some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -752,6 +754,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
               - u100000000000
               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+              - "none"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -764,6 +767,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
               - u100000000000
               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+              - "(some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -776,6 +780,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
               - u200000000000
               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+              - "(some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -788,6 +793,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
               - u100000000000
               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+              - "(some 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5)"
             cost: 5960
             clarity-version: 2
       epoch: "2.1"
@@ -803,6 +809,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
               - u100000000000
               - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
+              - "none"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -815,6 +822,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
               - u100000000000
               - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
+              - "none"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -827,6 +835,7 @@ plan:
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
               - u100000000000
               - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
+              - "none"
             cost: 5960
             clarity-version: 2
       epoch: "2.1"
@@ -976,6 +985,7 @@ oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
               - u100000100000
               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+              - "none"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -988,6 +998,7 @@ oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
               - u100000100000
               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+              - "none"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -1032,6 +1043,7 @@ oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
               - u100000100000
               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+              - "none"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -1079,6 +1091,7 @@ oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
               - u200000000000
               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+              - "none"
             cost: 5960
             clarity-version: 2
       epoch: "2.1"
@@ -1094,6 +1107,7 @@ oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
               - u1000000000000000000
               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+              - "none"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -1283,6 +1297,7 @@ oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
               - u100000100000
               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+              - "none"
             cost: 5960
             clarity-version: 2
         - contract-call:
@@ -1346,6 +1361,7 @@ oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
               - u200000000000
               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+              - "none"
             cost: 5960
             clarity-version: 2
       epoch: "2.1"
