@@ -45,29 +45,6 @@
   )
 )
 
-;; (define-public (withdraw
-;;   (pool-reserve principal)
-;;   (asset <ft>)
-;;   (oracle <oracle-trait>)
-;;   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-;;   (amount uint)
-;;   (current-balance uint)
-;;   (owner principal)
-;; )
-;;   (let (
-;;     (asset-principal (contract-of asset))
-;;   )
-;;     (try! (contract-call? .pool-borrow withdraw pool-reserve asset oracle assets amount current-balance owner))
-;;     (print { type: "withdraw-call", payload: { key: owner, data: {
-;;         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
-;;         user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data owner asset-principal),
-;;         user-index: (contract-call? .pool-0-reserve get-user-index owner asset-principal),
-;;         user-assets: (contract-call? .pool-0-reserve get-user-assets owner),
-;;       }}})
-;;     (ok true)
-;;   )
-;; )
-
 (define-public (borrow
   (pool-reserve principal)
   (oracle <oracle-trait>)
