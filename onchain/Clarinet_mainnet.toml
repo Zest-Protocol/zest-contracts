@@ -152,6 +152,11 @@ path = "contracts/v2_sbtc/trait/lp-token-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.redeemeable-trait]
+path = "contracts/borrow/traits/redeemeable-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
 [contracts.ownable-trait]
 path = "contracts/v2_sbtc/trait/ownable-trait.clar"
 clarity_version = 2

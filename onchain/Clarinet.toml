@@ -198,6 +198,11 @@ path = "contracts/v2_sbtc/trait/ft-mint-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.redeemeable-trait]
+path = "contracts/borrow/traits/redeemeable-trait.clar"
+clarity_version = 2
+epoch = 2.4
+
 [contracts.vault-trait]
 path = "contracts/borrow/traits/vault-trait.clar"
 clarity_version = 2
