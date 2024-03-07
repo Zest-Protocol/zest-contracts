@@ -66,6 +66,7 @@
         user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data on-behalf-of asset-principal),
         user-index: (contract-call? .pool-0-reserve get-user-index on-behalf-of asset-principal),
         user-assets: (contract-call? .pool-0-reserve get-user-assets on-behalf-of),
+        asset: asset,
         amount: payback-amount,
         on-behalf-of: on-behalf-of,
         payer: payer
