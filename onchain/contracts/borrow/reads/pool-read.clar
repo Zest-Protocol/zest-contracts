@@ -29,6 +29,7 @@
 (define-constant available-assets (list
   'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token
   'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
+  .wstx
 ))
 
 (define-read-only (get-supplieable-assets)
@@ -38,6 +39,7 @@
 (define-read-only (get-borroweable-assets)
   (list 
     'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
+    .wstx
   )
 )
 
@@ -127,12 +129,25 @@
   )
 )
 
+(define-read-only (get-borrowed-balance-user-usd-stx (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-stx who))
+    (unit-price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.stx-oracle-v1-3 get-price))
+  )
+    (token-to-usd (get compounded-balance balance) u6 unit-price)
+  )
+)
+
 (define-read-only (get-borrowed-balance-user-ststx (who principal))
   (get-user-borrow-balance who 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token)
 )
 
 (define-read-only (get-borrowed-balance-user-aeusdc (who principal))
   (get-user-borrow-balance who 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc)
+)
+
+(define-read-only (get-borrowed-balance-user-stx (who principal))
+  (get-user-borrow-balance who .wstx)
 )
 
 (define-read-only (get-borrowed-balance (asset principal))

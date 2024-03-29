@@ -5,6 +5,8 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-token .redeemeable-trait.redeemeable-trait)
 
+(define-constant ERR_INVALID (err u980))
+
 (define-public (supply
   (lp <ft-mint-trait>)
   (pool-reserve principal)
@@ -13,7 +15,7 @@
   (owner principal)
   (referral (optional principal)))
   (let ((asset-principal (contract-of asset)))
-    (try! (contract-call? .pool-borrow supply lp pool-reserve asset amount owner))
+    (try! (contract-call? .pool-borrow-v1-1 supply lp pool-reserve asset amount owner))
     (print { type: "supply-call", payload: { key: owner, data: {
       reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
       user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data owner asset-principal),
@@ -40,7 +42,7 @@
   (let (
     (asset-principal (contract-of asset-to-borrow))
   )
-    (try! (contract-call? .pool-borrow borrow pool-reserve oracle asset-to-borrow lp assets amount-to-be-borrowed fee-calculator interest-rate-mode owner))
+    (try! (contract-call? .pool-borrow-v1-1 borrow pool-reserve oracle asset-to-borrow lp assets amount-to-be-borrowed fee-calculator interest-rate-mode owner))
     (print { type: "borrow-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
         user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data owner asset-principal),
@@ -60,7 +62,7 @@
   (payer principal))
   (let (
     (asset-principal (contract-of asset))
-    (payback-amount (try! (contract-call? .pool-borrow repay asset amount-to-repay on-behalf-of payer))))
+    (payback-amount (try! (contract-call? .pool-borrow-v1-1 repay asset amount-to-repay on-behalf-of payer))))
     (print { type: "repay-call", payload: { key: on-behalf-of, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
         user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data on-behalf-of asset-principal),
@@ -83,8 +85,12 @@
   (oracle <oracle-trait>)
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (let (
-    (asset-principal (contract-of asset)))
-    (try! (contract-call? .pool-borrow set-user-use-reserve-as-collateral who lp-token asset enable-as-collateral oracle assets-to-calculate))
+    (asset-principal (contract-of asset))
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)))
+    )
+    (asserts! (is-eq (get oracle reserve-state) (contract-of oracle)) ERR_INVALID)
+    
+    (try! (contract-call? .pool-borrow-v1-1 set-user-use-reserve-as-collateral who lp-token asset enable-as-collateral oracle assets-to-calculate))
     (print { type: "set-user-use-reserve-as-collateral-call", payload: { key: who, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
         user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data who asset-principal),
@@ -121,6 +127,17 @@
   )
 )
 
+(define-public (flashloan
+  (receiver principal)
+  (lp <ft>)
+  (asset <ft>)
+  (amount uint)
+  (flashloan-script <flash-loan>))
+  (begin
+    (contract-call? .pool-borrow-v1-1 flashloan receiver lp asset amount flashloan-script)
+  )
+)
+
 (define-public (liquidation-call
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
   (collateral-lp <a-token>)
@@ -136,7 +153,7 @@
     (collateral-asset-principal (contract-of collateral-to-liquidate))
     (liquidator tx-sender)
     )
-    (try! (contract-call? .pool-borrow liquidation-call
+    (try! (contract-call? .pool-borrow-v1-1 liquidation-call
       assets
       collateral-lp
       collateral-to-liquidate
@@ -167,6 +184,6 @@
         debt-asset: debt-asset-principal,
         debt-amount: debt-amount,
       }}})
-    (ok true)
+    (ok u0)
   )
 )

@@ -26,9 +26,12 @@ const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
 const lpdiko = "lp-diko";
 const lpsBTC = "lp-sbtc";
+const lpsBTCv1 = "lp-sbtc-v1";
 const lpstSTX = "lp-ststx";
+const lpstSTXv1 = "lp-ststx-v1";
 const lpUSDA = "lp-usda";
 const lpxUSD = "lp-xusd";
+const lpxUSDv1 = "lp-xusd-v1";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -38,8 +41,8 @@ const interestRateStrategyDefault = "interest-rate-strategy-default";
 const diko = "diko";
 const sBTC = "sbtc";
 const stSTX = "ststx";
-const zStSTX = "lp-ststx";
-const zsBTC = "lp-sbtc";
+const zStSTX = lpstSTXv1;
+const zsBTC = lpsBTCv1;
 const zxUSD = "lp-xusd";
 const USDA = "usda";
 const xUSD = "xusd";
@@ -89,7 +92,7 @@ describe("Flashloans", () => {
 
     poolBorrow.init(
       deployerAddress,
-      lpstSTX,
+      lpstSTXv1,
       deployerAddress,
       stSTX,
       6,
@@ -109,7 +112,7 @@ describe("Flashloans", () => {
 
     poolBorrow.init(
       deployerAddress,
-      lpsBTC,
+      lpsBTCv1,
       deployerAddress,
       sBTC,
       8,
@@ -129,7 +132,7 @@ describe("Flashloans", () => {
 
     poolBorrow.init(
       deployerAddress,
-      lpxUSD,
+      lpxUSDv1,
       deployerAddress,
       xUSD,
       6,
@@ -202,7 +205,8 @@ describe("Flashloans", () => {
     simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(10000000) ], deployerAddress);
     simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000) ], deployerAddress);
     simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000) ], deployerAddress);
-    
+
+    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-1.clar`).toString(), null, deployerAddress);
   });
   it("Flashloan executes properly only when fees are paid back to the protocol", () => {
     const poolReserve0 = new PoolReserve(
@@ -210,7 +214,7 @@ describe("Flashloans", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
     const stSTXZToken = new ZToken(simnet, deployerAddress, zStSTX);
@@ -241,36 +245,40 @@ describe("Flashloans", () => {
       deployerAddress
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      400_000_000_000,
-      LP_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(400_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+      ],
       LP_1
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpsBTC,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      sBTC,
-      2_000_000_000,
-      Borrower_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(2_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
       Borrower_1
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "flashloan",
       [
         Cl.standardPrincipal(FlashLoaner),
-        Cl.contractPrincipal(deployerAddress, lpsBTC),
+        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script"),
@@ -295,7 +303,7 @@ describe("Flashloans", () => {
         Cl.tuple({
           "a-token-address": Cl.contractPrincipal(
             "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
-            "lp-sbtc"
+            "lp-sbtc-v1"
           ),
           "base-ltv-as-collateral": Cl.uint(80000000),
           "borrow-cap": Cl.uint(max_value),
@@ -335,11 +343,11 @@ describe("Flashloans", () => {
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "flashloan",
       [
         Cl.standardPrincipal(FlashLoaner),
-        Cl.contractPrincipal(deployerAddress, lpsBTC),
+        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script"),
@@ -349,11 +357,11 @@ describe("Flashloans", () => {
     expect(callResponse.result).toBeErr(Cl.uint(30016));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "flashloan",
       [
         Cl.standardPrincipal(FlashLoaner),
-        Cl.contractPrincipal(deployerAddress, lpsBTC),
+        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script-1"),
@@ -363,11 +371,11 @@ describe("Flashloans", () => {
     expect(callResponse.result).toBeErr(Cl.uint(1));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "flashloan",
       [
         Cl.standardPrincipal(FlashLoaner),
-        Cl.contractPrincipal(deployerAddress, lpsBTC),
+        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script-2"),

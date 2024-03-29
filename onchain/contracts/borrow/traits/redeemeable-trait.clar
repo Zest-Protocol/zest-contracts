@@ -1,5 +1,6 @@
 (use-trait ft .ft-trait.ft-trait)
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
+(use-trait a-token .a-token-trait.a-token-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (define-trait redeemeable-trait
