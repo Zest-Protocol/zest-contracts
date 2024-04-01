@@ -13,6 +13,7 @@ const deployerAddress = accounts.get("deployer")!;
 const LP_1 = accounts.get("wallet_1")!;
 const LP_2 = accounts.get("wallet_4")!;
 const LP_3 = accounts.get("wallet_5")!;
+const Liquidator_1 = accounts.get("wallet_5")!;
 const Borrower_1 = accounts.get("wallet_2")!;
 const Delegate_1 = accounts.get("wallet_3")!;
 const Borrower_2 = accounts.get("wallet_4")!;
@@ -21,10 +22,15 @@ const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
 const lpdiko = "lp-diko";
+const lpdikov1 = "lp-diko-v1";
 const lpsBTC = "lp-sbtc";
+const lpsBTCv1 = "lp-sbtc-v1";
 const lpstSTX = "lp-ststx";
+const lpstSTXv1 = "lp-ststx-v1";
 const lpUSDA = "lp-usda";
+const lpUSDAv1 = "lp-usda-v1";
 const lpxUSD = "lp-xusd";
+const lpxUSDv1 = "lp-xusd-v1";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -38,6 +44,7 @@ const USDA = "usda";
 const xUSD = "xusd";
 
 const lpwstx = "lp-wstx";
+const lpwstxv1 = "lp-wstx-v1";
 const wstx = "wstx";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
@@ -108,6 +115,7 @@ describe("Supply and Redeem", () => {
     callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000) ], deployerAddress);
     callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000) ], deployerAddress);
 
+    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-1.clar`).toString(), null, deployerAddress);
   });
   it("Supply and immediately redeem without returns", () => {
     const poolReserve0 = new PoolReserve(
@@ -115,11 +123,11 @@ describe("Supply and Redeem", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
 
     let callResponse = poolBorrow.init(
       deployerAddress,
-      lpstSTX,
+      lpstSTXv1,
       deployerAddress,
       stSTX,
       6,
@@ -145,18 +153,19 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      1_000_000_000,
-      LP_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+      ],
       LP_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     let borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -164,36 +173,38 @@ describe("Supply and Redeem", () => {
       [Cl.standardPrincipal(LP_1)],
       LP_1
     );
-    // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
-      "lp-ststx",
+      "borrow-helper",
       "withdraw",
       [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.contractPrincipal(deployerAddress, oracle),
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
       LP_1
     );
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+    expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(`${deployerAddress}.pool-vault`)!).toBe(0n);
+    expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(LP_1)!).toBe(1_000_000_000n);
   });
-
   it("Supply and immediately redeem without returns", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
 
     let callResponse = simnet.callPublicFn(
       sBTC,
@@ -306,7 +317,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpstSTX,
+      lpstSTXv1,
       deployerAddress,
       stSTX,
       6,
@@ -327,7 +338,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpsBTC,
+      lpsBTCv1,
       deployerAddress,
       sBTC,
       8,
@@ -348,7 +359,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpdiko,
+      lpdikov1,
       deployerAddress,
       diko,
       6,
@@ -369,7 +380,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpUSDA,
+      lpUSDAv1,
       deployerAddress,
       USDA,
       6,
@@ -390,7 +401,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpxUSD,
+      lpxUSDv1,
       deployerAddress,
       xUSD,
       6,
@@ -508,90 +519,80 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    // callResponse = poolBorrow.supply(
-    //   deployerAddress,
-    //   lpxUSD,
-    //   deployerAddress,
-    //   pool0Reserve,
-    //   deployerAddress,
-    //   xUSD,
-    //   100_000_000_000,
-    //   Borrower_1,
-    //   Borrower_1
-    // );
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpUSDA,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      USDA,
-      100_000_000_000,
-      Borrower_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.uint(100_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      1_000_000_000,
-      LP_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+      ],
       LP_1
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      10_000_000_000,
-      Borrower_2,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(10_000_000_000),
+        Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
+      ],
       Borrower_2
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -613,27 +614,27 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -642,38 +643,37 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -684,7 +684,8 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200000000));
+    // console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
@@ -705,7 +706,7 @@ describe("Supply and Redeem", () => {
       "pool-0-reserve",
       "get-user-basic-reserve-data",
       [
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.contractPrincipal(deployerAddress, USDA),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.tuple({
@@ -722,52 +723,53 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_2),
+        Cl.none(),
       ],
       LP_2
     );
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -783,26 +785,28 @@ describe("Supply and Redeem", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_3),
+        Cl.none()
       ],
       LP_3
     );
-    callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
+    expect(callResponse.result).toBeOk(Cl.bool(true));
     // console.log(Cl.prettyPrint(callResponse.result));
+    callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
     // console.log(simnet.getAssetsMap());
 
 
     simnet.mineEmptyBlocks(10);
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -812,10 +816,10 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200_000_086));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -825,10 +829,10 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200_000_008 / 2));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -838,12 +842,13 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(100_000_005));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "lp-ststx",
+      "borrow-helper",
       "withdraw",
       [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -852,27 +857,27 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -881,9 +886,10 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "lp-ststx",
+      "borrow-helper",
       "withdraw",
       [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -892,39 +898,40 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
       LP_2
     );
-    expect(callResponse.result).toBeOk(Cl.uint(1_000_000_000));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "lp-ststx",
+      "borrow-helper",
       "withdraw",
       [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -933,42 +940,43 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
       LP_3
     );
-    expect(callResponse.result).toBeOk(Cl.uint(1_000_000_000));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
   });
+
   it("Supply and borrow small amounts immediately redeem with returns", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
 
     let callResponse = simnet.callPublicFn(
       sBTC,
@@ -1101,7 +1109,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpstSTX,
+      lpstSTXv1,
       deployerAddress,
       stSTX,
       6,
@@ -1122,7 +1130,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpsBTC,
+      lpsBTCv1,
       deployerAddress,
       sBTC,
       8,
@@ -1143,7 +1151,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpdiko,
+      lpdikov1,
       deployerAddress,
       diko,
       6,
@@ -1164,7 +1172,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpUSDA,
+      lpUSDAv1,
       deployerAddress,
       USDA,
       6,
@@ -1185,7 +1193,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpxUSD,
+      lpxUSDv1,
       deployerAddress,
       xUSD,
       6,
@@ -1308,74 +1316,63 @@ describe("Supply and Redeem", () => {
     oracleContract.setPrice(deployerAddress, stSTX, 10_000_000, deployerAddress);
     oracleContract.setPrice(deployerAddress, USDA, 100_000_000, deployerAddress);
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpUSDA,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      USDA,
-      BigInt("10000000000000"),
-      Borrower_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.uint(BigInt("10000000000000")),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
       Borrower_1
     );
-    // console.log("Supplying large amount");
-    // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      BigInt("100000000000000"),
-      LP_1,
+    // console.log("Supplying large amount");
+
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(BigInt("100000000000000")),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+      ],
       LP_1
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      1,
-      Borrower_2,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1),
+        Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
+      ],
       Borrower_2
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpsBTC,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      sBTC,
-      100_000_000,
-      deployerAddress,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(100_000_000),
+        Cl.standardPrincipal(deployerAddress),
+        Cl.none(),
+      ],
       deployerAddress
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // callResponse = simnet.callReadOnlyFn(
-    //   `pool-0-reserve`,
-    //   "calculate-interest-rates-test",
-    //   [
-    //     Cl.uint(BigInt("10000000000000")),
-    //     Cl.uint(0),
-    //     Cl.uint(0),
-    //     Cl.uint(100_000_000),
-    //     Cl.contractPrincipal(deployerAddress, "ststx"),
-    //     Cl.uint(6),
-    //   ],
-    //   deployerAddress
-    // );
-
-    // console.log(2);
-    // console.log("Calculate Interest Rates");
-    // // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       `pool-reserve-data`,
@@ -1389,38 +1386,37 @@ describe("Supply and Redeem", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "xusd-oracle"),
           }),
         ]),
@@ -1431,6 +1427,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
@@ -1480,38 +1477,38 @@ describe("Supply and Redeem", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "xusd-oracle"),
           }),
         ]),
@@ -1522,6 +1519,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
+    // console.log(Cl.prettyPrint(callResponse.result));
     // console.log("Borrowing a small amount relative to entire pool")
     // console.log(callResponse.events);
 
@@ -1560,24 +1558,24 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      1,
-      Borrower_2,
-      Borrower_2
-    );
-
-    // simnet.mineEmptyBlocks(1);
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1),
+        Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
+      ],
+      Borrower_2
+    );
+    // console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -1587,8 +1585,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-
-    expect(Number(cvToValue(callResponse.result)["value"])).toBe(1_000_000 + 1);
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     // console.log("Reserve state after repay");
     // callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
@@ -1608,27 +1605,27 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1638,38 +1635,37 @@ describe("Supply and Redeem", () => {
     // console.log(Cl.prettyPrint(borrower_1_data.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1680,6 +1676,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
+    expect(callResponse.result).toBeOk(Cl.bool(true));
     // expect(callResponse.result).toBeOk(Cl.uint(200000000));
 
     // console.log(callResponse.events);
@@ -1691,7 +1688,7 @@ describe("Supply and Redeem", () => {
       "pool-0-reserve",
       "get-user-basic-reserve-data",
       [
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.contractPrincipal(deployerAddress, USDA),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.tuple({
@@ -1708,75 +1705,78 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_2),
+        Cl.none(),
       ],
       LP_2
     );
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.uint(200_000_000),
+        Cl.uint(150_000_000),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
       ],
       Borrower_2
     );
+    expect(callResponse.result).toBeErr(Cl.uint(30003));
     // console.log(Cl.prettyPrint(callResponse.result));
     // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, USDA, Borrower_1);
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_3),
+        Cl.none(),
       ],
       LP_3
     );
@@ -1788,7 +1788,7 @@ describe("Supply and Redeem", () => {
     // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, stSTX, Borrower_1);
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -1798,12 +1798,13 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200_000_001));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "lp-ststx",
+      "borrow-helper",
       "withdraw",
       [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1812,27 +1813,27 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1841,9 +1842,10 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "lp-ststx",
+      "borrow-helper",
       "withdraw",
       [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1852,39 +1854,40 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
       LP_2
     );
-    expect(callResponse.result).toBeOk(Cl.uint(1_000_000_000));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "lp-ststx",
+      "borrow-helper",
       "withdraw",
       [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1893,27 +1896,27 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1928,7 +1931,7 @@ describe("Supply and Redeem", () => {
       "pool-0-reserve",
       "mint-to-treasury",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
       ],
@@ -1940,7 +1943,7 @@ describe("Supply and Redeem", () => {
       "pool-0-reserve",
       "mint-to-treasury",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
       ],
@@ -1954,11 +1957,11 @@ describe("Supply and Redeem", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
 
     let callResponse = poolBorrow.init(
       deployerAddress,
-      lpstSTX,
+      lpstSTXv1,
       deployerAddress,
       stSTX,
       6,
@@ -1973,7 +1976,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpUSDA,
+      lpUSDAv1,
       deployerAddress,
       USDA,
       6,
@@ -2019,33 +2022,37 @@ describe("Supply and Redeem", () => {
     callResponse = simnet.callPublicFn(stSTX, "mint", [Cl.uint(1_000_000_000), Cl.standardPrincipal(Borrower_1)], deployerAddress);
     callResponse = simnet.callPublicFn(stSTX, "mint", [Cl.uint(1_000_000_000), Cl.standardPrincipal(LP_2)], deployerAddress);
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      1_000_000_000,
-      Borrower_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
       Borrower_1
     );
 
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, stSTX, Borrower_1);
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(true);
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpUSDA,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      USDA,
-      1_000_000_000,
-      LP_2,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_2),
+        Cl.none(),
+      ],
       LP_2
     );
-    
+
     callResponse = poolBorrow.getUserReserveData(LP_2, deployerAddress, USDA, LP_2);
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
 
@@ -2057,12 +2064,12 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2075,23 +2082,23 @@ describe("Supply and Redeem", () => {
     expect(Number(cvToValue(callResponse.result).value["current-ltv"].value)).toBe(0);
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2102,29 +2109,29 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(200_000_000));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, USDA, Borrower_1);
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2135,7 +2142,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeOk(Cl.uint(10_000_000));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     // check only ststx borrowing power is reduced
     callResponse = simnet.callPublicFn(
@@ -2146,12 +2153,12 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2162,23 +2169,23 @@ describe("Supply and Redeem", () => {
 
     // cannot borrow if stSTX has not be enabled to be borrowed
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, lpstSTX),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2193,74 +2200,82 @@ describe("Supply and Redeem", () => {
     
 
     // can't set asset disabled as collateral to be enabled as collateral by the user
-    callResponse = poolBorrow.setUserUseReserveAsCollateral(
-      LP_2,
-      deployerAddress,
-      lpUSDA,
-      deployerAddress,
-      USDA,
-      true,
-      deployerAddress,
-      oracle,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "set-user-use-reserve-as-collateral",
       [
-        {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: lpstSTX },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: USDA },
-          "lp-token": { deployerAddress, contractName: lpUSDA },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-      ]
+        Cl.standardPrincipal(LP_2),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.bool(true),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      LP_2
     );
     expect(callResponse.result).toBeErr(Cl.uint(30021));
 
-    callResponse = poolBorrow.setUserUseReserveAsCollateral(
-      LP_2,
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      stSTX,
-      true,
-      deployerAddress,
-      oracle,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "set-user-use-reserve-as-collateral",
       [
-        {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: lpstSTX },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: USDA },
-          "lp-token": { deployerAddress, contractName: lpUSDA },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-      ]
+        Cl.standardPrincipal(LP_2),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.bool(true),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      LP_2
     );
     expect(callResponse.result).toBeErr(Cl.uint(30002));
     // supply again and check collateral is not enabled either
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpUSDA,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      USDA,
-      1_000_000_000,
-      LP_2,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_2),
+        Cl.none(),
+      ],
       LP_2
     );
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      1_000_000_000,
-      LP_2,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_2),
+        Cl.none(),
+      ],
       LP_2
     );
     callResponse = poolBorrow.getUserReserveData(LP_2, deployerAddress, stSTX, LP_2);
@@ -2278,12 +2293,12 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2293,23 +2308,22 @@ describe("Supply and Redeem", () => {
     expect(Number(cvToValue(callResponse.result).value["total-collateral-balanceUSD"].value)).toBe(160000000000);
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, lpUSDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2320,7 +2334,7 @@ describe("Supply and Redeem", () => {
       ],
       LP_2
     );
-    expect(callResponse.result).toBeOk(Cl.uint(100_000_000));
+    expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = poolBorrow.getUserReserveData(LP_2, deployerAddress, USDA, LP_2);
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
@@ -2334,12 +2348,12 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2350,7 +2364,7 @@ describe("Supply and Redeem", () => {
     expect(Number(cvToValue(callResponse.result).value["total-borrow-balanceUSD"].value)).toBe(9900001386);
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -2369,12 +2383,12 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2391,7 +2405,7 @@ describe("Supply and Redeem", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
 
     let callResponse = simnet.callPublicFn(
       sBTC,
@@ -2430,7 +2444,7 @@ describe("Supply and Redeem", () => {
     
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpstSTX,
+      lpstSTXv1,
       deployerAddress,
       stSTX,
       6,
@@ -2451,7 +2465,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpsBTC,
+      lpsBTCv1,
       deployerAddress,
       sBTC,
       8,
@@ -2472,7 +2486,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpdiko,
+      lpdikov1,
       deployerAddress,
       diko,
       6,
@@ -2493,7 +2507,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpUSDA,
+      lpUSDAv1,
       deployerAddress,
       USDA,
       6,
@@ -2514,7 +2528,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpxUSD,
+      lpxUSDv1,
       deployerAddress,
       xUSD,
       6,
@@ -2535,7 +2549,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpwstx,
+      lpwstxv1,
       deployerAddress,
       wstx,
       6,
@@ -2598,30 +2612,35 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpsBTC,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      sBTC,
-      1_000_000_000,
-      Borrower_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
       Borrower_1
     );
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      1_000_000_000,
-      Borrower_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
       Borrower_1
     );
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -2631,32 +2650,32 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2666,61 +2685,65 @@ describe("Supply and Redeem", () => {
     expect(Number(cvToValue(callResponse.result).value["current-liquidation-threshold"].value)).toBe(90000000);
     expect(Number(cvToValue(callResponse.result).value["current-ltv"].value)).toBe(80000000);
 
-    callResponse = poolBorrow.setUserUseReserveAsCollateral(
-      Borrower_1,
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      stSTX,
-      true,
-      deployerAddress,
-      oracle,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "set-user-use-reserve-as-collateral",
       [
-        {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: lpstSTX },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: sBTC },
-          "lp-token": { deployerAddress, contractName: lpsBTC },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: diko },
-          "lp-token": { deployerAddress, contractName: lpdiko },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: USDA },
-          "lp-token": { deployerAddress, contractName: lpUSDA },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: xUSD },
-          "lp-token": { deployerAddress, contractName: lpxUSD },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: wstx },
-          "lp-token": { deployerAddress, contractName: lpwstx },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-      ]
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.bool(true),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
     );
     expect(callResponse.result).toBeErr(Cl.uint(30021));
     // fail
 
     // supply new asset with different TVL and threshold
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpwstx,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      wstx,
-      250_000_000_000,
-      Borrower_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpwstxv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.uint(250_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
       Borrower_1
     );
 
@@ -2735,32 +2758,32 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2781,47 +2804,49 @@ describe("Supply and Redeem", () => {
     );
 
     // enable user collateral after it's enabled by protocol
-    callResponse = poolBorrow.setUserUseReserveAsCollateral(
-      Borrower_1,
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      stSTX,
-      true,
-      deployerAddress,
-      oracle,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "set-user-use-reserve-as-collateral",
       [
-        {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: lpstSTX },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: sBTC },
-          "lp-token": { deployerAddress, contractName: lpsBTC },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: diko },
-          "lp-token": { deployerAddress, contractName: lpdiko },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: USDA },
-          "lp-token": { deployerAddress, contractName: lpUSDA },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: xUSD },
-          "lp-token": { deployerAddress, contractName: lpxUSD },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: wstx },
-          "lp-token": { deployerAddress, contractName: lpwstx },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-      ]
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.bool(true),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
@@ -2834,32 +2859,32 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2873,43 +2898,42 @@ describe("Supply and Redeem", () => {
     const avgSumTvl = (Number(cvToValue(callResponse.result).value["current-ltv"].value));
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      "borrow-helper",
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, sBTC),
-        Cl.contractPrincipal(deployerAddress, lpsBTC),
+        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2920,7 +2944,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect((callResponse.result)).toBeOk(Cl.uint(100_000_000));
+    expect((callResponse.result)).toBeOk(Cl.bool(true));
 
     // TVL and Threshold remains unchanged after borrowing supplied asset
     callResponse = simnet.callPublicFn(
@@ -2931,32 +2955,32 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2966,47 +2990,49 @@ describe("Supply and Redeem", () => {
     expect(Number(cvToValue(callResponse.result).value["current-liquidation-threshold"].value)).toBe(avgSumThreshold);
     expect(Number(cvToValue(callResponse.result).value["current-ltv"].value)).toBe(avgSumTvl);
 
-    callResponse = poolBorrow.setUserUseReserveAsCollateral(
-      Borrower_1,
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      stSTX,
-      false,
-      deployerAddress,
-      oracle,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "set-user-use-reserve-as-collateral",
       [
-        {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: lpstSTX },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: sBTC },
-          "lp-token": { deployerAddress, contractName: lpsBTC },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: diko },
-          "lp-token": { deployerAddress, contractName: lpdiko },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: USDA },
-          "lp-token": { deployerAddress, contractName: lpUSDA },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: xUSD },
-          "lp-token": { deployerAddress, contractName: lpxUSD },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-        {
-          asset: { deployerAddress, contractName: wstx },
-          "lp-token": { deployerAddress, contractName: lpwstx },
-          oracle: { deployerAddress, contractName: oracle },
-        },
-      ]
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.bool(false),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
@@ -3019,32 +3045,32 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -3061,7 +3087,7 @@ describe("Supply and Redeem", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
 
     let callResponse = simnet.callPublicFn(
       sBTC,
@@ -3174,7 +3200,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpstSTX,
+      lpstSTXv1,
       deployerAddress,
       stSTX,
       6,
@@ -3195,7 +3221,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpsBTC,
+      lpsBTCv1,
       deployerAddress,
       sBTC,
       8,
@@ -3216,7 +3242,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpdiko,
+      lpdikov1,
       deployerAddress,
       diko,
       6,
@@ -3237,7 +3263,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpUSDA,
+      lpUSDAv1,
       deployerAddress,
       USDA,
       6,
@@ -3258,7 +3284,7 @@ describe("Supply and Redeem", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpxUSD,
+      lpxUSDv1,
       deployerAddress,
       xUSD,
       6,
@@ -3376,52 +3402,46 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    // callResponse = poolBorrow.supply(
-    //   deployerAddress,
-    //   lpxUSD,
-    //   deployerAddress,
-    //   pool0Reserve,
-    //   deployerAddress,
-    //   xUSD,
-    //   100_000_000_000,
-    //   Borrower_1,
-    //   Borrower_1
-    // );
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpxUSD,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      xUSD,
-      100_000_000_000,
-      Borrower_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.uint(100_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
       Borrower_1
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      1_000_000_000,
-      LP_1,
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+      ],
       LP_1
     );
 
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      10_000_000_000,
-      Borrower_2,
+
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(10_000_000_000),
+        Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
+      ],
       Borrower_2
     );
 
@@ -3443,27 +3463,27 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -3471,7 +3491,6 @@ describe("Supply and Redeem", () => {
       Borrower_1
     );
     expect((callResponse.result)).toBeErr(Cl.uint(7002));
-
 
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -3481,27 +3500,27 @@ describe("Supply and Redeem", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
             oracle: Cl.contractPrincipal(deployerAddress, "xusd-oracle"),
           }),
         ]),

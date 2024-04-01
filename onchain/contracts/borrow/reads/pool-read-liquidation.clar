@@ -73,7 +73,7 @@
   (let (
     (reserve-data (get-reserve-data 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token))
     (user-index (get-user-index user 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token))
-    (principal-balance (unwrap-panic (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zststx get-principal-balance user)))
+    (principal-balance (unwrap-panic (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zststx-v1-0 get-principal-balance user)))
     (decimals (get decimals reserve-data))
     (unit-price (get-ststx-price))
   )
@@ -96,7 +96,7 @@
   (let (
     (reserve-data (get-reserve-data 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc))
     (user-index (get-user-index user 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc))
-    (principal-balance (unwrap-panic (contract-call? .zaeusdc get-principal-balance user)))
+    (principal-balance (unwrap-panic (contract-call? .zaeusdc-v1-0 get-principal-balance user)))
     (decimals (get decimals reserve-data))
     (unit-price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.aeusdc-oracle-v1-0 get-price))
   )
