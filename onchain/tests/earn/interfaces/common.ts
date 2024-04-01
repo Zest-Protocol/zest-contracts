@@ -1,9 +1,8 @@
 import { Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v1.0.2/index.ts';
 import { Buffer } from "https://deno.land/std@0.159.0/node/buffer.ts";
-import { SupplierInterface } from '../interfaces/supplier_interface.ts';
-import { TestUtils } from '../interfaces/test-utils.ts';
-import { Magic } from '../interfaces/magic_real.ts';
-import { MagicCaller } from '../interfaces/magic-caller.ts';
+import { SupplierInterface } from './supplier_interface.ts';
+import { TestUtils } from './test-utils.ts';
+import { Magic } from './magic_real.ts';
 
 import { 
   getHash,
@@ -13,7 +12,7 @@ import {
   generateP2PKHTx,
   getExpiration,
   swapperBuff
-} from "../util.ts";
+} from "../supplier-interface/util.ts";
 
 
 function setContractOwner(chain: Chain, contract: string, newOwner: string, deployer: Account) {
@@ -150,89 +149,6 @@ function registerSupplierTxs(
     ];
 }
 
-function commitFunds(
-  deployer: string,
-  preimage: string,
-  tx: string,
-  txid: string,
-  senderPubkey: string,
-  recipientPubkey: string,
-  expiration: number,
-  outputIndex: number,
-  swapperId: number,
-  supplierId: number,
-  minToReceive: number,
-  height: number,
-  tokenId: number,
-  loanId: number,
-  action: string,
-  caller: string,
-  contractAddress: string,
-  magicCallerContract: string,
-) {
-  const hash = getHash(preimage);
-  return [
-    TestUtils.setMinedTx(txid, deployer),
-    MagicCaller.commitFunds(
-      { header: "", height },
-      [],
-      tx,
-      { "tx-index": 0, "hashes": [], "tree-depth": 0 },
-      outputIndex,
-      senderPubkey,
-      recipientPubkey,
-      getExpiration(expiration),
-      hash,
-      swapperBuff(swapperId),
-      supplierId,
-      minToReceive,
-      tokenId,
-      loanId,
-      action,
-      caller,
-      contractAddress,
-      magicCallerContract,
-    )
-  ];
-}
-
-function finalizeDrawdown(
-  tx: string,
-  height: number,
-  loanId: number,
-  lpToken: string,
-  tokenId: number,
-  collToken: string,
-  collVault: string,
-  fv: string,
-  xbtcFt: string,
-  outputIndex: number,
-  swapId: number,
-  stxSender: string,
-  deployer: string,
-  ) {
-  const txid = getTxId(tx);
-  return [
-    TestUtils.setMinedTx(txid, deployer),
-    SupplierInterface.finalizeDrawdown(
-      loanId,
-      lpToken,
-      tokenId,
-      collToken,
-      collVault,
-      fv,
-      xbtcFt,
-      { header: "", height },
-      [],
-      tx,
-      { "tx-index": 0, "hashes": [], "tree-depth": 0 },
-      outputIndex,
-      swapId,
-      stxSender
-    )
-  ]
-}
-
 function sendFundsP2SHTxs(
   deployer: string,
   tokenId: number,
@@ -326,77 +242,6 @@ function sendFundsP2SHTxsWrap(
       `${deployer}.Wrapped-Bitcoin`,
       `${deployer}.rewards-calc`,
       stxSender
-    )
-  ];
-}
-
-export function makePaymentToLoan(
-  deployer: string,
-  preimage: string,
-  expiration: number,
-  swapperId: number,
-  outputValue: number,
-  senderPubkey: string,
-  recipientPubkey: string,
-  outputIndex: number,
-  supplierId: number,
-  minToReceive: number,
-  height: number,
-  tokenId: number,
-  loanId: number,
-  payment: string,
-  lpToken: string,
-  liquidityVault: string,
-  cpToken: string,
-  cpRewardsToken: string,
-  zpToken: string,
-  swapRouter: string,
-  xbtc: string,
-  supplierController: string,
-  action: string,
-  caller: string,
-  contractAddress: string,
-  magicCallerContract: string) {
-  const hash = getHash(preimage);
-  const tx = generateP2SHTx(senderPubkey, recipientPubkey, expiration, hash, swapperId, outputValue);
-  const txid = getTxId(tx);
-  return [
-    TestUtils.setMinedTx(txid, deployer),
-    MagicCaller.commitFunds(
-      { header: "", height },
-      [],
-      tx,
-      { "tx-index": 0, "hashes": [], "tree-depth": 0 },
-      outputIndex,
-      senderPubkey,
-      recipientPubkey,
-      getExpiration(expiration),
-      hash,
-      swapperBuff(swapperId),
-      supplierId,
-      minToReceive,
-      tokenId,
-      loanId,
-      action,
-      caller,
-      contractAddress,
-      magicCallerContract,
-    ),
-    MagicCaller.makePaymentLoan(
-      txid,
-      preimage,
-      payment,
-      lpToken,
-      liquidityVault,
-      cpToken,
-      cpRewardsToken,
-      zpToken,
-      swapRouter,
-      xbtc,
-      supplierController,
-      caller,
-      caller,
-      magicCallerContract
     )
   ];
 }
@@ -682,6 +527,45 @@ function finalizeOutboundTxs(
   ]
 }
 
+function finalizeDrawdown(
+  loanId: number,
+  lpToken: string,
+  tokenId: number,
+  collToken: string,
+  collVault: string,
+  fv: string,
+  xbtcFt: string,
+  pubkeyHash: string,
+  outputValue: number,
+  swapId: number,
+  height: number,
+  stxSender: string,
+  deployer: string,
+  ) {
+  let tx1 = generateP2PKHTx(pubkeyHash, outputValue);
+  let txid1 = getTxId(tx1);
+
+  return [
+    TestUtils.setMinedTx(txid1, deployer),
+    SupplierInterface.finalizeDrawdown(
+      loanId,
+      lpToken,
+      tokenId,
+      collToken,
+      collVault,
+      fv,
+      xbtcFt,
+      { header: "", height },
+      [],
+      tx1,
+      { "tx-index": 0, "hashes": [], "tree-depth": 0 },
+      0,
+      swapId,
+      stxSender
+    )
+  ]
+}
+
 function finalizeRollover(
   loanId: number,
   lpToken: string,
@@ -719,13 +603,6 @@ function finalizeRollover(
       stxSender
     )
   ]
-}
-
-const MAGIC_PATH = `./contracts/v2/bitcoin/magic-caller.clar`;
-
-export function createMagicCallerDeployTx(contractName: string, deployerAddress: string, ) {
-  const code = Deno.readTextFileSync(MAGIC_PATH).toString();
-  return Tx.deployContract(contractName, code, deployerAddress);
 }
 
 function bootstrapApprovedContracts(chain: Chain, deployer: Account) {
@@ -775,5 +652,4 @@ export {
   makeFullPaymentTxs,
   makeResidualPayment,
   makePaymentVerifyTxs,
-  commitFunds,
 };
