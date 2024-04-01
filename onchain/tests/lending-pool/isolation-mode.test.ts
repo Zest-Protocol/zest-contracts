@@ -187,13 +187,6 @@ describe("Isolated mode", () => {
 
     callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
-      stSTX,
-      true,
-      deployerAddress
-    );
-
-    callResponse = poolBorrow.setBorrowingEnabled(
-      deployerAddress,
       xUSD,
       true,
       deployerAddress
@@ -233,6 +226,12 @@ describe("Isolated mode", () => {
       deployerAddress,
       stSTX,
       160_000_000,
+      deployerAddress
+    );
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
       deployerAddress
     );
 
@@ -380,6 +379,12 @@ describe("Isolated mode", () => {
     callResponse = poolBorrow.setBorroweableIsolated(
       deployerAddress,
       xUSD,
+      deployerAddress
+    );
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
       deployerAddress
     );
 
@@ -605,6 +610,13 @@ describe("Isolated mode", () => {
     callResponse = poolBorrow.setBorroweableIsolated(
       deployerAddress,
       xUSD,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
       deployerAddress
     );
 
@@ -888,6 +900,13 @@ describe("Isolated mode", () => {
     callResponse = poolBorrow.setBorroweableIsolated(
       deployerAddress,
       xUSD,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
       deployerAddress
     );
 
@@ -1761,6 +1780,13 @@ describe("Isolated mode", () => {
       deployerAddress
     );
 
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
+      deployerAddress
+    );
+
     callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
       stSTX,
@@ -2054,7 +2080,7 @@ describe("Isolated mode", () => {
     );
     expect((callResponse.result)).toBeOk(Cl.bool(true));
   });
-  it("Using 2 isolated assets and 1 asset that can be supplied and borrowed (not collateral). Try to enable an isolated asets when another isolated asset is active as collateral. ", () => {
+  it("Using 2 isolated assets and 1 asset that can be supplied and borrowed (not collateral). Try to enable an isolated asets when another isolated asset is active as collateral.", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
@@ -2546,6 +2572,7 @@ describe("Isolated mode", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
+    // borrowing non-isolated asset
     callResponse = simnet.callPublicFn(
       "borrow-helper",
       "borrow",
@@ -2583,7 +2610,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_2
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    expect(callResponse.result).toBeErr(Cl.uint(30006));
 
 
     callResponse = simnet.callPublicFn(
