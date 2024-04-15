@@ -28,6 +28,11 @@ path = "contracts/borrow/pool/oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.update-asset]
+path = "contracts/borrow/deployment/update-asset.clar"
+clarity_version = 2
+epoch = 2.4
+
 [contracts.flashloan-script]
 path = "contracts/borrow/mocks/flashloan-script.clar"
 clarity_version = 2
@@ -58,10 +63,10 @@ path = "contracts/borrow/mocks/pool-read-liquidation.clar"
 clarity_version = 2
 epoch = 2.4
 
-[contracts.update-diko]
-path = "contracts/borrow/mocks/update-diko.clar"
-clarity_version = 2
-epoch = 2.4
+# [contracts.update-diko]
+# path = "contracts/borrow/mocks/update-diko.clar"
+# clarity_version = 2
+# epoch = 2.4
 
 # [contracts.governance-token-trait]
 # path = "contracts/v2_sbtc/dao/traits/governance-token-trait.clar"
