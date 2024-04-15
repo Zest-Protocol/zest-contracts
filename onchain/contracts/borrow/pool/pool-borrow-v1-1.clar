@@ -30,6 +30,11 @@
 (define-constant ERR_EXCEED_SUPPLY_CAP (err u30020))
 (define-constant ERR_COLLATERAL_DISABLED (err u30021))
 (define-constant ERR_CANNOT_ENABLE_ISOLATED_ASSET (err u30022))
+(define-constant ERR_PANIC (err u30023))
+(define-constant ERR_INVALID_ASSETS (err u30024))
+(define-constant ERR_NON_CORRESPONDING_ASSETS (err u30025))
+
+
 
 (define-map users-id uint principal)
 
@@ -144,6 +149,8 @@
     (asserts! (>= current-available-liquidity amount) ERR_EXCEEDED_LIQ)
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
 
+    (try! (validate-assets assets))
+
     (try! (contract-call? .pool-0-reserve update-state-on-redeem asset owner amount redeems-everything))
     (try! (contract-call? .pool-0-reserve transfer-to-user asset owner amount))
 
@@ -176,6 +183,8 @@
     (asserts! (>= available-liquidity amount-to-be-borrowed) ERR_EXCEEDED_LIQ)
     (asserts! (is-eq tx-sender owner) ERR_UNAUTHORIZED)
     (asserts! (> amount-to-be-borrowed u0) ERR_NOT_ZERO)
+
+    (try! (validate-assets assets))
 
     (if (is-some is-in-isolation-mode)
       (asserts! (contract-call? .pool-0-reserve is-borroweable-isolated asset) ERR_NOT_SILOED_ASSET)
@@ -289,6 +298,8 @@
     (asserts! (is-eq (contract-of collateral-lp) (get a-token-address collateral-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (contract-of collateral-oracle) (get oracle collateral-data)) ERR_INVALID_ORACLE)
     (asserts! (is-eq (contract-of debt-oracle) (get oracle reserve-data)) ERR_INVALID_ORACLE)
+
+    (try! (validate-assets assets))
     
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
@@ -304,6 +315,30 @@
       debt-amount
       to-receive-atoken
     )
+  )
+)
+
+
+(define-read-only (get-assets)
+  (contract-call? .pool-reserve-data get-assets-read))
+
+(define-read-only (validate-assets
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
+  (let ((assets-used (get-assets)))
+    (asserts! (is-eq (len assets-used) (len assets-to-calculate)) ERR_INVALID_ASSETS)
+    (fold check-assets assets-used (ok { idx: u0, assets: assets-to-calculate }))
+  )
+)
+
+(define-read-only (check-assets
+  (asset-to-validate principal)
+  (ret (response { idx: uint, assets: (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })} uint)))
+  (let (
+    (agg (try! ret))
+    (asset-principal (get asset (unwrap! (element-at? (get assets agg) (get idx agg)) ERR_NON_CORRESPONDING_ASSETS))))
+    (asserts! (is-eq asset-to-validate (contract-of asset-principal)) ERR_NON_CORRESPONDING_ASSETS)
+    
+    (ok { idx: (+ u1 (get idx agg)), assets: (get assets agg) })
   )
 )
 
@@ -385,6 +420,8 @@
     (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data who assets-to-calculate))))
 
     (try! (is-approved-contract contract-caller))
+
+    (try! (validate-assets assets-to-calculate))
     (asserts! (is-eq tx-sender who) ERR_UNAUTHORIZED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
