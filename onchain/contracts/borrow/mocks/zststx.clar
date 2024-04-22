@@ -8,16 +8,16 @@
 (define-constant ERR_UNAUTHORIZED (err u14401))
 (define-constant ERR_INVALID_TRANSFER (err u14402))
 
-(define-fungible-token lp-sbtc)
+(define-fungible-token zststx)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var token-name (string-ascii 32) "LP sbtc")
-(define-data-var token-symbol (string-ascii 32) "LP sbtc")
+(define-data-var token-name (string-ascii 32) "Z stSTX")
+(define-data-var token-symbol (string-ascii 32) "Z-ststx")
 
-(define-constant asset-addr .sbtc)
+(define-constant asset-addr 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-sbtc)))
+  (ok (ft-get-supply zststx)))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))
@@ -26,14 +26,14 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u8))
+  (ok u6))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
 
 (define-read-only (get-balance (account principal))
   (let (
-    (current-principal-balance (ft-get-balance lp-sbtc account))
+    (current-principal-balance (ft-get-balance zststx account))
   )
     (if (is-eq current-principal-balance u0)
       (ok u0)
@@ -41,10 +41,10 @@
         (cumulated-balance
           (contract-call? .pool-0-reserve calculate-cumulated-balance
             account
-            u8
-            .sbtc
+            u6
+            asset-addr
             current-principal-balance
-            u8)))
+            u6)))
         cumulated-balance
       )
     )
@@ -52,7 +52,8 @@
 )
 
 (define-read-only (get-principal-balance (account principal))
-  (ok (ft-get-balance lp-sbtc account)))
+  (ok (ft-get-balance zststx account)))
+
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (begin
@@ -71,7 +72,7 @@
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (match (ft-transfer? lp-sbtc amount sender recipient)
+    (match (ft-transfer? zststx amount sender recipient)
       response (begin
         (print memo)
         (ok response)
@@ -94,10 +95,12 @@
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (ft-burn? lp-sbtc amount owner))
+  (ft-burn? zststx amount owner)
+)
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (ft-mint? lp-sbtc amount owner))
+  (ft-mint? zststx amount owner)
+)
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
   (begin
@@ -172,12 +175,12 @@
     (ret (try! (cumulate-balance-internal tx-sender)))
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
-    (asserts! (and (> amount-to-redeem u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
+    (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
     (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
     (asserts! (is-eq (contract-of asset) asset-addr) ERR_UNAUTHORIZED)
     
     (try! (burn-internal amount-to-redeem tx-sender))
-    
+
     (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
       (begin
         (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
@@ -239,7 +242,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-sbtc", payload: owner })
+    (print { type: "set-contract-owner-zststx", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))

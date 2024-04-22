@@ -8,14 +8,14 @@
 (define-constant ERR_INVALID (err u980))
 
 (define-public (supply
-  (lp <ft-mint-trait>)
+  (lp <redeemeable-token>)
   (pool-reserve principal)
   (asset <ft>)
   (amount uint)
   (owner principal)
   (referral (optional principal)))
   (let ((asset-principal (contract-of asset)))
-    (try! (contract-call? .pool-borrow-v1-1 supply lp pool-reserve asset amount owner))
+    (try! (contract-call? .pool-borrow-v1-2 supply lp pool-reserve asset amount owner))
     (print { type: "supply-call", payload: { key: owner, data: {
       reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
       user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data owner asset-principal),
@@ -59,8 +59,7 @@
   (asset <ft>)
   (amount-to-repay uint)
   (on-behalf-of principal)
-  (payer principal)
-  )
+  (payer principal))
   (let (
     (asset-principal (contract-of asset))
     (payback-amount (try! (contract-call? .pool-borrow-v1-2 repay asset amount-to-repay on-behalf-of payer))))
@@ -88,7 +87,7 @@
   (let (
     (asset-principal (contract-of asset))
     (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)))
-    )
+    ) 
     (try! (contract-call? .pool-borrow-v1-2 set-user-use-reserve-as-collateral who lp-token asset enable-as-collateral oracle assets-to-calculate))
     (print { type: "set-user-use-reserve-as-collateral-call", payload: { key: who, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
@@ -112,17 +111,28 @@
   )
   (let (
     (asset-principal (contract-of asset))
-    (actual-amount (try! (contract-call? lp withdraw pool-reserve asset oracle amount owner assets)))
+    (withdraw-res (try! (contract-call? .pool-borrow-v1-2 withdraw pool-reserve asset lp oracle assets amount owner)))
     )
     (print { type: "withdraw-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
         user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data owner asset-principal),
         user-index: (contract-call? .pool-0-reserve get-user-index owner asset-principal),
         user-assets: (contract-call? .pool-0-reserve get-user-assets owner),
-        amount: actual-amount,
+        ;; amount: actual-amount,
         asset: asset,
       }}})
     (ok true)
+  )
+)
+
+(define-public (flashloan
+  (receiver principal)
+  (lp <ft>)
+  (asset <ft>)
+  (amount uint)
+  (flashloan-script <flash-loan>))
+  (begin
+    (contract-call? .pool-borrow-v1-2 flashloan receiver lp asset amount flashloan-script)
   )
 )
 
@@ -172,6 +182,6 @@
         debt-asset: debt-asset-principal,
         debt-amount: debt-amount,
       }}})
-    (ok true)
+    (ok u0)
   )
 )

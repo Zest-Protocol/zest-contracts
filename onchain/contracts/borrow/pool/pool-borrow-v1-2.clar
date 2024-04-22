@@ -337,7 +337,7 @@
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
 
-    (contract-call? .liquidation-manager-v1-1 liquidation-call
+    (contract-call? .liquidation-manager-v1-2 liquidation-call
       assets
       collateral-lp
       collateral-to-liquidate
@@ -651,6 +651,26 @@
     ret
     { filter-by: (get filter-by ret), agg: (unwrap-panic (as-max-len? (append (get agg ret) asset) u100)) }))
 
+(define-public (set-freeze-end-block (asset principal) (end-block uint))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data-1 set-freeze-end-block asset end-block)
+  )
+)
+
+(define-public (set-grace-period-time (asset principal) (time uint))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data-1 set-grace-period-time asset time)
+  )
+)
+
+(define-public (set-grace-period-enabled (asset principal) (enabled bool))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data-1 set-grace-period-enabled asset enabled)
+  )
+)
 
 ;; for helper interface
 (define-map approved-contracts principal bool)

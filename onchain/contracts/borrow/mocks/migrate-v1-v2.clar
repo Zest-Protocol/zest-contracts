@@ -65,42 +65,42 @@
 
     ;; ststx upgrade
     (try! (contract-call? .lp-ststx-v2 set-approved-contract .pool-borrow-v1-2 true))
-    (try! (contract-call? .lp-ststx-v2 set-approved-contract .liquidation-manager-v1-1 true))
+    (try! (contract-call? .lp-ststx-v2 set-approved-contract .liquidation-manager-v1-2 true))
     (try! (contract-call? .lp-ststx-v2 set-approved-contract .pool-0-reserve true))
 
     ;; sbtc upgrade
     (try! (contract-call? .lp-sbtc-v2 set-approved-contract .pool-borrow-v1-2 true))
-    (try! (contract-call? .lp-sbtc-v2 set-approved-contract .liquidation-manager-v1-1 true))
+    (try! (contract-call? .lp-sbtc-v2 set-approved-contract .liquidation-manager-v1-2 true))
     (try! (contract-call? .lp-sbtc-v2 set-approved-contract .pool-0-reserve true))
 
     ;; diko upgrade
     ;; (try! (contract-call? .lp-diko-v2 set-approved-contract .pool-borrow-v1-2 true))
-    ;; (try! (contract-call? .lp-diko-v2 set-approved-contract .liquidation-manager-v1-1 true))
+    ;; (try! (contract-call? .lp-diko-v2 set-approved-contract .liquidation-manager-v1-2 true))
     ;; (try! (contract-call? .lp-diko-v2 set-approved-contract .pool-0-reserve true))
     ;; (try! (contract-call? .lp-diko-v2 set-approved-contract .borrow-helper-v1-2 true))
 
     ;; usda upgrade
     ;; (try! (contract-call? .lp-usda-v2 set-approved-contract .pool-borrow-v1-2 true))
-    ;; (try! (contract-call? .lp-usda-v2 set-approved-contract .liquidation-manager-v1-1 true))
+    ;; (try! (contract-call? .lp-usda-v2 set-approved-contract .liquidation-manager-v1-2 true))
     ;; (try! (contract-call? .lp-usda-v2 set-approved-contract .pool-0-reserve true))
     ;; (try! (contract-call? .lp-usda-v2 set-approved-contract .borrow-helper-v1-2 true))
 
     ;; wstx upgrade
     ;; (try! (contract-call? .lp-wstx-v2 set-approved-contract .pool-borrow-v1-2 true))
-    ;; (try! (contract-call? .lp-wstx-v2 set-approved-contract .liquidation-manager-v1-1 true))
+    ;; (try! (contract-call? .lp-wstx-v2 set-approved-contract .liquidation-manager-v1-2 true))
     ;; (try! (contract-call? .lp-wstx-v2 set-approved-contract .pool-0-reserve true))
     ;; (try! (contract-call? .lp-wstx-v2 set-approved-contract .borrow-helper-v1-2 true))
 
     ;; xusd upgrade
     ;; (try! (contract-call? .lp-xusd-v2 set-approved-contract .pool-borrow-v1-2 true))
-    ;; (try! (contract-call? .lp-xusd-v2 set-approved-contract .liquidation-manager-v1-1 true))
+    ;; (try! (contract-call? .lp-xusd-v2 set-approved-contract .liquidation-manager-v1-2 true))
     ;; (try! (contract-call? .lp-xusd-v2 set-approved-contract .pool-0-reserve true))
     ;; (try! (contract-call? .lp-xusd-v2 set-approved-contract .borrow-helper-v1-2 true))
 
-    (try! (contract-call? .liquidation-manager-v1-1 set-lending-pool .pool-borrow-v1-2))
+    (try! (contract-call? .liquidation-manager-v1-2 set-lending-pool .pool-borrow-v1-2))
     
     ;; update liquidator and lending-pool in logic calls
-    ;; (try! (contract-call? .pool-0-reserve set-liquidator .liquidation-manager-v1-1)) Not updating liquidation-manager
+    (try! (contract-call? .pool-0-reserve set-liquidator .liquidation-manager-v1-2))
     (try! (contract-call? .pool-0-reserve set-lending-pool .pool-borrow-v1-2))
     (try! (contract-call? .pool-0-reserve set-approved-contract .pool-borrow-v1-2 true))
 
@@ -112,9 +112,9 @@
     ;; give permission for burn/mint of previous versions to new version
     (try! (contract-call? .lp-ststx set-approved-contract v2-version-1 true))
     (try! (contract-call? .lp-ststx-v1 set-approved-contract v2-version-1 true))
-    ;; remove pool-borrow permissions to v1 version
+    ;; revoke pool-borrow permissions to v1 version
     (try! (contract-call? .lp-ststx-v1 set-approved-contract .pool-borrow-v1-1 false))
-    (try! (contract-call? .lp-ststx-v1 set-approved-contract .liquidation-manager false))
+    (try! (contract-call? .lp-ststx-v1 set-approved-contract .liquidation-manager-v1-1 false))
     (try! (contract-call? .lp-ststx-v1 set-approved-contract .pool-0-reserve false))
     ;; disable access to v0 from v1
     (try! (contract-call? .lp-ststx set-approved-contract v1-version-1 false))
@@ -131,9 +131,9 @@
     ;; give permission for burn/mint of previous versions to new version
     (try! (contract-call? .lp-sbtc set-approved-contract v2-version-3 true))
     (try! (contract-call? .lp-sbtc-v1 set-approved-contract v2-version-3 true))
-    ;; remove pool-borrow permissions to v1 version
+    ;; revoke pool-borrow permissions to v1 version
     (try! (contract-call? .lp-sbtc-v1 set-approved-contract .pool-borrow-v1-1 false))
-    (try! (contract-call? .lp-sbtc-v1 set-approved-contract .liquidation-manager false))
+    (try! (contract-call? .lp-sbtc-v1 set-approved-contract .liquidation-manager-v1-1 false))
     (try! (contract-call? .lp-sbtc-v1 set-approved-contract .pool-0-reserve false))
     ;; disable access to v0 from v1
     (try! (contract-call? .lp-sbtc set-approved-contract v1-version-3 false))
@@ -143,13 +143,27 @@
 
     (try! (contract-call? .lp-xusd-v1 set-approved-contract new-version-4 true))
     (try! (contract-call? .lp-xusd-v1 set-approved-contract .pool-borrow-v1-2 false))
-    ;; (try! (contract-call? .lp-xusd-v1 set-approved-contract .liquidation-manager false))
+    ;; (try! (contract-call? .lp-xusd-v1 set-approved-contract .liquidation-manager-v1-1 false))
     ;; (try! (contract-call? .lp-xusd-v1 set-approved-contract .pool-0-reserve false))
 
     (try! (contract-call? .lp-diko-v1 set-approved-contract new-version-5 true))
     (try! (contract-call? .lp-diko-v1 set-approved-contract .pool-borrow-v1-2 false))
-    ;; (try! (contract-call? .lp-diko-v1 set-approved-contract .liquidation-manager false))
+    ;; (try! (contract-call? .lp-diko-v1 set-approved-contract .liquidation-manager-v1-1 false))
     ;; (try! (contract-call? .lp-diko-v1 set-approved-contract .pool-0-reserve false))
+
+
+    ;; add grace-period variables
+    ;; 7 days (144 * 7)
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-enabled updated-reserve-asset-1 true))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-time updated-reserve-asset-1 u1008))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-enabled updated-reserve-asset-2 true))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-time updated-reserve-asset-2 u1008))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-enabled updated-reserve-asset-3 true))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-time updated-reserve-asset-3 u1008))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-enabled updated-reserve-asset-4 true))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-time updated-reserve-asset-4 u1008))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-enabled updated-reserve-asset-5 true))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-time updated-reserve-asset-5 u1008))
     
     (var-set executed true)
     (ok true)

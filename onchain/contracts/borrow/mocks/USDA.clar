@@ -10,6 +10,7 @@
 (define-data-var token-uri (optional (string-utf8 256)) none)
 (define-data-var token-decimals uint u6)
 
+(define-constant deployer tx-sender)
 ;; --- Public functions
 
 ;; sip010-ft-trait
@@ -46,5 +47,8 @@
 )
 
 (define-public (mint (amount uint) (recipient principal))
-  (ft-mint? usda amount recipient)
+  (begin
+    (asserts! (is-eq tx-sender deployer) (err u1))
+    (ft-mint? usda amount recipient)
+  )
 )

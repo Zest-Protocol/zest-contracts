@@ -19,7 +19,7 @@
 (define-constant new-version-4 .lp-xusd-v1)
 
 (define-constant previous-version-5 .lp-diko)
-(define-constant new-version-5 .lp-xusd-v1)
+(define-constant new-version-5 .lp-diko-v1)
 
 (define-public (run-update)
   (let (

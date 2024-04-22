@@ -11,6 +11,7 @@
 (define-data-var token-uri (optional (string-utf8 256)) none)
 (define-data-var token-decimals uint u8)
 
+(define-constant deployer tx-sender)
 ;; --- Public functions
 
 ;; sip010-ft-trait
@@ -47,5 +48,13 @@
 )
 
 (define-public (mint (amount uint) (recipient principal))
-  (ft-mint? sbtc amount recipient)
+  (begin
+    (asserts! (or (is-eq tx-sender deployer) (default-to false (map-get? approved-contracts contract-caller))) err-unauthorised)
+    (ft-mint? sbtc amount recipient)
+  )
 )
+
+(define-map approved-contracts principal bool)
+
+(map-set approved-contracts .flashloan-script-1 true)
+(map-set approved-contracts .flashloan-script-2 true)
