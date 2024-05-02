@@ -1,3 +1,5 @@
+;; Used for migrating from v0 to v1 in the beginning of test suite
+
 (define-data-var executed bool false)
 
 (define-constant updated-reserve-asset-1 .ststx)
@@ -19,7 +21,7 @@
 (define-constant new-version-4 .lp-xusd-v1)
 
 (define-constant previous-version-5 .lp-diko)
-(define-constant new-version-5 .lp-xusd-v1)
+(define-constant new-version-5 .lp-diko-v1)
 
 (define-public (run-update)
   (let (

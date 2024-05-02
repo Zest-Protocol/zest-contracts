@@ -3,13 +3,15 @@
 (define-constant err-unauthorised (err u3000))
 (define-constant err-not-token-owner (err u4))
 
-(define-fungible-token xusd)
+(define-fungible-token sbtc)
+(define-fungible-token sBTC-locked)
 
-(define-data-var token-name (string-ascii 32) "xUSD")
-(define-data-var token-symbol (string-ascii 10) "xUSD")
+(define-data-var token-name (string-ascii 32) "sbtc")
+(define-data-var token-symbol (string-ascii 10) "sbtc")
 (define-data-var token-uri (optional (string-utf8 256)) none)
-(define-data-var token-decimals uint u6)
+(define-data-var token-decimals uint u8)
 
+(define-constant deployer tx-sender)
 ;; --- Public functions
 
 ;; sip010-ft-trait
@@ -17,7 +19,7 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
 	(begin
 		(asserts! (or (is-eq tx-sender sender) (is-eq contract-caller sender)) err-not-token-owner)
-		(ft-transfer? xusd amount sender recipient)
+		(ft-transfer? sbtc amount sender recipient)
 	)
 )
 
@@ -34,11 +36,11 @@
 )
 
 (define-read-only (get-balance (who principal))
-	(ok (ft-get-balance xusd who))
+	(ok (+ (ft-get-balance sbtc who) (ft-get-balance sBTC-locked who)))
 )
 
 (define-read-only (get-total-supply)
-	(ok (ft-get-supply xusd))
+	(ok (+ (ft-get-supply sbtc) (ft-get-supply sBTC-locked)))
 )
 
 (define-read-only (get-token-uri)
@@ -46,5 +48,13 @@
 )
 
 (define-public (mint (amount uint) (recipient principal))
-  (ft-mint? xusd amount recipient)
+  (begin
+    (asserts! (or (is-eq tx-sender deployer) (default-to false (map-get? approved-contracts contract-caller))) err-unauthorised)
+    (ft-mint? sbtc amount recipient)
+  )
 )
+
+(define-map approved-contracts principal bool)
+
+(map-set approved-contracts .flashloan-script-1 true)
+(map-set approved-contracts .flashloan-script-2 true)

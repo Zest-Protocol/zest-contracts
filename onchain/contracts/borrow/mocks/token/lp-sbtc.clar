@@ -5,13 +5,15 @@
 (impl-trait .a-token-trait.a-token-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
+(define-constant ERR_UNAUTHORIZED (err u14401))
+(define-constant ERR_INVALID_TRANSFER (err u14402))
+
 (define-fungible-token lp-sbtc)
 
 (define-data-var token-uri (string-utf8 256) u"")
 (define-data-var token-name (string-ascii 32) "LP sbtc")
 (define-data-var token-symbol (string-ascii 32) "LP sbtc")
 
-(define-constant pool-id u0)
 (define-constant asset-addr .sbtc)
 
 (define-read-only (get-total-supply)
@@ -146,9 +148,7 @@
 
     (if (is-eq balance-increase u0)
       false
-      (try! (mint-internal balance-increase account))
-    )
-
+      (try! (mint-internal balance-increase account)))
     (ok {
       previous-user-balance: previous-balance,
       current-balance: (+ previous-balance balance-increase),
@@ -172,17 +172,22 @@
     (ret (try! (cumulate-balance-internal tx-sender)))
     (amount-to-redeem (if (is-eq amount max-value) (get current-balance ret) amount))
   )
-    (asserts! (and (> amount u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
-    (asserts! (try! (is-transfer-allowed asset-addr oracle amount tx-sender assets)) (err u998887))
+    (asserts! (and (> amount-to-redeem u0) (>= (get current-balance ret) amount-to-redeem)) (err u899933))
+    (asserts! (try! (is-transfer-allowed asset-addr oracle amount-to-redeem tx-sender assets)) ERR_INVALID_TRANSFER)
+    (asserts! (is-eq (contract-of asset) asset-addr) ERR_UNAUTHORIZED)
     
-    (try! (burn-internal amount tx-sender))
+    (try! (burn-internal amount-to-redeem tx-sender))
     
-    (if (is-eq (- (get current-balance ret) amount) u0)
-      (try! (contract-call? .pool-0-reserve reset-user-index tx-sender asset-addr))
+    (if (is-eq (- (get current-balance ret) amount-to-redeem) u0)
+      (begin
+        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
+        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
+        (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+      )
       false
     )
 
-    (contract-call? .pool-borrow redeem-underlying
+    (contract-call? .pool-borrow withdraw
       pool-reserve
       asset-addr
       oracle
@@ -204,6 +209,7 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
+    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
         (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
@@ -239,7 +245,6 @@
 (define-read-only (is-contract-owner (caller principal))
   (is-eq caller (var-get contract-owner)))
 
-;; TODO: should use the pool logic designated by the Pool Delegate
 ;; -- permissions
 (define-map approved-contracts principal bool)
 
@@ -258,5 +263,3 @@
 (map-set approved-contracts .pool-borrow true)
 (map-set approved-contracts .liquidation-manager true)
 (map-set approved-contracts .pool-0-reserve true)
-
-(define-constant ERR_UNAUTHORIZED (err u14401))

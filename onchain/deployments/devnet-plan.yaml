@@ -23,45 +23,10 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
-            contract-name: diko
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11770
-            path: contracts/borrow/mocks/diko.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
             contract-name: flash-loan-trait
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 1320
             path: contracts/borrow/traits/flash-loan-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: sbtc
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 12820
-            path: contracts/borrow/mocks/sbtc.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: flashloan-script
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 3210
-            path: contracts/borrow/mocks/flashloan-script.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: flashloan-script-1
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 4660
-            path: contracts/borrow/mocks/flashloan-script-1.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: flashloan-script-2
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 4830
-            path: contracts/borrow/mocks/flashloan-script-2.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
@@ -88,7 +53,7 @@ plan:
         - contract-publish:
             contract-name: pool-reserve-data
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 159660
+            cost: 159500
             path: contracts/borrow/vaults/pool-reserve-data.clar
             anchor-block-only: true
             clarity-version: 2
@@ -114,6 +79,69 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
+            contract-name: liquidation-manager-v1-1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 114740
+            path: contracts/borrow/pool/liquidation-manager-v1-1.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: pool-borrow-v1-1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 241250
+            path: contracts/borrow/pool/pool-borrow-v1-1.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: redeemeable-trait
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 4680
+            path: contracts/borrow/traits/redeemeable-trait.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: borrow-helper
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 79060
+            path: contracts/borrow/mocks/borrow-helper.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: diko
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 12810
+            path: contracts/borrow/mocks/diko.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: sbtc
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 16200
+            path: contracts/borrow/mocks/sbtc.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: flashloan-script
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 3210
+            path: contracts/borrow/mocks/flashloan-script.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: flashloan-script-1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 4660
+            path: contracts/borrow/mocks/flashloan-script-1.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: flashloan-script-2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 4830
+            path: contracts/borrow/mocks/flashloan-script-2.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
             contract-name: liquidation-manager
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 110000
@@ -130,7 +158,7 @@ plan:
         - contract-publish:
             contract-name: pool-borrow
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 228410
+            cost: 233310
             path: contracts/borrow/pool/pool-borrow.clar
             anchor-block-only: true
             clarity-version: 2
@@ -142,16 +170,33 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
+            contract-name: lp-diko-v1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 89950
+            path: contracts/borrow/mocks/lp-diko-v1.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
             contract-name: lp-sbtc
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 83410
+            cost: 83360
             path: contracts/borrow/mocks/lp-sbtc.clar
+            anchor-block-only: true
+            clarity-version: 2
+      epoch: "2.4"
+    - id: 1
+      transactions:
+        - contract-publish:
+            contract-name: lp-sbtc-v1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 89950
+            path: contracts/borrow/mocks/lp-sbtc-v1.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
             contract-name: ststx
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11840
+            cost: 12870
             path: contracts/borrow/mocks/ststx.clar
             anchor-block-only: true
             clarity-version: 2
@@ -163,6 +208,13 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
+            contract-name: lp-ststx-v1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 88440
+            path: contracts/borrow/mocks/lp-ststx-v1.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
             contract-name: lp-token-trait
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 21570
@@ -170,16 +222,9 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
-            contract-name: redeemeable-trait
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 21570
-            path: contracts/borrow/traits/redeemeable-trait.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
             contract-name: usda
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11770
+            cost: 12800
             path: contracts/borrow/mocks/usda.clar
             anchor-block-only: true
             clarity-version: 2
@@ -190,13 +235,17 @@ plan:
             path: contracts/borrow/mocks/lp-usda.clar
             anchor-block-only: true
             clarity-version: 2
-      epoch: "2.4"
-    - id: 1
-      transactions:
+        - contract-publish:
+            contract-name: lp-usda-v1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 89950
+            path: contracts/borrow/mocks/lp-usda-v1.clar
+            anchor-block-only: true
+            clarity-version: 2
         - contract-publish:
             contract-name: wstx
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11420
+            cost: 12100
             path: contracts/borrow/mocks/wstx.clar
             anchor-block-only: true
             clarity-version: 2
@@ -208,9 +257,16 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
+            contract-name: lp-wstx-v1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 84510
+            path: contracts/borrow/mocks/lp-wstx-v1.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
             contract-name: xusd
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 11770
+            cost: 12800
             path: contracts/borrow/mocks/xusd.clar
             anchor-block-only: true
             clarity-version: 2
@@ -222,9 +278,16 @@ plan:
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
+            contract-name: lp-xusd-v1
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 90600
+            path: contracts/borrow/mocks/lp-xusd-v1.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
             contract-name: oracle
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 4360
+            cost: 5980
             path: contracts/borrow/pool/oracle.clar
             anchor-block-only: true
             clarity-version: 2
@@ -238,7 +301,7 @@ plan:
         - contract-publish:
             contract-name: pool-read-liquidation
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 187580
+            cost: 188000
             path: contracts/borrow/mocks/pool-read-liquidation.clar
             anchor-block-only: true
             clarity-version: 2
@@ -247,6 +310,13 @@ plan:
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 184030
             path: contracts/borrow/mocks/pool-read-supply.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: ststx-oracle-v1-0
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 4740
+            path: contracts/borrow/mocks/ststx-oracle-v1-0.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
@@ -266,27 +336,20 @@ plan:
         - contract-publish:
             contract-name: zToken
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 82870
+            cost: 83740
             path: contracts/borrow/token/zToken.clar
             anchor-block-only: true
             clarity-version: 2
         - contract-publish:
-            contract-name: after-deployment-simnet
+            contract-name: upgrade-contract-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 82870
-            path: contracts/v2_sbtc/after-deployment-simnet.clar
+            cost: 1000000
+            path: contracts/borrow/mocks/upgrade-contract-v1-1.clar
             anchor-block-only: true
             clarity-version: 2
       epoch: "2.4"
     - id: 2
       transactions:
-        - contract-publish:
-            contract-name: borrow-helper
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 1000000
-            path: contracts/borrow/mocks/borrow-helper.clar
-            anchor-block-only: true
-            clarity-version: 2
         - contract-call:
             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
@@ -342,11 +405,11 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: init
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
               - u6
               - u340282366920938463463374607431768211455
@@ -356,11 +419,11 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: init
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
               - u6
               - u340282366920938463463374607431768211455
@@ -370,11 +433,11 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: init
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
               - u8
               - u340282366920938463463374607431768211455
@@ -384,11 +447,11 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: init
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
               - u6
               - u340282366920938463463374607431768211455
@@ -398,11 +461,11 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: init
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
               - u6
               - u340282366920938463463374607431768211455
@@ -412,11 +475,11 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: init
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
               - u6
               - u340282366920938463463374607431768211455
@@ -426,7 +489,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: add-asset
             parameters:
@@ -434,7 +497,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: add-asset
             parameters:
@@ -442,7 +505,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: add-asset
             parameters:
@@ -450,7 +513,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: add-asset
             parameters:
@@ -458,7 +521,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: add-asset
             parameters:
@@ -466,7 +529,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: add-asset
             parameters:
@@ -477,7 +540,7 @@ plan:
     - id: 3
       transactions:
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-borrowing-enabled
             parameters:
@@ -486,7 +549,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-borrowing-enabled
             parameters:
@@ -495,7 +558,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-borrowing-enabled
             parameters:
@@ -504,7 +567,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-borrowing-enabled
             parameters:
@@ -513,7 +576,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-borrowing-enabled
             parameters:
@@ -522,7 +585,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-borrowing-enabled
             parameters:
@@ -540,7 +603,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: add-isolated-asset
             parameters:
@@ -549,7 +612,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-borroweable-isolated
             parameters:
@@ -557,7 +620,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-borroweable-isolated
             parameters:
@@ -567,7 +630,7 @@ plan:
     - id: 4
       transactions:
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-usage-as-collateral-enabled
             parameters:
@@ -579,7 +642,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-usage-as-collateral-enabled
             parameters:
@@ -591,7 +654,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-usage-as-collateral-enabled
             parameters:
@@ -603,7 +666,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-usage-as-collateral-enabled
             parameters:
@@ -615,7 +678,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-usage-as-collateral-enabled
             parameters:
@@ -627,7 +690,7 @@ plan:
             cost: 5960
             clarity-version: 2
         - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow-v1-1
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             method: set-usage-as-collateral-enabled
             parameters:
@@ -639,6 +702,295 @@ plan:
             cost: 5960
             clarity-version: 2
       epoch: "2.1"
+    - id: 5
+      transactions:
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-base-variable-borrow-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
+              - u0
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-base-variable-borrow-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
+              - u0
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-base-variable-borrow-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
+              - u0
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-base-variable-borrow-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+              - u0
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-base-variable-borrow-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+              - u0
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-base-variable-borrow-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
+              - u0
+            cost: 5960
+            clarity-version: 2
+      epoch: "2.1"
+
+    - id: 5
+      transactions:
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-1
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
+              - u4000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-1
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
+              - u4000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-1
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
+              - u4000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-1
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+              - u4000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-1
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+              - u4000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-1
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
+              - u4000000
+            cost: 5960
+            clarity-version: 2
+      epoch: "2.1"
+
+    - id: 5
+      transactions:
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-2
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
+              - u300000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-2
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
+              - u300000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-2
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
+              - u300000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-2
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+              - u300000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-2
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+              - u300000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-variable-rate-slope-2
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
+              - u300000000
+            cost: 5960
+            clarity-version: 2
+      epoch: "2.1"
+
+    - id: 5
+      transactions:
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-optimal-utilization-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
+              - u80000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-optimal-utilization-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
+              - u80000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-optimal-utilization-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
+              - u80000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-optimal-utilization-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+              - u80000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-optimal-utilization-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+              - u80000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-optimal-utilization-rate
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
+              - u80000000
+            cost: 5960
+            clarity-version: 2
+      epoch: "2.1"
+
+    - id: 5
+      transactions:
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-reserve-factor
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
+              - u10000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-reserve-factor
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
+              - u10000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-reserve-factor
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
+              - u10000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-reserve-factor
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+              - u10000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-reserve-factor
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+              - u10000000
+            cost: 5960
+            clarity-version: 2
+        - contract-call:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-reserve-data
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            method: set-reserve-factor
+            parameters:
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
+              - u10000000
+            cost: 5960
+            clarity-version: 2
+      epoch: "2.4"
     - id: 5
       transactions:
         - contract-call:
@@ -730,7 +1082,7 @@ plan:
             expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
               - u100000000000
@@ -743,7 +1095,7 @@ plan:
             expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
               - u100000000000
@@ -756,7 +1108,7 @@ plan:
             expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
               - u100000000000
@@ -769,7 +1121,7 @@ plan:
             expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
               - u100000000000
@@ -782,7 +1134,7 @@ plan:
             expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
               - u200000000000
@@ -795,7 +1147,7 @@ plan:
             expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
               - u100000000000
@@ -811,7 +1163,7 @@ plan:
             expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
               - u100000000000
@@ -824,7 +1176,7 @@ plan:
             expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
               - u100000000000
@@ -837,7 +1189,7 @@ plan:
             expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
             method: supply
             parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc"
+              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
               - u100000000000
@@ -846,641 +1198,641 @@ plan:
             cost: 5960
             clarity-version: 2
       epoch: "2.1"
-    - id: 8
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
-            method: set-user-use-reserve-as-collateral
-            parameters:
-              - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
-              - false
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u27680000000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
-            method: set-user-use-reserve-as-collateral
-            parameters:
-              - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
-              - false
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-            cost: 5960
-            clarity-version: 2
+#     - id: 8
+#       transactions:
 #         - contract-call:
 #             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
 #             expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
 #             method: set-user-use-reserve-as-collateral
 #             parameters:
 #               - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
-#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc"
-#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
 #               - false
 #               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
 #               - "(list \
 # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
 # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
 # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
 # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
 # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
 # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
 # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
 # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
 # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
 # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
 # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
 # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
 # )"
 #             cost: 5960
 #             clarity-version: 2
-      epoch: "2.1"
-    - id: 9
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: supply
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
-              - u100000100000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "none"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: supply
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
-              - u100000100000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "none"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: withdraw
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - u100000100000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: supply
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
-              - u100000100000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "none"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u127680000000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
-            method: supply
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
-              - u200000000000
-              - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
-              - "none"
-            cost: 5960
-            clarity-version: 2
-      epoch: "2.1"
-    - id: 10
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
-            method: supply
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
-              - u1000000000000000000
-              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
-              - "none"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u200000000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u100000100000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u200000000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u200000000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
-            cost: 5960
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u200000000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
-            cost: 5960
-            clarity-version: 2
-      epoch: "2.1"
-    - id: 11
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: supply
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
-              - u100000100000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "none"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            method: mint
-            parameters:
-              - u100000000000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-            cost: 5960
-            clarity-version: 2
-      epoch: "2.1"
-    - id: 12
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: repay
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
-              - u25536000000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-            cost: 5960
-            clarity-version: 2
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: repay
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
-              - u25536000000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-            cost: 5960
-            clarity-version: 2
-      epoch: "2.1"
-    - id: 13
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: repay
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
-              - u25536000000
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-            cost: 5960
-            clarity-version: 2
-      epoch: "2.1"
-    - id: 14
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
-            method: supply
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
-              - u200000000000
-              - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
-              - "none"
-            cost: 5960
-            clarity-version: 2
-      epoch: "2.1"
-    - id: 15
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u200000000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
-            cost: 5960
-            clarity-version: 2
-      epoch: "2.1"
-    - id: 16
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
-            expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-            method: repay
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
-              - u340282366920938463463374607431768211455
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-              - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
-            cost: 5960
-            clarity-version: 2
-        - contract-publish:
-            contract-name: ststx-oracle-v1-0
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 83410
-            path: contracts/borrow/mocks/ststx-oracle-v1-0.clar
-            anchor-block-only: true
-            clarity-version: 2
-        - contract-publish:
-            contract-name: update-oracle
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 83410
-            path: contracts/borrow/mocks/update-oracle.clar
-            anchor-block-only: true
-            clarity-version: 2
-      epoch: "2.1"
-    - id: 17
-      transactions:
-        - contract-call:
-            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
-            expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
-            method: borrow
-            parameters:
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda"
-              - "(list \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx-oracle-v1-0 } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-{ asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
-lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
-oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
-)"
-              - u200000000
-              - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
-              - u0
-              - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
-            cost: 5960
-            clarity-version: 2
-        # - contract-call:
-        #     contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.update-oracle
-        #     expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
-        #     method: run-update
-        #     parameters: []
-        #     cost: 5960
-        #     clarity-version: 2
-      epoch: "2.1"
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u27680000000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
+#             method: set-user-use-reserve-as-collateral
+#             parameters:
+#               - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx-v1"
+#               - false
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#             cost: 5960
+#             clarity-version: 2
+# #         - contract-call:
+# #             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+# #             expected-sender: ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND
+# #             method: set-user-use-reserve-as-collateral
+# #             parameters:
+# #               - "'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND"
+# #               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc"
+# #               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
+# #               - false
+# #               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+# #               - "(list \
+# # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# # lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx , \
+# # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# # lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx , \
+# # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# # lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc , \
+# # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# # lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd , \
+# # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# # lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko , \
+# # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# # { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# # lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda , \
+# # oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# # )"
+# #             cost: 5960
+# #             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 9
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: supply
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+#               - u100000100000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "none"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: supply
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
+#               - u100000100000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "none"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: withdraw
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - u100000100000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: supply
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+#               - u100000100000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "none"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u127680000000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
+#             method: supply
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+#               - u200000000000
+#               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+#               - "none"
+#             cost: 5960
+#             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 10
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+#             method: supply
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc"
+#               - u1000000000000000000
+#               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+#               - "none"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u200000000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u100000100000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u200000000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u200000000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+#             cost: 5960
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u200000000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+#             cost: 5960
+#             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 11
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: supply
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx"
+#               - u100000100000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "none"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd
+#             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+#             method: mint
+#             parameters:
+#               - u100000000000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#             cost: 5960
+#             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 12
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: repay
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+#               - u25536000000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: repay
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+#               - u25536000000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#             cost: 5960
+#             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 13
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: repay
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+#               - u25536000000
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#             cost: 5960
+#             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 14
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
+#             method: supply
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+#               - u200000000000
+#               - "'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5"
+#               - "none"
+#             cost: 5960
+#             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 15
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u200000000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+#             cost: 5960
+#             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 16
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.borrow-helper
+#             expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#             method: repay
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd"
+#               - u340282366920938463463374607431768211455
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#               - "'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+#             cost: 5960
+#             clarity-version: 2
+#         - contract-publish:
+#             contract-name: ststx-oracle-v1-0
+#             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+#             cost: 83410
+#             path: contracts/borrow/mocks/ststx-oracle-v1-0.clar
+#             anchor-block-only: true
+#             clarity-version: 2
+#         - contract-publish:
+#             contract-name: update-oracle
+#             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+#             cost: 83410
+#             path: contracts/borrow/mocks/update-oracle.clar
+#             anchor-block-only: true
+#             clarity-version: 2
+#       epoch: "2.1"
+#     - id: 17
+#       transactions:
+#         - contract-call:
+#             contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-borrow
+#             expected-sender: ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC
+#             method: borrow
+#             parameters:
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-0-reserve"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda"
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1"
+#               - "(list \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-ststx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ststx-oracle-v1-0 } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wstx , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-wstx-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-sbtc-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.xusd , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-xusd-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.diko , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-diko-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# { asset: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usda , \
+# lp-token: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-usda-v1 , \
+# oracle: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.oracle } \
+# )"
+#               - u200000000
+#               - "'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.fees-calculator"
+#               - u0
+#               - "'ST2JHG361ZXG51QTKY2NQCVBPPRRE2KZB1HR05NNC"
+#             cost: 5960
+#             clarity-version: 2
+#         # - contract-call:
+#         #     contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.update-oracle
+#         #     expected-sender: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+#         #     method: run-update
+#         #     parameters: []
+#         #     cost: 5960
+#         #     clarity-version: 2
+#       epoch: "2.1"

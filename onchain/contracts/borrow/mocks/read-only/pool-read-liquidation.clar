@@ -143,7 +143,7 @@
   (let (
     (reserve-data (get-reserve-data .ststx))
     (user-index (get-user-index user .ststx))
-    (principal-balance (unwrap-panic (contract-call? .lp-ststx get-principal-balance user)))
+    (principal-balance (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance user)))
     (decimals (get decimals reserve-data))
     (unit-price (unwrap-panic (contract-call? .oracle get-asset-price .ststx)))
   )
@@ -248,6 +248,7 @@
     )
   )
     {
+      debt: compounded-borrow-balance,
       borrow-balanceUSD: (mul-to-fixed-precision compounded-borrow-balance (get decimals reserve-data) unit-price),
       user-feesUSD: (mul-to-fixed-precision (get origination-fee user-reserve-data) (get decimals reserve-data) unit-price),
     }

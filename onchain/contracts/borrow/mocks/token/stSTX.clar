@@ -3,13 +3,14 @@
 (define-constant err-unauthorised (err u3000))
 (define-constant err-not-token-owner (err u4))
 
-(define-fungible-token diko)
+(define-fungible-token ststx)
 
-(define-data-var token-name (string-ascii 32) "DIKO")
-(define-data-var token-symbol (string-ascii 10) "DIKO")
+(define-data-var token-name (string-ascii 32) "stSTX")
+(define-data-var token-symbol (string-ascii 10) "stSTX")
 (define-data-var token-uri (optional (string-utf8 256)) none)
 (define-data-var token-decimals uint u6)
 
+(define-constant deployer tx-sender)
 ;; --- Public functions
 
 ;; sip010-ft-trait
@@ -17,7 +18,7 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
 	(begin
 		(asserts! (or (is-eq tx-sender sender) (is-eq contract-caller sender)) err-not-token-owner)
-		(ft-transfer? diko amount sender recipient)
+		(ft-transfer? ststx amount sender recipient)
 	)
 )
 
@@ -34,11 +35,11 @@
 )
 
 (define-read-only (get-balance (who principal))
-	(ok (ft-get-balance diko who))
+	(ok (ft-get-balance ststx who))
 )
 
 (define-read-only (get-total-supply)
-	(ok (ft-get-supply diko))
+	(ok (ft-get-supply ststx))
 )
 
 (define-read-only (get-token-uri)
@@ -46,5 +47,8 @@
 )
 
 (define-public (mint (amount uint) (recipient principal))
-  (ft-mint? diko amount recipient)
+  (begin
+    (asserts! (is-eq tx-sender deployer) (err u1))
+    (ft-mint? ststx amount recipient)
+  )
 )

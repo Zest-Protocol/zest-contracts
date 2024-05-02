@@ -3,14 +3,14 @@
 (define-constant err-unauthorised (err u3000))
 (define-constant err-not-token-owner (err u4))
 
-(define-fungible-token sbtc)
-(define-fungible-token sBTC-locked)
+(define-fungible-token usda)
 
-(define-data-var token-name (string-ascii 32) "sbtc")
-(define-data-var token-symbol (string-ascii 10) "sbtc")
+(define-data-var token-name (string-ascii 32) "USDA")
+(define-data-var token-symbol (string-ascii 10) "USDA")
 (define-data-var token-uri (optional (string-utf8 256)) none)
-(define-data-var token-decimals uint u8)
+(define-data-var token-decimals uint u6)
 
+(define-constant deployer tx-sender)
 ;; --- Public functions
 
 ;; sip010-ft-trait
@@ -18,7 +18,7 @@
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
 	(begin
 		(asserts! (or (is-eq tx-sender sender) (is-eq contract-caller sender)) err-not-token-owner)
-		(ft-transfer? sbtc amount sender recipient)
+		(ft-transfer? usda amount sender recipient)
 	)
 )
 
@@ -35,11 +35,11 @@
 )
 
 (define-read-only (get-balance (who principal))
-	(ok (+ (ft-get-balance sbtc who) (ft-get-balance sBTC-locked who)))
+	(ok (ft-get-balance usda who))
 )
 
 (define-read-only (get-total-supply)
-	(ok (+ (ft-get-supply sbtc) (ft-get-supply sBTC-locked)))
+	(ok (ft-get-supply usda))
 )
 
 (define-read-only (get-token-uri)
@@ -47,5 +47,8 @@
 )
 
 (define-public (mint (amount uint) (recipient principal))
-  (ft-mint? sbtc amount recipient)
+  (begin
+    (asserts! (is-eq tx-sender deployer) (err u1))
+    (ft-mint? usda amount recipient)
+  )
 )
