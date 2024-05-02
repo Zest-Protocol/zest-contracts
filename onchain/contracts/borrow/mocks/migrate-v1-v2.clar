@@ -1,3 +1,6 @@
+;; Used to simulate mainnet migration from v1 to v2 in the test suite
+;; Must be called after deploying migrate-v0-v1.clar
+
 (define-data-var executed bool false)
 
 (define-constant updated-reserve-asset-1 .ststx)

@@ -68,7 +68,7 @@
         (get use-as-collateral borrower-reserve-data)
       ) ERR_NOT_ENABLED_AS_COLL)
     ;; check if collateral has a grace period
-    ;; if grace-period disabled, ignore
+    ;; if grace-period disabled, continue
     ;; else check enough time has passed
     (asserts!
       (or
@@ -115,9 +115,7 @@
           (if purchasing-all-underlying-collateral
             debt-needed
             debt-to-liquidate))
-        ;; (fee-liquidated (get debt-needed required-fees))
         (fee-liquidated u0)
-        ;; (liquidated-collateral-for-fee (get collateral-amount required-fees))
         (liquidated-collateral-for-fee u0)
       )
         ;; if liquidator wants underlying asset, check there is enough collateral

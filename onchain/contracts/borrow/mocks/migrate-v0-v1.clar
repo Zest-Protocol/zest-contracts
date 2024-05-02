@@ -1,3 +1,5 @@
+;; Used to simulate mainnet migration from v0 to v1 in the test suite
+
 (define-data-var executed bool false)
 
 (define-constant updated-reserve-asset-1 .ststx)

@@ -1,3 +1,5 @@
+;; Used for migrating from v0 to v1 in the beginning of test suite
+
 (define-data-var executed bool false)
 
 (define-constant updated-reserve-asset-1 .ststx)
