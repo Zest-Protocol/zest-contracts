@@ -11,17 +11,17 @@
 (define-constant ERR_INVALID_AMOUNT (err u14403))
 (define-constant ERR_INVALID_ASSET (err u14404))
 
-(define-fungible-token lp-sbtc)
+(define-fungible-token lp-usda)
 
-(define-data-var token-uri (string-utf8 256) u"https://example.org")
-(define-data-var token-name (string-ascii 32) "Zest sBTC")
-(define-data-var token-symbol (string-ascii 32) "sBTC")
+(define-data-var token-uri (string-utf8 256) u"")
+(define-data-var token-name (string-ascii 32) "LP usda")
+(define-data-var token-symbol (string-ascii 32) "LP-usda")
 
-(define-constant asset-addr .sbtc)
-(define-constant decimals u8)
+(define-constant asset-addr .usda)
+(define-constant decimals u6)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-sbtc)))
+  (ok (ft-get-supply lp-usda)))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))
@@ -30,7 +30,7 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u8))
+  (ok u6))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
@@ -76,6 +76,7 @@
   )
 )
 
+
 (define-read-only (mul (x uint) (y uint)) (contract-call? .math mul x y))
 (define-read-only (div (x uint) (y uint)) (contract-call? .math div x y))
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
@@ -88,7 +89,6 @@
 (define-read-only (get-user-index (user principal) (asset principal))
   (unwrap-panic (contract-call? .pool-0-reserve get-user-index user asset))
 )
-
 
 (define-public (set-token-uri (value (string-utf8 256)))
   (begin
@@ -107,7 +107,7 @@
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (match (ft-transfer? lp-sbtc amount sender recipient)
+    (match (ft-transfer? lp-usda amount sender recipient)
       response (begin
         (print memo)
         (ok response)
@@ -130,11 +130,11 @@
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (ft-burn? lp-sbtc amount owner)
+  (ft-burn? lp-usda amount owner)
 )
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (ft-mint? lp-sbtc amount owner)
+  (ft-mint? lp-usda amount owner)
 )
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
@@ -171,12 +171,12 @@
 
 (define-private (cumulate-balance-internal (account principal))
   (let (
-    (v0-balance (unwrap-panic (contract-call? .lp-sbtc get-principal-balance account)))
-    (v1-balance (unwrap-panic (contract-call? .lp-sbtc-v1 get-principal-balance account)))
+    (v0-balance (unwrap-panic (contract-call? .lp-usda get-principal-balance account)))
+    (v1-balance (unwrap-panic (contract-call? .lp-usda-v1 get-principal-balance account)))
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (get-reserve-state asset-addr))
-    (new-user-index (get-normalized-income
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
+    (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
@@ -187,13 +187,13 @@
     (if (> v0-balance u0)
       (begin
         (try! (mint-internal v0-balance account))
-        (try! (contract-call? .lp-sbtc burn v0-balance account))
+        (try! (contract-call? .lp-usda burn v0-balance account))
         true
       )
       (if (> v1-balance u0)
         (begin
           (try! (mint-internal v1-balance account))
-          (try! (contract-call? .lp-sbtc-v1 burn v1-balance account))
+          (try! (contract-call? .lp-usda-v1 burn v1-balance account))
           true
         )
         false
@@ -250,7 +250,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-sbtc", payload: owner })
+    (print { type: "set-contract-owner-lp-usda", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))
@@ -290,11 +290,12 @@
   (ok 
     (+
       ;; only need v1 balance because it already adds v0 and v1 balance
-      (unwrap-panic (contract-call? .lp-sbtc-v1 get-principal-balance account))
-      (ft-get-balance lp-sbtc account)
+      (unwrap-panic (contract-call? .lp-usda-v1 get-principal-balance account))
+      (ft-get-balance lp-usda account)
     )
   )
 )
+
 
 ;; -- permissions
 (define-map approved-contracts principal bool)

@@ -11,17 +11,17 @@
 (define-constant ERR_INVALID_AMOUNT (err u14403))
 (define-constant ERR_INVALID_ASSET (err u14404))
 
-(define-fungible-token lp-sbtc)
+(define-fungible-token lp-wstx)
 
-(define-data-var token-uri (string-utf8 256) u"https://example.org")
-(define-data-var token-name (string-ascii 32) "Zest sBTC")
-(define-data-var token-symbol (string-ascii 32) "sBTC")
+(define-data-var token-uri (string-utf8 256) u"")
+(define-data-var token-name (string-ascii 32) "LP wstx")
+(define-data-var token-symbol (string-ascii 32) "LP-wstx")
 
-(define-constant asset-addr .sbtc)
-(define-constant decimals u8)
+(define-constant asset-addr .wstx)
+(define-constant decimals u6)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-sbtc)))
+  (ok (ft-get-supply lp-wstx)))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))
@@ -30,7 +30,7 @@
   (ok (var-get token-symbol)))
 
 (define-read-only (get-decimals)
-  (ok u8))
+  (ok u6))
 
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
@@ -89,7 +89,6 @@
   (unwrap-panic (contract-call? .pool-0-reserve get-user-index user asset))
 )
 
-
 (define-public (set-token-uri (value (string-utf8 256)))
   (begin
     (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
@@ -107,7 +106,7 @@
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
   (begin
-    (match (ft-transfer? lp-sbtc amount sender recipient)
+    (match (ft-transfer? lp-wstx amount sender recipient)
       response (begin
         (print memo)
         (ok response)
@@ -130,11 +129,11 @@
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (ft-burn? lp-sbtc amount owner)
+  (ft-burn? lp-wstx amount owner)
 )
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (ft-mint? lp-sbtc amount owner)
+  (ft-mint? lp-wstx amount owner)
 )
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
@@ -175,8 +174,8 @@
     (v1-balance (unwrap-panic (contract-call? .lp-sbtc-v1 get-principal-balance account)))
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (get-reserve-state asset-addr))
-    (new-user-index (get-normalized-income
+    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
+    (new-user-index (contract-call? .pool-0-reserve get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
@@ -250,7 +249,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-sbtc", payload: owner })
+    (print { type: "set-contract-owner-lp-wstx", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))
@@ -290,8 +289,8 @@
   (ok 
     (+
       ;; only need v1 balance because it already adds v0 and v1 balance
-      (unwrap-panic (contract-call? .lp-sbtc-v1 get-principal-balance account))
-      (ft-get-balance lp-sbtc account)
+      (unwrap-panic (contract-call? .lp-wstx-v1 get-principal-balance account))
+      (ft-get-balance lp-wstx account)
     )
   )
 )

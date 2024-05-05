@@ -447,49 +447,53 @@
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
-    (underlying-balance (try! (contract-call? lp-token get-balance who)))
     (user-data (get-user-reserve-data who (contract-of asset)))
-    (isolation-mode-asset (contract-call? .pool-0-reserve is-in-isolation-mode who))
-    (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data who assets-to-calculate))))
-
+    )
+    (try! (validate-assets assets-to-calculate))
     (try! (is-approved-contract contract-caller))
 
-    (try! (validate-assets assets-to-calculate))
     (asserts! (is-eq tx-sender who) ERR_UNAUTHORIZED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
-    (asserts! (> underlying-balance u0) ERR_NOT_ZERO)
     (asserts! (get usage-as-collateral-enabled reserve-data) ERR_COLLATERAL_DISABLED)
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) ERR_INVALID_ORACLE)
 
-    (print { type: "set-user-use-reserve-as-collateral", payload: { key: who, data: { lp-token: lp-token, asset: asset, enable-as-collateral: enable-as-collateral } } })
-    ;; if in isolation mode, can only disable isolated asset
-    (match isolation-mode-asset
-      isolated-asset (begin
-        ;; repay before changing
-        (asserts! (is-eq (get total-borrow-balanceUSD user-global-data) u0) ERR_REPAY_BEFORE_DISABLING)
-        ;; if repaid, must be updating the isolated collateral asset
-        (asserts! (is-eq isolated-asset (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
-        ;; if isolated asset is enabled, can only disable it
-        (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false }))
-      )
-      (begin
-        (if (not enable-as-collateral)
-          ;; if disabling as collateral, check user is not using deposited collateral
-          (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) ERR_INVALID_DECREASE)
-          (if (> (get total-collateral-balanceUSD user-global-data) u0)
-            ;; if using anything else as collateral, check it's not enabling an isolated asset
-            (asserts! (not (contract-call? .pool-0-reserve is-isolated-type (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
-            ;; if enabling an asset as collateral and not using anything else as collateral, can enable any asset
-            true
-          )
+    (let (
+      (underlying-balance (try! (contract-call? lp-token get-balance who)))
+      (isolation-mode-asset (contract-call? .pool-0-reserve is-in-isolation-mode who))
+      (user-global-data (try! (contract-call? .pool-0-reserve calculate-user-global-data who assets-to-calculate))))
+
+      (asserts! (> underlying-balance u0) ERR_NOT_ZERO)
+
+      (print { type: "set-user-use-reserve-as-collateral", payload: { key: who, data: { lp-token: lp-token, asset: asset, enable-as-collateral: enable-as-collateral } } })
+      ;; if in isolation mode, can only disable isolated asset
+      (match isolation-mode-asset
+        isolated-asset (begin
+          ;; repay before changing
+          (asserts! (is-eq (get total-borrow-balanceUSD user-global-data) u0) ERR_REPAY_BEFORE_DISABLING)
+          ;; if repaid, must be updating the isolated collateral asset
+          (asserts! (is-eq isolated-asset (contract-of asset)) ERR_MUST_DISABLE_ISOLATED_ASSET)
+          ;; if isolated asset is enabled, can only disable it
+          (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: false }))
         )
-        (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: enable-as-collateral }))
+        (begin
+          (if (not enable-as-collateral)
+            ;; if disabling as collateral, check user is not using deposited collateral
+            (asserts! (try! (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) ERR_INVALID_DECREASE)
+            (if (> (get total-collateral-balanceUSD user-global-data) u0)
+              ;; if using anything else as collateral, check it's not enabling an isolated asset
+              (asserts! (not (contract-call? .pool-0-reserve is-isolated-type (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
+              ;; if enabling an asset as collateral and not using anything else as collateral, can enable any asset
+              true
+            )
+          )
+          (contract-call? .pool-0-reserve set-user-reserve-data who (contract-of asset) (merge user-data { use-as-collateral: enable-as-collateral }))
+        )
       )
     )
   )
-)
+  )
 
 (define-public (init
   (a-token-address principal)

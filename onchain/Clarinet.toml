@@ -88,6 +88,11 @@ path = "contracts/borrow/mocks/token/lp-diko-v1.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.lp-diko-v2]
+path = "contracts/borrow/mocks/token/lp-diko-v2.clar"
+clarity_version = 2
+epoch = 2.4
+
 # [contracts.after-deployment-simnet]
 # path = "contracts/v2_sbtc/after-deployment-simnet.clar"
 # clarity_version = 2
@@ -153,6 +158,11 @@ path = "contracts/borrow/mocks/token/lp-wstx-v1.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.lp-wstx-v2]
+path = "contracts/borrow/mocks/token/lp-wstx-v2.clar"
+clarity_version = 2
+epoch = 2.4
+
 [contracts.wstx]
 path = 'contracts/borrow/mocks/token/wstx.clar'
 clarity_version = 2
@@ -168,6 +178,11 @@ path = "contracts/borrow/mocks/token/lp-usda-v1.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.lp-usda-v2]
+path = "contracts/borrow/mocks/token/lp-usda-v2.clar"
+clarity_version = 2
+epoch = 2.4
+
 [contracts.usda]
 path = 'contracts/borrow/mocks/token/usda.clar'
 clarity_version = 2
@@ -180,6 +195,11 @@ epoch = 2.4
 
 [contracts.lp-xusd-v1]
 path = "contracts/borrow/mocks/token/lp-xusd-v1.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.lp-xusd-v2]
+path = "contracts/borrow/mocks/token/lp-xusd-v2.clar"
 clarity_version = 2
 epoch = 2.4
 
@@ -220,6 +240,11 @@ epoch = 2.4
 
 [contracts.pool-0-reserve]
 path = "contracts/borrow/vaults/pool-0-reserve.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-0-reserve-v1-2]
+path = "contracts/borrow/vaults/pool-0-reserve-v1-2.clar"
 clarity_version = 2
 epoch = 2.4
 

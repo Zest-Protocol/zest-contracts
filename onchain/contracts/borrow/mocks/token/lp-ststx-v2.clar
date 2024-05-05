@@ -175,8 +175,8 @@
     (v1-balance (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance account)))
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
-    (new-user-index (contract-call? .pool-0-reserve get-normalized-income
+    (reserve-state (get-reserve-state asset-addr))
+    (new-user-index (get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
@@ -219,8 +219,6 @@
   )
 )
 
-(define-constant max-value (contract-call? .math get-max-value))
-
 (define-private (execute-transfer-internal
   (amount uint)
   (sender principal)
@@ -241,15 +239,6 @@
       (ok true)
     )
   )
-)
-
-(define-public (is-transfer-allowed
-  (asset <sip10>)
-  (oracle <oracle-trait>)
-  (amount uint)
-  (user principal)
-  (assets-to-calculate (list 100 { asset: <sip10>, lp-token: <ft>, oracle: <oracle-trait> })))
-  (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle amount user assets-to-calculate)
 )
 
 ;; -- ownable-trait --
