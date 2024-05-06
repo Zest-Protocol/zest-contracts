@@ -82,11 +82,11 @@
   (contract-call? .math mul-precision-with-factor a decimals-a b-fixed))
 
 (define-read-only (get-reserve-state (asset principal))
-  (unwrap-panic (contract-call? .pool-0-reserve get-reserve-state asset-addr))
+  (unwrap-panic (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-addr))
 )
 
 (define-read-only (get-user-index (user principal) (asset principal))
-  (unwrap-panic (contract-call? .pool-0-reserve get-user-index user asset))
+  (unwrap-panic (contract-call? .pool-0-reserve-v1-2 get-user-index user asset))
 )
 
 (define-public (set-token-uri (value (string-utf8 256)))
@@ -143,9 +143,9 @@
       (try! (burn-internal amount owner))
       (if (is-eq (- (get current-balance ret) amount) u0)
         (begin
-          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
-          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
-          (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+          (try! (contract-call? .pool-0-reserve-v1-2 set-user-reserve-as-collateral owner asset-addr false))
+          (try! (contract-call? .pool-0-reserve-v1-2 remove-supplied-asset-ztoken owner asset-addr))
+          (try! (contract-call? .pool-0-reserve-v1-2 reset-user-index owner asset-addr))
         )
         false
       )
@@ -179,7 +179,7 @@
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
-    (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
+    (try! (contract-call? .pool-0-reserve-v1-2 set-user-index account asset-addr new-user-index))
 
     ;; transfer previous balance and mint to new token
     ;; can either have v0-balance or v1-balance, not both
@@ -228,12 +228,12 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
-    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
+    (try! (contract-call? .pool-0-reserve-v1-2 add-supplied-asset-ztoken recipient asset-addr))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
-        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
-        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender asset-addr))
-        (contract-call? .pool-0-reserve reset-user-index sender asset-addr)
+        (try! (contract-call? .pool-0-reserve-v1-2 set-user-reserve-as-collateral sender asset-addr false))
+        (try! (contract-call? .pool-0-reserve-v1-2 remove-supplied-asset-ztoken sender asset-addr))
+        (contract-call? .pool-0-reserve-v1-2 reset-user-index sender asset-addr)
       )
       (ok true)
     )

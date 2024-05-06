@@ -30,7 +30,7 @@
 (define-constant v2-version-5 .lp-diko-v2)
 
 (define-constant pool-0-reserve-v0 .pool-0-reserve)
-;; (define-constant pool-0-reserve-v1-2 .pool-0-reserve-v1-2)
+(define-constant pool-0-reserve-v1-2 .pool-0-reserve-v1-2)
 
 (define-public (run-update)
   (let (
@@ -75,13 +75,24 @@
     (try! (contract-call? .liquidation-manager-v1-2 set-lending-pool .pool-borrow-v1-2))
     
     ;; update liquidator and lending-pool in logic calls
-    (try! (contract-call? .pool-0-reserve set-liquidator .liquidation-manager-v1-2))
-    (try! (contract-call? .pool-0-reserve set-lending-pool .pool-borrow-v1-2))
-    (try! (contract-call? .pool-0-reserve set-approved-contract .pool-borrow-v1-2 true))
+    ;; pass permission to new pool-0-reserve
+    (try! (contract-call? .pool-0-reserve set-lending-pool .pool-0-reserve-v1-2))
+    (try! (contract-call? .pool-0-reserve set-liquidator .pool-0-reserve-v1-2))
+    (try! (contract-call? .pool-0-reserve set-approved-contract .pool-borrow false))
+    (try! (contract-call? .pool-0-reserve set-approved-contract .pool-borrow-v1-2 false))
+
+    (try! (contract-call? .pool-0-reserve-v1-2 set-liquidator .liquidation-manager-v1-2))
+    (try! (contract-call? .pool-0-reserve-v1-2 set-lending-pool .pool-borrow-v1-2))
+    (try! (contract-call? .pool-0-reserve-v1-2 set-approved-contract .pool-borrow-v1-2 true))
+    ;; END pool-0-reserve permissions
 
     ;; update helper caller
     (try! (contract-call? .pool-borrow-v1-2 set-approved-contract .borrow-helper-v1-2 true))
     (try! (contract-call? .pool-borrow-v1-2 set-approved-contract .borrow-helper false))
+
+    ;; update pool-reserve-data controller
+    (try! (contract-call? .pool-reserve-data delete-approved-contract .pool-0-reserve))
+    (try! (contract-call? .pool-reserve-data set-approved-contract .pool-0-reserve-v1-2 true))
 
     ;; STSTX UPGRADE
     ;; give permission for burn/mint of previous versions to new version
@@ -97,7 +108,7 @@
     ;; Give permission to new pool-borrow, liquidation-manager and pool-0-reserve
     (try! (contract-call? .lp-ststx-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-ststx-v2 set-approved-contract .liquidation-manager-v1-2 true))
-    (try! (contract-call? .lp-ststx-v2 set-approved-contract pool-0-reserve-v0 true))
+    (try! (contract-call? .lp-ststx-v2 set-approved-contract pool-0-reserve-v1-2 true))
     ;; ===
 
     ;; USDA UPGRADE
@@ -114,7 +125,7 @@
     ;; Give permission to new pool-borrow, liquidation-manager and pool-0-reserve
     (try! (contract-call? .lp-usda-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-usda-v2 set-approved-contract .liquidation-manager-v1-2 true))
-    (try! (contract-call? .lp-usda-v2 set-approved-contract pool-0-reserve-v0 true))
+    (try! (contract-call? .lp-usda-v2 set-approved-contract pool-0-reserve-v1-2 true))
     ;; ===
 
     ;; SBTC UPGRADE
@@ -131,7 +142,7 @@
     ;; Give permission to new pool-borrow, liquidation-manager and pool-0-reserve
     (try! (contract-call? .lp-sbtc-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-sbtc-v2 set-approved-contract .liquidation-manager-v1-2 true))
-    (try! (contract-call? .lp-sbtc-v2 set-approved-contract pool-0-reserve-v0 true))
+    (try! (contract-call? .lp-sbtc-v2 set-approved-contract pool-0-reserve-v1-2 true))
     ;; ===
 
     ;; XUSD UPGRADE
@@ -149,7 +160,7 @@
     ;; Give permission to new pool-borrow, liquidation-manager and pool-0-reserve
     (try! (contract-call? .lp-xusd-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-xusd-v2 set-approved-contract .liquidation-manager-v1-2 true))
-    (try! (contract-call? .lp-xusd-v2 set-approved-contract pool-0-reserve-v0 true))
+    (try! (contract-call? .lp-xusd-v2 set-approved-contract pool-0-reserve-v1-2 true))
     ;; ===
 
 
@@ -168,7 +179,7 @@
     ;; Give permission to new pool-borrow, liquidation-manager and pool-0-reserve
     (try! (contract-call? .lp-diko-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-diko-v2 set-approved-contract .liquidation-manager-v1-2 true))
-    (try! (contract-call? .lp-diko-v2 set-approved-contract pool-0-reserve-v0 true))
+    (try! (contract-call? .lp-diko-v2 set-approved-contract pool-0-reserve-v1-2 true))
     ;; ===
 
 

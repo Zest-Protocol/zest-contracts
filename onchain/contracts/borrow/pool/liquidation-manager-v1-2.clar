@@ -28,7 +28,7 @@
   (user principal)
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle> })))
   (let (
-    (global-user-data (try! (contract-call? .pool-0-reserve calculate-user-global-data user assets))))
+    (global-user-data (try! (contract-call? .pool-0-reserve-v1-2 calculate-user-global-data user assets))))
     (ok {
       total-liquidity-balanceUSD: (get total-liquidity-balanceUSD global-user-data),
       total-collateral-balanceUSD: (get total-collateral-balanceUSD global-user-data),
@@ -52,108 +52,109 @@
   (debt-purchase-amount uint) ;; principal amount that liquidator wants to repay
   (to-receive-atoken bool)
   )
-  (let (
-    (ret (try! (calculate-user-global-data user assets)))
-    (user-collateral-balance (try! (get-user-underlying-asset-balance lp-token collateral user)))
-    (collateral-reserve-data (try! (get-reserve-state collateral)))
-    (borrower-reserve-data (unwrap-panic (get-user-reserve-state user collateral)))
-  )
-    ;; has deposited collateral
-    (asserts! (> user-collateral-balance u0) ERR_NOT_DEPOSITED)
-    ;; health factor below treshold
-    (asserts! (get is-health-factor-below-treshold ret) ERR_HEALTH_FACTOR_GT_1)
-    ;; collateral is enabled in asset reserve and by user
-    (asserts! (and
-        (get usage-as-collateral-enabled collateral-reserve-data)
-        (get use-as-collateral borrower-reserve-data)
-      ) ERR_NOT_ENABLED_AS_COLL)
-    ;; check if collateral has a grace period
-    ;; if grace-period disabled, continue
-    ;; else check enough time has passed
-    (asserts!
-      (or
-        (not (try! (get-grace-period-enabled collateral)))
-        (> (- burn-block-height (try! (get-freeze-end-block collateral))) (try! (get-grace-period-time collateral)))
-      ) ERR_IN_GRACE_PERIOD)
-    
+  (begin
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-
     (let (
-      (borrowed-ret (unwrap-panic (get-user-borrow-balance user debt-asset)))
-      (debt-reserve-data (unwrap-panic (get-reserve-state debt-asset)))
-      (user-compounded-borrow-balance (get compounded-balance borrowed-ret))
-      (user-borrow-balance-increase (get balance-increase borrowed-ret))
+      (ret (try! (calculate-user-global-data user assets)))
+      (user-collateral-balance (try! (contract-call? lp-token get-balance user)))
+      (collateral-reserve-data (try! (get-reserve-state collateral)))
+      (borrower-reserve-data (unwrap-panic (get-user-reserve-state user collateral)))
     )
-      ;; not borrowing anything
-      (asserts! (> user-compounded-borrow-balance u0) ERR_NO_COLLATERAL)
+      ;; has deposited collateral
+      (asserts! (> user-collateral-balance u0) ERR_NOT_DEPOSITED)
+      ;; health factor below treshold
+      (asserts! (get is-health-factor-below-treshold ret) ERR_HEALTH_FACTOR_GT_1)
+      ;; collateral is enabled in asset reserve and by user
+      (asserts! (and
+          (get usage-as-collateral-enabled collateral-reserve-data)
+          (get use-as-collateral borrower-reserve-data)
+        ) ERR_NOT_ENABLED_AS_COLL)
+      ;; check if collateral has a grace period
+      ;; if grace-period disabled, continue
+      ;; else check enough time has passed
+      (asserts!
+        (or
+          (not (try! (get-grace-period-enabled collateral)))
+          (> (- burn-block-height (try! (get-freeze-end-block collateral))) (try! (get-grace-period-time collateral)))
+        ) ERR_IN_GRACE_PERIOD)
+
       (let (
-        (max-debt-to-liquidate
-          (contract-call? .math mul-perc
-            user-compounded-borrow-balance
-            (get decimals debt-reserve-data)
-            (get-liquidation-close-factor-percent (contract-of debt-asset))))
-        (debt-to-liquidate
-          (if (> debt-purchase-amount max-debt-to-liquidate)
-            max-debt-to-liquidate
-            debt-purchase-amount))
-        (available-collateral-principal
-          (try! 
-            (calculate-available-collateral-to-liquidate
-              collateral
-              debt-asset
-              collateral-oracle
-              debt-asset-oracle
-              debt-to-liquidate
-              user-collateral-balance)))
-        (origination-fee (get-origination-fee-prc (contract-of collateral)))
-        (protocol-fee (/ (* origination-fee (get liquidation-bonus-collateral available-collateral-principal)) u10000))
-        (collateral-to-liquidator (- (get collateral-amount available-collateral-principal) protocol-fee))
-        (debt-needed (get debt-needed available-collateral-principal))
-        (purchasing-all-underlying-collateral (< debt-needed debt-to-liquidate))
-        ;; if borrower holds less collateral than there is purchasing power for, only purchase for available collateral
-        (actual-debt-to-liquidate
-          (if purchasing-all-underlying-collateral
-            debt-needed
-            debt-to-liquidate))
-        (fee-liquidated u0)
-        (liquidated-collateral-for-fee u0)
+        (borrowed-ret (unwrap-panic (get-user-borrow-balance user debt-asset)))
+        (debt-reserve-data (unwrap-panic (get-reserve-state debt-asset)))
+        (user-compounded-borrow-balance (get compounded-balance borrowed-ret))
+        (user-borrow-balance-increase (get balance-increase borrowed-ret))
       )
-        ;; if liquidator wants underlying asset, check there is enough collateral
-        (if (not to-receive-atoken)
-          (asserts! (>= (try! (get-reserve-available-liquidity collateral)) collateral-to-liquidator) ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE)
-          false)
-
-        (try!
-          (contract-call? .pool-0-reserve update-state-on-liquidation
-            debt-asset
-            collateral
-            user
-            tx-sender
-            actual-debt-to-liquidate
-            (+ protocol-fee collateral-to-liquidator)
-            fee-liquidated
-            liquidated-collateral-for-fee
-            user-borrow-balance-increase
-            purchasing-all-underlying-collateral
-            to-receive-atoken
-          )
+        ;; not borrowing anything
+        (asserts! (> user-compounded-borrow-balance u0) ERR_NO_COLLATERAL)
+        (let (
+          (max-debt-to-liquidate
+            (contract-call? .math mul-perc
+              user-compounded-borrow-balance
+              (get decimals debt-reserve-data)
+              (get-liquidation-close-factor-percent (contract-of debt-asset))))
+          (debt-to-liquidate
+            (if (> debt-purchase-amount max-debt-to-liquidate)
+              max-debt-to-liquidate
+              debt-purchase-amount))
+          (available-collateral-principal
+            (try! 
+              (calculate-available-collateral-to-liquidate
+                collateral
+                debt-asset
+                collateral-oracle
+                debt-asset-oracle
+                debt-to-liquidate
+                user-collateral-balance)))
+          (origination-fee (get-origination-fee-prc (contract-of collateral)))
+          (protocol-fee (/ (* origination-fee (get liquidation-bonus-collateral available-collateral-principal)) u10000))
+          (collateral-to-liquidator (- (get collateral-amount available-collateral-principal) protocol-fee))
+          (debt-needed (get debt-needed available-collateral-principal))
+          (purchasing-all-underlying-collateral (< debt-needed debt-to-liquidate))
+          ;; if borrower holds less collateral than there is purchasing power for, only purchase for available collateral
+          (actual-debt-to-liquidate
+            (if purchasing-all-underlying-collateral
+              debt-needed
+              debt-to-liquidate))
+          (fee-liquidated u0)
+          (liquidated-collateral-for-fee u0)
         )
-        (if to-receive-atoken
-          (try! (contract-call? lp-token transfer-on-liquidation collateral-to-liquidator user tx-sender))
-          (begin
-            (try! (contract-call? lp-token burn-on-liquidation collateral-to-liquidator user))
-            (try! (contract-call? .pool-0-reserve transfer-to-user collateral tx-sender collateral-to-liquidator))))
-        (try! (contract-call? .pool-0-reserve transfer-to-reserve debt-asset tx-sender actual-debt-to-liquidate))
+          ;; if liquidator wants underlying asset, check there is enough collateral
+          (if (not to-receive-atoken)
+            (asserts! (>= (try! (get-reserve-available-liquidity collateral)) collateral-to-liquidator) ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE)
+            false)
 
-        (if (> protocol-fee u0)
-          (begin
-            ;; burn users' lp and transfer to fee collection address
-            (try! (contract-call? lp-token burn-on-liquidation protocol-fee user))
-            (try! (contract-call? .pool-0-reserve transfer-to-user collateral (contract-call? .pool-0-reserve get-collection-address) protocol-fee)))
-          u0)
+          (try!
+            (contract-call? .pool-0-reserve-v1-2 update-state-on-liquidation
+              debt-asset
+              collateral
+              user
+              tx-sender
+              actual-debt-to-liquidate
+              (+ protocol-fee collateral-to-liquidator)
+              fee-liquidated
+              liquidated-collateral-for-fee
+              user-borrow-balance-increase
+              purchasing-all-underlying-collateral
+              to-receive-atoken
+            )
+          )
+          (if to-receive-atoken
+            (try! (contract-call? lp-token transfer-on-liquidation collateral-to-liquidator user tx-sender))
+            (begin
+              (try! (contract-call? lp-token burn-on-liquidation collateral-to-liquidator user))
+              (try! (contract-call? .pool-0-reserve-v1-2 transfer-to-user collateral tx-sender collateral-to-liquidator))))
+          (try! (contract-call? .pool-0-reserve-v1-2 transfer-to-reserve debt-asset tx-sender actual-debt-to-liquidate))
+
+          (if (> protocol-fee u0)
+            (begin
+              ;; burn users' lp and transfer to fee collection address
+              (try! (contract-call? lp-token burn-on-liquidation protocol-fee user))
+              (try! (contract-call? .pool-0-reserve-v1-2 transfer-to-user collateral (contract-call? .pool-0-reserve-v1-2 get-collection-address) protocol-fee)))
+            u0)
+        )
       )
+      (ok u0)
     )
-    (ok u0)
   )
 )
 
@@ -166,7 +167,7 @@
 )
 
 (define-read-only (get-origination-fee-prc (asset principal))
-  (contract-call? .pool-0-reserve get-origination-fee-prc asset))
+  (contract-call? .pool-0-reserve-v1-2 get-origination-fee-prc asset))
 
 (define-read-only (get-y-from-x
   (x uint)
@@ -178,7 +179,7 @@
   (contract-call? .math get-y-from-x x x-decimals y-decimals x-price y-price)
 )
 
-(define-data-var lending-pool principal .pool-borrow-v1-1)
+(define-data-var lending-pool principal .pool-borrow-v1-2)
 
 (define-data-var admin principal tx-sender)
 (define-read-only (is-admin (caller principal))
@@ -259,7 +260,7 @@
 )
 
 (define-read-only (get-user-origination-fee (who principal) (asset <ft>))
-  (contract-call? .pool-0-reserve get-user-origination-fee who asset)
+  (contract-call? .pool-0-reserve-v1-2 get-user-origination-fee who asset)
 )
 
 (define-read-only (get-liquidation-bonus (asset <ft>))
@@ -267,11 +268,11 @@
 )
 
 (define-public (get-user-borrow-balance (who principal) (asset <ft>))
-  (contract-call? .pool-0-reserve get-user-borrow-balance who asset)
+  (contract-call? .pool-0-reserve-v1-2 get-user-borrow-balance who asset)
 )
 
 (define-public (get-reserve-state (asset <ft>))
-  (contract-call? .pool-0-reserve get-reserve-state (contract-of asset))
+  (contract-call? .pool-0-reserve-v1-2 get-reserve-state (contract-of asset))
 )
 
 (define-public (get-freeze-end-block (asset <ft>))
@@ -287,17 +288,10 @@
 )
 
 (define-public (get-user-reserve-state (user principal) (asset <ft>))
-  (ok (contract-call? .pool-0-reserve get-user-reserve-data user (contract-of asset)))
-)
-
-(define-public (get-user-underlying-asset-balance
-  (lp-token <ft>)
-  (asset <ft>)
-  (user principal))
-  (contract-call? .pool-0-reserve get-user-underlying-asset-balance lp-token asset user)
+  (ok (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data user (contract-of asset)))
 )
 
 (define-public (get-reserve-available-liquidity (asset <ft>))
-  (contract-call? .pool-0-reserve get-reserve-available-liquidity asset)
+  (contract-call? .pool-0-reserve-v1-2 get-reserve-available-liquidity asset)
 )
 

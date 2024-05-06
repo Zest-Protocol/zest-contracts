@@ -17,10 +17,10 @@
   (let ((asset-principal (contract-of asset)))
     (try! (contract-call? .pool-borrow-v1-2 supply lp pool-reserve asset amount owner))
     (print { type: "supply-call", payload: { key: owner, data: {
-      reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
-      user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data owner asset-principal),
-      user-index: (contract-call? .pool-0-reserve get-user-index owner asset-principal),
-      user-assets: (contract-call? .pool-0-reserve get-user-assets owner),
+      reserve-state: (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-principal)),
+      user-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data owner asset-principal),
+      user-index: (contract-call? .pool-0-reserve-v1-2 get-user-index owner asset-principal),
+      user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets owner),
       asset: asset,
       amount: amount,
       referral: referral,
@@ -44,10 +44,10 @@
   )
     (try! (contract-call? .pool-borrow-v1-2 borrow pool-reserve oracle asset-to-borrow lp assets amount-to-be-borrowed fee-calculator interest-rate-mode owner))
     (print { type: "borrow-call", payload: { key: owner, data: {
-        reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
-        user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data owner asset-principal),
-        user-index: (contract-call? .pool-0-reserve get-user-index owner asset-principal),
-        user-assets: (contract-call? .pool-0-reserve get-user-assets owner),
+        reserve-state: (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-principal)),
+        user-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data owner asset-principal),
+        user-index: (contract-call? .pool-0-reserve-v1-2 get-user-index owner asset-principal),
+        user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets owner),
         asset: asset-to-borrow,
         amount: amount-to-be-borrowed,
       }}})
@@ -64,10 +64,10 @@
     (asset-principal (contract-of asset))
     (payback-amount (try! (contract-call? .pool-borrow-v1-2 repay asset amount-to-repay on-behalf-of payer))))
     (print { type: "repay-call", payload: { key: on-behalf-of, data: {
-        reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
-        user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data on-behalf-of asset-principal),
-        user-index: (contract-call? .pool-0-reserve get-user-index on-behalf-of asset-principal),
-        user-assets: (contract-call? .pool-0-reserve get-user-assets on-behalf-of),
+        reserve-state: (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-principal)),
+        user-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data on-behalf-of asset-principal),
+        user-index: (contract-call? .pool-0-reserve-v1-2 get-user-index on-behalf-of asset-principal),
+        user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets on-behalf-of),
         asset: asset,
         amount: payback-amount,
         on-behalf-of: on-behalf-of,
@@ -86,14 +86,14 @@
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (let (
     (asset-principal (contract-of asset))
-    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)))
+    (reserve-state (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-principal)))
     ) 
     (try! (contract-call? .pool-borrow-v1-2 set-user-use-reserve-as-collateral who lp-token asset enable-as-collateral oracle assets-to-calculate))
     (print { type: "set-user-use-reserve-as-collateral-call", payload: { key: who, data: {
-        reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
-        user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data who asset-principal),
-        user-index: (contract-call? .pool-0-reserve get-user-index who asset-principal),
-        user-assets: (contract-call? .pool-0-reserve get-user-assets who),
+        reserve-state: (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-principal)),
+        user-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data who asset-principal),
+        user-index: (contract-call? .pool-0-reserve-v1-2 get-user-index who asset-principal),
+        user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets who),
         asset: asset,
       }}})
     (ok true)
@@ -114,10 +114,10 @@
     (withdraw-res (try! (contract-call? .pool-borrow-v1-2 withdraw pool-reserve asset lp oracle assets amount owner)))
     )
     (print { type: "withdraw-call", payload: { key: owner, data: {
-        reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state asset-principal)),
-        user-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data owner asset-principal),
-        user-index: (contract-call? .pool-0-reserve get-user-index owner asset-principal),
-        user-assets: (contract-call? .pool-0-reserve get-user-assets owner),
+        reserve-state: (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-principal)),
+        user-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data owner asset-principal),
+        user-index: (contract-call? .pool-0-reserve-v1-2 get-user-index owner asset-principal),
+        user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets owner),
         ;; amount: actual-amount,
         asset: asset,
       }}})
@@ -163,20 +163,20 @@
       to-receive-atoken)
     )
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
-        debt-reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state debt-asset-principal)),
-        collateral-reserve-state: (try! (contract-call? .pool-0-reserve get-reserve-state debt-asset-principal)),
+        debt-reserve-state: (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state debt-asset-principal)),
+        collateral-reserve-state: (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state debt-asset-principal)),
         
-        liquidator-debt-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data liquidator debt-asset-principal),
-        liquidator-debt-index: (contract-call? .pool-0-reserve get-user-index liquidator debt-asset-principal),
-        liquidator-collateral-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data liquidator collateral-asset-principal),
-        liquidator-collateral-index: (contract-call? .pool-0-reserve get-user-index liquidator collateral-asset-principal),
-        liquidator-user-assets: (contract-call? .pool-0-reserve get-user-assets liquidator),
+        liquidator-debt-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data liquidator debt-asset-principal),
+        liquidator-debt-index: (contract-call? .pool-0-reserve-v1-2 get-user-index liquidator debt-asset-principal),
+        liquidator-collateral-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data liquidator collateral-asset-principal),
+        liquidator-collateral-index: (contract-call? .pool-0-reserve-v1-2 get-user-index liquidator collateral-asset-principal),
+        liquidator-user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets liquidator),
 
-        liquidated-user-debt-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data liquidated-user debt-asset-principal),
-        liquidated-user-debt-index: (contract-call? .pool-0-reserve get-user-index liquidated-user debt-asset-principal),
-        liquidated-user-collateral-reserve-state: (contract-call? .pool-0-reserve get-user-reserve-data liquidated-user collateral-asset-principal),
-        liquidated-user-collateral-index: (contract-call? .pool-0-reserve get-user-index liquidated-user collateral-asset-principal),
-        liquidated-user-assets: (contract-call? .pool-0-reserve get-user-assets liquidated-user),
+        liquidated-user-debt-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data liquidated-user debt-asset-principal),
+        liquidated-user-debt-index: (contract-call? .pool-0-reserve-v1-2 get-user-index liquidated-user debt-asset-principal),
+        liquidated-user-collateral-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data liquidated-user collateral-asset-principal),
+        liquidated-user-collateral-index: (contract-call? .pool-0-reserve-v1-2 get-user-index liquidated-user collateral-asset-principal),
+        liquidated-user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets liquidated-user),
 
         collateral-to-liquidate: collateral-to-liquidate,
         debt-asset: debt-asset-principal,

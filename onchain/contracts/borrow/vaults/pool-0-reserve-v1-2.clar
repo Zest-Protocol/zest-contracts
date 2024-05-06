@@ -1075,6 +1075,7 @@
   (amount uint)
   (destination principal))
   (begin
+    (try! (is-approved-contract contract-caller))
     (try! (contract-call? asset transfer amount who destination none))
     (ok amount)
   )
@@ -1129,13 +1130,11 @@
   )
   (begin
     (asserts! (or
-      (is-lending-pool tx-sender)
       (is-lending-pool contract-caller)
-      (is-liquidator tx-sender)
       (is-liquidator contract-caller)
       ) ERR_UNAUTHORIZED)
     (try! (get-reserve-state (contract-of asset)))
-    (try! (as-contract (contract-call? .pool-vault transfer amount who asset)))
+    (try! (contract-call? .pool-0-reserve transfer-to-user asset who amount))
     (ok u0)
   )
 )
@@ -1231,6 +1230,7 @@
   (amount uint)
   )
   (begin
+    (asserts! (or (is-lending-pool contract-caller) (is-liquidator contract-caller)) ERR_UNAUTHORIZED)
     (try! (contract-call? asset transfer amount who (get-reserve-vault asset) none))
     (ok u0)
   )
@@ -1360,53 +1360,44 @@
   (user principal)
   (oracle <oracle-trait>)
   )
-  (let (
-    (user-data (get-user-reserve-data user (contract-of asset)))
-    (reserve-data (try! (get-reserve-state (contract-of asset))))
-    (underlying-balance (try! (get-user-underlying-asset-balance lp-token asset user)))
-    (compounded-borrow-balance
-      (get-compounded-borrow-balance
-        (get principal-borrow-balance user-data)
-        (get decimals reserve-data)
-        (get stable-borrow-rate user-data)
-        (get last-updated-block user-data)
-        (get last-variable-borrow-cumulative-index user-data)
+  (let ((reserve-data (try! (get-reserve-state (contract-of asset)))))
+    (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
+    (let (
+      (user-data (get-user-reserve-data user (contract-of asset)))
+      (underlying-balance (try! (contract-call? lp-token get-balance user)))
+      (compounded-borrow-balance
+        (get-compounded-borrow-balance
+          (get principal-borrow-balance user-data)
+          (get decimals reserve-data)
+          (get stable-borrow-rate user-data)
+          (get last-updated-block user-data)
+          (get last-variable-borrow-cumulative-index user-data)
 
-        (get current-variable-borrow-rate reserve-data)
-        (get last-variable-borrow-cumulative-index reserve-data)
-        (get last-updated-block reserve-data)
+          (get current-variable-borrow-rate reserve-data)
+          (get last-variable-borrow-cumulative-index reserve-data)
+          (get last-updated-block reserve-data)
+        )
       )
     )
-  )
-    (if (is-eq (get principal-borrow-balance user-data) u0)
-      (ok {
-        underlying-balance: underlying-balance,
-        compounded-borrow-balance: u0,
-        origination-fee: u0,
-        use-as-collateral: (get use-as-collateral user-data)
-      })
-      (ok {
-        underlying-balance: underlying-balance,
-        compounded-borrow-balance: compounded-borrow-balance,
-        origination-fee: u0,
-        use-as-collateral: (get use-as-collateral user-data)
-      })
+      (if (is-eq (get principal-borrow-balance user-data) u0)
+        (ok {
+          underlying-balance: underlying-balance,
+          compounded-borrow-balance: u0,
+          origination-fee: u0,
+          use-as-collateral: (get use-as-collateral user-data)
+        })
+        (ok {
+          underlying-balance: underlying-balance,
+          compounded-borrow-balance: compounded-borrow-balance,
+          origination-fee: u0,
+          use-as-collateral: (get use-as-collateral user-data)
+        })
+      )
     )
   )
 )
 
-(define-public (get-user-underlying-asset-balance
-  (lp-token <ft>)
-  (asset <ft>)
-  (user principal)
-  )
-  (let (
-    (user-data (get-user-reserve-data user (contract-of asset)))
-    (reserve-data (get-reserve-state (contract-of asset)))
-    (underlying-balance (try! (contract-call? lp-token get-balance user))))
-    (ok underlying-balance)))
-
-(define-public (aggregate-user-data
+(define-private (aggregate-user-data
   (reserve { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })
   (total
     (response
@@ -1429,7 +1420,7 @@
       (get oracle reserve)
       result )))
 
-(define-public (get-user-basic-reserve-data
+(define-private (get-user-basic-reserve-data
   (lp-token <ft>)
   (asset <ft>)
   (oracle <oracle-trait>)
@@ -1572,7 +1563,7 @@
   (user principal)
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (begin
-    (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
+    (asserts! (or (is-liquidator contract-caller) (is-lending-pool contract-caller)) ERR_UNAUTHORIZED)
     (let (
       (aggregate (try!
           (fold
