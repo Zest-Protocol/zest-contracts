@@ -35,8 +35,7 @@
 (define-constant ERR_INVALID_ASSETS (err u30024))
 (define-constant ERR_NON_CORRESPONDING_ASSETS (err u30025))
 (define-constant ERR_INVALID_AMOUNT (err u30026))
-
-
+(define-constant ERR_NOT_IN_ISOLATED_MODE (err u30027))
 
 
 (define-map users-id uint principal)
@@ -216,9 +215,21 @@
     )
       (asserts! (>= available-liquidity amount-to-be-borrowed) ERR_EXCEEDED_LIQ)
 
-      (if (is-some is-in-isolation-mode)
-        (asserts! (contract-call? .pool-0-reserve-v1-2 is-borroweable-isolated asset) ERR_NOT_SILOED_ASSET)
-        true)
+      (match is-in-isolation-mode
+        isolated-asset (begin
+          (try! (validate-borrow-in-isolated-mode
+              isolated-asset
+              asset
+              amount-to-be-borrowed
+              oracle
+              (contract-call? .pool-0-reserve-v1-2 mul-to-fixed-precision
+                  amount-to-be-borrowed
+                  (get decimals reserve-state)
+                  (try! (contract-call? oracle get-asset-price asset-to-borrow)))
+              assets))
+        )
+        true
+      )
 
 
       (let (
@@ -238,24 +249,6 @@
         (asserts! (<= (get collateral-needed-in-USD amount-collateral-needed) (get total-collateral-balanceUSD user-global-data)) ERR_NOT_ENOUGH_COLLATERAL)
         (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) u0 amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
 
-        (match is-in-isolation-mode
-          isolated-asset
-            (let (
-              (isolated-reserve (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state isolated-asset)))
-              (amount-to-be-borrowed-in-base-currency (contract-call? .pool-0-reserve-v1-2 mul-to-fixed-precision
-                amount-to-be-borrowed
-                (get decimals reserve-state)
-                (try! (contract-call? oracle get-asset-price asset-to-borrow))))
-              (total-isolated-debt (try! (contract-call? .pool-0-reserve-v1-2 sum-total-debt-in-base-currency assets)))
-            )
-              (if (> (get debt-ceiling isolated-reserve) u0)
-                (asserts! (<= (+ amount-to-be-borrowed-in-base-currency total-isolated-debt) (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
-                true
-              )
-            )
-          true
-        )
-
         ;; conditions passed, can borrow
         (try! (contract-call? .pool-0-reserve-v1-2 update-state-on-borrow asset-to-borrow owner amount-to-be-borrowed u0))
         (try! (contract-call? .pool-0-reserve-v1-2 transfer-to-user asset-to-borrow owner amount-to-be-borrowed))
@@ -264,6 +257,29 @@
 
         (ok amount-to-be-borrowed)
       )
+    )
+  )
+)
+
+(define-private (validate-borrow-in-isolated-mode
+  (isolated-asset principal)
+  (borrowed-asset principal)
+  (amount-to-be-borrowed uint)
+  (oracle <oracle-trait>)
+  (amount-to-be-borrowed-in-base-currency uint)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+)
+  (let (
+    (isolated-reserve (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state isolated-asset)))
+    (total-isolated-debt (try! (contract-call? .pool-0-reserve-v1-2 sum-total-debt-in-base-currency assets)))
+  )
+    (asserts! (contract-call? .pool-0-reserve-v1-2 is-borroweable-isolated borrowed-asset) ERR_NOT_SILOED_ASSET)
+    (if (> (get debt-ceiling isolated-reserve) u0)
+      (begin
+        (asserts! (<= (+ amount-to-be-borrowed-in-base-currency total-isolated-debt) (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
+        (ok true)
+      )
+      (ok true)
     )
   )
 )
