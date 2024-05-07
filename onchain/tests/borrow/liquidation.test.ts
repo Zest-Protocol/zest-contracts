@@ -24,12 +24,16 @@ const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 const lpdiko = "lp-diko";
 const lpsBTC = "lp-sbtc";
 const lpsBTCv1 = "lp-sbtc-v1";
+const lpsBTCv2 = "lp-sbtc-v2";
 const lpstSTX = "lp-ststx";
 const lpstSTXv1 = "lp-ststx-v1";
+const lpstSTXv2 = "lp-ststx-v2";
 const lpUSDA = "lp-usda";
 const lpUSDAv1 = "lp-usda-v1";
+const lpUSDAv2 = "lp-usda-v2";
 const lpxUSD = "lp-xusd";
 const lpxUSDv1 = "lp-xusd-v1";
+const lpxUSDv2 = "lp-xusd-v2";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -44,6 +48,10 @@ const xUSD = "xusd";
 
 const lpwstx = "lp-wstx";
 const wstx = "wstx";
+
+const zsbtc = lpsBTCv2;
+const zststx = lpstSTXv2;
+const zxusd = lpxUSDv2;
 
 describe("Liquidation tests", () => {
   beforeEach(() => {    
@@ -102,8 +110,7 @@ describe("Liquidation tests", () => {
     callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000) ], deployerAddress);
     callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000) ], deployerAddress);
 
-    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-1.clar`).toString(), null, deployerAddress);
-
+    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-v2.clar`).toString(), null, deployerAddress);
   });
   it("Supply sBTC, borrow xUSD, price goes below health factor", () => {
     const poolReserve0 = new PoolReserve(
@@ -111,7 +118,7 @@ describe("Liquidation tests", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -175,7 +182,7 @@ describe("Liquidation tests", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpsBTCv1,
+      zsbtc,
       deployerAddress,
       sBTC,
       8,
@@ -196,7 +203,7 @@ describe("Liquidation tests", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpxUSDv1,
+      zxusd,
       deployerAddress,
       xUSD,
       6,
@@ -240,10 +247,10 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(100_000_000_000),
@@ -254,10 +261,10 @@ describe("Liquidation tests", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(1_000_000_000_000),
@@ -268,10 +275,10 @@ describe("Liquidation tests", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000_000),
@@ -291,22 +298,22 @@ describe("Liquidation tests", () => {
     // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -336,12 +343,12 @@ describe("Liquidation tests", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -375,22 +382,22 @@ describe("Liquidation tests", () => {
     // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "liquidation-call",
       [
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -409,7 +416,7 @@ describe("Liquidation tests", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     let callResponse = simnet.callPublicFn(
       sBTC,
@@ -457,7 +464,7 @@ describe("Liquidation tests", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpsBTCv1,
+      zsbtc,
       deployerAddress,
       sBTC,
       8,
@@ -477,7 +484,7 @@ describe("Liquidation tests", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpxUSDv1,
+      zxusd,
       deployerAddress,
       xUSD,
       6,
@@ -520,10 +527,10 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(100_000_000_000),
@@ -534,10 +541,10 @@ describe("Liquidation tests", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(1_000_000_000_000),
@@ -549,10 +556,10 @@ describe("Liquidation tests", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000_000),
@@ -571,22 +578,22 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -607,12 +614,12 @@ describe("Liquidation tests", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -641,22 +648,22 @@ describe("Liquidation tests", () => {
     // console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "liquidation-call",
       [
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -681,7 +688,7 @@ describe("Liquidation tests", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     let callResponse = simnet.callPublicFn(
       sBTC,
@@ -729,7 +736,7 @@ describe("Liquidation tests", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpsBTCv1,
+      zsbtc,
       deployerAddress,
       sBTC,
       8,
@@ -749,7 +756,7 @@ describe("Liquidation tests", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpxUSDv1,
+      zxusd,
       deployerAddress,
       xUSD,
       6,
@@ -794,10 +801,10 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(100_000_000_000),
@@ -808,10 +815,10 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(100_000_000_000_000),
@@ -822,10 +829,10 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000_000),
@@ -843,22 +850,22 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -889,12 +896,12 @@ describe("Liquidation tests", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -918,22 +925,22 @@ describe("Liquidation tests", () => {
     // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "liquidation-call",
       [
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.contractPrincipal(deployerAddress, "oracle"),

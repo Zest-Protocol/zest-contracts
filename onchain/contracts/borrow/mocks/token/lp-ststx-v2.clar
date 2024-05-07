@@ -7,7 +7,6 @@
 (impl-trait .ownable-trait.ownable-trait)
 
 (define-constant ERR_UNAUTHORIZED (err u14401))
-(define-constant ERR_INVALID_TRANSFER (err u14402))
 (define-constant ERR_INVALID_AMOUNT (err u14403))
 (define-constant ERR_INVALID_ASSET (err u14404))
 
@@ -82,11 +81,11 @@
   (contract-call? .math mul-precision-with-factor a decimals-a b-fixed))
 
 (define-read-only (get-reserve-state (asset principal))
-  (unwrap-panic (contract-call? .pool-0-reserve get-reserve-state asset-addr))
+  (unwrap-panic (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-addr))
 )
 
 (define-read-only (get-user-index (user principal) (asset principal))
-  (unwrap-panic (contract-call? .pool-0-reserve get-user-index user asset))
+  (unwrap-panic (contract-call? .pool-0-reserve-v1-2 get-user-index user asset))
 )
 
 
@@ -144,9 +143,9 @@
       (try! (burn-internal amount owner))
       (if (is-eq (- (get current-balance ret) amount) u0)
         (begin
-          (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral owner asset-addr false))
-          (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken owner asset-addr))
-          (try! (contract-call? .pool-0-reserve reset-user-index owner asset-addr))
+          (try! (contract-call? .pool-0-reserve-v1-2 set-user-reserve-as-collateral owner asset-addr false))
+          (try! (contract-call? .pool-0-reserve-v1-2 remove-supplied-asset-ztoken owner asset-addr))
+          (try! (contract-call? .pool-0-reserve-v1-2 reset-user-index owner asset-addr))
         )
         false
       )
@@ -175,12 +174,12 @@
     (v1-balance (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance account)))
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
-    (reserve-state (try! (contract-call? .pool-0-reserve get-reserve-state asset-addr)))
-    (new-user-index (contract-call? .pool-0-reserve get-normalized-income
+    (reserve-state (get-reserve-state asset-addr))
+    (new-user-index (get-normalized-income
         (get current-liquidity-rate reserve-state)
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
-    (try! (contract-call? .pool-0-reserve set-user-index account asset-addr new-user-index))
+    (try! (contract-call? .pool-0-reserve-v1-2 set-user-index account asset-addr new-user-index))
 
     ;; transfer previous balance and mint to new token
     ;; can either have v0-balance or v1-balance, not both
@@ -219,8 +218,6 @@
   )
 )
 
-(define-constant max-value (contract-call? .math get-max-value))
-
 (define-private (execute-transfer-internal
   (amount uint)
   (sender principal)
@@ -231,25 +228,16 @@
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
     (try! (transfer-internal amount sender recipient none))
-    (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
+    (try! (contract-call? .pool-0-reserve-v1-2 add-supplied-asset-ztoken recipient asset-addr))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
-        (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
-        (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender asset-addr))
-        (contract-call? .pool-0-reserve reset-user-index sender asset-addr)
+        (try! (contract-call? .pool-0-reserve-v1-2 set-user-reserve-as-collateral sender asset-addr false))
+        (try! (contract-call? .pool-0-reserve-v1-2 remove-supplied-asset-ztoken sender asset-addr))
+        (contract-call? .pool-0-reserve-v1-2 reset-user-index sender asset-addr)
       )
       (ok true)
     )
   )
-)
-
-(define-public (is-transfer-allowed
-  (asset <sip10>)
-  (oracle <oracle-trait>)
-  (amount uint)
-  (user principal)
-  (assets-to-calculate (list 100 { asset: <sip10>, lp-token: <ft>, oracle: <oracle-trait> })))
-  (contract-call? .pool-0-reserve check-balance-decrease-allowed asset oracle amount user assets-to-calculate)
 )
 
 ;; -- ownable-trait --
