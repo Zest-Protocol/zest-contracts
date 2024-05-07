@@ -164,7 +164,7 @@
 
       (try! (contract-call? lp burn amount-to-redeem owner))
 
-      (if (is-eq (- current-balance amount-to-redeem) u0)
+      (if (is-eq current-balance amount-to-redeem)
         (begin
           (try! (contract-call? .pool-0-reserve-v1-2 set-user-reserve-as-collateral owner asset false))
           (try! (contract-call? .pool-0-reserve-v1-2 remove-supplied-asset-ztoken owner (contract-of asset)))
