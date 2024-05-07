@@ -378,7 +378,7 @@
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
   )
-    (ok (- (try! (contract-call? asset get-balance (get-reserve-vault asset))) (get accrued-to-treasury reserve-data) ))
+    (ok (try! (contract-call? asset get-balance (get-reserve-vault asset))))
   )
 )
 

@@ -120,7 +120,7 @@
         )
           ;; if liquidator wants underlying asset, check there is enough collateral
           (if (not to-receive-atoken)
-            (asserts! (>= (try! (get-reserve-available-liquidity collateral)) collateral-to-liquidator) ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE)
+            (asserts! (>= (try! (get-reserve-available-liquidity collateral)) (get collateral-amount available-collateral-principal)) ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE)
             false)
 
           (try!
