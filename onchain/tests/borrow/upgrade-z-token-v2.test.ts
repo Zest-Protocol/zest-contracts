@@ -3517,7 +3517,7 @@ describe("Upgrading z-token to v1-2", () => {
 
     simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(), null, deployerAddress);
     simnet.mineEmptyBlock();
-    callResponse = simnet.deployContract("migrate-2", readFileSync(`contracts/borrow/mocks/migrate-v1-v2.clar`).toString(), null, deployerAddress);
+    simnet.deployContract("migrate-2", readFileSync(`contracts/borrow/mocks/migrate-v1-v2.clar`).toString(), null, deployerAddress);
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(

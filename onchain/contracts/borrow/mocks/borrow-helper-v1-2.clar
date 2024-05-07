@@ -118,7 +118,6 @@
         user-reserve-state: (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data owner asset-principal),
         user-index: (contract-call? .pool-0-reserve-v1-2 get-user-index owner asset-principal),
         user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets owner),
-        ;; amount: actual-amount,
         asset: asset,
       }}})
     (ok true)

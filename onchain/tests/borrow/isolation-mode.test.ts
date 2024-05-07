@@ -24,11 +24,14 @@ const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 const lpdiko = "lp-diko";
 const lpsBTC = "lp-sbtc";
 const lpsBTCv1 = "lp-sbtc-v1";
+const lpsBTCv2 = "lp-sbtc-v2";
 const lpstSTX = "lp-ststx";
 const lpstSTXv1 = "lp-ststx-v1";
+const lpstSTXv2 = "lp-ststx-v2";
 const lpUSDA = "lp-usda";
 const lpxUSD = "lp-xusd";
 const lpxUSDv1 = "lp-xusd-v1";
+const lpxUSDv2 = "lp-xusd-v2";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -43,7 +46,13 @@ const xUSD = "xusd";
 
 const lpwstx = "lp-wstx";
 const lpwstxv1 = "lp-wstx-v1";
+const lpwstxv2 = "lp-wstx-v2";
 const wstx = "wstx";
+
+const zsbtc = lpsBTCv2;
+const zststx = lpstSTXv2;
+const zxusd = lpxUSDv2;
+const zwstx = lpwstxv2;
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
@@ -64,7 +73,7 @@ describe("Isolated mode", () => {
 
     let callResponse = poolBorrow.init(
       deployerAddress,
-      lpstSTXv1,
+      zststx,
       deployerAddress,
       stSTX,
       6,
@@ -84,7 +93,7 @@ describe("Isolated mode", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpsBTCv1,
+      zsbtc,
       deployerAddress,
       sBTC,
       8,
@@ -104,7 +113,7 @@ describe("Isolated mode", () => {
 
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpxUSDv1,
+      zxusd,
       deployerAddress,
       xUSD,
       6,
@@ -191,7 +200,7 @@ describe("Isolated mode", () => {
       true,
       deployerAddress
     );
-    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-1.clar`).toString(), null, deployerAddress);
+    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-v2.clar`).toString(), null, deployerAddress);
   
   });
 
@@ -201,7 +210,7 @@ describe("Isolated mode", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     const stSTXToken = new MintableToken(simnet, deployerAddress, stSTX);
     const sBTCToken = new MintableToken(simnet, deployerAddress, sBTC);
@@ -268,10 +277,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000),
@@ -280,12 +289,13 @@ describe("Isolated mode", () => {
       ],
       LP_1
     );
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -307,27 +317,27 @@ describe("Isolated mode", () => {
     ]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -338,8 +348,6 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-
-    // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.bool(true));
   });
 
@@ -349,7 +357,7 @@ describe("Isolated mode", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     const stSTXToken = new MintableToken(simnet, deployerAddress, stSTX);
     const sBTCToken = new MintableToken(simnet, deployerAddress, sBTC);
@@ -417,10 +425,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000),
@@ -429,12 +437,13 @@ describe("Isolated mode", () => {
       ],
       LP_1
     );
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -443,6 +452,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    // console.log(Cl.prettyPrint(callResponse.result));
 
     let borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -463,17 +473,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -484,27 +494,27 @@ describe("Isolated mode", () => {
     const availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -529,17 +539,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -556,17 +566,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -580,7 +590,7 @@ describe("Isolated mode", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     const stSTXToken = new MintableToken(simnet, deployerAddress, stSTX);
     const sBTCToken = new MintableToken(simnet, deployerAddress, sBTC);
@@ -649,10 +659,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000),
@@ -663,10 +673,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(900_000_000),
@@ -675,7 +685,6 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     let borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -697,49 +706,48 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     const availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -750,6 +758,7 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
@@ -761,17 +770,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -787,17 +796,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -807,10 +816,10 @@ describe("Isolated mode", () => {
     let beforeNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(1_000_000_000),
@@ -843,17 +852,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -870,7 +879,7 @@ describe("Isolated mode", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     const stSTXToken = new MintableToken(simnet, deployerAddress, stSTX);
     const sBTCToken = new MintableToken(simnet, deployerAddress, sBTC);
@@ -939,10 +948,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000),
@@ -953,10 +962,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(900_000_000),
@@ -985,17 +994,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1006,27 +1015,27 @@ describe("Isolated mode", () => {
     let availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1047,17 +1056,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1076,17 +1085,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1107,17 +1116,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1139,10 +1148,10 @@ describe("Isolated mode", () => {
 
     const vaultBalanceBefore = (simnet.getAssetsMap().get(".ststx.ststx")?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!);
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "withdraw",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1151,17 +1160,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1187,17 +1196,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1211,10 +1220,10 @@ describe("Isolated mode", () => {
     ]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(1_000_000_000_000_000),
@@ -1234,17 +1243,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1257,27 +1266,27 @@ describe("Isolated mode", () => {
     expect(callResponse.result).toBeOk(Cl.uint(0));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1292,28 +1301,28 @@ describe("Isolated mode", () => {
 
     // cannot enable or disable sBTC as collateral, in isolated mode
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1335,17 +1344,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1371,7 +1380,7 @@ describe("Isolated mode", () => {
 
     const balanceBeforeRepay = (simnet.getAssetsMap().get(".xusd.xusd")?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!);
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -1393,17 +1402,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1440,28 +1449,28 @@ describe("Isolated mode", () => {
 
     // must disable isolated asset as collateral before enabling other assets
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1473,28 +1482,28 @@ describe("Isolated mode", () => {
 
     // disable isolated asset
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.bool(false),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1512,17 +1521,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1539,28 +1548,28 @@ describe("Isolated mode", () => {
 
     // can enable isolated asset as collateral when not supplying anything else
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1571,28 +1580,28 @@ describe("Isolated mode", () => {
 
     // disable again to enable other assets
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.bool(false),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1603,28 +1612,28 @@ describe("Isolated mode", () => {
     
     // can enable usage as collateral after exiting isolated mode
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1635,28 +1644,28 @@ describe("Isolated mode", () => {
 
     // cannot enable usage as collateral of isolated after already using other asset as collateral
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1678,17 +1687,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1712,10 +1721,10 @@ describe("Isolated mode", () => {
 
     // withdraw unused isolated asset as collateral
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "withdraw",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.contractPrincipal(deployerAddress, "oracle"),
@@ -1724,17 +1733,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1744,13 +1753,14 @@ describe("Isolated mode", () => {
     expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(Borrower_1)).toBe(
       BigInt(1_000_000_000_000_000)
     );
-  });it(`Supply and borrow supplying only isolated asset. Exceed debt ceiling.`, () => {
+  });
+  it(`Supply and borrow supplying only isolated asset. Exceed debt ceiling.`, () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     const stSTXToken = new MintableToken(simnet, deployerAddress, stSTX);
     const sBTCToken = new MintableToken(simnet, deployerAddress, sBTC);
@@ -1816,10 +1826,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000),
@@ -1830,10 +1840,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(900_000_000),
@@ -1844,10 +1854,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(1_000_000_000),
@@ -1876,17 +1886,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1896,27 +1906,27 @@ describe("Isolated mode", () => {
     let availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1937,17 +1947,17 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1957,28 +1967,28 @@ describe("Isolated mode", () => {
     // availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1992,27 +2002,27 @@ describe("Isolated mode", () => {
     expect((callResponse.result)).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2032,7 +2042,7 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -2046,28 +2056,28 @@ describe("Isolated mode", () => {
 
     // can borrow back to the debt ceiling after repaying (slightly less because of interest accrued)
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2086,7 +2096,7 @@ describe("Isolated mode", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     const stSTXToken = new MintableToken(simnet, deployerAddress, stSTX);
     const sBTCToken = new MintableToken(simnet, deployerAddress, sBTC);
@@ -2143,10 +2153,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+        Cl.contractPrincipal(deployerAddress, zxusd),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, xUSD),
         Cl.uint(100_000_000_000),
@@ -2157,10 +2167,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(100_000_000),
@@ -2173,7 +2183,7 @@ describe("Isolated mode", () => {
     // adding wstx as an asset after supplying assets
     callResponse = poolBorrow.init(
       deployerAddress,
-      lpwstxv1,
+      zwstx,
       deployerAddress,
       wstx,
       6,
@@ -2185,6 +2195,7 @@ describe("Isolated mode", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
+    // console.log(cvToValue(callResponse.result));
 
     callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
@@ -2206,10 +2217,10 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpwstxv1),
+        Cl.contractPrincipal(deployerAddress, zwstx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.uint(50_000_000),
@@ -2255,22 +2266,22 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2280,33 +2291,33 @@ describe("Isolated mode", () => {
     expect(Number(cvToValue(callResponse.result)["value"]["total-collateral-balanceUSD"]["value"])).toBe(0);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_2),
-        Cl.contractPrincipal(deployerAddress, lpwstxv1),
+        Cl.contractPrincipal(deployerAddress, zwstx),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2326,22 +2337,22 @@ describe("Isolated mode", () => {
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2352,33 +2363,33 @@ describe("Isolated mode", () => {
 
     // when not supplying
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
-        Cl.contractPrincipal(deployerAddress, lpwstxv1),
+        Cl.contractPrincipal(deployerAddress, zwstx),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2388,10 +2399,10 @@ describe("Isolated mode", () => {
     expect(callResponse.result).toBeErr(Cl.uint(30002));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(50_000_000),
@@ -2411,33 +2422,33 @@ describe("Isolated mode", () => {
 
     // when not supplying
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_2),
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2452,33 +2463,33 @@ describe("Isolated mode", () => {
 
     // when not supplying
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_2),
-        Cl.contractPrincipal(deployerAddress, lpwstxv1),
+        Cl.contractPrincipal(deployerAddress, zwstx),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2493,33 +2504,33 @@ describe("Isolated mode", () => {
 
     // when not supplying
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_2),
-        Cl.contractPrincipal(deployerAddress, lpwstxv1),
+        Cl.contractPrincipal(deployerAddress, zwstx),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2534,32 +2545,32 @@ describe("Isolated mode", () => {
 
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, wstx),
-        Cl.contractPrincipal(deployerAddress, lpwstxv1),
+        Cl.contractPrincipal(deployerAddress, zwstx),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2574,32 +2585,32 @@ describe("Isolated mode", () => {
 
     // borrowing non-isolated asset
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, zststx),
         Cl.list([
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zwstx),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2614,10 +2625,10 @@ describe("Isolated mode", () => {
 
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper",
+      "borrow-helper-v1-2",
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpwstxv1),
+        Cl.contractPrincipal(deployerAddress, zwstx),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.uint(50_000_000),
@@ -2633,7 +2644,6 @@ describe("Isolated mode", () => {
     // console.log(cvToValue(callResponse.result));
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, stSTX, Borrower_1);
     expect(cvToValue(callResponse.result)["use-as-collateral"]["value"]).toBe(true);
-    // console.log(cvToValue(callResponse.result));
     // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, USDA, Borrower_1);
     // expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
 
