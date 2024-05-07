@@ -1,6 +1,7 @@
 (use-trait ft .ft-trait.ft-trait)
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
+(use-trait redeemeable-trait .redeemeable-trait-v1-2.redeemeable-trait)
 
 (define-constant one-8 (contract-call? .math get-one))
 (define-constant max-value (contract-call? .math get-max-value))
@@ -1128,7 +1129,7 @@
 )
 
 (define-public (mint-to-treasury
-  (lp <ft-mint-trait>)
+  (lp <redeemeable-trait>)
   (pool-reserve principal)
   (asset <ft>)
   )
@@ -1151,6 +1152,8 @@
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (asserts! (> amount-to-mint u0) ERR_NON_ZERO)
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
+
+    (try! (contract-call? lp cumulate-balance collection-principal))
     (try! (contract-call? lp mint amount-to-mint collection-principal))
     (try! (contract-call? .pool-reserve-data set-reserve-state (contract-of asset) (merge reserve-state { accrued-to-treasury: u0 })))
 
