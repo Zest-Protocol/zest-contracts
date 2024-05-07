@@ -276,9 +276,9 @@
   (payer principal)
   )
   (let (
+    (reserve-state (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state (contract-of asset))))
     (ret (try! (contract-call? .pool-0-reserve-v1-2 get-user-borrow-balance on-behalf-of asset)))
     (amount-due (get compounded-balance ret))
-    (reserve-state (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state (contract-of asset))))
     (payback-amount
       (if (is-eq amount-to-repay max-value)
         amount-due
@@ -289,6 +289,7 @@
     (asserts! (> (get compounded-balance ret) u0) ERR_NOT_ZERO)
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
+    (asserts! (is-eq payer tx-sender) ERR_UNAUTHORIZED)
     
     ;; paying back the balance
     (begin

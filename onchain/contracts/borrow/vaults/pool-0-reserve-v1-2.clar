@@ -42,11 +42,6 @@
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-reserve-data set-flashloan-fee-protocol asset fee)))
 
-(define-public (set-origination-fee-prc (asset principal) (fee uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-origination-fee-prc asset fee)))
-
 (define-read-only (get-health-factor-liquidation-threshold)
   (contract-call? .pool-reserve-data get-health-factor-liquidation-threshold-read))
 
@@ -153,31 +148,6 @@
 (define-read-only (get-user-reserve-data (who principal) (reserve principal))
   (default-to default-user-reserve-data (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve))
 )
-
-(define-public (set-optimal-utilization-rate (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-optimal-utilization-rate asset rate)))
-
-(define-public (set-base-variable-borrow-rate (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-base-variable-borrow-rate asset rate)))
-
-(define-public (set-variable-rate-slope-1 (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-variable-rate-slope-1 asset rate)))
-
-(define-public (set-variable-rate-slope-2 (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-variable-rate-slope-2 asset rate)))
-
-(define-public (set-liquidation-close-factor-percent (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-liquidation-close-factor-percent asset rate)))
 
 (define-read-only (get-optimal-utilization-rate (asset principal))
   (ok (unwrap! (contract-call? .pool-reserve-data get-optimal-utilization-rate-read asset) ERR_OPTIMAL_UTILIZATION_RATE_NOT_SET)))
@@ -378,7 +348,7 @@
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
   )
-    (ok (- (try! (contract-call? asset get-balance (get-reserve-vault asset))) (get accrued-to-treasury reserve-data) ))
+    (ok (try! (contract-call? asset get-balance (get-reserve-vault asset))))
   )
 )
 
@@ -403,7 +373,10 @@
     (prev-assets (get-assets))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-assets (unwrap-panic (as-max-len? (append prev-assets asset) u100)))
+    (if (is-none (index-of? prev-assets asset))
+      (contract-call? .pool-reserve-data set-assets (unwrap-panic (as-max-len? (append prev-assets asset) u100)))
+      (ok true)
+    )
   )
 )
 
@@ -658,7 +631,6 @@
   (fee-liquidated uint)
   (liquidated-collateral-for-fee uint)
   (balance-increase uint)
-  (purchased-all-collateral bool)
   (liquidator-receives-aToken bool))
   (begin
     (asserts! (is-liquidator contract-caller) ERR_UNAUTHORIZED)
@@ -678,10 +650,6 @@
         u0
         balance-increase))
       (try! (update-reserve-interest-rates-and-timestamp principal-reserve principal-amount-to-liquidate u0))
-
-      (if purchased-all-collateral
-        (try! (remove-supplied-asset borrower (contract-of collateral-reserve)))
-        false)
 
       (if (not liquidator-receives-aToken)
         (let (
@@ -982,7 +950,7 @@
   )
 )
 
-(define-public (aggregate-debt
+(define-private (aggregate-debt
   (reserve { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })
   (total (response uint uint)))
   (let (
@@ -1182,6 +1150,7 @@
     )
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (asserts! (> amount-to-mint u0) ERR_NON_ZERO)
+    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
     (try! (contract-call? lp mint amount-to-mint collection-principal))
     (try! (contract-call? .pool-reserve-data set-reserve-state (contract-of asset) (merge reserve-state { accrued-to-treasury: u0 })))
 
@@ -1540,24 +1509,6 @@
     (ret (get-user-assets who)))
     (unwrap-panic (as-max-len? (concat (get assets-supplied ret) (get assets-borrowed ret)) u100))))
 
-(define-read-only (validate-assets-order
-  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
-  (let ((assets-used (get-assets)))
-    (fold check-assets assets-used (ok { idx: u0, assets: assets-to-calculate }))
-  )
-)
-
-(define-read-only (check-assets
-  (asset-to-validate principal)
-  (ret (response { idx: uint, assets: (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })} uint)))
-  (let (
-    (agg (try! ret))
-    (asset-principal (get asset (unwrap! (element-at? (get assets agg) (get idx agg)) ERR_NON_CORRESPONDING_ASSETS))))
-    (asserts! (is-eq asset-to-validate (contract-of asset-principal)) ERR_NON_CORRESPONDING_ASSETS)
-    
-    (ok { idx: (+ u1 (get idx agg)), assets: (get assets agg) })
-  )
-)
 
 (define-public (calculate-user-global-data
   (user principal)
