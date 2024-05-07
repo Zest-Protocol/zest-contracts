@@ -631,7 +631,6 @@
   (fee-liquidated uint)
   (liquidated-collateral-for-fee uint)
   (balance-increase uint)
-  (purchased-all-collateral bool)
   (liquidator-receives-aToken bool))
   (begin
     (asserts! (is-liquidator contract-caller) ERR_UNAUTHORIZED)
@@ -651,10 +650,6 @@
         u0
         balance-increase))
       (try! (update-reserve-interest-rates-and-timestamp principal-reserve principal-amount-to-liquidate u0))
-
-      (if purchased-all-collateral
-        (try! (remove-supplied-asset borrower (contract-of collateral-reserve)))
-        false)
 
       (if (not liquidator-receives-aToken)
         (let (

@@ -131,7 +131,6 @@
               fee-liquidated
               liquidated-collateral-for-fee
               user-borrow-balance-increase
-              purchasing-all-underlying-collateral
               to-receive-atoken
             )
           )
