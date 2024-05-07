@@ -98,9 +98,8 @@
         false
       )
 
-      (try! (contract-call? .pool-0-reserve-v1-2 update-state-on-deposit asset owner amount (is-eq current-balance u0)))
-
       (try! (contract-call? lp cumulate-balance owner))
+      (try! (contract-call? .pool-0-reserve-v1-2 update-state-on-deposit asset owner amount (is-eq current-balance u0)))
       (try! (contract-call? lp mint amount owner))
       (try! (contract-call? .pool-0-reserve-v1-2 transfer-to-reserve asset owner amount))
 

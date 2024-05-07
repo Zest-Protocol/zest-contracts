@@ -32,6 +32,7 @@
 (define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u7010))
 (define-constant ERR_FLASHLOAN_FEE_TOTAL_NOT_SET (err u7011))
 (define-constant ERR_FLASHLOAN_FEE_PROTOCOL_NOT_SET (err u7012))
+(define-constant ERR_INVALID_VALUE (err u7005))
 
 (define-public (set-flashloan-fee-total (asset principal) (fee uint))
   (begin
@@ -49,8 +50,8 @@
 (define-public (set-health-factor-liquidation-treshold (hf uint))
   (begin
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (asserts! (> hf one-8) ERR_INVALID_VALUE)
     (contract-call? .pool-reserve-data set-health-factor-liquidation-threshold hf)))
-
     
 
 (define-read-only (get-seconds-in-block) (contract-call? .math get-seconds-in-block))
@@ -94,12 +95,20 @@
     (contract-call? .pool-reserve-data set-user-assets user data)))
 
 (define-data-var configurator principal tx-sender)
+(define-data-var temp-configurator principal tx-sender)
 (define-public (set-configurator (new-configurator principal))
   (begin
     (asserts! (is-admin tx-sender) ERR_UNAUTHORIZED)
     (ok (var-set configurator new-configurator))))
 (define-read-only (is-configurator (caller principal))
   (if (is-eq caller (var-get configurator)) true false))
+
+(define-public (confirm-configurator-transfer)
+  (begin
+    (asserts! (is-eq tx-sender (var-get temp-configurator)) ERR_UNAUTHORIZED)
+    (ok (var-set configurator tx-sender))
+  )
+)
 
 (define-data-var lending-pool principal .pool-borrow)
 (define-public (set-lending-pool (new-lending-pool principal))
@@ -118,12 +127,20 @@
   (if (is-eq caller (var-get liquidator)) true false))
 
 (define-data-var admin principal tx-sender)
+(define-data-var temp-admin principal tx-sender)
 (define-public (set-admin (new-admin principal))
   (begin
     (asserts! (is-admin tx-sender) ERR_UNAUTHORIZED)
     (ok (var-set admin new-admin))))
 (define-read-only (is-admin (caller principal))
   (if (is-eq caller (var-get admin)) true false))
+
+(define-public (confirm-admin-transfer)
+  (begin
+    (asserts! (is-eq tx-sender (var-get temp-admin)) ERR_UNAUTHORIZED)
+    (ok (var-set admin tx-sender))
+  )
+)
 
 (define-map approved-contracts principal bool)
 

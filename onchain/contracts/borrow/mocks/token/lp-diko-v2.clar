@@ -226,7 +226,10 @@
     (from-ret (try! (cumulate-balance-internal sender)))
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
-    (try! (transfer-internal amount sender recipient none))
+    (if (not (is-eq sender recipient))
+      (try! (transfer-internal amount sender recipient none))
+      false
+    )
     (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
     (if (is-eq (- (get current-balance from-ret) amount) u0)
       (begin
