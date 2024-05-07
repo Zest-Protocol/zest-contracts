@@ -47,8 +47,34 @@
 ;; Multiply a number with arbitrary decimals with a fixed-precision number, then return to 
 ;; number with arbitrary decimals
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
-  (from-fixed-to-precision (mul-to-fixed-precision a decimals-a b-fixed) decimals-a)
+  (if (> decimals-a fixed-precision)
+    ;; multiply a and b-fixed in decimals-a precision
+    ;; final result is in decimals-a precision
+    (mul-arbitrary a (* b-fixed (pow u10 (- decimals-a fixed-precision))) decimals-a)
+    ;; multiply a to fixed precision
+    ;; result is in fixed precision, convert to decimals-a
+    (/ (mul (* a (pow u10 (- fixed-precision decimals-a))) b-fixed) (pow u10 (- fixed-precision decimals-a)))
+  )
 )
+
+;; Divide a number with arbitrary decimals by a fixed-precision number, then return to
+;; number with arbitrary decimals
+(define-read-only (div-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
+  (if (> decimals-a fixed-precision)
+    ;; convert b-fixed to decimals-a precision
+    ;; final result is in decimals-a precision
+    (div-arbitrary a (* b-fixed (pow u10 (- decimals-a fixed-precision))) decimals-a)
+    ;; convert a to fixed precision
+    ;; result is in fixed precision, convert to decimals-a
+    (/ (div (* a (pow u10 (- fixed-precision decimals-a))) b-fixed) (pow u10 (- fixed-precision decimals-a)))
+  )
+)
+
+(define-read-only (mul-arbitrary (x uint) (y uint) (arbitrary-prec uint))
+  (/ (+ (* x y) (/ (pow u10 arbitrary-prec) u2)) (pow u10 arbitrary-prec)))
+
+(define-read-only (div-arbitrary (x uint) (y uint) (arbitrary-prec uint))
+  (/ (+ (* x (pow u10 arbitrary-prec)) (/ y u2)) y))
 
 (define-read-only (add-precision-to-fixed (a uint) (decimals-a uint) (b-fixed uint))
   (if (> decimals-a fixed-precision)
@@ -74,20 +100,7 @@
 ;; multiply a number of arbitrary precision with a 8-decimals fixed number
 ;; convert back to unit of arbitrary precision
 (define-read-only (mul-perc (a uint) (decimals-a uint) (b-fixed uint))
-  (if (> decimals-a fixed-precision)
-    (begin
-      (*
-        (mul (/ a (pow u10 (- decimals-a fixed-precision))) b-fixed)
-        (pow u10 (- decimals-a fixed-precision))
-      )
-    )
-    (begin
-      (/
-        (mul (* a (pow u10 (- fixed-precision decimals-a))) b-fixed)
-        (pow u10 (- fixed-precision decimals-a))
-      )
-    )
-  )
+  (mul-precision-with-factor a decimals-a b-fixed)
 )
 
 (define-read-only (fix-precision (a uint) (decimals-a uint) (b uint) (decimals-b uint))
@@ -119,6 +132,7 @@
   )
 )
 
+;; x-price and y-price are in fixed precision
 (define-read-only (get-y-from-x
   (x uint)
   (x-decimals uint)
@@ -126,9 +140,11 @@
   (x-price uint)
   (y-price uint)
   )
-  (from-fixed-to-precision
-    (mul-to-fixed-precision x x-decimals (div x-price y-price))
-    y-decimals
+  (if (> x-decimals y-decimals)
+    ;; decrease decimals if x has more decimals
+    (/ (div-precision-with-factor (mul-precision-with-factor x x-decimals x-price) x-decimals y-price) (pow u10 (- x-decimals y-decimals)))
+    ;; increase decimals if x does not have enough decimals
+    (* (div-precision-with-factor (mul-precision-with-factor x x-decimals x-price) x-decimals y-price) (pow u10 (- y-decimals x-decimals)))
   )
 )
 

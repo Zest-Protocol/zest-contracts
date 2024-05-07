@@ -97,6 +97,7 @@ describe("Math", () => {
       ],
       deployerAddress
     );
+    // should get 20000 of x units in y units
     expect(callResponse.result).toBeUint(20_000_000_000);
     callResponse = simnet.callReadOnlyFn(
       `math`,
