@@ -42,11 +42,6 @@
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-reserve-data set-flashloan-fee-protocol asset fee)))
 
-(define-public (set-origination-fee-prc (asset principal) (fee uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-origination-fee-prc asset fee)))
-
 (define-read-only (get-health-factor-liquidation-threshold)
   (contract-call? .pool-reserve-data get-health-factor-liquidation-threshold-read))
 
@@ -153,31 +148,6 @@
 (define-read-only (get-user-reserve-data (who principal) (reserve principal))
   (default-to default-user-reserve-data (contract-call? .pool-reserve-data get-user-reserve-data-read who reserve))
 )
-
-(define-public (set-optimal-utilization-rate (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-optimal-utilization-rate asset rate)))
-
-(define-public (set-base-variable-borrow-rate (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-base-variable-borrow-rate asset rate)))
-
-(define-public (set-variable-rate-slope-1 (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-variable-rate-slope-1 asset rate)))
-
-(define-public (set-variable-rate-slope-2 (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-variable-rate-slope-2 asset rate)))
-
-(define-public (set-liquidation-close-factor-percent (asset principal) (rate uint))
-  (begin
-    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-liquidation-close-factor-percent asset rate)))
 
 (define-read-only (get-optimal-utilization-rate (asset principal))
   (ok (unwrap! (contract-call? .pool-reserve-data get-optimal-utilization-rate-read asset) ERR_OPTIMAL_UTILIZATION_RATE_NOT_SET)))
