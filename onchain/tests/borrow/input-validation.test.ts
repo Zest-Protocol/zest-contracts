@@ -127,7 +127,7 @@ describe("Supply and redeem", () => {
     callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000) ], deployerAddress);
     callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000) ], deployerAddress);
 
-    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-v2.clar`).toString(), null, deployerAddress);    
+    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-v2.clar`).toString(), null, deployerAddress);
   });
   it("Call validate-assets", () => {
     const poolReserve0 = new PoolReserve(

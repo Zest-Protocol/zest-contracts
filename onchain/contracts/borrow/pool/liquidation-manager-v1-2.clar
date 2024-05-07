@@ -237,7 +237,7 @@
                 debt-currency-price
               )
               (get decimals principal-reserve-data)
-              (- one-8 (get liquidation-bonus collateral-reserve-data))
+              (contract-call? .math div one-8 (+ one-8 liquidation-bonus))
             ),
           liquidation-bonus-collateral:
             (contract-call? .math mul-perc
