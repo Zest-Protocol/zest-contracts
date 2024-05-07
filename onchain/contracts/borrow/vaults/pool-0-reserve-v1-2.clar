@@ -403,7 +403,10 @@
     (prev-assets (get-assets))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data set-assets (unwrap-panic (as-max-len? (append prev-assets asset) u100)))
+    (if (is-none (index-of? prev-assets asset))
+      (contract-call? .pool-reserve-data set-assets (unwrap-panic (as-max-len? (append prev-assets asset) u100)))
+      (ok true)
+    )
   )
 )
 
