@@ -985,7 +985,7 @@
   )
 )
 
-(define-public (aggregate-debt
+(define-private (aggregate-debt
   (reserve { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })
   (total (response uint uint)))
   (let (
@@ -1544,24 +1544,6 @@
     (ret (get-user-assets who)))
     (unwrap-panic (as-max-len? (concat (get assets-supplied ret) (get assets-borrowed ret)) u100))))
 
-(define-read-only (validate-assets-order
-  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
-  (let ((assets-used (get-assets)))
-    (fold check-assets assets-used (ok { idx: u0, assets: assets-to-calculate }))
-  )
-)
-
-(define-read-only (check-assets
-  (asset-to-validate principal)
-  (ret (response { idx: uint, assets: (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })} uint)))
-  (let (
-    (agg (try! ret))
-    (asset-principal (get asset (unwrap! (element-at? (get assets agg) (get idx agg)) ERR_NON_CORRESPONDING_ASSETS))))
-    (asserts! (is-eq asset-to-validate (contract-of asset-principal)) ERR_NON_CORRESPONDING_ASSETS)
-    
-    (ok { idx: (+ u1 (get idx agg)), assets: (get assets agg) })
-  )
-)
 
 (define-public (calculate-user-global-data
   (user principal)

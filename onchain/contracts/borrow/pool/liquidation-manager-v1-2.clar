@@ -65,10 +65,7 @@
       ;; health factor below treshold
       (asserts! (get is-health-factor-below-treshold ret) ERR_HEALTH_FACTOR_GT_1)
       ;; collateral is enabled in asset reserve and by user
-      (asserts! (and
-          (get usage-as-collateral-enabled collateral-reserve-data)
-          (get use-as-collateral borrower-reserve-data)
-        ) ERR_NOT_ENABLED_AS_COLL)
+      (asserts! (get use-as-collateral borrower-reserve-data) ERR_NOT_ENABLED_AS_COLL)
       ;; check if collateral has a grace period
       ;; if grace-period disabled, continue
       ;; else check enough time has passed
