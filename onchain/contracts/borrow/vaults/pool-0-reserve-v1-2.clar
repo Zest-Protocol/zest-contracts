@@ -1006,7 +1006,7 @@
     (user-data (get-user-reserve-data user (contract-of asset)))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-    (if (or (not (get use-as-collateral user-data)))
+    (if (not (get use-as-collateral user-data))
       ;; do nothing
       (ok true) ;; if reserve is not used as collaeteral, allow the transfer
       (let (

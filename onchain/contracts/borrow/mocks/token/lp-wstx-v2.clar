@@ -116,7 +116,10 @@
 )
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  ERR_UNAUTHORIZED
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (transfer-internal amount sender recipient none)
+  )
 )
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
@@ -226,18 +229,20 @@
     (from-ret (try! (cumulate-balance-internal sender)))
     (to-ret (try! (cumulate-balance-internal recipient)))
   )
-    (if (not (is-eq sender recipient))
-      (try! (transfer-internal amount sender recipient none))
-      false
-    )
-    (try! (contract-call? .pool-0-reserve-v1-2 add-supplied-asset-ztoken recipient asset-addr))
-    (if (is-eq (- (get current-balance from-ret) amount) u0)
-      (begin
-        (try! (contract-call? .pool-0-reserve-v1-2 set-user-reserve-as-collateral sender asset-addr false))
-        (try! (contract-call? .pool-0-reserve-v1-2 remove-supplied-asset-ztoken sender asset-addr))
-        (contract-call? .pool-0-reserve-v1-2 reset-user-index sender asset-addr)
-      )
+    (if (is-eq sender recipient) 
       (ok true)
+      (begin
+        (try! (transfer-internal amount sender recipient none))
+        (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
+        (if (not (is-eq (- (get current-balance from-ret) amount) u0))
+          (ok true)
+          (begin
+            (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
+            (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender asset-addr))
+            (contract-call? .pool-0-reserve reset-user-index sender asset-addr)
+          )
+        )
+      )
     )
   )
 )
