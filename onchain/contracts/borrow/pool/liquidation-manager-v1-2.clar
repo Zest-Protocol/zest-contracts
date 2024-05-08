@@ -12,16 +12,16 @@
 (define-constant ERR_IN_GRACE_PERIOD (err u90007))
 
 
-(define-constant one-8 (contract-call? .math get-one))
+(define-constant one-8 (contract-call? .math-v1-2 get-one))
 
 (define-read-only (get-liquidation-close-factor-percent (asset principal))
   (unwrap-panic (contract-call? .pool-reserve-data get-liquidation-close-factor-percent-read asset)))
 
 (define-read-only (mul (x uint) (y uint))
-  (contract-call? .math mul x y))
+  (contract-call? .math-v1-2 mul x y))
 
 (define-read-only (div (x uint) (y uint))
-  (contract-call? .math div x y))
+  (contract-call? .math-v1-2 div x y))
 
 
 (define-public (calculate-user-global-data
@@ -64,7 +64,7 @@
       (asserts! (> user-collateral-balance u0) ERR_NOT_DEPOSITED)
       ;; health factor below treshold
       (asserts! (get is-health-factor-below-treshold ret) ERR_HEALTH_FACTOR_GT_1)
-      ;; collateral is enabled in asset reserve and by user
+      ;; collateral is enabled by user
       (asserts! (get use-as-collateral borrower-reserve-data) ERR_NOT_ENABLED_AS_COLL)
       ;; check if collateral has a grace period
       ;; if grace-period disabled, continue
@@ -85,7 +85,7 @@
         (asserts! (> user-compounded-borrow-balance u0) ERR_NO_COLLATERAL)
         (let (
           (max-debt-to-liquidate
-            (contract-call? .math mul-perc
+            (contract-call? .math-v1-2 mul-perc
               user-compounded-borrow-balance
               (get decimals debt-reserve-data)
               (get-liquidation-close-factor-percent (contract-of debt-asset))))
@@ -106,12 +106,8 @@
           (protocol-fee (/ (* origination-fee (get liquidation-bonus-collateral available-collateral-principal)) u10000))
           (collateral-to-liquidator (- (get collateral-amount available-collateral-principal) protocol-fee))
           (debt-needed (get debt-needed available-collateral-principal))
-          (purchasing-all-underlying-collateral (< debt-needed debt-to-liquidate))
           ;; if borrower holds less collateral than there is purchasing power for, only purchase for available collateral
-          (actual-debt-to-liquidate
-            (if purchasing-all-underlying-collateral
-              debt-needed
-              debt-to-liquidate))
+          (actual-debt-to-liquidate debt-needed)
           (fee-liquidated u0)
           (liquidated-collateral-for-fee u0)
         )
@@ -155,11 +151,11 @@
 )
 
 (define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
-  (contract-call? .math mul-to-fixed-precision a decimals-a b-fixed)
+  (contract-call? .math-v1-2 mul-to-fixed-precision a decimals-a b-fixed)
 )
 
 (define-read-only (div-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
-  (contract-call? .math div-to-fixed-precision a decimals-a b-fixed)
+  (contract-call? .math-v1-2 div-to-fixed-precision a decimals-a b-fixed)
 )
 
 (define-read-only (get-origination-fee-prc (asset principal))
@@ -172,7 +168,7 @@
   (x-price uint)
   (y-price uint)
   )
-  (contract-call? .math get-y-from-x x x-decimals y-decimals x-price y-price)
+  (contract-call? .math-v1-2 get-y-from-x x x-decimals y-decimals x-price y-price)
 )
 
 (define-data-var lending-pool principal .pool-borrow-v1-2)
@@ -208,14 +204,14 @@
     (principal-reserve-data (unwrap-panic (get-reserve-state principal-asset)))
     (liquidation-bonus (get liquidation-bonus collateral-reserve-data))
     (original-collateral-purchasing-power
-      (contract-call? .math get-y-from-x
+      (contract-call? .math-v1-2 get-y-from-x
         debt-to-liquidate
         (get decimals principal-reserve-data)
         (get decimals collateral-reserve-data)
         debt-currency-price
         collateral-price))
     (max-collateral-amount-from-debt
-      (contract-call? .math mul-perc
+      (contract-call? .math-v1-2 mul-perc
         original-collateral-purchasing-power
         (get decimals collateral-reserve-data)
         (+ one-8 (get liquidation-bonus collateral-reserve-data)))))
@@ -224,8 +220,8 @@
         {
           collateral-amount: user-collateral-balance,
           debt-needed:
-            (contract-call? .math mul-perc
-              (contract-call? .math get-y-from-x
+            (contract-call? .math-v1-2 mul-perc
+              (contract-call? .math-v1-2 get-y-from-x
                 user-collateral-balance
                 (get decimals collateral-reserve-data)
                 (get decimals principal-reserve-data)
@@ -233,10 +229,10 @@
                 debt-currency-price
               )
               (get decimals principal-reserve-data)
-              (contract-call? .math div one-8 (+ one-8 liquidation-bonus))
+              (contract-call? .math-v1-2 div one-8 (+ one-8 liquidation-bonus))
             ),
           liquidation-bonus-collateral:
-            (contract-call? .math mul-perc
+            (contract-call? .math-v1-2 mul-perc
               user-collateral-balance
               (get decimals collateral-reserve-data)
               (get liquidation-bonus collateral-reserve-data)),
