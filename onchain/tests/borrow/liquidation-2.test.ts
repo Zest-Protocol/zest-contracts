@@ -654,7 +654,7 @@ describe("Liquidations", () => {
         .getAssetsMap()
         .get(".ststx.ststx")
         ?.get(Collector_2)!
-    ).toBe((7997316n));
+    ).toBe((7616492n));
 
     // console.log("Liquidator sBTC balance")
     // console.log(currLiquidatorCollateralBalance - prevLiquidatorCollateralBalance)
@@ -663,7 +663,7 @@ describe("Liquidations", () => {
 
     // add the protocol fee difference
     expect((currLiquidatorCollateralBalance - prevLiquidatorCollateralBalance))
-      .toBe(63970532287n);
+      .toBe(63970913111n);
       // .toBe(prevVaultBalance - currVaultBalance);
     expect(
       simnet
@@ -697,7 +697,7 @@ describe("Liquidations", () => {
       Borrower_1
     );
     // expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(((10000n - 25n) * (2_000_000_000n)) / 10000n + 1n);
-    expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(Liquidator_1)!).toBe(10000399952000129n);
+    expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(Liquidator_1)!).toBe(10000399952380953n);
 
     // console.log(cvToValue(callResponse.result).value);
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
@@ -1122,7 +1122,7 @@ describe("Liquidations", () => {
         .getAssetsMap()
         .get(".sbtc.sbtc")
         ?.get(Collector_2)!
-    ).toBe((39999n));
+    ).toBe((38094n));
 
       // console.log("Liquidator sBTC balance")
       // console.log(currLiquidatorCollateralBalance - prevLiquidatorCollateralBalance)
@@ -1131,7 +1131,7 @@ describe("Liquidations", () => {
 
     // add the protocol fee difference
     expect((currLiquidatorCollateralBalance - prevLiquidatorCollateralBalance))
-      .toBe(319953617n);
+      .toBe(319955522n);
       // .toBe(prevVaultBalance - currVaultBalance);
     expect(
       simnet
@@ -1165,7 +1165,7 @@ describe("Liquidations", () => {
       Borrower_1
     );
     // expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(((10000n - 25n) * (2_000_000_000n)) / 10000n + 1n);
-    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(1999760001n);
+    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(1999761906n);
 
     // console.log(cvToValue(callResponse.result).value);
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
@@ -2220,7 +2220,7 @@ describe("Liquidations", () => {
     expect(
       simnet.getAssetsMap().get(`.${zsbtc}.lp-sbtc`)?.get(Liquidator_1)
     ).toBe(
-      1999760641n
+      1999762546n
     );
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",

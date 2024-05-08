@@ -235,7 +235,7 @@
             (contract-call? .math-v1-2 mul-perc
               user-collateral-balance
               (get decimals collateral-reserve-data)
-              (get liquidation-bonus collateral-reserve-data)),
+              (- one-8 (contract-call? .math-v1-2 div one-8 (+ one-8 (get liquidation-bonus collateral-reserve-data))))),
           collateral-price: collateral-price,
           debt-currency-price: debt-currency-price
         }

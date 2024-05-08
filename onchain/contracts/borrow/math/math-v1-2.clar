@@ -53,7 +53,9 @@
     (mul-arbitrary a (* b-fixed (pow u10 (- decimals-a fixed-precision))) decimals-a)
     ;; convert a to fixed precision
     ;; result is in fixed precision, convert to decimals-a
-    (/ (mul (* a (pow u10 (- fixed-precision decimals-a))) b-fixed) (pow u10 (- fixed-precision decimals-a)))
+    (/
+      (mul-arbitrary (* a (pow u10 (- fixed-precision decimals-a))) b-fixed u8)
+      (pow u10 (- fixed-precision decimals-a)))
   )
 )
 
@@ -66,7 +68,9 @@
     (div-arbitrary a (* b-fixed (pow u10 (- decimals-a fixed-precision))) decimals-a)
     ;; convert a to fixed precision
     ;; result is in fixed precision, convert to decimals-a
-    (/ (div (* a (pow u10 (- fixed-precision decimals-a))) b-fixed) (pow u10 (- fixed-precision decimals-a)))
+    (/
+      (div-arbitrary (* a (pow u10 (- fixed-precision decimals-a))) b-fixed u8)
+      (pow u10 (- fixed-precision decimals-a)))
   )
 )
 

@@ -99,7 +99,7 @@
 (define-public (set-configurator (new-configurator principal))
   (begin
     (asserts! (is-admin tx-sender) ERR_UNAUTHORIZED)
-    (ok (var-set configurator new-configurator))))
+    (ok (var-set temp-configurator new-configurator))))
 (define-read-only (is-configurator (caller principal))
   (if (is-eq caller (var-get configurator)) true false))
 
@@ -131,7 +131,7 @@
 (define-public (set-admin (new-admin principal))
   (begin
     (asserts! (is-admin tx-sender) ERR_UNAUTHORIZED)
-    (ok (var-set admin new-admin))))
+    (ok (var-set temp-admin new-admin))))
 (define-read-only (is-admin (caller principal))
   (if (is-eq caller (var-get admin)) true false))
 
