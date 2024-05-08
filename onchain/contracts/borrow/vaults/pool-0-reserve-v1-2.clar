@@ -3,8 +3,8 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-trait .redeemeable-trait-v1-2.redeemeable-trait)
 
-(define-constant one-8 (contract-call? .math get-one))
-(define-constant max-value (contract-call? .math get-max-value))
+(define-constant one-8 (contract-call? .math-v1-2 get-one))
+(define-constant max-value (contract-call? .math-v1-2 get-max-value))
 
 (define-constant default-user-reserve-data
   {
@@ -54,20 +54,20 @@
     (contract-call? .pool-reserve-data set-health-factor-liquidation-threshold hf)))
     
 
-(define-read-only (get-seconds-in-block) (contract-call? .math get-seconds-in-block))
-(define-read-only (get-seconds-in-year) (contract-call? .math get-seconds-in-year))
-(define-read-only (mul (x uint) (y uint)) (contract-call? .math mul x y))
-(define-read-only (div (x uint) (y uint)) (contract-call? .math div x y))
-(define-read-only (is-odd (x uint)) (contract-call? .math is-odd x))
-(define-read-only (is-even (x uint)) (contract-call? .math is-even x))
-(define-read-only (taylor-6 (x uint)) (contract-call? .math taylor-6 x))
-(define-read-only (get-sb-by-sy) (contract-call? .math get-sb-by-sy))
+(define-read-only (get-seconds-in-block) (contract-call? .math-v1-2 get-seconds-in-block))
+(define-read-only (get-seconds-in-year) (contract-call? .math-v1-2 get-seconds-in-year))
+(define-read-only (mul (x uint) (y uint)) (contract-call? .math-v1-2 mul x y))
+(define-read-only (div (x uint) (y uint)) (contract-call? .math-v1-2 div x y))
+(define-read-only (is-odd (x uint)) (contract-call? .math-v1-2 is-odd x))
+(define-read-only (is-even (x uint)) (contract-call? .math-v1-2 is-even x))
+(define-read-only (taylor-6 (x uint)) (contract-call? .math-v1-2 taylor-6 x))
+(define-read-only (get-sb-by-sy) (contract-call? .math-v1-2 get-sb-by-sy))
 
 (define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
-  (contract-call? .math mul-to-fixed-precision a decimals-a b-fixed))
+  (contract-call? .math-v1-2 mul-to-fixed-precision a decimals-a b-fixed))
 
 (define-read-only (div-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
-  (contract-call? .math div-to-fixed-precision a decimals-a b-fixed))
+  (contract-call? .math-v1-2 div-to-fixed-precision a decimals-a b-fixed))
 
 (define-public (set-user-reserve-data
   (user principal)
@@ -1006,7 +1006,7 @@
     (user-data (get-user-reserve-data user (contract-of asset)))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
-    (if (or (not (get usage-as-collateral-enabled reserve-data)) (not (get use-as-collateral user-data)))
+    (if (or (not (get use-as-collateral user-data)))
       ;; do nothing
       (ok true) ;; if reserve is not used as collaeteral, allow the transfer
       (let (
@@ -1605,7 +1605,7 @@
 )
 
 (define-read-only (from-fixed-to-precision (a uint) (decimals-a uint))
-  (contract-call? .math from-fixed-to-precision a decimals-a))
+  (contract-call? .math-v1-2 from-fixed-to-precision a decimals-a))
 
 (define-read-only (calculate-health-factor-from-balances
   (total-collateral-balanceUSD uint)
@@ -1631,7 +1631,7 @@
 )
 
 (define-read-only (get-rt-by-block (rate uint) (blocks uint))
-  (contract-call? .math get-rt-by-block rate blocks)
+  (contract-call? .math-v1-2 get-rt-by-block rate blocks)
 )
 
 (define-read-only (calculate-linear-interest
@@ -1646,10 +1646,10 @@
 
 
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
-  (contract-call? .math mul-precision-with-factor a decimals-a b-fixed))
+  (contract-call? .math-v1-2 mul-precision-with-factor a decimals-a b-fixed))
 
 (define-read-only (div-precision-to-fixed (a uint) (b uint) (decimals uint))
-  (contract-call? .math div-precision-to-fixed a b decimals))
+  (contract-call? .math-v1-2 div-precision-to-fixed a b decimals))
 
 ;; returns current liquidity rate
 (define-read-only (calculate-interest-rates
