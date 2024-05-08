@@ -2,7 +2,7 @@
 (use-trait ft .ft-trait.ft-trait)
 
 (define-read-only (from-fixed-to-precision (a uint) (decimals-a uint))
-  (contract-call? .math from-fixed-to-precision a decimals-a)
+  (contract-call? .math-v1-2 from-fixed-to-precision a decimals-a)
 )
 
 ;; prices are fixed to 8 decimals

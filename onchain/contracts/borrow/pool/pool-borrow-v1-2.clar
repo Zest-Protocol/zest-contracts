@@ -5,8 +5,8 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-trait .redeemeable-trait-v1-2.redeemeable-trait)
 
-(define-constant max-value (contract-call? .math get-max-value))
-(define-constant one-8 (contract-call? .math get-one))
+(define-constant max-value (contract-call? .math-v1-2 get-max-value))
+(define-constant one-8 (contract-call? .math-v1-2 get-one))
 
 (define-constant ERR_UNAUTHORIZED (err u30000))
 (define-constant ERR_BORROW_TOO_SMALL (err u30001))

@@ -84,7 +84,7 @@
 )
 
 (define-read-only (token-to-usd (amount uint) (decimals uint) (unit-price uint))
-  (contract-call? .math mul-to-fixed-precision amount decimals unit-price)
+  (contract-call? .math-v1-2 mul-to-fixed-precision amount decimals unit-price)
 )
 
 ;; Define a helper function to get reserve data
@@ -99,7 +99,7 @@
   (asset-to-borrow <ft>)
   )
   (let ((price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.aeusdc-oracle-v1-0 get-price)))
-    (contract-call? .math mul-to-fixed-precision (- useable-collateral borrowed-collateral) decimals price)
+    (contract-call? .math-v1-2 mul-to-fixed-precision (- useable-collateral borrowed-collateral) decimals price)
   )
 )
 

@@ -726,7 +726,7 @@ describe("Liquidations", () => {
     callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, sBTC, Borrower_1);
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(false);
   });
-  it("Borrower_1 falls below health factor threshold and gets all their collateral liquidated zz", () => {
+  it("Borrower_1 falls below health factor threshold and gets all their collateral liquidated", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
@@ -1038,7 +1038,7 @@ describe("Liquidations", () => {
 
     expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)).toBe(
       (
-        1679806300n
+        1679806384n
         // - (1679586379n * 25n / 10000n)
       )
     );
@@ -1131,7 +1131,7 @@ describe("Liquidations", () => {
 
     // add the protocol fee difference
     expect((currLiquidatorCollateralBalance - prevLiquidatorCollateralBalance))
-      .toBe(319953701n);
+      .toBe(319953617n);
       // .toBe(prevVaultBalance - currVaultBalance);
     expect(
       simnet
@@ -1652,7 +1652,7 @@ describe("Liquidations", () => {
     expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!).toBe(undefined);
     // expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(maxCollateralToLiquidate);
     // TODO: replace using values from formula
-    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(1680005040n);
+    expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(1680005107n);
   });
 
   it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated. Liquidator claims ztokens. Can redeem underlying assets from ztokens in the pool vault.`, () => {
@@ -2070,7 +2070,7 @@ describe("Liquidations", () => {
       simnet.getAssetsMap().get(`.${zsbtc}.lp-sbtc`)?.get(Liquidator_1)
     // ).toBe(BigInt(maxCollateralToLiquidate - protocolFee));
     // TODO: replace using values from formula
-    ).toBe(BigInt(1679807560n));
+    ).toBe(BigInt(1679807661n));
     expect(
       simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Collector)
     ).toBe(BigInt(protocolFee));
