@@ -333,6 +333,16 @@ path = "contracts/borrow/math/math.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.math-v1-2]
+path = "contracts/borrow/math/math-v1-2.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.test-debt-needed]
+path = "contracts/borrow/mocks/math/test-debt-needed.clar"
+clarity_version = 2
+epoch = 2.4
+
 [repl]
 costs_version = 1
 parser_version = 2

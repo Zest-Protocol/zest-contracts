@@ -246,7 +246,7 @@
 )
 
 (define-read-only (token-to-usd (amount uint) (decimals uint) (unit-price uint))
-  (contract-call? .math mul-to-fixed-precision amount decimals unit-price)
+  (contract-call? .math-v1-2 mul-to-fixed-precision amount decimals unit-price)
 )
 
 (define-read-only (calculate-cumulated-balance

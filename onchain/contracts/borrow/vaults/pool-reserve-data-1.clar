@@ -2,8 +2,8 @@
 (use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
-(define-constant one-8 (contract-call? .math get-one))
-(define-constant max-value (contract-call? .math get-max-value))
+(define-constant one-8 (contract-call? .math-v1-2 get-one))
+(define-constant max-value (contract-call? .math-v1-2 get-max-value))
 
 (define-constant ERR_UNAUTHORIZED (err u7000))
 
