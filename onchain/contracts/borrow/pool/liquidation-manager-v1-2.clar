@@ -10,6 +10,7 @@
 (define-constant ERR_NOT_ENOUGH_COLLATERAL_IN_RESERVE (err u90005))
 (define-constant ERR_NOT_SET (err u90006))
 (define-constant ERR_IN_GRACE_PERIOD (err u90007))
+(define-constant ERR_NO_DEBT (err u90008))
 
 
 (define-constant one-8 (contract-call? .math-v1-2 get-one))
@@ -66,14 +67,6 @@
       (asserts! (get is-health-factor-below-treshold ret) ERR_HEALTH_FACTOR_GT_1)
       ;; collateral is enabled by user
       (asserts! (get use-as-collateral borrower-reserve-data) ERR_NOT_ENABLED_AS_COLL)
-      ;; check if collateral has a grace period
-      ;; if grace-period disabled, continue
-      ;; else check enough time has passed
-      (asserts!
-        (or
-          (not (try! (get-grace-period-enabled collateral)))
-          (> (- burn-block-height (try! (get-freeze-end-block collateral))) (try! (get-grace-period-time collateral)))
-        ) ERR_IN_GRACE_PERIOD)
 
       (let (
         (borrowed-ret (unwrap-panic (get-user-borrow-balance user debt-asset)))
@@ -81,8 +74,20 @@
         (user-compounded-borrow-balance (get compounded-balance borrowed-ret))
         (user-borrow-balance-increase (get balance-increase borrowed-ret))
       )
+        ;; check if collateral has a grace period
+        (asserts!
+          (or
+            ;; grace-period disabled, always pass
+            (not (try! (get-grace-period-enabled collateral)))
+            (if (> (get total-borrow-balanceUSD ret) (get total-collateral-balanceUSD ret))
+              ;; if it's bad debt, can liquidate
+              true
+              ;; if time passed is less than grace-period, fail, cannot liquidate
+              (> (- burn-block-height (try! (get-freeze-end-block collateral))) (try! (get-grace-period-time collateral)))
+            )
+          ) ERR_IN_GRACE_PERIOD)
         ;; not borrowing anything
-        (asserts! (> user-compounded-borrow-balance u0) ERR_NO_COLLATERAL)
+        (asserts! (> user-compounded-borrow-balance u0) ERR_NO_DEBT)
         (let (
           (max-debt-to-liquidate
             (contract-call? .math-v1-2 mul-perc

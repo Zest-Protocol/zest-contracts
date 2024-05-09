@@ -10,24 +10,21 @@
   (let (
     (oracle-data (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3
       get-price
-      "STX"
+      "stSTX"
     ))
-    (stx-ststx (try! (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-v1
-      get-stx-per-ststx
-      'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.reserve-v1))
-    )
   )
     ;; convert to fixed precision
-    (ok (to-fixed (/ (* stx-ststx (get last-price oracle-data)) u1000000) u6))
+    (ok (to-fixed (get last-price oracle-data) u6))
   )
 )
 
 (define-read-only (get-price)
   (let (
-    (stx-price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "STX")))
-    (stx-amount-in-reserve (unwrap-panic (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.reserve-v1 get-total-stx)))
-    (stx-ststx (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-v1 get-stx-per-ststx-helper stx-amount-in-reserve))
+    (oracle-data (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3
+      get-price
+      "stSTX"
+    ))
   )
-    (/ (* stx-ststx stx-price) u10000)
+    (to-fixed (get last-price oracle-data) u6)
   )
 )
