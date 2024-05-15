@@ -213,8 +213,13 @@ path = "contracts/borrow/mocks/borrow-helper.clar"
 clarity_version = 2
 epoch = 2.4
 
+# [contracts.borrow-helper-v1-2]
+# path = "contracts/borrow/mocks/borrow-helper-v1-2.clar"
+# clarity_version = 2
+# epoch = 2.4
+
 [contracts.borrow-helper-v1-2]
-path = "contracts/borrow/mocks/borrow-helper-v1-2.clar"
+path = "contracts/borrow/wrappers/borrow-helper-v1-2.clar"
 clarity_version = 2
 epoch = 2.4
 
@@ -335,11 +340,6 @@ epoch = 2.4
 
 [contracts.math-v1-2]
 path = "contracts/borrow/math/math-v1-2.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.test-debt-needed]
-path = "contracts/borrow/mocks/math/test-debt-needed.clar"
 clarity_version = 2
 epoch = 2.4
 
