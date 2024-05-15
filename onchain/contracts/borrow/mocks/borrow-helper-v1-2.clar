@@ -5,8 +5,6 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-token .redeemeable-trait-v1-2.redeemeable-trait)
 
-(define-constant ERR_INVALID (err u980))
-
 (define-public (supply
   (lp <redeemeable-token>)
   (pool-reserve principal)

@@ -37,38 +37,33 @@
     (try! (contract-call? .lp-ststx-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-ststx-v2 set-approved-contract .liquidation-manager-v1-2 true))
     (try! (contract-call? .lp-ststx-v2 set-approved-contract .pool-0-reserve-v1-2 true))
-    ;; (try! (contract-call? .lp-ststx-v2 set-approved-contract .borrow-helper-v1-2 true))
 
     ;; sbtc upgrade
     (try! (contract-call? .lp-sbtc-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-sbtc-v2 set-approved-contract .liquidation-manager-v1-2 true))
     (try! (contract-call? .lp-sbtc-v2 set-approved-contract .pool-0-reserve-v1-2 true))
-    ;; (try! (contract-call? .lp-sbtc-v2 set-approved-contract .borrow-helper-v1-2 true))
 
     ;; diko upgrade
     (try! (contract-call? .lp-diko-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-diko-v2 set-approved-contract .liquidation-manager-v1-2 true))
     (try! (contract-call? .lp-diko-v2 set-approved-contract .pool-0-reserve-v1-2 true))
-    ;; (try! (contract-call? .lp-diko-v2 set-approved-contract .borrow-helper-v1-2 true))
 
     ;; usda upgrade
     (try! (contract-call? .lp-usda-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-usda-v2 set-approved-contract .liquidation-manager-v1-2 true))
     (try! (contract-call? .lp-usda-v2 set-approved-contract .pool-0-reserve-v1-2 true))
-    ;; (try! (contract-call? .lp-usda-v2 set-approved-contract .borrow-helper-v1-2 true))
 
     ;; wstx upgrade
     (try! (contract-call? .lp-wstx-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-wstx-v2 set-approved-contract .liquidation-manager-v1-2 true))
     (try! (contract-call? .lp-wstx-v2 set-approved-contract .pool-0-reserve-v1-2 true))
-    ;; (try! (contract-call? .lp-wstx-v2 set-approved-contract .borrow-helper-v1-2 true))
 
     ;; xusd upgrade
     (try! (contract-call? .lp-xusd-v2 set-approved-contract .pool-borrow-v1-2 true))
     (try! (contract-call? .lp-xusd-v2 set-approved-contract .liquidation-manager-v1-2 true))
     (try! (contract-call? .lp-xusd-v2 set-approved-contract .pool-0-reserve-v1-2 true))
-    ;; (try! (contract-call? .lp-xusd-v2 set-approved-contract .borrow-helper-v1-2 true))
 
+    ;; set lending-pool in liquidation-manager
     (try! (contract-call? .liquidation-manager-v1-2 set-lending-pool .pool-borrow-v1-2))
     
     ;; update liquidator and lending-pool in logic calls
@@ -79,7 +74,7 @@
     (try! (contract-call? .pool-0-reserve set-lending-pool .pool-0-reserve-v1-2))
     (try! (contract-call? .pool-0-reserve set-liquidator .pool-0-reserve-v1-2))
     (try! (contract-call? .pool-0-reserve set-approved-contract .pool-borrow false))
-    (try! (contract-call? .pool-0-reserve set-approved-contract .pool-borrow-v1-2 false))
+    ;; (try! (contract-call? .pool-0-reserve set-approved-contract .pool-borrow-v1-2 false))
 
     ;; update pool-0-reserve-v1-2 permissions
     (try! (contract-call? .pool-0-reserve-v1-2 set-liquidator .liquidation-manager-v1-2))
@@ -88,6 +83,9 @@
 
     ;; update for helper caller
     (try! (contract-call? .pool-borrow-v1-2 set-approved-contract .borrow-helper-v1-2 true))
+
+    ;; disable previous permission
+    (try! (contract-call? .pool-borrow-v1-1 set-approved-contract .borrow-helper false))
 
     ;; update pool-reserve-data controller
     (try! (contract-call? .pool-reserve-data delete-approved-contract .pool-0-reserve))

@@ -3,12 +3,9 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (impl-trait .a-token-trait.a-token-trait)
-(impl-trait .redeemeable-trait-v1-2.redeemeable-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
 (define-constant ERR_UNAUTHORIZED (err u14401))
-(define-constant ERR_INVALID_AMOUNT (err u14403))
-(define-constant ERR_INVALID_ASSET (err u14404))
 
 (define-fungible-token lp-sbtc)
 

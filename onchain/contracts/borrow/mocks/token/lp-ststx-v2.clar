@@ -3,12 +3,11 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (impl-trait .a-token-trait.a-token-trait)
-(impl-trait .redeemeable-trait-v1-2.redeemeable-trait)
 (impl-trait .ownable-trait.ownable-trait)
 
 (define-constant ERR_UNAUTHORIZED (err u14401))
-(define-constant ERR_INVALID_AMOUNT (err u14403))
-(define-constant ERR_INVALID_ASSET (err u14404))
+
+(define-constant one-8 u100000000)
 
 (define-fungible-token lp-ststx)
 
@@ -34,6 +33,84 @@
 (define-read-only (get-token-uri)
   (ok (some (var-get token-uri))))
 
+(define-read-only (get-balance (account principal))
+  (let (
+    (current-principal-balance (unwrap-panic (get-principal-balance account)))
+  )
+    (if (is-eq current-principal-balance u0)
+      (ok u0)
+      (let ((cumulated-balance
+              (calculate-cumulated-balance
+                account
+                decimals
+                asset-addr
+                current-principal-balance
+                decimals
+              )))
+        (ok cumulated-balance)
+      )
+    )
+  )
+)
+
+(define-public (set-token-uri (value (string-utf8 256)))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-uri value))))
+
+(define-public (set-token-name (value (string-ascii 32)))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-name value))))
+
+(define-public (set-token-symbol (value (string-ascii 32)))
+  (begin
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
+    (ok (var-set token-symbol value))))
+
+(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (transfer-internal amount sender recipient none)
+  )
+)
+
+(define-public (mint (amount uint) (recipient principal))
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (mint-internal amount recipient)
+  )
+)
+
+(define-public (burn (amount uint) (owner principal))
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (burn-internal amount owner)
+  )
+)
+
+(define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
+  (begin
+    (match (ft-transfer? lp-ststx amount sender recipient)
+      response (begin
+        (print memo)
+        (ok response)
+      )
+      error (err error)
+    )
+  )
+)
+
+(define-private (mint-internal (amount uint) (owner principal))
+  (ft-mint? lp-ststx amount owner)
+)
+
+(define-private (burn-internal (amount uint) (owner principal))
+  (ft-burn? lp-ststx amount owner)
+)
+
+;; END sip-010 actions
+
 (define-read-only (calculate-cumulated-balance
   (who principal)
   (lp-decimals uint)
@@ -55,22 +132,12 @@
   )
 )
 
-(define-read-only (get-balance (account principal))
-  (let (
-    (current-principal-balance (unwrap-panic (get-principal-balance account)))
-  )
-    (if (is-eq current-principal-balance u0)
-      (ok u0)
-      (let ((cumulated-balance
-              (calculate-cumulated-balance
-                account
-                decimals
-                asset-addr
-                current-principal-balance
-                decimals
-              )))
-        (ok cumulated-balance)
-      )
+(define-read-only (get-principal-balance (account principal))
+  (ok 
+    (+
+      ;; only need v1 balance because it already adds v0 and v1 balance
+      (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance account))
+      (ft-get-balance lp-ststx account)
     )
   )
 )
@@ -88,55 +155,12 @@
   (unwrap-panic (contract-call? .pool-0-reserve-v1-2 get-user-index user asset))
 )
 
-
-(define-public (set-token-uri (value (string-utf8 256)))
-  (begin
-    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (ok (var-set token-uri value))))
-
-(define-public (set-token-name (value (string-ascii 32)))
-  (begin
-    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (ok   (var-set token-name value))))
-
-(define-public (set-token-symbol (value (string-ascii 32)))
-  (begin
-    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
-    (ok (var-set token-symbol value))))
-
-(define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (begin
-    (match (ft-transfer? lp-ststx amount sender recipient)
-      response (begin
-        (print memo)
-        (ok response)
-      )
-      error (err error)
-    )
-  )
-)
-
-(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (begin
-    (try! (is-approved-contract contract-caller))
-    (transfer-internal amount sender recipient none)
-  )
-)
-
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
     (try! (is-approved-contract contract-caller))
     (try! (execute-transfer-internal amount from to))
     (ok amount)
   )
-)
-
-(define-private (burn-internal (amount uint) (owner principal))
-  (ft-burn? lp-ststx amount owner)
-)
-
-(define-private (mint-internal (amount uint) (owner principal))
-  (ft-mint? lp-ststx amount owner)
 )
 
 (define-public (burn-on-liquidation (amount uint) (owner principal))
@@ -157,17 +181,37 @@
   )
 )
 
-(define-public (mint (amount uint) (recipient principal))
-  (begin
-    (try! (is-approved-contract contract-caller))
-    (mint-internal amount recipient)
+(define-private (execute-transfer-internal
+  (amount uint)
+  (sender principal)
+  (recipient principal)
+  )
+  (let (
+    (from-ret (try! (cumulate-balance-internal sender)))
+    (to-ret (try! (cumulate-balance-internal recipient)))
+  )
+    (if (is-eq sender recipient) 
+      (ok true)
+      (begin
+        (try! (transfer-internal amount sender recipient none))
+        (try! (contract-call? .pool-0-reserve-v1-2 add-supplied-asset-ztoken recipient asset-addr))
+        (if (not (is-eq (- (get current-balance from-ret) amount) u0))
+          (ok true)
+          (begin
+            (try! (contract-call? .pool-0-reserve-v1-2 set-user-reserve-as-collateral sender asset-addr false))
+            (try! (contract-call? .pool-0-reserve-v1-2 remove-supplied-asset-ztoken sender asset-addr))
+            (contract-call? .pool-0-reserve-v1-2 reset-user-index sender asset-addr)
+          )
+        )
+      )
+    )
   )
 )
 
-(define-public (burn (amount uint) (owner principal))
+(define-public (cumulate-balance (account principal))
   (begin
     (try! (is-approved-contract contract-caller))
-    (burn-internal amount owner)
+    (cumulate-balance-internal account)
   )
 )
 
@@ -214,38 +258,32 @@
   )
 )
 
-(define-public (cumulate-balance (account principal))
-  (begin
-    (try! (is-approved-contract contract-caller))
-    (cumulate-balance-internal account)
+;; calculate income
+(define-read-only (get-normalized-income
+  (current-liquidity-rate uint)
+  (last-updated-block uint)
+  (last-liquidity-cumulative-index uint))
+  (let (
+    (cumulated
+      (calculate-linear-interest
+        current-liquidity-rate
+        (- burn-block-height last-updated-block))))
+    (mul cumulated last-liquidity-cumulative-index)
   )
 )
 
-(define-private (execute-transfer-internal
-  (amount uint)
-  (sender principal)
-  (recipient principal)
-  )
+(define-read-only (calculate-linear-interest
+  (current-liquidity-rate uint)
+  (delta uint))
   (let (
-    (from-ret (try! (cumulate-balance-internal sender)))
-    (to-ret (try! (cumulate-balance-internal recipient)))
+    (rate (get-rt-by-block current-liquidity-rate delta))
   )
-    (if (is-eq sender recipient) 
-      (ok true)
-      (begin
-        (try! (transfer-internal amount sender recipient none))
-        (try! (contract-call? .pool-0-reserve add-supplied-asset-ztoken recipient asset-addr))
-        (if (not (is-eq (- (get current-balance from-ret) amount) u0))
-          (ok true)
-          (begin
-            (try! (contract-call? .pool-0-reserve set-user-reserve-as-collateral sender asset-addr false))
-            (try! (contract-call? .pool-0-reserve remove-supplied-asset-ztoken sender asset-addr))
-            (contract-call? .pool-0-reserve reset-user-index sender asset-addr)
-          )
-        )
-      )
-    )
+    (+ one-8 rate)
   )
+)
+
+(define-read-only (get-rt-by-block (rate uint) (blocks uint))
+  (contract-call? .math-v1-2 get-rt-by-block rate blocks)
 )
 
 ;; -- ownable-trait --
@@ -262,46 +300,6 @@
 
 (define-read-only (is-contract-owner (caller principal))
   (is-eq caller (var-get contract-owner)))
-
-;; calculate income
-(define-read-only (get-normalized-income
-  (current-liquidity-rate uint)
-  (last-updated-block uint)
-  (last-liquidity-cumulative-index uint))
-  (let (
-    (cumulated
-      (calculate-linear-interest
-        current-liquidity-rate
-        (- burn-block-height last-updated-block))))
-    (mul cumulated last-liquidity-cumulative-index)
-  )
-)
-
-(define-constant one-8 u100000000)
-
-(define-read-only (calculate-linear-interest
-  (current-liquidity-rate uint)
-  (delta uint))
-  (let (
-    (rate (get-rt-by-block current-liquidity-rate delta))
-  )
-    (+ one-8 rate)
-  )
-)
-
-(define-read-only (get-rt-by-block (rate uint) (blocks uint))
-  (contract-call? .math-v1-2 get-rt-by-block rate blocks)
-)
-
-(define-read-only (get-principal-balance (account principal))
-  (ok 
-    (+
-      ;; only need v1 balance because it already adds v0 and v1 balance
-      (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance account))
-      (ft-get-balance lp-ststx account)
-    )
-  )
-)
 
 ;; -- permissions
 (define-map approved-contracts principal bool)
