@@ -57,17 +57,14 @@ describe("Confirm pass permission", () => {
     let callResponse = simnet.callPublicFn(
       "pool-0-reserve-v1-2",
       "set-admin",
-      [
-        Cl.standardPrincipal(Borrower_1),
-      ],
-      deployerAddress);
+      [Cl.standardPrincipal(Borrower_1)],
+      deployerAddress
+    );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
     callResponse = simnet.callReadOnlyFn(
       "pool-0-reserve-v1-2",
       "is-admin",
-      [
-        Cl.standardPrincipal(deployerAddress)
-      ],
+      [Cl.standardPrincipal(deployerAddress)],
       deployerAddress
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.BoolTrue);
@@ -75,48 +72,43 @@ describe("Confirm pass permission", () => {
       "pool-0-reserve-v1-2",
       "confirm-admin-transfer",
       [],
-      deployerAddress);
+      deployerAddress
+    );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseErr);
     callResponse = simnet.callPublicFn(
       "pool-0-reserve-v1-2",
       "confirm-admin-transfer",
       [],
-      Borrower_1);
+      Borrower_1
+    );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
     callResponse = simnet.callReadOnlyFn(
       "pool-0-reserve-v1-2",
       "is-admin",
-      [
-        Cl.standardPrincipal(Borrower_1)
-      ],
+      [Cl.standardPrincipal(Borrower_1)],
       deployerAddress
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.BoolTrue);
     callResponse = simnet.callReadOnlyFn(
       "pool-0-reserve-v1-2",
       "is-admin",
-      [
-        Cl.standardPrincipal(deployerAddress)
-      ],
+      [Cl.standardPrincipal(deployerAddress)],
       deployerAddress
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.BoolFalse);
-    
+
     // configurator
     callResponse = simnet.callPublicFn(
       "pool-0-reserve-v1-2",
       "set-configurator",
-      [
-        Cl.standardPrincipal(Borrower_2),
-      ],
-      Borrower_1);
+      [Cl.standardPrincipal(Borrower_2)],
+      Borrower_1
+    );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
     callResponse = simnet.callReadOnlyFn(
       "pool-0-reserve-v1-2",
       "is-configurator",
-      [
-        Cl.standardPrincipal(deployerAddress)
-      ],
+      [Cl.standardPrincipal(deployerAddress)],
       deployerAddress
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.BoolTrue);
@@ -124,29 +116,27 @@ describe("Confirm pass permission", () => {
       "pool-0-reserve-v1-2",
       "confirm-configurator-transfer",
       [],
-      Borrower_1);
+      Borrower_1
+    );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseErr);
     callResponse = simnet.callPublicFn(
       "pool-0-reserve-v1-2",
       "confirm-configurator-transfer",
       [],
-      Borrower_2);
+      Borrower_2
+    );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
     callResponse = simnet.callReadOnlyFn(
       "pool-0-reserve-v1-2",
       "is-configurator",
-      [
-        Cl.standardPrincipal(Borrower_2)
-      ],
+      [Cl.standardPrincipal(Borrower_2)],
       deployerAddress
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.BoolTrue);
     callResponse = simnet.callReadOnlyFn(
       "pool-0-reserve-v1-2",
       "is-configurator",
-      [
-        Cl.standardPrincipal(deployerAddress)
-      ],
+      [Cl.standardPrincipal(deployerAddress)],
       deployerAddress
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.BoolFalse);

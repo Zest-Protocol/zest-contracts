@@ -104,11 +104,7 @@ describe("Flashloans", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
-    poolBorrow.addAsset(
-      deployerAddress,
-      stSTX,
-      deployerAddress
-    );
+    poolBorrow.addAsset(deployerAddress, stSTX, deployerAddress);
 
     poolBorrow.init(
       deployerAddress,
@@ -124,11 +120,7 @@ describe("Flashloans", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
-    poolBorrow.addAsset(
-      deployerAddress,
-      sBTC,
-      deployerAddress
-    );
+    poolBorrow.addAsset(deployerAddress, sBTC, deployerAddress);
 
     poolBorrow.init(
       deployerAddress,
@@ -145,68 +137,301 @@ describe("Flashloans", () => {
       deployerAddress
     );
 
-    poolBorrow.addAsset(
-      deployerAddress,
-      xUSD,
+    poolBorrow.addAsset(deployerAddress, xUSD, deployerAddress);
+
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(0)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(0)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(0)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(0)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(0)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(0)],
       deployerAddress
     );
 
-    simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(0) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(0) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(0) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(0) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(0) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(0) ], deployerAddress);
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(4000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(4000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(4000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(4000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(4000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(4000000)],
+      deployerAddress
+    );
 
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(4000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(4000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(4000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(4000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(4000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(4000000) ], deployerAddress);
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(300000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(300000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(300000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(300000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(300000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(300000000)],
+      deployerAddress
+    );
 
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(300000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(300000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(300000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(300000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(300000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(300000000) ], deployerAddress);
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(80000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(80000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(80000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(80000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(80000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(80000000)],
+      deployerAddress
+    );
 
-    simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(80000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(80000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(80000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(80000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(80000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(80000000) ], deployerAddress);
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(50000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(50000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(50000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(50000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(50000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(50000000)],
+      deployerAddress
+    );
 
-    simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(50000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(50000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(50000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(50000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(50000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(50000000) ], deployerAddress);
+    simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-flashloan-fee-total",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(35)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-flashloan-fee-total",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(35)],
+      deployerAddress
+    );
 
-    simnet.callPublicFn("pool-0-reserve", "set-flashloan-fee-total", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(35) ], deployerAddress);
-    simnet.callPublicFn("pool-0-reserve", "set-flashloan-fee-total", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(35) ], deployerAddress);
-    
-    simnet.callPublicFn("pool-0-reserve", "set-flashloan-fee-protocol", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(3000) ], deployerAddress);
-    simnet.callPublicFn("pool-0-reserve", "set-flashloan-fee-protocol", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(3000) ], deployerAddress);
+    simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-flashloan-fee-protocol",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(3000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-flashloan-fee-protocol",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(3000)],
+      deployerAddress
+    );
 
-    simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(25) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(25) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(25) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(25) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(25) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(25) ], deployerAddress);
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(25)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(25)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(25)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(25)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(25)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(25)],
+      deployerAddress
+    );
 
-    simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(15000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(10000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(10000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(10000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000) ], deployerAddress);
-    simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000) ], deployerAddress);
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(15000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(10000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(10000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(10000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000)],
+      deployerAddress
+    );
+    simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000)],
+      deployerAddress
+    );
 
-    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-1.clar`).toString(), null, deployerAddress);
+    simnet.deployContract(
+      "run-1",
+      readFileSync(
+        `contracts/borrow/mocks/upgrade-contract-v1-1.clar`
+      ).toString(),
+      null,
+      deployerAddress
+    );
   });
   it("Flashloan executes properly only when fees are paid back to the protocol", () => {
     const poolReserve0 = new PoolReserve(
@@ -214,7 +439,11 @@ describe("Flashloans", () => {
       deployerAddress,
       "pool-0-reserve"
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-1");
+    const poolBorrow = new PoolBorrow(
+      simnet,
+      deployerAddress,
+      "pool-borrow-v1-1"
+    );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
     const stSTXZToken = new ZToken(simnet, deployerAddress, zStSTX);

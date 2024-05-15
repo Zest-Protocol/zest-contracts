@@ -132,17 +132,13 @@ describe("Math", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeUint(25_925_925_690);
-
   });
 
   it("calculate-linear-interest", () => {
     let callResponse = simnet.callReadOnlyFn(
       `pool-0-reserve`,
       "calculate-linear-interest",
-      [
-        Cl.uint(5000000),
-        Cl.uint(144 * 365),
-      ],
+      [Cl.uint(5000000), Cl.uint(144 * 365)],
       deployerAddress
     );
     expect(callResponse.result).toBeUint(105001084);
@@ -150,20 +146,14 @@ describe("Math", () => {
     callResponse = simnet.callReadOnlyFn(
       `pool-0-reserve`,
       "calculate-compounded-interest",
-      [
-        Cl.uint(5_000_000),
-        Cl.uint(144 * 365),
-      ],
+      [Cl.uint(5_000_000), Cl.uint(144 * 365)],
       deployerAddress
     );
     expect(callResponse.result).toBeUint(105128249);
     callResponse = simnet.callReadOnlyFn(
       `pool-0-reserve`,
       "calculate-compounded-interest",
-      [
-        Cl.uint(100_000_000),
-        Cl.uint(144 * 365),
-      ],
+      [Cl.uint(100_000_000), Cl.uint(144 * 365)],
       deployerAddress
     );
     expect(callResponse.result).toBeUint(271_864_460);
