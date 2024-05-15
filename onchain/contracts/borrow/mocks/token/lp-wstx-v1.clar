@@ -52,7 +52,13 @@
 )
 
 (define-read-only (get-principal-balance (account principal))
-  (ok (ft-get-balance lp-wstx account)))
+  (ok
+    (+
+      (unwrap-panic (contract-call? .lp-wstx get-principal-balance account))
+      (ft-get-balance lp-wstx account)
+    )
+  )
+)
 
 
 (define-public (set-token-uri (value (string-utf8 256)))

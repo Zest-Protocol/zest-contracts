@@ -50,6 +50,8 @@ const USDA = "usda";
 const xUSD = "xusd";
 
 const lpwstx = "lp-wstx";
+const lpwstxv1 = "lp-wstx-v1";
+const lpwstxv2 = "lp-wstx-v2";
 const wstx = "wstx";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
@@ -345,6 +347,27 @@ describe("Upgrading z-token to v1-2", () => {
       deployerAddress
     );
 
+    callResponse = poolBorrow.init(
+      deployerAddress,
+      lpwstx,
+      deployerAddress,
+      wstx,
+      6,
+      BigInt("340282366920938463463374607431768211455"),
+      BigInt("340282366920938463463374607431768211455"),
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    poolBorrow.addAsset(
+      deployerAddress,
+      wstx,
+      deployerAddress
+    );
+
     callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
       sBTC,
@@ -514,6 +537,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -524,6 +552,105 @@ describe("Upgrading z-token to v1-2", () => {
     expect(simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Borrower_1)).toBe(0n);
     expect(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Borrower_1)).toBe(undefined);
     expect(simnet.getAssetsMap().get(".lp-ststx.lp-ststx")?.get(Borrower_1)).toBe(0n);
+  });
+  it("wstx: Supply and fully withdraw z-tokens", () => {
+    const poolReserve0 = new PoolReserve(
+      simnet,
+      deployerAddress,
+      "pool-0-reserve"
+    );
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+
+    let callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpstSTX,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      stSTX,
+      10_000_000_000,
+      Borrower_2,
+      Borrower_2
+    );
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpwstx,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      wstx,
+      100_000_000,
+      Borrower_1,
+      Borrower_1
+    );
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpUSDA,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      USDA,
+      10_000_000_000,
+      LP_1,
+      LP_1
+    );
+    callResponse = simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(), null, deployerAddress);
+    simnet.mineEmptyBlock();
+    callResponse = simnet.deployContract("migrate-2", readFileSync(`contracts/borrow/mocks/migrate-v1-v2.clar`).toString(), null, deployerAddress);
+
+    callResponse = simnet.callPublicFn(
+      "borrow-helper-v1-2",
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, lpwstxv2),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.uint(100_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+    // console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(simnet.getAssetsMap());
+    // console.log(Borrower_1);
+    expect(simnet.getAssetsMap().get(".lp-wstx-v2.lp-wstx")?.get(Borrower_1)).toBe(0n);
+    expect(simnet.getAssetsMap().get(".lp-wstx-v1.lp-wstx")?.get(Borrower_1)).toBe(undefined);
+    expect(simnet.getAssetsMap().get(".lp-wstx.lp-wstx")?.get(Borrower_1)).toBe(0n);
   });
   it("Supply and fully withdraw z-tokens when the `owner` parameter is different than tx-sender.", () => {
     const poolReserve0 = new PoolReserve(
@@ -612,6 +739,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -671,31 +803,36 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.contractPrincipal(deployerAddress, stSTX),
           Cl.standardPrincipal(Borrower_1),
           Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, stSTX),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, sBTC),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
                 oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, diko),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, USDA),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, xUSD),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
           ]),
       ],
       Borrower_1
@@ -745,6 +882,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -760,31 +902,36 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.contractPrincipal(deployerAddress, stSTX),
           Cl.standardPrincipal(Borrower_1),
           Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, stSTX),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, sBTC),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
                 oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, diko),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, USDA),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, xUSD),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
           ]),
       ],
       Borrower_1
@@ -794,7 +941,7 @@ describe("Upgrading z-token to v1-2", () => {
     expect(maxBorrowAmountAfterWithdrawal).toBe(0);
   });
 
-  it("Supply and partly withdraw z-tokens, check borrowing power.", () => {
+  it("Supply and partly withdraw z-tokens, check borrowing power after cumulating balance.", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
@@ -845,31 +992,36 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.contractPrincipal(deployerAddress, stSTX),
           Cl.standardPrincipal(Borrower_1),
           Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, stSTX),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, sBTC),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
                 oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, diko),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, USDA),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, xUSD),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
           ]),
       ],
       Borrower_1
@@ -880,7 +1032,7 @@ describe("Upgrading z-token to v1-2", () => {
     simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(), null, deployerAddress);
     simnet.mineEmptyBlock();
     callResponse = simnet.deployContract("migrate-2", readFileSync(`contracts/borrow/mocks/migrate-v1-v2.clar`).toString(), null, deployerAddress);
-    
+
     // variables to change in upgrade
     // const newZTokenContractName = lpstSTXv1;
 
@@ -920,6 +1072,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -931,101 +1088,7 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
-      ],
-      Borrower_1
-  );
-  const maxBorrowAmountAfterWithdrawal =
-      Number(cvToValue(callResponse.result)["value"]) * 1.000000;
-    expect(maxBorrowAmountAfterWithdrawal).toBe(maxBorrowAmountBeforeWithdrawal / 2);
-  });
-
-  it("Supply and partly withdraw z-tokens", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
-
-    let callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      10_000_000_000,
-      Borrower_2,
-      Borrower_2
-    );
-
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpstSTX,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      stSTX,
-      10_000_000_000,
-      Borrower_1,
-      Borrower_1
-    );
-
-    callResponse = poolBorrow.supply(
-      deployerAddress,
-      lpUSDAv1,
-      deployerAddress,
-      pool0Reserve,
-      deployerAddress,
-      USDA,
-      10_000_000_000,
-      LP_1,
-      LP_1
-    );
-
-    // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
-    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(), null, deployerAddress);
-    simnet.mineEmptyBlock();
-    callResponse = simnet.deployContract("migrate-2", readFileSync(`contracts/borrow/mocks/migrate-v1-v2.clar`).toString(), null, deployerAddress);
-    
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
-      "withdraw",
-      [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv2),
-        Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, "oracle"),
-        Cl.uint(1_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.list([
           Cl.tuple({
@@ -1053,12 +1116,222 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+  );
+  const maxBorrowAmountAfterWithdrawal =
+      Number(cvToValue(callResponse.result)["value"]) * 1.000000;
+    expect(maxBorrowAmountAfterWithdrawal).toBe(maxBorrowAmountBeforeWithdrawal / 2);
+  });
+  it("Supply and partly withdraw z-tokens, check borrowing power.", () => {
+    const poolReserve0 = new PoolReserve(
+      simnet,
+      deployerAddress,
+      "pool-0-reserve"
+    );
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
+
+    let callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpstSTX,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      stSTX,
+      10_000_000_000,
+      Borrower_2,
+      Borrower_2
+    );
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpstSTX,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      stSTX,
+      10_000_000_000n,
+      Borrower_1,
+      Borrower_1
+    );
+
+    let totalSupplied = 10_000_000_000n;
+
+    callResponse = poolBorrow.supply(
+      deployerAddress,
+      lpUSDAv1,
+      deployerAddress,
+      pool0Reserve,
+      deployerAddress,
+      USDA,
+      10_000_000_000,
+      LP_1,
+      LP_1
+    );
+
+    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(), null, deployerAddress);
+    console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"))
+
+    totalSupplied += 1_000_000_000n;
+
+    callResponse = simnet.callPublicFn(
+      "borrow-helper",
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv1),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000n),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.some(Cl.standardPrincipal(Borrower_1)),
+      ],
+      Borrower_1
+    );
+    expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
+    callResponse = simnet.deployContract("migrate-2", readFileSync(`contracts/borrow/mocks/migrate-v1-v2.clar`).toString(), null, deployerAddress);
+
+    callResponse = simnet.callPublicFn(
+      "pool-read",
+      "borrowing-power-in-asset",
+      [
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, sBTC),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, diko),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, USDA),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, xUSD),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+  );
+  const maxBorrowAmountBeforeWithdrawal =
+      Number(cvToValue(callResponse.result)["value"]) * 1.000000;
+
+    callResponse = simnet.callPublicFn(
+      "borrow-helper-v1-2",
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.uint(5_500_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
     );
-    expect(simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Borrower_1)).toBe(9000000000n);
+    expect(simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Borrower_1)).toBe(totalSupplied - 5500000000n);
     expect(simnet.getAssetsMap().get(".lp-ststx.lp-ststx")?.get(Borrower_1)).toBe(0n);
+
+    callResponse = simnet.callPublicFn(
+      "pool-read",
+      "borrowing-power-in-asset",
+      [
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, sBTC),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, diko),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, USDA),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, xUSD),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+  );
+  const maxBorrowAmountAfterWithdrawal =
+      Number(cvToValue(callResponse.result)["value"]) * 1.000000;
+    expect(maxBorrowAmountAfterWithdrawal * 2).toBe(maxBorrowAmountBeforeWithdrawal);
   });
   it("Supply before upgrade and supply z-tokens again after upgrade", () => {
     const poolReserve0 = new PoolReserve(
@@ -1174,35 +1447,40 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -1217,35 +1495,40 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -1288,6 +1571,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountAfterUpgrade)),
@@ -1354,35 +1642,40 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -1405,33 +1698,39 @@ describe("Upgrading z-token to v1-2", () => {
     Borrower_1,
     [
       {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: lpstSTX },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: stSTX },
+        "lp-token": { deployerAddress, contractName: lpstSTX },
+        oracle: { deployerAddress, contractName: oracle },
       },
       {
-          asset: { deployerAddress, contractName: sBTC },
-          "lp-token": { deployerAddress, contractName: lpsBTC },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: sBTC },
+        "lp-token": { deployerAddress, contractName: lpsBTC },
+        oracle: { deployerAddress, contractName: oracle },
       },
       {
-          asset: { deployerAddress, contractName: diko },
-          "lp-token": { deployerAddress, contractName: lpdiko },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: diko },
+        "lp-token": { deployerAddress, contractName: lpdiko },
+        oracle: { deployerAddress, contractName: oracle },
       },
       {
-          asset: { deployerAddress, contractName: USDA },
-          "lp-token": { deployerAddress, contractName: lpUSDAv1 },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: USDA },
+        "lp-token": { deployerAddress, contractName: lpUSDAv1 },
+        oracle: { deployerAddress, contractName: oracle },
       },
       {
-          asset: { deployerAddress, contractName: xUSD },
-          "lp-token": { deployerAddress, contractName: lpxUSDv1 },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: xUSD },
+        "lp-token": { deployerAddress, contractName: lpxUSDv1 },
+        oracle: { deployerAddress, contractName: oracle },
+      },
+      {
+        asset: { deployerAddress, contractName: wstx },
+        "lp-token": { deployerAddress, contractName: lpwstxv1 },
+        oracle: { deployerAddress, contractName: oracle },
       },
     ],
     Borrower_1
   );
+  expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
 
     simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(), null, deployerAddress);
     simnet.mineEmptyBlock();
@@ -1448,6 +1747,7 @@ describe("Upgrading z-token to v1-2", () => {
       ],
       Borrower_1
     );
+    expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
 
     callResponse = simnet.callPublicFn(
       "borrow-helper-v1-2",
@@ -1485,10 +1785,16 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_2
     );
+    expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
     expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(Borrower_2)! - 1000000000000000n).toBeGreaterThan(0n);
     expect(callResponse.result).toBeOk(Cl.bool(true));
   });
@@ -1541,35 +1847,40 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -1612,6 +1923,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountBeforeUpgrade)),
@@ -1671,6 +1987,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_2
@@ -1685,18 +2006,6 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-0-reserve"
     );
     let poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
-
-    // let callResponse = poolBorrow.supply(
-    //   deployerAddress,
-    //   lpstSTX,
-    //   deployerAddress,
-    //   pool0Reserve,
-    //   deployerAddress,
-    //   stSTX,
-    //   10_000_000_000,
-    //   Borrower_2,
-    //   Borrower_2
-    // );
 
     let callResponse = poolBorrow.supply(
       deployerAddress,
@@ -1714,36 +2023,41 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
-      ],
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+    ],
       Borrower_1
   );
   const maxBorrowAmountBeforeUpgrade =
@@ -1803,6 +2117,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountBeforeUpgrade)),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
@@ -1812,7 +2131,6 @@ describe("Upgrading z-token to v1-2", () => {
       Borrower_1
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     simnet.mineEmptyBlocks(1000);
     callResponse = simnet.callPublicFn(
@@ -1827,7 +2145,6 @@ describe("Upgrading z-token to v1-2", () => {
       Borrower_1
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "borrow-helper-v1-2",
@@ -1863,6 +2180,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -1917,24 +2239,29 @@ describe("Upgrading z-token to v1-2", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, sBTC),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, diko),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, USDA),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, xUSD),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -1976,6 +2303,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -2066,6 +2398,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_2
@@ -2121,6 +2458,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -2200,6 +2542,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_2
@@ -2237,7 +2584,6 @@ describe("Upgrading z-token to v1-2", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
@@ -2269,6 +2615,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -2332,24 +2683,29 @@ describe("Upgrading z-token to v1-2", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, sBTC),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, diko),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, USDA),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDA),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, xUSD),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -2374,30 +2730,34 @@ describe("Upgrading z-token to v1-2", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, sBTC),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, diko),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, USDA),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, xUSD),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
       Borrower_1
     );
-    // console.log(cvToValue(callResponse.result));
     expect(cvToValue(callResponse.result)["value"]["total-collateral-balanceUSD"]["value"]).toBe(collateralBefore);
   });
   it("Supply before upgrade and borrow before upgrade, keep interest using multiple withdraw calls.", () => {
@@ -2448,38 +2808,43 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
-  );
+    );
   const maxBorrowAmountBeforeUpgrade =
       Number(cvToValue(callResponse.result)["value"]) * 1.000000;
     
@@ -2499,29 +2864,34 @@ describe("Upgrading z-token to v1-2", () => {
     Borrower_1,
     [
       {
-          asset: { deployerAddress, contractName: stSTX },
-          "lp-token": { deployerAddress, contractName: lpstSTX },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: stSTX },
+        "lp-token": { deployerAddress, contractName: lpstSTX },
+        oracle: { deployerAddress, contractName: oracle },
       },
       {
-          asset: { deployerAddress, contractName: sBTC },
-          "lp-token": { deployerAddress, contractName: lpsBTC },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: sBTC },
+        "lp-token": { deployerAddress, contractName: lpsBTC },
+        oracle: { deployerAddress, contractName: oracle },
       },
       {
-          asset: { deployerAddress, contractName: diko },
-          "lp-token": { deployerAddress, contractName: lpdiko },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: diko },
+        "lp-token": { deployerAddress, contractName: lpdiko },
+        oracle: { deployerAddress, contractName: oracle },
       },
       {
-          asset: { deployerAddress, contractName: USDA },
-          "lp-token": { deployerAddress, contractName: lpUSDAv1 },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: USDA },
+        "lp-token": { deployerAddress, contractName: lpUSDAv1 },
+        oracle: { deployerAddress, contractName: oracle },
       },
       {
-          asset: { deployerAddress, contractName: xUSD },
-          "lp-token": { deployerAddress, contractName: lpxUSDv1 },
-          oracle: { deployerAddress, contractName: oracle },
+        asset: { deployerAddress, contractName: xUSD },
+        "lp-token": { deployerAddress, contractName: lpxUSDv1 },
+        oracle: { deployerAddress, contractName: oracle },
+      },
+      {
+        asset: { deployerAddress, contractName: wstx },
+        "lp-token": { deployerAddress, contractName: lpwstxv1 },
+        oracle: { deployerAddress, contractName: oracle },
       },
     ],
     Borrower_1
@@ -2582,6 +2952,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_2
@@ -2624,6 +2999,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -2682,35 +3062,40 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -2733,29 +3118,34 @@ describe("Upgrading z-token to v1-2", () => {
       Borrower_1,
       [
         {
-            asset: { deployerAddress, contractName: stSTX },
-            "lp-token": { deployerAddress, contractName: lpstSTX },
-            oracle: { deployerAddress, contractName: oracle },
+          asset: { deployerAddress, contractName: stSTX },
+          "lp-token": { deployerAddress, contractName: lpstSTX },
+          oracle: { deployerAddress, contractName: oracle },
         },
         {
-            asset: { deployerAddress, contractName: sBTC },
-            "lp-token": { deployerAddress, contractName: lpsBTC },
-            oracle: { deployerAddress, contractName: oracle },
+          asset: { deployerAddress, contractName: sBTC },
+          "lp-token": { deployerAddress, contractName: lpsBTC },
+          oracle: { deployerAddress, contractName: oracle },
         },
         {
-            asset: { deployerAddress, contractName: diko },
-            "lp-token": { deployerAddress, contractName: lpdiko },
-            oracle: { deployerAddress, contractName: oracle },
+          asset: { deployerAddress, contractName: diko },
+          "lp-token": { deployerAddress, contractName: lpdiko },
+          oracle: { deployerAddress, contractName: oracle },
         },
         {
-            asset: { deployerAddress, contractName: USDA },
-            "lp-token": { deployerAddress, contractName: lpUSDAv1 },
-            oracle: { deployerAddress, contractName: oracle },
+          asset: { deployerAddress, contractName: USDA },
+          "lp-token": { deployerAddress, contractName: lpUSDAv1 },
+          oracle: { deployerAddress, contractName: oracle },
         },
         {
-            asset: { deployerAddress, contractName: xUSD },
-            "lp-token": { deployerAddress, contractName: lpxUSDv1 },
-            oracle: { deployerAddress, contractName: oracle },
+          asset: { deployerAddress, contractName: xUSD },
+          "lp-token": { deployerAddress, contractName: lpxUSDv1 },
+          oracle: { deployerAddress, contractName: oracle },
+        },
+        {
+          asset: { deployerAddress, contractName: wstx },
+          "lp-token": { deployerAddress, contractName: lpwstxv1 },
+          oracle: { deployerAddress, contractName: oracle },
         },
       ],
       Borrower_1
@@ -2773,31 +3163,36 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.contractPrincipal(deployerAddress, stSTX),
           Cl.standardPrincipal(Borrower_1),
           Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, stSTX),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, sBTC),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, diko),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, USDA),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, xUSD),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
+            Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            }),
           ]),
       ],
       Borrower_1
@@ -2861,35 +3256,40 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -2918,35 +3318,40 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -2968,24 +3373,29 @@ describe("Upgrading z-token to v1-2", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, sBTC),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, diko),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, USDA),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, xUSD),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountAfterUpgrade)),
@@ -3001,18 +3411,6 @@ describe("Upgrading z-token to v1-2", () => {
 
     expect(maxBorrowAmountAfterUpgrade).toBeGreaterThan(maxBorrowAmountBeforeUpgrade);
     expect(maxBorrowAmountBeforeUpgrade * 2).toBe(maxBorrowAmountAfterUpgrade);
-
-    // console.log("lp-ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
-
-    // console.log(callResponse.events)
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log("lp-ststx-v1 balance")
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance")
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
   });
   it("Supply before upgrade. Borrow and expect a higher collateral amount value. Repay with no interest.", () => {
     const poolReserve0 = new PoolReserve(
@@ -3062,35 +3460,40 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdiko),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -3121,35 +3524,35 @@ describe("Upgrading z-token to v1-2", () => {
       "pool-read",
       "borrowing-power-in-asset",
       [
-          Cl.contractPrincipal(deployerAddress, stSTX),
-          Cl.standardPrincipal(Borrower_1),
-          Cl.list([
-              Cl.tuple({
-                asset: Cl.contractPrincipal(deployerAddress, stSTX),
-                "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
-                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, sBTC),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, diko),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, USDA),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-              Cl.tuple({
-                  asset: Cl.contractPrincipal(deployerAddress, xUSD),
-                  "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-              }),
-          ]),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
       ],
       Borrower_1
   );
@@ -3171,24 +3574,29 @@ describe("Upgrading z-token to v1-2", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, sBTC),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, diko),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, USDA),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, xUSD),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountAfterUpgrade)),
@@ -3290,6 +3698,11 @@ describe("Upgrading z-token to v1-2", () => {
                   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
                   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
               }),
+              Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, wstx),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+              }),
           ]),
       ],
       Borrower_1
@@ -3338,6 +3751,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountBeforeUpgrade)),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
@@ -3346,13 +3764,7 @@ describe("Upgrading z-token to v1-2", () => {
       ],
       Borrower_1
     );
-    // console.log(cvToValue(callResponse.result));
-    expect(callResponse.result).toBeOk(Cl.bool(true));
-    // expect(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Borrower_1)).toBe(200000000n);
-    // expect(simnet.getAssetsMap().get(".lp-ststx.lp-ststx")?.get(Borrower_1)).toBe(0n);
-
-    // expect(maxBorrowAmountAfterUpgrade).toBeGreaterThan(maxBorrowAmountBeforeUpgrade);
-    // expect(maxBorrowAmountBeforeUpgrade * 2).toBe(maxBorrowAmountAfterUpgrade);
+    expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
 
     callResponse = simnet.callPublicFn(
       "borrow-helper-v1-2",
@@ -3367,20 +3779,7 @@ describe("Upgrading z-token to v1-2", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
-    // console.log("lp-ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
-    // console.log("stSTX balances");
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
     expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(`${deployerAddress}.pool-vault`)).toBe(10100000001n);
-
-    // console.log(callResponse.events)
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log("lp-ststx-v1 balance")
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance")
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
   });
   
   it("Supply before upgrade and borrow before upgrade get liquidated after upgrade. Liquidator does not supply asset. Can claim back assets after price goes back up", () => {
@@ -3460,6 +3859,11 @@ describe("Upgrading z-token to v1-2", () => {
                   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
                   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
               }),
+              Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, wstx),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+              }),
           ]),
       ],
       Borrower_1
@@ -3508,6 +3912,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": { deployerAddress, contractName: lpxUSD },
             oracle: { deployerAddress, contractName: oracle },
         },
+        {
+            asset: { deployerAddress, contractName: wstx },
+            "lp-token": { deployerAddress, contractName: lpwstx },
+            oracle: { deployerAddress, contractName: oracle },
+        },
       ],
       Borrower_1
     );
@@ -3551,6 +3960,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -3593,6 +4007,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -3656,6 +4075,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, lpstSTXv2),
@@ -3726,6 +4150,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
             asset: Cl.contractPrincipal(deployerAddress, xUSD),
             "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -3828,6 +4257,11 @@ describe("Upgrading z-token to v1-2", () => {
                   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
                   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
               }),
+              Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, wstx),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+              }),
           ]),
       ],
       Borrower_1
@@ -3869,6 +4303,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountBeforeUpgrade)),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
@@ -3909,6 +4348,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -3953,6 +4397,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -4023,6 +4472,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
         Cl.contractPrincipal(deployerAddress, lpstSTXv2),
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -4037,34 +4491,10 @@ describe("Upgrading z-token to v1-2", () => {
     );
     expect(callResponse.result).toBeOk(Cl.uint(0));
 
-    // console.log("lp-ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
-    // console.log("stSTX balances");
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
-
-    // console.log("lp-usda balance");
-    // console.log(simnet.getAssetsMap().get(".lp-usda.lp-usda"));
-    // console.log("usda balance");
-    // console.log(simnet.getAssetsMap().get(".usda.usda"));
-
-    // console.log(maxBorrowAmountBeforeUpgrade);
-    // console.log(Liquidator_1);
-    
-    // console.log("Liquidator_1 ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Liquidator_1));
-    // console.log("Borrower_1 ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Borrower_1));
     expect(
       simnet.getAssetsMap().get(".ststx.ststx")?.get(Liquidator_1)! +
       simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Borrower_1)!)
       .toBe(100000000n);
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
-    // console.log("stSTX balances");
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
   });
 
   it("Supply after upgrade and borrow after upgrade get liquidated after upgrade. Liquidator does not supply asset. Claims z-tokens.", () => {
@@ -4150,6 +4580,11 @@ describe("Upgrading z-token to v1-2", () => {
                   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
                   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
               }),
+              Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, wstx),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+              }),
           ]),
       ],
       Borrower_1
@@ -4190,6 +4625,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountBeforeUpgrade)),
@@ -4235,6 +4675,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
       ],
       Borrower_1
@@ -4278,6 +4723,11 @@ describe("Upgrading z-token to v1-2", () => {
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -4342,6 +4792,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
         Cl.contractPrincipal(deployerAddress, lpstSTXv2),
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -4356,34 +4811,10 @@ describe("Upgrading z-token to v1-2", () => {
     );
     expect(callResponse.result).toBeOk(Cl.uint(0));
 
-    // console.log("lp-ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
-    // console.log("stSTX balances");
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
-
-    // console.log("lp-usda balance");
-    // console.log(simnet.getAssetsMap().get(".lp-usda.lp-usda"));
-    // console.log("usda balance");
-    // console.log(simnet.getAssetsMap().get(".usda.usda"));
-
-    // console.log(maxBorrowAmountBeforeUpgrade);
-    // console.log(Liquidator_1);
-    
-    // console.log("Liquidator_1 ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Liquidator_1));
-    // console.log("Borrower_1 ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Borrower_1));
     expect(
       simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Liquidator_1)! +
       simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Borrower_1)!)
       .toBe(100000000n);
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
-    // console.log("stSTX balances");
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
   });
 
   it("Supply before upgrade and borrow before upgrade get liquidated after upgrade. Liquidator supplies asset before upgrade. Does not claim z-tokens.", () => {
@@ -4475,6 +4906,11 @@ describe("Upgrading z-token to v1-2", () => {
                   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSD),
                   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
               }),
+              Cl.tuple({
+                asset: Cl.contractPrincipal(deployerAddress, wstx),
+                "lp-token": Cl.contractPrincipal(deployerAddress, lpwstx),
+                oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+              }),
           ]),
       ],
       Borrower_1
@@ -4523,6 +4959,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": { deployerAddress, contractName: lpxUSD },
             oracle: { deployerAddress, contractName: oracle },
         },
+        {
+            asset: { deployerAddress, contractName: wstx },
+            "lp-token": { deployerAddress, contractName: lpwstx },
+            oracle: { deployerAddress, contractName: oracle },
+        },
       ],
       Borrower_1
     );
@@ -4544,24 +4985,29 @@ describe("Upgrading z-token to v1-2", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, sBTC),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, diko),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, USDA),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
           Cl.tuple({
-              asset: Cl.contractPrincipal(deployerAddress, xUSD),
-              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
       ],
@@ -4605,6 +5051,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -4668,6 +5119,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -4778,6 +5234,11 @@ describe("Upgrading z-token to v1-2", () => {
                   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
                   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
               }),
+              Cl.tuple({
+                  asset: Cl.contractPrincipal(deployerAddress, wstx),
+                  "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv1),
+                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+              }),
           ]),
       ],
       Borrower_1
@@ -4826,6 +5287,11 @@ describe("Upgrading z-token to v1-2", () => {
             "lp-token": { deployerAddress, contractName: lpxUSD },
             oracle: { deployerAddress, contractName: oracle },
         },
+        {
+            asset: { deployerAddress, contractName: wstx },
+            "lp-token": { deployerAddress, contractName: lpwstx },
+            oracle: { deployerAddress, contractName: oracle },
+        },
       ],
       Borrower_1
     );
@@ -4864,6 +5330,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -4908,6 +5379,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -4973,6 +5449,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
         Cl.contractPrincipal(deployerAddress, lpstSTXv2),
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -4986,36 +5467,10 @@ describe("Upgrading z-token to v1-2", () => {
       Liquidator_1
     );
     expect(callResponse.result).toBeOk(Cl.uint(0));
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log("lp-ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
-    // console.log("stSTX balances");
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
-
-    // console.log("lp-usda balance");
-    // console.log(simnet.getAssetsMap().get(".lp-usda.lp-usda"));
-    // console.log("usda balance");
-    // console.log(simnet.getAssetsMap().get(".usda.usda"));
-
-    // console.log(maxBorrowAmountBeforeUpgrade);
-    // console.log(Liquidator_1);
-    
-    // console.log("Liquidator_1 ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Liquidator_1));
-    // console.log("Borrower_1 ststx-v1 balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Borrower_1));
     expect(
       simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Liquidator_1)! +
       simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Borrower_1)!)
       .toBe(100000000n);
-    // console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
-    // console.log("lp-ststx balance");
-    // console.log(simnet.getAssetsMap().get(".lp-ststx.lp-ststx"));
-    // console.log("stSTX balances");
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
   });
 
   it("Supply after upgrade and borrow after upgrade tried to liquidate before grace period ends.", () => {
@@ -5101,6 +5556,11 @@ describe("Upgrading z-token to v1-2", () => {
                   "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
                   oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
               }),
+              Cl.tuple({
+                  asset: Cl.contractPrincipal(deployerAddress, wstx),
+                  "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+                  oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+              }),
           ]),
       ],
       Borrower_1
@@ -5142,6 +5602,11 @@ describe("Upgrading z-token to v1-2", () => {
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
         ]),
         Cl.uint(Math.floor(maxBorrowAmountBeforeUpgrade)),
         Cl.contractPrincipal(deployerAddress, feesCalculator),
@@ -5155,7 +5620,7 @@ describe("Upgrading z-token to v1-2", () => {
     oracleContract.setPrice(
       deployerAddress,
       stSTX,
-      80_000_000,
+      100_000_000,
       deployerAddress
     );
 
@@ -5187,6 +5652,48 @@ describe("Upgrading z-token to v1-2", () => {
     );
 
     callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "calculate-user-global-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, sBTC),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, diko),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, USDA),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, xUSD),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+    // console.log(Cl.prettyPrint(callResponse.result));
+
+    callResponse = simnet.callPublicFn(
       "borrow-helper-v1-2",
       "liquidation-call",
       [
@@ -5214,6 +5721,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
@@ -5260,6 +5772,11 @@ describe("Upgrading z-token to v1-2", () => {
           Cl.tuple({
               asset: Cl.contractPrincipal(deployerAddress, xUSD),
               "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+              oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+              asset: Cl.contractPrincipal(deployerAddress, wstx),
+              "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
               oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),

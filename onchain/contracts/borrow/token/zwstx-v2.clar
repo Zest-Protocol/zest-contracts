@@ -16,7 +16,7 @@
 (define-data-var token-name (string-ascii 32) "Zest STX")
 (define-data-var token-symbol (string-ascii 32) "zSTX")
 
-(define-constant asset-addr 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token)
+(define-constant asset-addr .wstx)
 (define-constant decimals u6)
 
 (define-read-only (get-total-supply)
