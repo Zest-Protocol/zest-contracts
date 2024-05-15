@@ -169,8 +169,8 @@
 
 (define-private (cumulate-balance-internal (account principal))
   (let (
-    (v0-balance (unwrap-panic (contract-call? .lp-sbtc get-principal-balance account)))
-    (v1-balance (unwrap-panic (contract-call? .lp-sbtc-v1 get-principal-balance account)))
+    (v0-balance (unwrap-panic (contract-call? .lp-wstx get-principal-balance account)))
+    (v1-balance (unwrap-panic (contract-call? .lp-wstx-v1 get-principal-balance account)))
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
     (reserve-state (try! (contract-call? .pool-0-reserve-v1-2 get-reserve-state asset-addr)))
@@ -185,13 +185,13 @@
     (if (> v0-balance u0)
       (begin
         (try! (mint-internal v0-balance account))
-        (try! (contract-call? .lp-sbtc burn v0-balance account))
+        (try! (contract-call? .lp-wstx burn v0-balance account))
         true
       )
       (if (> v1-balance u0)
         (begin
           (try! (mint-internal v1-balance account))
-          (try! (contract-call? .lp-sbtc-v1 burn v1-balance account))
+          (try! (contract-call? .lp-wstx-v1 burn v1-balance account))
           true
         )
         false

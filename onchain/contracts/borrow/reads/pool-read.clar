@@ -227,6 +227,16 @@
   )
 )
 
+
+(define-read-only (calculate-compounded-interest
+  (current-liquidity-rate uint)
+  (delta uint))
+  (begin
+    (taylor-6 (get-rt-by-block current-liquidity-rate delta))
+  )
+)
+
+;; MATH
 (define-constant one-8 u100000000)
 (define-constant one-12 u1000000000000)
 (define-constant fixed-precision u8)

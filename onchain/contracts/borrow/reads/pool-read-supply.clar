@@ -1,6 +1,4 @@
 (use-trait ft .ft-trait.ft-trait)
-(use-trait ft-mint-trait .ft-mint-trait.ft-mint-trait)
-(use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (define-read-only (is-active (asset principal))
   (let (
@@ -122,7 +120,7 @@
 
 (define-read-only (get-useable-collateral-usd-stx (who principal))
   (let (
-    (asset-balance (unwrap-panic (contract-call? .zwstx-v1-2 get-principal-balance who)))
+    (asset-balance (unwrap-panic (contract-call? .zwstx-v1-2-1 get-principal-balance who)))
     (reserve-data (get-reserve-data .wstx))
     (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who .wstx)))
     (asset-decimals (get decimals reserve-data))
@@ -185,7 +183,7 @@
 )
 
 (define-read-only (get-supplied-balance-user-stx (who principal))
-  (let ((principal (unwrap-panic (contract-call? .zwstx-v1-2 get-principal-balance who))))
+  (let ((principal (unwrap-panic (contract-call? .zwstx-v1-2-1 get-principal-balance who))))
     (calculate-cumulated-balance who u6 .wstx principal u6)
   )
 )
@@ -275,6 +273,36 @@
   )
 )
 
+(define-read-only (get-normalized-income
+  (current-liquidity-rate uint)
+  (last-updated-block uint)
+  (last-liquidity-cumulative-index uint))
+  (let (
+    (cumulated 
+      (calculate-linear-interest
+        current-liquidity-rate
+        (- burn-block-height last-updated-block))))
+    (mul cumulated last-liquidity-cumulative-index)
+  )
+)
+
+(define-read-only (calculate-linear-interest
+  (current-liquidity-rate uint)
+  (delta uint))
+  (let (
+    (rate (get-rt-by-block current-liquidity-rate delta))
+  )
+    (+ one-8 rate)
+  )
+)
+
+(define-read-only (calculate-compounded-interest
+  (current-liquidity-rate uint)
+  (delta uint))
+  (begin
+    (taylor-6 (get-rt-by-block current-liquidity-rate delta))
+  )
+)
 
 (define-constant one-8 u100000000)
 (define-constant one-12 u1000000000000)

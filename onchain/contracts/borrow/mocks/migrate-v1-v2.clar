@@ -8,6 +8,7 @@
 (define-constant updated-reserve-asset-3 .sbtc)
 (define-constant updated-reserve-asset-4 .xusd)
 (define-constant updated-reserve-asset-5 .diko)
+(define-constant updated-reserve-asset-6 .wstx)
 
 (define-constant v0-version-1 .lp-ststx)
 (define-constant v1-version-1 .lp-ststx-v1)
@@ -29,6 +30,10 @@
 (define-constant v1-version-5 .lp-diko-v1)
 (define-constant v2-version-5 .lp-diko-v2)
 
+(define-constant v0-version-6 .lp-wstx)
+(define-constant v1-version-6 .lp-wstx-v1)
+(define-constant v2-version-6 .lp-wstx-v2)
+
 (define-constant pool-0-reserve-v0 .pool-0-reserve)
 (define-constant pool-0-reserve-v1-2 .pool-0-reserve-v1-2)
 
@@ -39,6 +44,7 @@
     (reserve-data-3 (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read updated-reserve-asset-3)))
     (reserve-data-4 (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read updated-reserve-asset-4)))
     (reserve-data-5 (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read updated-reserve-asset-5)))
+    (reserve-data-6 (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read updated-reserve-asset-6)))
   )
     (asserts! (not (var-get executed)) (err u10))
     (print reserve-data-1)
@@ -46,6 +52,7 @@
     (print reserve-data-3)
     (print reserve-data-4)
     (print reserve-data-5)
+    (print reserve-data-6)
     (try!
       (contract-call? .pool-borrow set-reserve updated-reserve-asset-1
         (merge reserve-data-1 { a-token-address: v2-version-1 })
@@ -69,6 +76,11 @@
     (try!
       (contract-call? .pool-borrow set-reserve updated-reserve-asset-5
         (merge reserve-data-5 { a-token-address: v2-version-5 })
+      )
+    )
+    (try!
+      (contract-call? .pool-borrow set-reserve updated-reserve-asset-6
+        (merge reserve-data-6 { a-token-address: v2-version-6 })
       )
     )
 
@@ -182,6 +194,24 @@
     (try! (contract-call? .lp-diko-v2 set-approved-contract pool-0-reserve-v1-2 true))
     ;; ===
 
+    ;; DIKO UPGRADE
+    ;; give permission for burn/mint of previous versions to new version
+    (try! (contract-call? .lp-wstx set-approved-contract v2-version-6 true))
+    (try! (contract-call? .lp-wstx-v1 set-approved-contract v2-version-6 true))
+    ;; revoke pool-borrow permissions to v1 version
+    (try! (contract-call? .lp-wstx-v1 set-approved-contract .pool-borrow-v1-1 false))
+    (try! (contract-call? .lp-wstx-v1 set-approved-contract .liquidation-manager-v1-1 false))
+    (try! (contract-call? .lp-wstx-v1 set-approved-contract pool-0-reserve-v0 false))
+    ;; disable access to v0 from v1
+    (try! (contract-call? .lp-wstx set-approved-contract v1-version-6 false))
+    (try! (contract-call? .lp-wstx-v1 set-approved-contract v1-version-6 false))
+    (try! (contract-call? .lp-wstx-v1 set-approved-contract .pool-borrow-v1-2 false))
+    ;; Give permission to new pool-borrow, liquidation-manager and pool-0-reserve
+    (try! (contract-call? .lp-wstx-v2 set-approved-contract .pool-borrow-v1-2 true))
+    (try! (contract-call? .lp-wstx-v2 set-approved-contract .liquidation-manager-v1-2 true))
+    (try! (contract-call? .lp-wstx-v2 set-approved-contract pool-0-reserve-v1-2 true))
+    ;; ===
+
 
     ;; add grace-period variables
     ;; 7 days (144 * 7)
@@ -195,6 +225,8 @@
     (try! (contract-call? .pool-borrow-v1-2 set-grace-period-time updated-reserve-asset-4 u1008))
     (try! (contract-call? .pool-borrow-v1-2 set-grace-period-enabled updated-reserve-asset-5 true))
     (try! (contract-call? .pool-borrow-v1-2 set-grace-period-time updated-reserve-asset-5 u1008))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-enabled updated-reserve-asset-6 true))
+    (try! (contract-call? .pool-borrow-v1-2 set-grace-period-time updated-reserve-asset-6 u1008))
     
     (var-set executed true)
     (ok true)
