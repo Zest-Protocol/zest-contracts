@@ -6,6 +6,8 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
+import * as config from "./config";
+
 const simnet = await initSimnet();
 
 const accounts = simnet.getAccounts();

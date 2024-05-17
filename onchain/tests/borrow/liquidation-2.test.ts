@@ -2,11 +2,12 @@ import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { describe, expect, it, beforeEach } from "vitest";
 import { Cl, ClarityType, cvToJSON, cvToValue } from "@stacks/transactions";
 import { readFileSync } from "fs";
-import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 import { ZToken } from "./models/zToken";
 import { MintableToken } from "./models/token";
+
+import * as config from "./config";
 
 const simnet = await initSimnet();
 
@@ -143,310 +144,26 @@ describe("Liquidations", () => {
     );
     poolBorrow.addAsset(deployerAddress, xUSD, deployerAddress);
 
-    let callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-base-variable-borrow-rate",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(0)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-base-variable-borrow-rate",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(0)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-base-variable-borrow-rate",
-      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(0)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-base-variable-borrow-rate",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(0)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-base-variable-borrow-rate",
-      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(0)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-base-variable-borrow-rate",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(0)],
-      deployerAddress
-    );
-
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-1",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(4000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-1",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(4000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-1",
-      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(4000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-1",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(4000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-1",
-      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(4000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-1",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(4000000)],
-      deployerAddress
-    );
-
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-2",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(300000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-2",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(300000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-2",
-      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(300000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-2",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(300000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-2",
-      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(300000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-variable-rate-slope-2",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(300000000)],
-      deployerAddress
-    );
-
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-optimal-utilization-rate",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(80000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-optimal-utilization-rate",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(80000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-optimal-utilization-rate",
-      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(80000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-optimal-utilization-rate",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(80000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-optimal-utilization-rate",
-      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(80000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-optimal-utilization-rate",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(80000000)],
-      deployerAddress
-    );
-
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-liquidation-close-factor-percent",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(50000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-liquidation-close-factor-percent",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(50000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-liquidation-close-factor-percent",
-      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(50000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-liquidation-close-factor-percent",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(50000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-liquidation-close-factor-percent",
-      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(50000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-liquidation-close-factor-percent",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(50000000)],
-      deployerAddress
-    );
-
-    callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
-      "set-flashloan-fee-total",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(35)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
-      "set-flashloan-fee-total",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(35)],
-      deployerAddress
-    );
-
-    callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
-      "set-flashloan-fee-protocol",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(3000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
-      "set-flashloan-fee-protocol",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(3000)],
-      deployerAddress
-    );
-
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-origination-fee-prc",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(25)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-origination-fee-prc",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(25)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-origination-fee-prc",
-      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(25)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-origination-fee-prc",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(25)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-origination-fee-prc",
-      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(25)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-origination-fee-prc",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(25)],
-      deployerAddress
-    );
-
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-reserve-factor",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(15000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-reserve-factor",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(10000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-reserve-factor",
-      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(10000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-reserve-factor",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(10000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-reserve-factor",
-      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
-      "set-reserve-factor",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000)],
+    simnet.deployContract(
+      "run-reserve-extra-variables",
+      readFileSync(config.reserveExtraVariables).toString(),
+      null,
       deployerAddress
     );
 
     simnet.deployContract(
       "run-1",
-      readFileSync(
-        `contracts/borrow/mocks/upgrade-contract-v1-v2.clar`
-      ).toString(),
+      readFileSync(config.initContractsToV2).toString(),
       null,
       deployerAddress
     );
+    simnet.mineEmptyBlocks(100);
   });
   it("Use wstx: Borrower_1 falls below health factor threshold and gets all their collateral liquidated", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -466,7 +183,6 @@ describe("Liquidations", () => {
     callResponse = sBTCToken.mint(2_000_000_000, Borrower_1, deployerAddress);
 
     callResponse = simnet.transferSTX(400_000_000_000, LP_1, deployerAddress);
-    // console.log(Cl.prettyPrint(callResponse.result));
     poolBorrow.init(
       deployerAddress,
       zwstx,
@@ -515,7 +231,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -529,7 +245,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zwstx),
@@ -615,7 +331,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -701,8 +417,6 @@ describe("Liquidations", () => {
       Borrower_1
     );
 
-    // console.log(Cl.prettyPrint(callResponse.result));
-
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
       "calculate-user-global-data",
@@ -766,13 +480,9 @@ describe("Liquidations", () => {
       ],
       Borrower_1
     );
-    // const userDebtBefore1stList = cvToValue(callResponse.result).value["compounded-balance"].value;
-    // callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
-    // console.log(cvToValue(callResponse.result));
-    // const debtBeforeLiq = Number(cvToValue(callResponse.result).value["total-borrows-variable"].value);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -880,7 +590,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -916,7 +626,6 @@ describe("Liquidations", () => {
       ],
       Liquidator_1
     );
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
     currVaultBalance = simnet
       .getAssetsMap()
       .get(".ststx.ststx")
@@ -928,11 +637,6 @@ describe("Liquidations", () => {
     expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(Collector_2)!).toBe(
       7616492n
     );
-
-    // console.log("Liquidator sBTC balance")
-    // console.log(currLiquidatorCollateralBalance - prevLiquidatorCollateralBalance)
-    // console.log("Vault sBTC balance")
-    // console.log(prevVaultBalance - currVaultBalance)
 
     // add the protocol fee difference
     expect(
@@ -1016,15 +720,10 @@ describe("Liquidations", () => {
     );
   });
   it("Borrower_1 falls below health factor threshold and gets all their collateral liquidated", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -1057,7 +756,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1071,7 +770,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -1147,7 +846,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -1223,8 +922,6 @@ describe("Liquidations", () => {
       Borrower_1
     );
 
-    // console.log(Cl.prettyPrint(callResponse.result));
-
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
       "calculate-user-global-data",
@@ -1288,7 +985,7 @@ describe("Liquidations", () => {
     // const debtBeforeLiq = Number(cvToValue(callResponse.result).value["total-borrows-variable"].value);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -1321,9 +1018,9 @@ describe("Liquidations", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));1680006384
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));4200015
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));1675806369
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     const debtPurchased = BigInt(callResponse.events[12].data.amount);
@@ -1396,7 +1093,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -1526,15 +1223,10 @@ describe("Liquidations", () => {
     );
   });
   it("Borrower_1 falls below health factor threshold and gets collateral liquidated, verify protocol fee goes to collection address", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -1567,7 +1259,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1581,7 +1273,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -1657,7 +1349,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -1704,7 +1396,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -1763,15 +1455,10 @@ describe("Liquidations", () => {
     );
   });
   it("Borrower_1 falls below health factor threshold and gets collateral liquidated, verify protocol does not get the fee protocol when it is set to 0", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -1804,7 +1491,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1818,7 +1505,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -1894,7 +1581,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -1949,7 +1636,7 @@ describe("Liquidations", () => {
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -1980,8 +1667,6 @@ describe("Liquidations", () => {
       ],
       Liquidator_1
     );
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
     const sBtcPrice = 20_000;
     const stSTXPrice = 2;
     const closeFactor = 0.5;
@@ -2012,22 +1697,16 @@ describe("Liquidations", () => {
         ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.protocol-treasury")!
     ).toBe(undefined);
     // expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(maxCollateralToLiquidate);
-    // TODO: replace using values from formula
     expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Liquidator_1)!).toBe(
       1680005107n
     );
   });
 
   it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated. Liquidator claims ztokens. Can redeem underlying assets from ztokens in the pool vault.`, () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -2080,7 +1759,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2095,7 +1774,7 @@ describe("Liquidations", () => {
 
     const suppliedSbtcByDeployer = 2_000_000_000n;
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -2110,7 +1789,7 @@ describe("Liquidations", () => {
 
     let suppliedSbtcByBorrower = 2_000_000_000;
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -2186,7 +1865,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -2218,37 +1897,10 @@ describe("Liquidations", () => {
       Borrower_1
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
-
-    // callResponse = simnet.callPublicFn(
-    //   "pool-read",
-    //   "borrowing-power-in-asset",
-    //   [
-    //     Cl.contractPrincipal(deployerAddress, stSTX),
-    //     Cl.standardPrincipal(LP_1),
-    //     Cl.list([
-    //       Cl.tuple({
-    //         asset: Cl.contractPrincipal(deployerAddress, stSTX),
-    //         "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv1),
-    //         oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-    //       }),
-    //       Cl.tuple({
-    //         asset: Cl.contractPrincipal(deployerAddress, sBTC),
-    //         "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv1),
-    //         oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-    //       }),
-    //       Cl.tuple({
-    //         asset: Cl.contractPrincipal(deployerAddress, xUSD),
-    //         "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv1),
-    //         oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-    //       }),
-    //     ]),
-    //   ],
-    //   Borrower_1
-    // );
     const borrowedStSTX = 1000000000n;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -2324,8 +1976,6 @@ describe("Liquidations", () => {
       Borrower_1
     );
 
-    // console.log(Cl.prettyPrint(callResponse.result));
-
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
       "calculate-user-global-data",
@@ -2371,22 +2021,12 @@ describe("Liquidations", () => {
       .getAssetsMap()
       .get(".sbtc.sbtc")
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
-    // console.log(simnet.getAssetsMap().get(".lp-sbtc-v1.lp-sbtc"));
-
-    // suppliedSbtcByBorrower = cvToValue(simnet.callReadOnlyFn(
-    //   "pool-read-supply",
-    //   "get-supplied-balance-user-sbtc",
-    //   [
-    //     Cl.standardPrincipal(Borrower_1)
-    //   ],
-    //   Borrower_1
-    // ).result);
 
     // console.log("supplied sbtc by Borrower");
     // console.log(suppliedSbtcByBorrower);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -2454,7 +2094,6 @@ describe("Liquidations", () => {
     expect(
       simnet.getAssetsMap().get(`.${zsbtc}.lp-sbtc`)?.get(Liquidator_1)
       // ).toBe(BigInt(maxCollateralToLiquidate - protocolFee));
-      // TODO: replace using values from formula
     ).toBe(BigInt(1679807661n));
     expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Collector)).toBe(
       BigInt(protocolFee)
@@ -2476,7 +2115,7 @@ describe("Liquidations", () => {
     ]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -2508,11 +2147,6 @@ describe("Liquidations", () => {
       Liquidator_1
     );
 
-    // console.log("after 2nd liq")
-    // console.log(simnet.getAssetsMap().get(".lp-sbtc-v1.lp-sbtc"));
-    // console.log("hhh")
-    // console.log(simnet.getAssetsMap().get(".sbtc.sbtc"));
-
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
       "get-user-reserve-data",
@@ -2527,7 +2161,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Liquidator_1),
@@ -2565,7 +2199,6 @@ describe("Liquidations", () => {
     expect(cvToValue(callResponse.result)["use-as-collateral"].value).toBe(
       true
     );
-    // console.log(cvToValue(callResponse.result));
 
     callResponse = simnet.callReadOnlyFn(
       `${deployerAddress}.${zsbtc}`,
@@ -2576,7 +2209,7 @@ describe("Liquidations", () => {
     const boughtLpSbtc = Number(cvToValue(callResponse.result)["value"]);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -2626,7 +2259,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -2658,15 +2291,10 @@ describe("Liquidations", () => {
     expect(callResponse.result).toBeOk(Cl.bool(true));
   });
   it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated. There are assets still available in the reserves, the reserve assets remain untouched.`, () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -2703,7 +2331,7 @@ describe("Liquidations", () => {
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2717,7 +2345,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -2731,7 +2359,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -2806,7 +2434,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -2910,7 +2538,7 @@ describe("Liquidations", () => {
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -2944,7 +2572,7 @@ describe("Liquidations", () => {
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -2997,15 +2625,10 @@ describe("Liquidations", () => {
   });
 
   it(`Borrower_1 falls below health factor threshold and gets all their collateral liquidated. There is not enough collateral remaining in the reserve for liquidity because someone borrowed the assets.`, () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -3036,7 +2659,6 @@ describe("Liquidations", () => {
       true,
       deployerAddress
     );
-    // console.log(Cl.prettyPrint(callResponse.result))
 
     callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
@@ -3066,7 +2688,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -3079,20 +2701,8 @@ describe("Liquidations", () => {
       LP_1
     );
 
-    // callResponse = poolBorrow.supply(
-    //   deployerAddress,
-    //   lpstSTXv1,
-    //   deployerAddress,
-    //   pool0Reserve,
-    //   deployerAddress,
-    //   stSTX,
-    //   400_000_000_000,
-    //   LP_1,
-    //   LP_1
-    // );
-
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -3105,7 +2715,7 @@ describe("Liquidations", () => {
       Borrower_1
     );
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -3179,7 +2789,7 @@ describe("Liquidations", () => {
     let maxBorrowAmount = Number(cvToValue(callResponse.result)["value"]) * 1.0;
     // Borrower borrows
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -3245,7 +2855,7 @@ describe("Liquidations", () => {
     // console.log(simnet.getAssetsMap().get(".sBTC.sBTC"));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -3376,7 +2986,7 @@ describe("Liquidations", () => {
       ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
 
     callResponse = simnet.callPublicFn(
-      "pool-borrow",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -3410,15 +3020,10 @@ describe("Liquidations", () => {
     expect(callResponse.result).toBeErr(Cl.uint(90005));
   });
   it("Supply multiple assets unused as collateral, price falls. Can withdraw other assets. Collateral can be liquidated, ", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -3467,7 +3072,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -3481,7 +3086,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -3495,7 +3100,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -3508,7 +3113,7 @@ describe("Liquidations", () => {
       Borrower_1
     );
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -3601,7 +3206,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -3671,7 +3276,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -3709,7 +3314,7 @@ describe("Liquidations", () => {
 
     // purchasing more than available collateral
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -3746,7 +3351,7 @@ describe("Liquidations", () => {
 
     // try to liquidate more stSTX after all sBTC collateral has been used
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -3782,7 +3387,7 @@ describe("Liquidations", () => {
 
     // try to liquidate xUSD that is unused as collateral
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -3817,7 +3422,7 @@ describe("Liquidations", () => {
     expect(callResponse.result).toBeErr(Cl.uint(90003));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -3856,15 +3461,10 @@ describe("Liquidations", () => {
     );
   });
   it("Supply multiple assets unused as collateral, price falls. Can enable use as collateral and cannot be liquidated", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -3913,7 +3513,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -3927,7 +3527,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -3971,7 +3571,7 @@ describe("Liquidations", () => {
     )["value"]["value"]["total-collateral-balanceUSD"]["value"];
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -4015,7 +3615,7 @@ describe("Liquidations", () => {
     ]["value"]["total-collateral-balanceUSD"]["value"];
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -4043,7 +3643,6 @@ describe("Liquidations", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -4070,7 +3669,6 @@ describe("Liquidations", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
     expect(
       BigInt(
         cvToJSON(callResponse.result)["value"]["value"]["health-factor"][
@@ -4109,7 +3707,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -4241,7 +3839,7 @@ describe("Liquidations", () => {
     ).toBeTruthy();
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -4306,7 +3904,7 @@ describe("Liquidations", () => {
     ).toBe(Number(collateralxUSDEnabled));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -4340,7 +3938,7 @@ describe("Liquidations", () => {
     expect(callResponse.result).toBeErr(Cl.uint(90000));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -4374,7 +3972,7 @@ describe("Liquidations", () => {
     expect(callResponse.result).toBeErr(Cl.uint(90000));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -4408,7 +4006,7 @@ describe("Liquidations", () => {
     expect(callResponse.result).toBeErr(Cl.uint(30009));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -4443,7 +4041,7 @@ describe("Liquidations", () => {
     // expect(callResponse.result).toBeOk(Cl.uint(0));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -4475,15 +4073,10 @@ describe("Liquidations", () => {
     expect(callResponse.result).toBeErr(Cl.uint(30018));
   });
   it("Supply an asset and borrow the same asset and another asset. Liquidate by purchasing the debt that is the same as the collateral.", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -4532,7 +4125,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -4546,7 +4139,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -4560,7 +4153,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -4625,7 +4218,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) - 800;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -4668,7 +4261,7 @@ describe("Liquidations", () => {
     // console.log(simnet.getAssetsMap().get(".sbtc.sbtc"));
     // purchasing more than available collateral
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -4700,20 +4293,12 @@ describe("Liquidations", () => {
       Liquidator_1
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(Cl.prettyPrint(callResponse.events[callResponse.events.length - 1].data.value!));
-    // console.log(simnet.getAssetsMap().get(".sbtc.sbtc"));
   });
   it("Borrower_1 falls below health factor and has bad debt ", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -4733,7 +4318,6 @@ describe("Liquidations", () => {
     callResponse = sBTCToken.mint(2_000_000_000, Borrower_1, deployerAddress);
 
     callResponse = simnet.transferSTX(400_000_000_000, LP_1, deployerAddress);
-    // console.log(Cl.prettyPrint(callResponse.result));
     poolBorrow.init(
       deployerAddress,
       zwstx,
@@ -4782,7 +4366,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -4796,7 +4380,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zwstx),
@@ -4844,7 +4428,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -4912,7 +4496,6 @@ describe("Liquidations", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow-v1-2",
@@ -4990,9 +4573,7 @@ describe("Liquidations", () => {
     oracleContract.setPrice(
       deployerAddress,
       stSTX,
-      // 160_002_044,
       101_000_000,
-      // 190_000_000
       deployerAddress
     );
 
@@ -5026,10 +4607,9 @@ describe("Liquidations", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -5068,15 +4648,10 @@ describe("Liquidations", () => {
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
   });
   it("Borrower_1 falls below health factor, does not have bad debt and grace-period is enabled. Cannot get liquidated before grace perido ends.", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -5096,7 +4671,6 @@ describe("Liquidations", () => {
     callResponse = sBTCToken.mint(2_000_000_000, Borrower_1, deployerAddress);
 
     callResponse = simnet.transferSTX(400_000_000_000, LP_1, deployerAddress);
-    // console.log(Cl.prettyPrint(callResponse.result));
     poolBorrow.init(
       deployerAddress,
       zwstx,
@@ -5145,7 +4719,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -5159,7 +4733,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zwstx),
@@ -5207,7 +4781,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -5349,6 +4923,7 @@ describe("Liquidations", () => {
       [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(84)],
       deployerAddress
     );
+    const lastBlock = simnet.blockHeight;
 
     oracleContract.setPrice(
       deployerAddress,
@@ -5393,7 +4968,7 @@ describe("Liquidations", () => {
     ).toBe(true);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -5465,9 +5040,9 @@ describe("Liquidations", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
 
     // test grace-period - 1
-    simnet.mineEmptyBlocks(136);
+    simnet.mineEmptyBlocks(144 - (simnet.blockHeight - 84));
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -5506,7 +5081,7 @@ describe("Liquidations", () => {
     expect(callResponse.result).toBeErr(Cl.uint(90007));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -5546,7 +5121,7 @@ describe("Liquidations", () => {
 
     // liquidate again
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -5585,15 +5160,10 @@ describe("Liquidations", () => {
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
   });
   it("Borrower_1 falls below health factor, does not have bad debt and grace-period is disabled. Liquidate.", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -5613,7 +5183,6 @@ describe("Liquidations", () => {
     callResponse = sBTCToken.mint(2_000_000_000, Borrower_1, deployerAddress);
 
     callResponse = simnet.transferSTX(400_000_000_000, LP_1, deployerAddress);
-    // console.log(Cl.prettyPrint(callResponse.result));
     poolBorrow.init(
       deployerAddress,
       zwstx,
@@ -5662,7 +5231,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -5676,7 +5245,7 @@ describe("Liquidations", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zwstx),
@@ -5724,7 +5293,7 @@ describe("Liquidations", () => {
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -5792,7 +5361,6 @@ describe("Liquidations", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       "pool-borrow-v1-2",
@@ -5910,7 +5478,7 @@ describe("Liquidations", () => {
     ).toBe(true);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([

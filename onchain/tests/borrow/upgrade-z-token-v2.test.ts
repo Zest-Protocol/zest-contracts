@@ -6,6 +6,8 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
+import * as config from "./config";
+
 const simnet = await initSimnet();
 
 const accounts = simnet.getAccounts();
@@ -56,6 +58,38 @@ const wstx = "wstx";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
+const cvAssets = Cl.list([
+  Cl.tuple({
+    asset: Cl.contractPrincipal(deployerAddress, stSTX),
+    "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+    oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+  }),
+  Cl.tuple({
+    asset: Cl.contractPrincipal(deployerAddress, sBTC),
+    "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+    oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+  }),
+  Cl.tuple({
+    asset: Cl.contractPrincipal(deployerAddress, diko),
+    "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+    oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+  }),
+  Cl.tuple({
+    asset: Cl.contractPrincipal(deployerAddress, USDA),
+    "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+    oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+  }),
+  Cl.tuple({
+    asset: Cl.contractPrincipal(deployerAddress, xUSD),
+    "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+    oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+  }),
+  Cl.tuple({
+    asset: Cl.contractPrincipal(deployerAddress, wstx),
+    "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+    oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+  }),
+]);
 describe("Upgrading z-token to v1-2", () => {
   beforeEach(() => {
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
@@ -436,15 +470,6 @@ describe("Upgrading z-token to v1-2", () => {
       ],
       deployerAddress
     );
-    // callResponse = simnet.callPublicFn(
-    //   stSTX,
-    //   "mint",
-    //   [
-    //     Cl.uint(1000000000),
-    //     Cl.standardPrincipal("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB"),
-    //   ],
-    //   deployerAddress
-    // );
     callResponse = simnet.callPublicFn(
       stSTX,
       "mint",
@@ -454,16 +479,6 @@ describe("Upgrading z-token to v1-2", () => {
       ],
       deployerAddress
     );
-    // callResponse = simnet.callPublicFn(
-    //   stSTX,
-    //   "mint",
-    //   [
-    //     Cl.uint(100_000_000),
-    //     Cl.standardPrincipal(Liquidator_1),
-    //   ],
-    //   deployerAddress
-    // );
-
     callResponse = simnet.callPublicFn(
       stSTX,
       "mint",
@@ -717,7 +732,6 @@ describe("Upgrading z-token to v1-2", () => {
       LP_1
     );
 
-    // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     callResponse = simnet.deployContract(
       "run-1",
       readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
@@ -743,44 +757,10 @@ describe("Upgrading z-token to v1-2", () => {
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(10_000_000_000),
         Cl.standardPrincipal(Borrower_1),
-        Cl.list([
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, diko),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, USDA),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, wstx),
-            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-        ]),
+        cvAssets,
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(simnet.getAssetsMap());
-    // console.log(Borrower_1);
     expect(
       simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Borrower_1)
     ).toBe(0n);
@@ -893,9 +873,6 @@ describe("Upgrading z-token to v1-2", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(simnet.getAssetsMap());
-    // console.log(Borrower_1);
     expect(
       simnet.getAssetsMap().get(".lp-wstx-v2.lp-wstx")?.get(Borrower_1)
     ).toBe(0n);
@@ -1108,7 +1085,6 @@ describe("Upgrading z-token to v1-2", () => {
     const maxBorrowAmountBeforeWithdrawal =
       Number(cvToValue(callResponse.result)["value"]) * 1.0;
 
-    // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
       readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
@@ -1478,7 +1454,6 @@ describe("Upgrading z-token to v1-2", () => {
       null,
       deployerAddress
     );
-    console.log(simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx"));
 
     totalSupplied += 1_000_000_000n;
 

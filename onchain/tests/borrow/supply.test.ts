@@ -1,4 +1,3 @@
-import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { describe, expect, it, beforeEach } from "vitest";
 import { Cl, ClarityType, cvToValue } from "@stacks/transactions";
 import { readFileSync } from "fs";
@@ -6,7 +5,10 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
-const simnet = await initSimnet();
+import * as config from "./config";
+import { initSimnetChecker } from "./SimnetChecker";
+
+const simnet = await initSimnetChecker();
 
 const accounts = simnet.getAccounts();
 const deployerAddress = accounts.get("deployer")!;
@@ -94,19 +96,19 @@ describe("Supply and Redeem", () => {
     );
 
     let callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
+      config.poolReserveData,
       "set-base-variable-borrow-rate",
       [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(0)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
+      config.poolReserveData,
       "set-base-variable-borrow-rate",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(0)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-reserve-data",
+      config.poolReserveData,
       "set-base-variable-borrow-rate",
       [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(0)],
       deployerAddress
@@ -379,24 +381,24 @@ describe("Supply and Redeem", () => {
     );
 
     simnet.deployContract(
+      "run-reserve-extra-variables",
+      readFileSync(config.reserveExtraVariables).toString(),
+      null,
+      deployerAddress
+    );
+
+    simnet.deployContract(
       "run-1",
-      readFileSync(
-        `contracts/borrow/mocks/upgrade-contract-v1-v2.clar`
-      ).toString(),
+      readFileSync(config.initContractsToV2).toString(),
       null,
       deployerAddress
     );
   });
   it("Supply and immediately redeem without returns", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
 
     let callResponse = poolBorrow.init(
@@ -416,15 +418,15 @@ describe("Supply and Redeem", () => {
 
     poolBorrow.addAsset(deployerAddress, stSTX, deployerAddress);
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [Cl.uint(1_000_000_000), Cl.standardPrincipal(LP_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -444,8 +446,8 @@ describe("Supply and Redeem", () => {
       LP_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -476,18 +478,13 @@ describe("Supply and Redeem", () => {
     );
   });
   it("Supply and immediately redeem without returns", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
 
-    let callResponse = simnet.callPublicFn(
+    let callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -496,7 +493,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -505,7 +502,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -514,7 +511,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -523,7 +520,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -532,7 +529,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -541,7 +538,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -550,7 +547,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -559,7 +556,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -568,7 +565,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -577,7 +574,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [
@@ -586,7 +583,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       USDA,
       "mint",
       [
@@ -732,7 +729,6 @@ describe("Supply and Redeem", () => {
       USDA,
       deployerAddress
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
@@ -780,8 +776,8 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zusda),
@@ -794,8 +790,8 @@ describe("Supply and Redeem", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -808,8 +804,8 @@ describe("Supply and Redeem", () => {
       LP_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -822,8 +818,8 @@ describe("Supply and Redeem", () => {
       Borrower_2
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -904,7 +900,7 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -987,8 +983,8 @@ describe("Supply and Redeem", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1002,8 +998,8 @@ describe("Supply and Redeem", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
         // Cl.contractPrincipal(deployerAddress, debtToken0),
@@ -1049,8 +1045,8 @@ describe("Supply and Redeem", () => {
     // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, USDA, Borrower_1);
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1073,8 +1069,8 @@ describe("Supply and Redeem", () => {
 
     simnet.mineEmptyBlocks(10);
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -1086,8 +1082,8 @@ describe("Supply and Redeem", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -1099,8 +1095,8 @@ describe("Supply and Redeem", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -1112,8 +1108,8 @@ describe("Supply and Redeem", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1153,8 +1149,8 @@ describe("Supply and Redeem", () => {
       LP_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1195,8 +1191,8 @@ describe("Supply and Redeem", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1239,18 +1235,13 @@ describe("Supply and Redeem", () => {
   });
 
   it("Supply and borrow small amounts immediately redeem with returns", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
 
-    let callResponse = simnet.callPublicFn(
+    let callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -1259,7 +1250,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -1268,7 +1259,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -1277,13 +1268,13 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [Cl.uint(1000000000000000), Cl.standardPrincipal(deployerAddress)],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -1292,7 +1283,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -1301,7 +1292,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -1310,7 +1301,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -1319,7 +1310,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -1328,7 +1319,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -1337,7 +1328,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -1346,14 +1337,14 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [Cl.uint(BigInt("200000000000000000")), Cl.standardPrincipal(LP_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [
@@ -1362,7 +1353,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       USDA,
       "mint",
       [Cl.uint(BigInt("2000000000000000")), Cl.standardPrincipal(Borrower_1)],
@@ -1568,8 +1559,8 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zusda),
@@ -1584,8 +1575,8 @@ describe("Supply and Redeem", () => {
 
     // console.log("Supplying large amount");
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1598,8 +1589,8 @@ describe("Supply and Redeem", () => {
       LP_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1612,8 +1603,8 @@ describe("Supply and Redeem", () => {
       Borrower_2
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -1632,10 +1623,9 @@ describe("Supply and Redeem", () => {
       [Cl.contractPrincipal(deployerAddress, "ststx"), Cl.uint(1_000_000)],
       deployerAddress
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -1679,58 +1669,10 @@ describe("Supply and Redeem", () => {
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
-
-    // console.log("Deployer borrowed")
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log(3);
-    // callResponse = simnet.callPublicFn(
-    //   `pool-0-reserve`,
-    //   "calculate-interest-rates-wrap",
-    //   [
-    //     Cl.contractPrincipal(deployerAddress, "ststx"),
-    //     Cl.uint(0),
-    //     Cl.uint(0),
-    //     Cl.uint(100_000_000),
-    //   ],
-    //   deployerAddress
-    // );
-    // console.log("Calculate Interest Rates");
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[5].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[6].data.value!));
-
-    // callResponse = simnet.callPublicFn(
-    //   `pool-0-reserve`,
-    //   "calculate-interest-rates-test",
-    //   [
-    //     Cl.contractPrincipal(deployerAddress, "ststx"),
-    //     Cl.uint(0),
-    //     Cl.uint(100_000_000),
-    //   ],
-    //   deployerAddress
-    // );
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    // console.log("Reserve state after larger borrower");
-    // callResponse = poolBorrow.getReserveState(deployerAddress, xUSD, deployerAddress);
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -1809,8 +1751,8 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1824,8 +1766,8 @@ describe("Supply and Redeem", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -1884,8 +1826,8 @@ describe("Supply and Redeem", () => {
     );
     // console.log(Cl.prettyPrint(borrower_1_data.result));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -1959,8 +1901,8 @@ describe("Supply and Redeem", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -1975,10 +1917,9 @@ describe("Supply and Redeem", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -2022,8 +1963,8 @@ describe("Supply and Redeem", () => {
     // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, USDA, Borrower_1);
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2045,8 +1986,8 @@ describe("Supply and Redeem", () => {
 
     // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, stSTX, Borrower_1);
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -2058,8 +1999,8 @@ describe("Supply and Redeem", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2099,8 +2040,8 @@ describe("Supply and Redeem", () => {
       LP_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2141,8 +2082,8 @@ describe("Supply and Redeem", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "withdraw",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2217,15 +2158,10 @@ describe("Supply and Redeem", () => {
     expect(callResponse.result).toBeErr(Cl.uint(7005));
   });
   it("Supply an asset that can't be used as collateral. Is not added to collateral in user value. Cannot be enabled as collateral or is not enabled when supplying again.", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
 
     let callResponse = poolBorrow.init(
@@ -2279,27 +2215,27 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       USDA,
       "mint",
       [Cl.uint(1000000000000000), Cl.standardPrincipal(LP_2)],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [Cl.uint(1_000_000_000), Cl.standardPrincipal(Borrower_1)],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [Cl.uint(1_000_000_000), Cl.standardPrincipal(LP_2)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2322,8 +2258,8 @@ describe("Supply and Redeem", () => {
       true
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zusda),
@@ -2383,11 +2319,10 @@ describe("Supply and Redeem", () => {
       Number(cvToValue(callResponse.result).value["current-ltv"].value)
     ).toBe(0);
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
-        // Cl.contractPrincipal(deployerAddress, debtToken0),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -2424,7 +2359,7 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -2479,7 +2414,7 @@ describe("Supply and Redeem", () => {
 
     // cannot borrow if stSTX has not be enabled to be borrowed
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -2509,7 +2444,7 @@ describe("Supply and Redeem", () => {
 
     // can't set asset disabled as collateral to be enabled as collateral by the user
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(LP_2),
@@ -2535,7 +2470,7 @@ describe("Supply and Redeem", () => {
     expect(callResponse.result).toBeErr(Cl.uint(30021));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(LP_2),
@@ -2560,8 +2495,8 @@ describe("Supply and Redeem", () => {
     );
     expect(callResponse.result).toBeErr(Cl.uint(30002));
     // supply again and check collateral is not enabled either
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zusda),
@@ -2573,8 +2508,8 @@ describe("Supply and Redeem", () => {
       ],
       LP_2
     );
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2634,8 +2569,8 @@ describe("Supply and Redeem", () => {
       )
     ).toBe(160000000000);
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -2701,8 +2636,8 @@ describe("Supply and Redeem", () => {
       )
     ).toBe(9900001386);
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
@@ -2749,30 +2684,25 @@ describe("Supply and Redeem", () => {
     ).toBe(0);
   });
   it("Supply multiple assets and check TVL and threshold values are average weighted sum", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
 
-    let callResponse = simnet.callPublicFn(
+    let callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [Cl.uint(1000000000000000), Cl.standardPrincipal(Borrower_1)],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [Cl.uint(1000000000000000), Cl.standardPrincipal(Borrower_1)],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [Cl.uint(1000000000000000), Cl.standardPrincipal(Borrower_1)],
@@ -2932,8 +2862,8 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -2945,10 +2875,9 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -2960,7 +2889,6 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -3013,7 +2941,7 @@ describe("Supply and Redeem", () => {
     ).toBe(80000000);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -3060,8 +2988,8 @@ describe("Supply and Redeem", () => {
     // fail
 
     // supply new asset with different TVL and threshold
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zwstx),
@@ -3143,8 +3071,8 @@ describe("Supply and Redeem", () => {
     );
 
     // enable user collateral after it's enabled by protocol
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -3249,7 +3177,7 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -3349,7 +3277,7 @@ describe("Supply and Redeem", () => {
     ).toBe(avgSumTvl);
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "set-user-use-reserve-as-collateral",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -3447,18 +3375,13 @@ describe("Supply and Redeem", () => {
   });
 
   it("Can use different oracles", () => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
       "pool-borrow-v1-2"
     );
 
-    let callResponse = simnet.callPublicFn(
+    let callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -3467,7 +3390,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -3476,7 +3399,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -3485,7 +3408,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [
@@ -3494,7 +3417,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -3503,7 +3426,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -3512,7 +3435,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -3521,7 +3444,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -3530,7 +3453,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -3539,7 +3462,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       stSTX,
       "mint",
       [
@@ -3548,7 +3471,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [
@@ -3557,7 +3480,7 @@ describe("Supply and Redeem", () => {
       ],
       deployerAddress
     );
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       USDA,
       "mint",
       [
@@ -3751,8 +3674,8 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -3765,8 +3688,8 @@ describe("Supply and Redeem", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),
@@ -3779,8 +3702,8 @@ describe("Supply and Redeem", () => {
       LP_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zststx),

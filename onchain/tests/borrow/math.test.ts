@@ -7,6 +7,8 @@ import { PoolBorrow } from "./models/poolBorrow";
 import { MintableToken } from "./models/token";
 import { Oracle } from "./models/oracle";
 
+import * as config from "./config";
+
 const simnet = await initSimnet();
 
 const accounts = simnet.getAccounts();
@@ -45,7 +47,7 @@ const ONE = 100_000_000;
 describe("Math", () => {
   it("Get correct price from assets with different decimals", () => {
     let callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "mul-to-fixed-precision",
       [Cl.uint(100_000_000), Cl.uint(8), Cl.uint(40_000 * ONE)],
       deployerAddress
@@ -53,7 +55,7 @@ describe("Math", () => {
     expect(callResponse.result).toBeUint(40_000 * ONE);
 
     callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "mul-to-fixed-precision",
       [Cl.uint(50_000_000), Cl.uint(8), Cl.uint(40_000 * ONE)],
       deployerAddress
@@ -61,7 +63,7 @@ describe("Math", () => {
     expect(callResponse.result).toBeUint(20_000 * ONE);
 
     callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "mul-to-fixed-precision",
       [Cl.uint(123), Cl.uint(8), Cl.uint(40_000 * ONE)],
       deployerAddress
@@ -69,7 +71,7 @@ describe("Math", () => {
     expect(callResponse.result).toBeUint(4920000);
 
     callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "mul-to-fixed-precision",
       [Cl.uint(1_234_567), Cl.uint(6), Cl.uint(1 * ONE)],
       deployerAddress
@@ -77,7 +79,7 @@ describe("Math", () => {
     expect(callResponse.result).toBeUint(123456700);
 
     callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "mul-to-fixed-precision",
       [Cl.uint(2_222_333), Cl.uint(6), Cl.uint(ONE / 2)],
       deployerAddress
@@ -86,7 +88,7 @@ describe("Math", () => {
   });
   it("Get Y from X", () => {
     let callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "get-y-from-x",
       [
         Cl.uint(100_000_000),
@@ -100,7 +102,7 @@ describe("Math", () => {
     // should get 20000 of x units in y units
     expect(callResponse.result).toBeUint(20_000_000_000);
     callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "get-y-from-x",
       [
         Cl.uint(123_456_789),
@@ -117,7 +119,7 @@ describe("Math", () => {
   it("mul-perc", () => {
     let ZERO_ZERO_5 = ONE / 20;
     let callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "mul-perc",
       [Cl.uint(20_000_000_000), Cl.uint(6), Cl.uint(ONE + ZERO_ZERO_5)],
       deployerAddress
@@ -125,7 +127,7 @@ describe("Math", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeUint(21_000_000_000);
     callResponse = simnet.callReadOnlyFn(
-      `math`,
+      config.math,
       "mul-perc",
       [Cl.uint(24_691_357_800), Cl.uint(6), Cl.uint(ONE + ZERO_ZERO_5)],
       deployerAddress
