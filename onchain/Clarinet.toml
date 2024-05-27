@@ -13,6 +13,21 @@ path = "contracts/borrow/traits/a-token-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.arkadiko-oracle]
+path = "contracts/borrow/mocks/oracle/arkadiko-oracle.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.diko-oracle]
+path = "contracts/borrow/mocks/oracle/diko-oracle.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.dex]
+path = "contracts/borrow/mocks/oracle/dex.clar"
+clarity_version = 2
+epoch = 2.4
+
 # [contracts.migrate-v1-2]
 # path = "contracts/borrow/mocks/migrate-v1-v2.clar"
 # clarity_version = 2
