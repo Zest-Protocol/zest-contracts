@@ -94,7 +94,7 @@
 
 ;; get exchange rate between stx/diko, convert stx amount to it's currency value
 (define-read-only (get-diko-dex-price)
-  (ok (mul-to-fixed-precision (get-y-for-x .wstx .diko u1000000) u6 (try! (get-stx-price))))
+  (ok (mul-to-fixed-precision (get-y-for-x .wstx .diko one-diko) u6 (try! (get-stx-price))))
 )
 
 (define-read-only (get-stx-price)
@@ -109,6 +109,7 @@
 ;; get the value of 1 DIKO in STX using x*y=k curve
 (define-read-only (get-y-for-x (contract-x principal) (contract-y principal) (dx uint))
   (let (
+    ;; ref: https://github.com/arkadiko-dao/arkadiko/blob/master/clarity/contracts/swap/arkadiko-swap-v2-1.clar#L473
     (pair (unwrap-panic (contract-call? .dex get-pair-details contract-x contract-y)))
     (balance-x (get balance-x pair))
     (balance-y (get balance-y pair))
