@@ -6,10 +6,16 @@
 )
 
 (define-constant one-diko u1000000)
+(define-constant one-stx u1000000)
 (define-constant one-usda u1000000)
 
-;; maximum difference of 10% from average dex diko price
-(define-constant max-delta u10000000)
+(define-constant dex-stx .wstx)
+;; (define-constant dex-stx .wstx)
+(define-constant dex-diko .diko)
+;; (define-constant dex-diko .diko)
+
+;; maximum difference of 1% from average dex diko price
+(define-constant max-delta u1000000)
 ;; 2USD
 (define-constant max-possible-price u200000000)
 ;; 0.01USD
@@ -26,7 +32,7 @@
 (define-public (get-asset-price (token <ft>))
   (let (
     (last-price (to-fixed (get last-price (contract-call? .arkadiko-oracle get-price "DIKO")) u6))
-    (average-dex-diko-price (get-average-dex-diko-price))
+    (average-dex-diko-price (unwrap-panic (get-average-dex-diko-price)))
     (diff (mul average-dex-diko-price max-delta))
   )
     ;; ensure that price from oracle is between a range of the average dex price
@@ -42,16 +48,35 @@
 
 (define-read-only (get-average-dex-diko-price)
   (let (
+    (random-bytes (unwrap! (get-random-bytes block-height u2) (err u88)))
+    (rand-1 (mod (buff-to-uint-le (unwrap! (slice? random-bytes u0 u1) (err u234))) u10) )
+    (rand-2 (mod (buff-to-uint-le (unwrap! (slice? random-bytes u1 u2) (err u235))) u10) )
     (last-height (- block-height u1))
-    (heights (list last-height (- last-height u1) (- last-height u1)))
+    (heights (list last-height (- last-height rand-1) (- last-height rand-2)))
     (prices (get-diko-prices heights))
   )
-    (to-fixed
-      ;; average price from the last 3 blocks
-      (/ (fold + prices u0) (len heights))
-      u6
-    )
+    ;; average price from the last 3 blocks
+    (ok (/ (try! (fold add-resp prices (ok u0))) (len heights)))
   )
+)
+
+(define-read-only (add-resp (amount-to-add (response uint uint)) (total (response uint uint)))
+  (match amount-to-add
+    amount (ok (+ (unwrap-panic total) amount))
+    bad-resp (err bad-resp)
+  )
+)
+
+(define-read-only (get-pseudo-random-uint (height uint))
+  (match (get-block-info? vrf-seed height)
+    vrf-seed (some (buff-to-uint-le (unwrap-panic (as-max-len? (unwrap-panic (slice? vrf-seed u0 u16)) u16))))
+    none)
+)
+
+(define-read-only (get-random-bytes (height uint) (size uint))
+  (match (get-block-info? vrf-seed height)
+    vrf-seed (some (unwrap! (as-max-len? (unwrap! (slice? vrf-seed u0 size) none) u16) none))
+    none)
 )
 
 (define-read-only (get-diko-prices (heights (list 10 uint)))
@@ -59,39 +84,36 @@
 )
 
 (define-read-only (get-diko-price-at (height uint))
-  (at-block
-    (unwrap-panic (get-block-info? id-header-hash height))
-    (get-diko-price)
+  (ok
+    (at-block
+      (unwrap-panic (get-block-info? id-header-hash height))
+      (try! (get-diko-dex-price))
+    )
   )
 )
 
-(define-read-only (get-diko-price)
-  (mul-to-fixed-precision (get-dy .diko .usda) u6 (get-usda-price))
+;; get exchange rate between stx/diko, convert stx amount to it's currency value
+(define-read-only (get-diko-dex-price)
+  (ok (mul-to-fixed-precision (get-y-for-x .wstx .diko u1000000) u6 (try! (get-stx-price))))
 )
 
-;; get the price of 1 USDA in fixed precision using x*y=k curve
-;; We are using the price of STX to determine the price of 1 USDA stablecoin
-(define-read-only (get-usda-price)
+(define-read-only (get-stx-price)
   (let (
     (oracle-data (contract-call? .arkadiko-oracle get-price "STX"))
-    (pair (unwrap-panic (contract-call? .dex-data get-pair-details .wstx .usda)))
-    (balance-x (get balance-x pair))
-    (balance-y (get balance-y pair))
-    (dx-with-fees (/ (* u997 one-usda) u1000))
-    (dx (/ (* balance-x dx-with-fees) (+ balance-y dx-with-fees)))
     )
-    (mul-to-fixed-precision dx u6 (to-fixed (get last-price oracle-data) u6))
+    (asserts! (< (- block-height (get last-block oracle-data)) u10) (err u8))
+    (ok (to-fixed (get last-price oracle-data) u6))
   )
 )
 
-;; get the value of 1 DIKO in USDA using x*y=k curve
-(define-read-only (get-dy (contract-x principal) (contract-y principal))
+;; get the value of 1 DIKO in STX using x*y=k curve
+(define-read-only (get-y-for-x (contract-x principal) (contract-y principal) (dx uint))
   (let (
-    (pair (unwrap-panic (contract-call? .dex-data get-pair-details contract-x contract-y)))
+    (pair (unwrap-panic (contract-call? .dex get-pair-details contract-x contract-y)))
     (balance-x (get balance-x pair))
     (balance-y (get balance-y pair))
-    (dx-with-fees (/ (* u997 one-diko) u1000))
-    (dy (/ (* balance-y dx-with-fees) (+ balance-x dx-with-fees)))
+    (dx-with-fees (/ (* u997 dx) u1000))
+    (dy (/ (* balance-x dx-with-fees) (+ balance-y dx-with-fees)))
     )
     dy
   )
@@ -101,10 +123,13 @@
 ;; prices are fixed to 8 decimals
 (define-read-only (get-price)
   (let (
-    (last-price (to-fixed (get last-price (contract-call? .arkadiko-oracle get-price "DIKO")) u6))
-    (average-dex-diko-price (get-average-dex-diko-price))
+    (oracle-data (contract-call? .arkadiko-oracle get-price "DIKO"))
+    (last-price (to-fixed (get last-price oracle-data) u6))
+    (average-dex-diko-price (unwrap! (get-average-dex-diko-price) (err u84213)))
     (diff (mul average-dex-diko-price max-delta))
   )
+    ;; check for stale oracle
+    (asserts! (< (- block-height (get last-block oracle-data)) u10) (err u8))
     ;; ensure that price from oracle is between a range of the average dex price
     (asserts! (< last-price (+ average-dex-diko-price diff)) (err u9))
     (asserts! (> last-price (- average-dex-diko-price diff)) (err u10))
