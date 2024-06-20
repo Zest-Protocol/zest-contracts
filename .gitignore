@@ -8,3 +8,4 @@ onchain/scripts
 src/clarigen
 .DS_Store
 onchain/.requirements/
+onchain/contracts/borrow/deployment_mainnet

@@ -21,6 +21,7 @@
       user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets owner),
       asset: asset,
       amount: amount,
+      new-balance: (try! (contract-call? lp get-balance owner)),
       referral: referral,
     }}})
     (ok true)
@@ -48,6 +49,7 @@
         user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets owner),
         asset: asset-to-borrow,
         amount: amount-to-be-borrowed,
+        new-borrow-balance: (get compounded-balance (try! (contract-call? .pool-0-reserve-v1-2 get-user-borrow-balance owner asset-to-borrow))),
       }}})
     (ok true)
   )
@@ -70,7 +72,8 @@
         asset: asset,
         amount: payback-amount,
         on-behalf-of: on-behalf-of,
-        payer: payer
+        payer: payer,
+        new-borrow-balance: (get compounded-balance (try! (contract-call? .pool-0-reserve-v1-2 get-user-borrow-balance on-behalf-of asset))),
       }}})
     (ok true)
   )
@@ -118,6 +121,8 @@
         user-index: (contract-call? .pool-0-reserve-v1-2 get-user-index owner asset-principal),
         user-assets: (contract-call? .pool-0-reserve-v1-2 get-user-assets owner),
         asset: asset,
+        withdrawn-amount: withdraw-res,
+        balance: (try! (contract-call? lp get-balance owner)),
       }}})
     (ok true)
   )
@@ -178,15 +183,13 @@
   (lp <ft>)
   (asset <ft>)
   (amount uint)
-  (flashloan-exe <flash-loan>))
+  (flashloan-script <flash-loan>))
   (begin
-    (try! (contract-call? .pool-borrow-v1-2 flashloan
+    (contract-call? .pool-borrow-v1-2 flashloan
       receiver
       lp
       asset
       amount
-      flashloan-exe
-    ))
-    (ok u0)
+      flashloan-script)
   )
 )
