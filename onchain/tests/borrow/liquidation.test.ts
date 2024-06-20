@@ -1,4 +1,3 @@
-import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { describe, expect, it, beforeEach } from "vitest";
 import { Cl } from "@stacks/transactions";
 import { readFileSync } from "fs";
@@ -6,7 +5,10 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
-const simnet = await initSimnet();
+import * as config from "./config";
+import { initSimnetChecker } from "./SimnetChecker";
+
+const simnet = await initSimnetChecker();
 
 const accounts = simnet.getAccounts();
 const deployerAddress = accounts.get("deployer")!;
@@ -54,71 +56,312 @@ const zststx = lpstSTXv2;
 const zxusd = lpxUSDv2;
 
 describe("Liquidation tests", () => {
-  beforeEach(() => {    
-    let callResponse = simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(0) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(0) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(0) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(0) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(0) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-base-variable-borrow-rate", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(0) ], deployerAddress);
+  beforeEach(() => {
+    let callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(0)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(0)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(0)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(0)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(0)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-base-variable-borrow-rate",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(0)],
+      deployerAddress
+    );
 
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(4000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(4000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(4000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(4000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(4000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-1", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(4000000) ], deployerAddress);
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(4000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(4000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(4000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(4000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(4000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-1",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(4000000)],
+      deployerAddress
+    );
 
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(300000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(300000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(300000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(300000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(300000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-variable-rate-slope-2", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(300000000) ], deployerAddress);
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(300000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(300000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(300000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(300000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(300000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-variable-rate-slope-2",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(300000000)],
+      deployerAddress
+    );
 
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(80000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(80000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(80000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(80000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(80000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-optimal-utilization-rate", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(80000000) ], deployerAddress);
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(80000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(80000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(80000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(80000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(80000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-optimal-utilization-rate",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(80000000)],
+      deployerAddress
+    );
 
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(50000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(50000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(50000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(50000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(50000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-liquidation-close-factor-percent", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(50000000) ], deployerAddress);
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(50000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(50000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(50000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(50000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(50000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-liquidation-close-factor-percent",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(50000000)],
+      deployerAddress
+    );
 
-    callResponse = simnet.callPublicFn("pool-0-reserve", "set-flashloan-fee-total", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(35) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-0-reserve", "set-flashloan-fee-total", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(35) ], deployerAddress);
-    
-    callResponse = simnet.callPublicFn("pool-0-reserve", "set-flashloan-fee-protocol", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(3000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-0-reserve", "set-flashloan-fee-protocol", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(3000) ], deployerAddress);
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-flashloan-fee-total",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(35)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-flashloan-fee-total",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(35)],
+      deployerAddress
+    );
 
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(25) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(25) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(25) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(25) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(25) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-origination-fee-prc", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(25) ], deployerAddress);
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-flashloan-fee-protocol",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(3000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-0-reserve",
+      "set-flashloan-fee-protocol",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(3000)],
+      deployerAddress
+    );
 
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(15000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(10000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, diko), Cl.uint(10000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(10000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000) ], deployerAddress);
-    callResponse = simnet.callPublicFn("pool-reserve-data", "set-reserve-factor", [ Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000) ], deployerAddress);
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(25)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(25)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(25)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(25)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(25)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-origination-fee-prc",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(25)],
+      deployerAddress
+    );
 
-    simnet.deployContract("run-1", readFileSync(`contracts/borrow/mocks/upgrade-contract-v1-v2.clar`).toString(), null, deployerAddress);
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(15000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(10000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, diko), Cl.uint(10000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(10000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, USDA), Cl.uint(10000000)],
+      deployerAddress
+    );
+    callResponse = simnet.callPublicFn(
+      "pool-reserve-data",
+      "set-reserve-factor",
+      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(10000000)],
+      deployerAddress
+    );
+
+    simnet.deployContract(
+      "run-reserve-extra-variables",
+      readFileSync(config.reserveExtraVariables).toString(),
+      null,
+      deployerAddress
+    );
+
+    simnet.deployContract(
+      "run-1",
+      readFileSync(config.initContractsToV2).toString(),
+      null,
+      deployerAddress
+    );
   });
   it("Supply sBTC, borrow xUSD, price goes below health factor", () => {
-    const poolReserve0 = new PoolReserve(
+    const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-0-reserve"
+      config.poolBorrow
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -143,14 +386,14 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
-    let callResponse = simnet.callPublicFn(
+    let callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [Cl.uint(100_000_000_000), Cl.standardPrincipal(Borrower_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [Cl.uint(1_000_000_000_000), Cl.standardPrincipal(LP_1)],
@@ -159,21 +402,21 @@ describe("Liquidation tests", () => {
 
     // 3 992 301 124 525
     //    50 000 000 000
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(Liquidator_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(LP_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       "oracle",
       "set-price",
       [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(100_000_000)],
@@ -195,11 +438,7 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
-    poolBorrow.addAsset(
-      deployerAddress,
-      sBTC,
-      deployerAddress
-    );
+    poolBorrow.addAsset(deployerAddress, sBTC, deployerAddress);
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -216,11 +455,7 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
-    poolBorrow.addAsset(
-      deployerAddress,
-      xUSD,
-      deployerAddress
-    );
+    poolBorrow.addAsset(deployerAddress, xUSD, deployerAddress);
 
     callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
@@ -246,8 +481,8 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -260,8 +495,8 @@ describe("Liquidation tests", () => {
       Borrower_1
     );
     // console.log(Cl.prettyPrint(callResponse.result));
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -274,8 +509,8 @@ describe("Liquidation tests", () => {
       LP_1
     );
     // console.log(Cl.prettyPrint(callResponse.result));
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -287,18 +522,9 @@ describe("Liquidation tests", () => {
       ],
       LP_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    let borrower_data = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "get-assets-used-by",
-      [Cl.standardPrincipal(Borrower_1)],
-      Borrower_1
-    );
-    // console.log(Cl.prettyPrint(borrower_data.result));
 
     callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -356,7 +582,7 @@ describe("Liquidation tests", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       "oracle",
       "set-price",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(100_000_000)],
@@ -381,8 +607,8 @@ describe("Liquidation tests", () => {
     // );
     // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -403,7 +629,6 @@ describe("Liquidation tests", () => {
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.standardPrincipal(Borrower_1),
-        // Cl.uint(3_992_301_124_525),
         Cl.uint(1_000_000_000_000),
         Cl.bool(false),
       ],
@@ -411,21 +636,20 @@ describe("Liquidation tests", () => {
     );
   });
   it("Supply sBTC, borrow xUSD, liquidator buys part of the collateral", () => {
-    const poolReserve0 = new PoolReserve(
+    const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-0-reserve"
+      config.poolBorrow
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
-    let callResponse = simnet.callPublicFn(
+    let callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [Cl.uint(100_000_000_000), Cl.standardPrincipal(Borrower_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [Cl.uint(1_000_000_000_000), Cl.standardPrincipal(LP_1)],
@@ -434,28 +658,28 @@ describe("Liquidation tests", () => {
 
     // 3 992 301 124 525
     //    50 000 000 000
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(Liquidator_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(LP_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       "oracle",
       "set-price",
       [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(100_000_000)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       "oracle",
       "set-price",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(1_000_000_000_000)],
@@ -476,11 +700,7 @@ describe("Liquidation tests", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
-    poolBorrow.addAsset(
-      deployerAddress,
-      sBTC,
-      deployerAddress
-    );
+    poolBorrow.addAsset(deployerAddress, sBTC, deployerAddress);
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -496,11 +716,7 @@ describe("Liquidation tests", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
-    poolBorrow.addAsset(
-      deployerAddress,
-      xUSD,
-      deployerAddress
-    );
+    poolBorrow.addAsset(deployerAddress, xUSD, deployerAddress);
 
     callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
@@ -526,8 +742,8 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -539,9 +755,8 @@ describe("Liquidation tests", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -553,10 +768,8 @@ describe("Liquidation tests", () => {
       ],
       LP_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -568,17 +781,9 @@ describe("Liquidation tests", () => {
       ],
       LP_1
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
 
-    let borrower_data = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "get-assets-used-by",
-      [Cl.standardPrincipal(Borrower_1)],
-      Borrower_1
-    );
-
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -606,35 +811,14 @@ describe("Liquidation tests", () => {
     );
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
-    let borrower_1_data = simnet.callPublicFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "calculate-user-global-data",
-      [
-        Cl.standardPrincipal(Borrower_1),
-        Cl.list([
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-        ]),
-      ],
-      Borrower_1
-    );
-
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       "oracle",
       "set-price",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(500_000_000_000)],
       deployerAddress
     );
 
-    borrower_data = simnet.callReadOnlyFn(
+    simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
       "get-assets-used-by",
       [Cl.standardPrincipal(Borrower_1)],
@@ -647,8 +831,8 @@ describe("Liquidation tests", () => {
     // console.log(simnet.getAssetsMap().get(".xUSD.xUSD"));
     // console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -683,21 +867,20 @@ describe("Liquidation tests", () => {
     // console.log(callResponse.events);
   });
   it("Supply sBTC, borrow xUSD, liquidator buys maximum possible amount of debt (>50%). There are remaining assets in the reserve", () => {
-    const poolReserve0 = new PoolReserve(
+    const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-0-reserve"
+      config.poolBorrow
     );
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow-v1-2");
 
-    let callResponse = simnet.callPublicFn(
+    let callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [Cl.uint(100_000_000_000), Cl.standardPrincipal(Borrower_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       sBTC,
       "mint",
       [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(LP_1)],
@@ -706,28 +889,28 @@ describe("Liquidation tests", () => {
 
     // 3 992 301 124 525
     //    50 000 000 000
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(Liquidator_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       xUSD,
       "mint",
       [Cl.uint(100_000_000_000_000), Cl.standardPrincipal(LP_1)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       "oracle",
       "set-price",
       [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(100_000_000)],
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       "oracle",
       "set-price",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(1_000_000_000_000)],
@@ -748,11 +931,7 @@ describe("Liquidation tests", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
-    poolBorrow.addAsset(
-      deployerAddress,
-      sBTC,
-      deployerAddress
-    );
+    poolBorrow.addAsset(deployerAddress, sBTC, deployerAddress);
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -768,11 +947,7 @@ describe("Liquidation tests", () => {
       interestRateStrategyDefault,
       deployerAddress
     );
-    poolBorrow.addAsset(
-      deployerAddress,
-      xUSD,
-      deployerAddress
-    );
+    poolBorrow.addAsset(deployerAddress, xUSD, deployerAddress);
 
     callResponse = poolBorrow.setBorrowingEnabled(
       deployerAddress,
@@ -787,8 +962,6 @@ describe("Liquidation tests", () => {
       true,
       deployerAddress
     );
-    // console.log("mint");
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = poolBorrow.setUsageAsCollateralEnabled(
       deployerAddress,
@@ -800,8 +973,8 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -814,8 +987,8 @@ describe("Liquidation tests", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -828,8 +1001,8 @@ describe("Liquidation tests", () => {
       LP_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -842,15 +1015,8 @@ describe("Liquidation tests", () => {
       LP_1
     );
 
-    let borrower_data = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "get-assets-used-by",
-      [Cl.standardPrincipal(Borrower_1)],
-      Borrower_1
-    );
-
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -888,44 +1054,15 @@ describe("Liquidation tests", () => {
 
     // simnet.mineEmptyBlocks(10);
 
-    let borrower_1_data = simnet.callPublicFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "calculate-user-global-data",
-      [
-        Cl.standardPrincipal(Borrower_1),
-        Cl.list([
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-        ]),
-      ],
-      Borrower_1
-    );
-
-    callResponse = simnet.callPublicFn(
+    callResponse = simnet.callPublicFnCheckOk(
       "oracle",
       "set-price",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(10_000_000_000)],
       deployerAddress
     );
 
-    borrower_data = simnet.callReadOnlyFn(
-      `${deployerAddress}.pool-0-reserve`,
-      "get-assets-used-by",
-      [Cl.standardPrincipal(Borrower_1)],
-      Borrower_1
-    );
-    // console.log(Cl.prettyPrint(borrower_data.result));
-
-    callResponse = simnet.callPublicFn(
-      "borrow-helper-v1-2",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
       "liquidation-call",
       [
         Cl.list([

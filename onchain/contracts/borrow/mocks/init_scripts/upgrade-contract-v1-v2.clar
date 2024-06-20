@@ -82,7 +82,7 @@
     (try! (contract-call? .pool-0-reserve-v1-2 set-approved-contract .pool-borrow-v1-2 true))
 
     ;; update for helper caller
-    (try! (contract-call? .pool-borrow-v1-2 set-approved-contract .borrow-helper-v1-2 true))
+    (try! (contract-call? .pool-borrow-v1-2 set-approved-contract .borrow-helper-v1-3 true))
 
     ;; disable previous permission
     (try! (contract-call? .pool-borrow-v1-1 set-approved-contract .borrow-helper false))
@@ -90,6 +90,7 @@
     ;; update pool-reserve-data controller
     (try! (contract-call? .pool-reserve-data delete-approved-contract .pool-0-reserve))
     (try! (contract-call? .pool-reserve-data set-approved-contract .pool-0-reserve-v1-2 true))
+    (try! (contract-call? .pool-reserve-data set-approved-contract .pool-borrow-v1-2 true))
 
     ;; give permission for burn/mint of previos version to new version
     ;; (try! (contract-call? .lp-ststx set-approved-contract new-version-1 true))

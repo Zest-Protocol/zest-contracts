@@ -12,6 +12,7 @@
   'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token
   'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
   .wstx
+  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token
 ))
 
 (define-read-only (get-supplieable-assets)
@@ -23,6 +24,7 @@
     'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token
     'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
     .wstx
+    'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token
   )
 )
 
@@ -146,6 +148,34 @@
   )
 )
 
+(define-read-only (get-useable-collateral-usd-diko (who principal))
+  (let (
+    (asset-balance (unwrap-panic (contract-call? .zdiko-v1-2 get-principal-balance who)))
+    (reserve-data (get-reserve-data 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token))
+    (user-index (unwrap-panic (contract-call? .pool-reserve-data get-user-index-read who 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token)))
+    (asset-decimals (get decimals reserve-data))
+    (base-ltv-as-collateral (get base-ltv-as-collateral reserve-data))
+    (reserve-normalized-income
+      (get-normalized-income
+        (get current-liquidity-rate reserve-data)
+        (get last-updated-block reserve-data)
+        (get last-liquidity-cumulative-index reserve-data)
+      )
+    )
+  )
+    (mul
+      base-ltv-as-collateral
+      (mul
+        (mul-to-fixed-precision
+          asset-balance
+          asset-decimals
+          (div reserve-normalized-income user-index))
+        (get-diko-price)
+      )
+    )
+  )
+)
+
 (define-read-only (get-supplied-balance-user-usd-ststx (who principal) (oracle principal))
   (token-to-usd
     (get-supplied-balance-user-ststx who)
@@ -170,6 +200,14 @@
   )
 )
 
+(define-read-only (get-supplied-balance-user-usd-diko (who principal) (oracle principal))
+  (token-to-usd
+    (get-supplied-balance-user-stx who)
+    u6
+    (get-diko-price)
+  )
+)
+
 (define-read-only (get-supplied-balance-user-ststx (who principal))
   (let ((principal (unwrap-panic (contract-call? .zststx-v1-2 get-principal-balance who))))
     (calculate-cumulated-balance who u6 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token principal u6)
@@ -185,6 +223,12 @@
 (define-read-only (get-supplied-balance-user-stx (who principal))
   (let ((principal (unwrap-panic (contract-call? .zwstx-v1-2-1 get-principal-balance who))))
     (calculate-cumulated-balance who u6 .wstx principal u6)
+  )
+)
+
+(define-read-only (get-supplied-balance-user-diko (who principal))
+  (let ((principal (unwrap-panic (contract-call? .zdiko-v1-2 get-principal-balance who))))
+    (calculate-cumulated-balance who u6 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token principal u6)
   )
 )
 
@@ -212,6 +256,14 @@
   )
 )
 
+(define-read-only (get-supplied-balance-usd-diko)
+  (token-to-usd
+    (unwrap-panic (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token get-balance .pool-vault))
+    u6
+    (get-diko-price)
+  )
+)
+
 (define-read-only (get-supplied-balance-ststx)
   (unwrap-panic (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token get-balance .pool-vault))
 )
@@ -222,6 +274,10 @@
 
 (define-read-only (get-supplied-balance-stx)
   (unwrap-panic (contract-call? .wstx get-balance .pool-vault))
+)
+
+(define-read-only (get-supplied-balance-diko)
+  (unwrap-panic (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token get-balance .pool-vault))
 )
 
 ;; utils functions
@@ -239,6 +295,14 @@
     (stx-price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "STX")))
   )
     (* stx-price u100)
+  )
+)
+
+(define-read-only (get-diko-price)
+  (let (
+    (price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "DIKO")))
+  )
+    (* price u100)
   )
 )
 

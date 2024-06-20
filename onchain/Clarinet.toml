@@ -3,18 +3,38 @@ name = "stacks-lending"
 authors = []
 description = ""
 telemetry = false
-requirements = []
 cache_dir = ".requirements"
 cache_location = ".requirements"
 boot_contracts = ["pox", "costs-v1", "bns"]
+
+[[project.requirements]]
+contract_id = 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-swap-v2-1'
+
+[[project.requirements]]
+contract_id = 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3'
 
 [contracts.a-token-trait]
 path = "contracts/borrow/traits/a-token-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
-# [contracts.migrate-v1-2]
-# path = "contracts/borrow/mocks/migrate-v1-v2.clar"
+[contracts.arkadiko-oracle]
+path = "contracts/borrow/mocks/oracle/arkadiko-oracle.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.diko-oracle]
+path = "contracts/borrow/mocks/oracle/diko-oracle.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.dex]
+path = "contracts/borrow/mocks/oracle/dex.clar"
+clarity_version = 2
+epoch = 2.4
+
+# [contracts.update-debt-ceiling-1]
+# path = "contracts/borrow/deployment_mainnet/upgrades/zststx/update-debt-ceiling-1.clar"
 # clarity_version = 2
 # epoch = 2.4
 
@@ -220,6 +240,11 @@ epoch = 2.4
 
 [contracts.borrow-helper-v1-2]
 path = "contracts/borrow/wrappers/borrow-helper-v1-2.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.borrow-helper-v1-3]
+path = "contracts/borrow/wrappers/borrow-helper-v1-3.clar"
 clarity_version = 2
 epoch = 2.4
 

@@ -30,6 +30,7 @@
   'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token
   'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
   .wstx
+  'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token
 ))
 
 (define-read-only (get-supplieable-assets)
@@ -41,6 +42,7 @@
     'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token
     'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
     .wstx
+    'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token
   )
 )
 
@@ -139,6 +141,15 @@
   )
 )
 
+(define-read-only (get-borrowed-balance-user-usd-diko (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-diko who))
+    (unit-price (unwrap-panic (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.diko-oracle-v1-0 get-price)))
+  )
+    (token-to-usd (get compounded-balance balance) u6 unit-price)
+  )
+)
+
 (define-read-only (get-borrowed-balance-user-ststx (who principal))
   (get-user-borrow-balance who 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token)
 )
@@ -149,6 +160,10 @@
 
 (define-read-only (get-borrowed-balance-user-stx (who principal))
   (get-user-borrow-balance who .wstx)
+)
+
+(define-read-only (get-borrowed-balance-user-diko (who principal))
+  (get-user-borrow-balance who 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token)
 )
 
 (define-read-only (get-borrowed-balance (asset principal))
@@ -219,11 +234,9 @@
 
 (define-read-only (get-ststx-price)
   (let (
-    (stx-price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "STX")))
-    (stx-amount-in-reserve (unwrap-panic (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.reserve-v1 get-total-stx)))
-    (stx-ststx (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-v1 get-stx-per-ststx-helper stx-amount-in-reserve))
+    (ststx-price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "stSTX")))
   )
-    (/ (* stx-ststx stx-price) u10000)
+    (* ststx-price u100)
   )
 )
 
