@@ -161,3 +161,85 @@ describe("Math", () => {
     expect(callResponse.result).toBeUint(271_864_460);
   });
 });
+
+describe("Math with timestamps", () => {
+  it("calculate-linear-interest", () => {
+    simnet.setEpoch("3.0");
+    console.log(simnet.currentEpoch);
+    let callResponse = simnet.deployContract(
+      "math-v2-0",
+      readFileSync(config.mathV2_0).toString(),
+      {
+        clarityVersion: 3,
+      },
+      deployerAddress
+    );
+    callResponse = simnet.deployContract(
+      "pool-0-reserve-v2-0",
+      readFileSync(config.mathV2_0).toString(),
+      {
+        clarityVersion: 3,
+      },
+      deployerAddress
+    );
+    console.log(cvToString(callResponse.result));
+    simnet.mineEmptyBlocks(10);
+    console.log(simnet.stacksBlockHeight);
+    callResponse = simnet.callReadOnlyFn(
+      `math-v2-0`,
+      "get-rt-by-block",
+      [Cl.uint(6307200), Cl.uint(16)],
+      deployerAddress
+    );
+    console.log(cvToValue(callResponse.result));
+    console.log(calculateLinearInterestEarned(0.063072, 5));
+    // callResponse = simnet.callReadOnlyFn(
+    //   `math-v2-0`,
+    //   "get-block-info-0",
+    //   [Cl.uint(6307200), Cl.uint(16)],
+    //   deployerAddress
+    // );
+    // console.log(cvToValue(callResponse.result));
+    // callResponse = simnet.callReadOnlyFn(
+    //   `math-v2-0`,
+    //   "get-block-info-1",
+    //   [Cl.uint(6307200), Cl.uint(16)],
+    //   deployerAddress
+    // );
+    // console.log(cvToValue(callResponse.result));
+    callResponse = simnet.callReadOnlyFn(
+      `math-v2-0`,
+      "get-block-info-2",
+      [Cl.uint(6307200), Cl.uint(16)],
+      deployerAddress
+    );
+    console.log(cvToValue(callResponse.result));
+    // callResponse = simnet.callReadOnlyFn(
+    //   `math-v2-0`,
+    //   "get-rt-by-block",
+    //   [Cl.uint(51), Cl.uint(50)],
+    //   deployerAddress
+    // );
+    // console.log(cvToString(callResponse.result));
+    // callResponse = simnet.callReadOnlyFn(
+    //   `math-v2-0`,
+    //   "get-rt-by-block",
+    //   [Cl.uint(52), Cl.uint(50)],
+    //   deployerAddress
+    // );
+    // console.log(cvToString(callResponse.result));
+  });
+});
+
+function calculateLinearInterestEarned(
+  yearlyInterestRate: number,
+  time: number
+): BigInt {
+  // Calculate interest using simple interest formula: I = P * r * t
+  const interestRate =
+    (BigInt(yearlyInterestRate * 100_000_000) * BigInt(time)) /
+    BigInt(365 * 24 * 60 * 60);
+
+  // Round to 6 decimal places for more precision with small time units
+  return interestRate;
+}

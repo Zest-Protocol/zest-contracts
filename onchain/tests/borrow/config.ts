@@ -65,6 +65,10 @@ export const migrateV1ToV2FilePath = `contracts/borrow/mocks/migrate-v1-v2.clar`
 export const initContractsToV2 = `contracts/borrow/mocks/init_scripts/upgrade-contract-v1-v2.clar`;
 export const reserveExtraVariables = `contracts/borrow/mocks/init_scripts/set-reserve-extra-variables.clar`;
 
+// math nakamoto
+export const mathV2_0 = `contracts/borrow/math/math-v2-0.clar`;
+export const pool0ReserveV2_0 = `contracts/borrow/vaults/pool-0-reserve-v2-0.clar`;
+
 export const oracle = "oracle";
 
 export const max_value = BigInt("340282366920938463463374607431768211455");

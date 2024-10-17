@@ -700,33 +700,6 @@ describe("Isolated mode", () => {
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
-      "borrowing-power-in-asset",
-      [
-        Cl.contractPrincipal(deployerAddress, xUSD),
-        Cl.standardPrincipal(Borrower_1),
-        Cl.list([
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, stSTX),
-            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, sBTC),
-            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-          Cl.tuple({
-            asset: Cl.contractPrincipal(deployerAddress, xUSD),
-            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
-            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
-          }),
-        ]),
-      ],
-      Borrower_1
-    );
-
-    callResponse = simnet.callPublicFn(
       "pool-0-reserve",
       "calculate-user-global-data",
       [
@@ -782,6 +755,7 @@ describe("Isolated mode", () => {
       Cl.contractPrincipal(deployerAddress, xUSD),
     ]);
 
+    simnet.mineEmptyBurnBlock();
     callResponse = simnet.callPublicFn(
       "pool-0-reserve",
       "calculate-user-global-data",
@@ -808,7 +782,7 @@ describe("Isolated mode", () => {
       Borrower_1
     );
     let afterNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
-    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112499998");
+    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112499999");
     expect(afterNonIsolatedSupply["health-factor"].value).toBe("112499994");
   });
   it(`Supply and borrow supplying only isolated asset. Supply non-isolated asset when enabled as collateral, while isolate asset is allowed as collateral, non-isolated asset does not count as collateral`, () => {
