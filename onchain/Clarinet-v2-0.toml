@@ -153,10 +153,10 @@ path = "contracts/borrow/mocks/token/lp-ststx-v2.clar"
 clarity_version = 2
 epoch = 2.4
 
-# [contracts.lp-ststx-v3]
-# path = "contracts/borrow/mocks/token/lp-ststx-v3.clar"
-# clarity_version = 3
-# epoch = 3.0
+[contracts.lp-ststx-v3]
+path = "contracts/borrow/mocks/token/lp-ststx-v3.clar"
+clarity_version = 3
+epoch = 3.0
 
 [contracts.lp-sbtc-v1]
 path = "contracts/borrow/mocks/token/lp-sbtc-v1.clar"
@@ -283,10 +283,10 @@ path = "contracts/borrow/vaults/pool-0-reserve-v1-2.clar"
 clarity_version = 2
 epoch = 2.4
 
-# [contracts.pool-0-reserve-v2-0]
-# path = "contracts/borrow/vaults/pool-0-reserve-v2-0.clar"
-# clarity_version = 2
-# epoch = 3.0
+[contracts.pool-0-reserve-v2-0]
+path = "contracts/borrow/vaults/pool-0-reserve-v2-0.clar"
+clarity_version = 2
+epoch = 3.0
 
 [contracts.pool-vault]
 path = "contracts/borrow/vaults/pool-vault.clar"
@@ -378,10 +378,10 @@ path = "contracts/borrow/math/math-v1-2.clar"
 clarity_version = 2
 epoch = 2.4
 
-# [contracts.math-v2-0]
-# path = "contracts/borrow/math/math-v2-0.clar"
-# clarity_version = 3
-# epoch = 3.0
+[contracts.math-v2-0]
+path = "contracts/borrow/math/math-v2-0.clar"
+clarity_version = 3
+epoch = 3.0
 
 [repl]
 costs_version = 1
