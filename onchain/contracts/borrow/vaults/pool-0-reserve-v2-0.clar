@@ -750,7 +750,7 @@
           principal-borrow-balance: principal-borrow-balance,
           last-variable-borrow-cumulative-index: last-variable-borrow-cumulative-index,
           ;; origination-fee: origination-fee,
-          last-updated-block: burn-block-height }))))
+          last-updated-block: stacks-block-height }))))
 
 (define-private (reset-data-on-zero-balance-internal (who principal) (asset principal))
   (contract-call? .pool-reserve-data delete-user-reserve-data who asset))
@@ -815,7 +815,7 @@
         (get last-variable-borrow-cumulative-index reserve-data)
       )
     )
-    (last-updated-block burn-block-height))
+    (last-updated-block stacks-block-height))
 
   (try! (contract-call? .pool-reserve-data set-user-reserve-data
     who (contract-of asset)
@@ -869,7 +869,7 @@
       stable-borrow-rate: u0,
       last-variable-borrow-cumulative-index: (get last-variable-borrow-cumulative-index reserve-data),
       principal-borrow-balance: (+ (get principal-borrow-balance user-data) amount-borrowed balance-increase),
-      last-updated-block: burn-block-height }))
+      last-updated-block: stacks-block-height }))
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     
     (contract-call? .pool-reserve-data set-user-reserve-data who (contract-of asset) (merge user-data new-user-data))
@@ -1093,14 +1093,14 @@
           (mul
             (calculate-compounded-interest
               current-variable-borrow-rate
-              (- burn-block-height last-updated-block-reserve))
+              (- stacks-block-height last-updated-block-reserve))
             last-variable-borrow-cumulative-index-reserve)
           user-cumulative-index)
       ))
     (compounded-balance (mul-precision-with-factor principal-borrow-balance decimals cumulated-interest)))
     (if (is-eq compounded-balance principal-borrow-balance)
       ;; add 1 in case of rounding down
-      (if (not (is-eq last-updated-block burn-block-height))
+      (if (not (is-eq last-updated-block stacks-block-height))
         (+ principal-borrow-balance u1)
         compounded-balance
       )
@@ -1202,7 +1202,7 @@
       (merge
         reserve-data
         {
-          last-updated-block: burn-block-height,
+          last-updated-block: stacks-block-height,
           current-liquidity-rate: (get current-liquidity-rate ret),
           current-variable-borrow-rate: (get current-variable-borrow-rate ret)
         }
@@ -1276,7 +1276,7 @@
         (cumulated-liquidity-interest
           (calculate-linear-interest
             (get current-liquidity-rate reserve-data)
-            (- burn-block-height (get last-updated-block reserve-data))
+            (- stacks-block-height (get last-updated-block reserve-data))
           )
         )
         (new-last-liquidity-cumulative-index
@@ -1288,7 +1288,7 @@
         (cumulated-variable-borrow-interest
           (calculate-compounded-interest
             (get current-variable-borrow-rate reserve-data)
-            (- burn-block-height (get last-updated-block reserve-data))
+            (- stacks-block-height (get last-updated-block reserve-data))
           )
         )
         (new-last-variable-borrow-liquidity-cumulative-index
@@ -1338,7 +1338,7 @@
     (cumulated 
       (calculate-linear-interest
         current-liquidity-rate
-        (- burn-block-height last-updated-block))))
+        (- stacks-block-height last-updated-block))))
     (mul cumulated last-liquidity-cumulative-index)
   )
 )

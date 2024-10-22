@@ -44,7 +44,8 @@ export const pool0Reserve = pool0ReserveV2;
 export const borrowHelperV1 = "borrow-helper";
 export const borrowHelperV1_2 = "borrow-helper-v1-2";
 export const borrowHelperV1_3 = "borrow-helper-v1-3";
-export const borrowHelper = borrowHelperV1_3;
+export const borrowHelperV2_0 = "borrow-helper-v2-0";
+export const borrowHelper = borrowHelperV2_0;
 
 export const poolBorrowV0 = "pool-borrow";
 export const poolBorrowV1_2 = "pool-borrow-v1-2";
@@ -68,6 +69,13 @@ export const reserveExtraVariables = `contracts/borrow/mocks/init_scripts/set-re
 // math nakamoto
 export const mathV2_0 = `contracts/borrow/math/math-v2-0.clar`;
 export const pool0ReserveV2_0 = `contracts/borrow/vaults/pool-0-reserve-v2-0.clar`;
+
+// v3 nakamoto
+export const lp_ststx_v3_path = `contracts/borrow/mocks/token/lp-ststx-v3.clar`;
+export const pool_0_reserve_v2_0 = `contracts/borrow/vaults/pool-0-reserve-v2-0.clar`;
+export const pool_borrow_v2_0 = `contracts/borrow/pool/pool-borrow-v2-0.clar`;
+export const borrow_helper_v2_0 = `contracts/borrow/wrappers/borrow-helper-v2-0.clar`;
+export const liquidation_manager_v2_0 = `contracts/borrow/pool/liquidation-manager-v2-0.clar`;
 
 export const oracle = "oracle";
 

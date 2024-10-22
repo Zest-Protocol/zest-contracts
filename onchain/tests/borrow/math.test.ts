@@ -164,8 +164,8 @@ describe("Math", () => {
 
 describe("Math with timestamps", () => {
   it("calculate-linear-interest", () => {
+    simnet.mineEmptyBlocks(5000);
     simnet.setEpoch("3.0");
-    console.log(simnet.currentEpoch);
     let callResponse = simnet.deployContract(
       "math-v2-0",
       readFileSync(config.mathV2_0).toString(),
@@ -182,52 +182,20 @@ describe("Math with timestamps", () => {
       },
       deployerAddress
     );
-    console.log(cvToString(callResponse.result));
-    simnet.mineEmptyBlocks(10);
-    console.log(simnet.stacksBlockHeight);
+    const lastUpdatedBlock = simnet.blockHeight;
+    simnet.mineEmptyBlocks(1);
+
+    // console.log("Blockheight ", simnet.blockHeight);
+    // console.log("StacksBlock ", simnet.stacksBlockHeight);
+    // console.log("BurnBlockHeight ", simnet.burnBlockHeight);
+
     callResponse = simnet.callReadOnlyFn(
       `math-v2-0`,
       "get-rt-by-block",
-      [Cl.uint(6307200), Cl.uint(16)],
+      [Cl.uint(100000000), Cl.uint((simnet.stacksBlockHeight - lastUpdatedBlock))],
       deployerAddress
     );
-    console.log(cvToValue(callResponse.result));
-    console.log(calculateLinearInterestEarned(0.063072, 5));
-    // callResponse = simnet.callReadOnlyFn(
-    //   `math-v2-0`,
-    //   "get-block-info-0",
-    //   [Cl.uint(6307200), Cl.uint(16)],
-    //   deployerAddress
-    // );
     // console.log(cvToValue(callResponse.result));
-    // callResponse = simnet.callReadOnlyFn(
-    //   `math-v2-0`,
-    //   "get-block-info-1",
-    //   [Cl.uint(6307200), Cl.uint(16)],
-    //   deployerAddress
-    // );
-    // console.log(cvToValue(callResponse.result));
-    callResponse = simnet.callReadOnlyFn(
-      `math-v2-0`,
-      "get-block-info-2",
-      [Cl.uint(6307200), Cl.uint(16)],
-      deployerAddress
-    );
-    console.log(cvToValue(callResponse.result));
-    // callResponse = simnet.callReadOnlyFn(
-    //   `math-v2-0`,
-    //   "get-rt-by-block",
-    //   [Cl.uint(51), Cl.uint(50)],
-    //   deployerAddress
-    // );
-    // console.log(cvToString(callResponse.result));
-    // callResponse = simnet.callReadOnlyFn(
-    //   `math-v2-0`,
-    //   "get-rt-by-block",
-    //   [Cl.uint(52), Cl.uint(50)],
-    //   deployerAddress
-    // );
-    // console.log(cvToString(callResponse.result));
   });
 });
 
