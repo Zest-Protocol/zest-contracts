@@ -1448,6 +1448,65 @@
   )
 )
 
+(define-constant e-mode-disabled-type 0x00)
+
+;; to enable e-mode, if user has collateral enabled
+;; user's collateral must be the same type as it's trying to enable
+;; if user has assets that are being borrowed, assets must be of same e-mode type
+(define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
+	(let (
+		(user-assets (get-assets-used-by user))
+		(assets-used-as-collateral (get enabled-assets (get-assets-used-as-collateral user)))
+		(assets-borrowed (get assets-borrowed (get-user-assets user)))
+		;; collateral assets are of selected e-mode-type?
+		(collateral-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-used-as-collateral { acc: true, e-mode-type: e-mode-type })))
+		;; borrowed assets are of selected e-mode type?
+		(borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
+		)
+		(and collateral-assets-are-e-mode-type borrowed-assets-are-e-mode-type)
+	)
+)
+
+(define-read-only (assets-are-of-e-mode-type
+	(asset principal)
+	(result { acc: bool, e-mode-type: (buff 1) }))
+	(let (
+		(asset-e-mode-type (get-asset-e-mode-type asset))
+		)
+		(if (get acc result)
+			{ acc: (is-eq (get e-mode-type result) asset-e-mode-type), e-mode-type: (get e-mode-type result) }
+			{ acc: false, e-mode-type: (get e-mode-type result) }
+		)
+	)
+)
+
+(define-read-only (get-asset-e-mode-type (asset principal))
+	(default-to
+		e-mode-disabled-type
+		(contract-call? .pool-reserve-data-2 get-user-e-mode-read asset))
+)
+
+(define-read-only (get-user-e-mode (user principal))
+  (default-to 0x00 (contract-call? .pool-reserve-data-2 get-user-e-mode-read user))
+)
+
+(define-read-only (is-in-e-mode (user principal))
+  (let (
+    (e-mode-state (default-to 0x00 (contract-call? .pool-reserve-data-2 get-user-e-mode-read user)))
+    )
+    (is-eq e-mode-disabled-type e-mode-state)
+  )
+)
+
+(define-read-only (e-mode-allows-borrowing (user principal) (asset-to-borrow principal))
+  (let (
+    (e-mode-state (unwrap! (contract-call? .pool-reserve-data-2 get-user-e-mode-read user) ERR_DOES_NOT_EXIST))
+    (asset-e-mode-type (unwrap! (contract-call? .pool-reserve-data-2 get-user-e-mode-read asset-to-borrow) ERR_DOES_NOT_EXIST))
+    )
+    (ok (is-eq e-mode-state asset-e-mode-type))
+  )
+)
+
 (define-private (get-user-asset-data
   (lp-token <ft>)
   (asset <ft>)

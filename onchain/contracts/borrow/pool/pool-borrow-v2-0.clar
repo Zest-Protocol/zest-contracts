@@ -495,8 +495,16 @@
             ;; if disabling as collateral, check user is not using deposited collateral
             (asserts! (try! (contract-call? .pool-0-reserve-v2-0 check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) ERR_INVALID_DECREASE)
             (if (> (get total-collateral-balanceUSD user-global-data) u0)
-              ;; if using anything else as collateral, check it's not enabling an isolated asset
-              (asserts! (not (contract-call? .pool-0-reserve-v2-0 is-isolated-type (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
+							(begin
+								;; if using anything else as collateral, check it's not enabling an isolated asset
+								(asserts! (not (contract-call? .pool-0-reserve-v2-0 is-isolated-type (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
+								(if (is-in-e-mode who)
+									;; if in e-mode-type, cannot enable asset of other e-mode types as collateral
+									(asserts! (is-eq (get-asset-e-mode-type (contract-of asset)) (get-user-e-mode who)) (err u11999))
+									;; if is not in e-mode, no restrictions to check
+									false
+								)
+							)
               ;; if enabling an asset as collateral and not using anything else as collateral, can enable any asset
               true
             )
@@ -506,7 +514,16 @@
       )
     )
   )
-  )
+)
+
+(define-read-only (get-asset-e-mode-type (asset principal))
+	(contract-call? .pool-0-reserve-v2-0 get-asset-e-mode-type asset))
+
+(define-read-only (get-user-e-mode (user principal))
+	(contract-call? .pool-0-reserve-v2-0 get-user-e-mode user))
+
+(define-read-only (is-in-e-mode (user principal))
+  (contract-call? .pool-0-reserve-v2-0 is-in-e-mode user))
 
 (define-public (init
   (a-token-address principal)
