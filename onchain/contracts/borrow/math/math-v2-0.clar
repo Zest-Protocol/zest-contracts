@@ -163,14 +163,17 @@
 ;; rate in 8-fixed
 ;; n-blocks
 (define-read-only (get-rt-by-block (rate uint) (delta uint))
-  (let (
-    (start-time (unwrap-panic (get-stacks-block-info? time (- stacks-block-height delta))))
-    ;; add 5 seconds
-    (end-time (+ u5 (unwrap-panic (get-stacks-block-info? time (- stacks-block-height u1)))))
-    (delta-time (- end-time start-time))
-  )
-    (/ (* rate delta-time) seconds-in-year)
-  )
+	(if (is-eq delta u0)
+		u0
+		(let (
+			(start-time (unwrap-panic (get-stacks-block-info? time (- stacks-block-height delta))))
+			;; add 5 seconds
+			(end-time (+ u5 (unwrap-panic (get-stacks-block-info? time (- stacks-block-height u1)))))
+			(delta-time (- end-time start-time))
+		)
+			(/ (* rate delta-time) seconds-in-year)
+		)
+	)
 )
 
 (stx-transfer? u100000000 tx-sender 'STC6G8DC2A0V58A6399M22C06BF4EK5JZSQW7BWP)
