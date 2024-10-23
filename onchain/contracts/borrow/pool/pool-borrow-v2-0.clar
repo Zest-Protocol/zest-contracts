@@ -471,6 +471,8 @@
 		(try! (is-approved-contract contract-caller))
 		(asserts! (is-eq tx-sender user) ERR_UNAUTHORIZED)
 		(try! (validate-assets assets))
+		;; check that the e-mode type exists
+		(asserts! (e-mode-enabled new-e-mode-type) (err u9888123123))
 		;; if from default state
 		(asserts! (can-enable-e-mode user new-e-mode-type) (err u99999999))
 		(try! (set-e-mode-type user new-e-mode-type))
