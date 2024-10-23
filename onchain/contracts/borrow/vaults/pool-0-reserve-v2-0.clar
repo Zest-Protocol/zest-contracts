@@ -1456,6 +1456,7 @@
 )
 
 (define-constant e-mode-disabled-type 0x00)
+(define-constant ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE (err u10000000))
 
 ;; to enable e-mode, if user has collateral enabled
 ;; only allow enabling if not borrowing, or if borrowing other assets of same type
@@ -1471,14 +1472,17 @@
 		;; borrowed assets are of selected e-mode type?
 		(borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
 		)
-		;; if never used, allow change
 		(if (is-eq (len user-assets) u0)
-			true
+			;; if never used, allow change
+			(ok true)
 			;; if enabling a type other than default, check that borrowed assets are only of new e-mode type
 			(if (not (is-eq e-mode-type e-mode-disabled-type))
-				borrowed-assets-are-e-mode-type
+				(begin
+					(asserts! borrowed-assets-are-e-mode-type ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE)
+					(ok true)
+				)
 				;; if setting to default, allow
-				true
+				(ok true)
 			)
 		)
 	)
@@ -1509,9 +1513,9 @@
 
 (define-read-only (is-in-e-mode (user principal))
   (let (
-    (e-mode-state (default-to 0x00 (contract-call? .pool-reserve-data-2 get-user-e-mode-read user)))
+    (e-mode-state (get-user-e-mode user))
     )
-    (is-eq e-mode-disabled-type e-mode-state)
+    (not (is-eq e-mode-disabled-type e-mode-state))
   )
 )
 
@@ -1681,11 +1685,11 @@
   (current-ltv uint)
   )
   (let (
-    (requested-borrow-amount-USD (mul-to-fixed-precision (+ amount u0) decimals asset-price))
-    (collateral-needed-in-USD
-      (div
-        (+ current-user-borrow-balance-USD u0 requested-borrow-amount-USD)
-        current-ltv))
+			(requested-borrow-amount-USD (mul-to-fixed-precision (+ amount u0) decimals asset-price))
+			(collateral-needed-in-USD
+				(div
+					(+ current-user-borrow-balance-USD u0 requested-borrow-amount-USD)
+					current-ltv))
     )
     {
       collateral-needed-in-USD: collateral-needed-in-USD,
