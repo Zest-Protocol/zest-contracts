@@ -11,6 +11,18 @@
 (define-read-only (get-user-e-mode-read (asset principal))
   (map-get? user-e-mode asset))
 
+
+(define-map e-mode-types (buff 1) bool)
+(define-public (set-asset-e-mode-types (flag (buff 1)) (enabled bool))
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (print { type: "set-e-mode-types", payload: { key: flag, data: { enabled: enabled } } })
+    (ok (map-set e-mode-types flag enabled))))
+(define-public (get-e-mode-types (flag (buff 1)))
+  (ok (map-get? e-mode-types flag)))
+(define-read-only (get-e-mode-types-read (flag (buff 1)))
+  (map-get? e-mode-types flag))
+
 (define-map asset-e-mode-type principal (buff 1))
 (define-public (set-asset-e-mode-type (asset principal) (flag (buff 1)))
   (begin
@@ -22,17 +34,18 @@
 (define-read-only (get-asset-e-mode-type-read (asset principal))
   (map-get? asset-e-mode-type asset))
 
-;; (define-map e-mode principal (buff 1))
-;; (define-public (set-e-mode (asset principal) (enabled bool))
-;;   (begin
-;;     (try! (is-approved-contract contract-caller))
-;;     (print { type: "set-e-mode", payload: { key: asset, data: { grace-period-enabled: enabled } } })
-;;     (ok (map-set e-mode asset enabled))))
-;; (define-public (get-e-mode (asset principal))
-;;   (ok (map-get? e-mode asset)))
-;; (define-read-only (get-e-mode-read (asset principal))
-;;   (map-get? e-mode asset))
-
+(define-map asset-e-mode-config principal { ltv: uint, liquidation-threshold: uint })
+(define-public (set-asset-e-mode-config
+	(asset principal)
+	(config { ltv: uint, liquidation-threshold: uint }))
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (print { type: "set-asset-e-mode-config", payload: { key: asset, data: { config: config } } })
+    (ok (map-set asset-e-mode-config asset config))))
+(define-public (get-asset-e-mode-config (asset principal))
+  (ok (map-get? asset-e-mode-config asset)))
+(define-read-only (get-asset-e-mode-config-read (asset principal))
+  (map-get? asset-e-mode-config asset))
 
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)

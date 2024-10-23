@@ -1004,6 +1004,13 @@
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (user-data (get-user-reserve-data user (contract-of asset)))
+		(e-mode-config 
+			(if (is-in-e-mode user)
+				(get-asset-e-mode-config (contract-of asset))
+				{ 
+					ltv: (get base-ltv-as-collateral reserve-data),
+					liquidation-threshold: (get liquidation-threshold reserve-data)
+				}))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     (if (not (get use-as-collateral user-data))
@@ -1031,7 +1038,7 @@
                     (div
                       (-
                         (mul collateral-balance-in-base-currency (get current-liquidation-threshold user-global-data))
-                        (mul amount-to-decrease-in-base-currency (get liquidation-threshold reserve-data))
+                        (mul amount-to-decrease-in-base-currency (get liquidation-threshold e-mode-config))
                       )
                       collateral-balance-after-decrease
                     )
@@ -1451,19 +1458,29 @@
 (define-constant e-mode-disabled-type 0x00)
 
 ;; to enable e-mode, if user has collateral enabled
-;; user's collateral must be the same type as it's trying to enable
+;; only allow enabling if not borrowing, or if borrowing other assets of same type
 ;; if user has assets that are being borrowed, assets must be of same e-mode type
+;; Cannot be in a different e-mode type already
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
 	(let (
 		(user-assets (get-assets-used-by user))
 		(assets-used-as-collateral (get enabled-assets (get-assets-used-as-collateral user)))
 		(assets-borrowed (get assets-borrowed (get-user-assets user)))
 		;; collateral assets are of selected e-mode-type?
-		(collateral-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-used-as-collateral { acc: true, e-mode-type: e-mode-type })))
+		;; (collateral-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-used-as-collateral { acc: true, e-mode-type: e-mode-type })))
 		;; borrowed assets are of selected e-mode type?
 		(borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
 		)
-		(and collateral-assets-are-e-mode-type borrowed-assets-are-e-mode-type)
+		;; if never used, allow change
+		(if (is-eq (len user-assets) u0)
+			true
+			;; if enabling a type other than default, check that borrowed assets are only of new e-mode type
+			(if (not (is-eq e-mode-type e-mode-disabled-type))
+				borrowed-assets-are-e-mode-type
+				;; if setting to default, allow
+				true
+			)
+		)
 	)
 )
 
@@ -1507,6 +1524,13 @@
   )
 )
 
+;; Note: makes the assumption that ltv and liquidation-threshold are set
+(define-read-only (get-asset-e-mode-config (asset principal))
+  (default-to
+		{ ltv: u0, liquidation-threshold: u0 }
+		(contract-call? .pool-reserve-data-2 get-asset-e-mode-config-read asset))
+)
+
 (define-private (get-user-asset-data
   (lp-token <ft>)
   (asset <ft>)
@@ -1528,6 +1552,13 @@
     (is-oracle-ok (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) ERR_INVALID_ORACLE))
     (user-reserve-state (try! (get-user-balance-reserve-data lp-token asset user oracle)))
     (reserve-unit-price (try! (contract-call? oracle get-asset-price asset)))
+		(e-mode-config
+			(if (is-in-e-mode user)
+				(get-asset-e-mode-config (contract-of asset))
+				{ 
+					ltv: (get base-ltv-as-collateral reserve-data),
+					liquidation-threshold: (get liquidation-threshold reserve-data)
+				}))
     ;; liquidity and collateral balance
     (liquidity-balanceUSD (mul-to-fixed-precision (get underlying-balance user-reserve-state) (get decimals reserve-data) reserve-unit-price))
     (supply-state
@@ -1536,8 +1567,8 @@
           {
             total-liquidity-balanceUSD: (+ (get total-liquidity-balanceUSD aggregate) liquidity-balanceUSD),
             total-collateral-balanceUSD: (+ (get total-collateral-balanceUSD aggregate) liquidity-balanceUSD),
-            current-ltv: (+ (get current-ltv aggregate) (mul liquidity-balanceUSD (get base-ltv-as-collateral reserve-data))),
-            current-liquidation-threshold: (+ (get current-liquidation-threshold aggregate) (mul liquidity-balanceUSD (get liquidation-threshold reserve-data)))
+            current-ltv: (+ (get current-ltv aggregate) (mul liquidity-balanceUSD (get ltv e-mode-config))),
+            current-liquidation-threshold: (+ (get current-liquidation-threshold aggregate) (mul liquidity-balanceUSD (get liquidation-threshold e-mode-config)))
           }
           {
             total-liquidity-balanceUSD: (get total-liquidity-balanceUSD aggregate),

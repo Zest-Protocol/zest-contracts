@@ -80,10 +80,12 @@
 
       ;; if first supply
       (if (is-eq current-balance u0)
+				;; additional checks for first supply and if it's isolation mode
         (if (and (get usage-as-collateral-enabled reserve-state)
             (unwrap-panic
               (validate-use-as-collateral
                 isolated-asset
+								;; we only use base ltv, no need to fetch in case of e-mode
                 (get base-ltv-as-collateral reserve-state)
                 (get enabled-assets assets-used-as-collateral)
                 supplied-asset-principal
@@ -231,6 +233,12 @@
         true
       )
 
+			(if (is-in-e-mode owner)
+				;; check that the user is borrowing from the same e-mode type
+				(asserts! (is-eq (get-asset-e-mode-type asset) (get-user-e-mode owner)) (err u11111))
+				;; nothing to check
+				true
+			)
 
       (let (
         (user-global-data (try! (contract-call? .pool-0-reserve-v2-0 calculate-user-global-data owner assets)))
@@ -450,6 +458,46 @@
   (if (is-eq caller (var-get configurator))
     true
     false))
+
+(define-constant e-mode-disabled-type 0x00)
+
+;; TURN ON E-MODE
+(define-public (set-e-mode
+	(user principal)
+	(assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+	(new-e-mode-type (buff 1))
+	)
+	(begin
+		(try! (is-approved-contract contract-caller))
+		(asserts! (is-eq tx-sender user) ERR_UNAUTHORIZED)
+		(try! (validate-assets assets))
+		;; if from default state
+		(asserts! (can-enable-e-mode user new-e-mode-type) (err u99999999))
+		(try! (set-e-mode-type user new-e-mode-type))
+		;; check health, or revert
+		(let (
+			(user-global-data (try! (calculate-user-global-data user assets)))
+		)
+			;; check health factor does not go below threshold with new e-mode
+			(asserts! (not (get is-health-factor-below-treshold user-global-data)) (err u9988889))
+			(ok true)
+		)
+	)
+)
+
+(define-read-only (e-mode-enabled (e-mode-type (buff 1)))
+	(default-to false (contract-call? .pool-reserve-data-2 get-e-mode-types-read e-mode-type)))
+
+(define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
+	(contract-call? .pool-0-reserve-v2-0 can-enable-e-mode user e-mode-type))
+
+(define-private (set-e-mode-type (who principal) (e-mode-type (buff 1)))
+	(contract-call? .pool-reserve-data-2 set-asset-e-mode-type who e-mode-type))
+
+(define-private (calculate-user-global-data
+	(user principal)
+	(assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
+	(contract-call? .pool-0-reserve-v2-0 calculate-user-global-data user assets))
 
 (define-public (set-user-use-reserve-as-collateral
   (who principal)
