@@ -38,7 +38,8 @@ export const zXusdV1_2 = "zxusd-v1-2";
 export const zXusd = zXusdV1_2;
 
 export const pool0ReserveV0 = "pool-0-reserve";
-export const pool0ReserveV2 = "pool-0-reserve-v1-2";
+export const pool0ReserveV1_2 = "pool-0-reserve-v1-2";
+export const pool0ReserveV2 = "pool-0-reserve-v2-0";
 export const pool0Reserve = pool0ReserveV2;
 
 export const borrowHelperV1 = "borrow-helper";
@@ -49,13 +50,16 @@ export const borrowHelper = borrowHelperV2_0;
 
 export const poolBorrowV0 = "pool-borrow";
 export const poolBorrowV1_2 = "pool-borrow-v1-2";
-export const poolBorrow = poolBorrowV1_2;
+export const poolBorrowV2_0 = "pool-borrow-v2-0";
+export const poolBorrow = poolBorrowV2_0;
 
 export const poolReserveData = "pool-reserve-data";
 export const poolReserveData1 = "pool-reserve-data-1";
+export const poolReserveData2 = "pool-reserve-data-2";
 
 export const mathV0 = "math";
 export const mathV1_2 = "math-v1-2";
+export const mathV2_0 = "math-v2-0";
 export const math = mathV1_2;
 
 // migrating to v1-2
@@ -63,19 +67,29 @@ export const migrateV0ToV1FilePath = `contracts/borrow/mocks/migrate-v0-v1.clar`
 export const migrateV1ToV2FilePath = `contracts/borrow/mocks/migrate-v1-v2.clar`;
 
 // initialize assets to v1-2
-export const initContractsToV2 = `contracts/borrow/mocks/init_scripts/upgrade-contract-v1-v2.clar`;
+export const initContractsToV1_2 = `contracts/borrow/mocks/init_scripts/upgrade-contract-v1-v2.clar`;
+// initialize assets to v2
+export const initContractsToV2 = `contracts/borrow/mocks/init_scripts/upgrade-contract-v1-v2-v3.clar`;
 export const reserveExtraVariables = `contracts/borrow/mocks/init_scripts/set-reserve-extra-variables.clar`;
 
 // math nakamoto
-export const mathV2_0 = `contracts/borrow/math/math-v2-0.clar`;
-export const pool0ReserveV2_0 = `contracts/borrow/vaults/pool-0-reserve-v2-0.clar`;
+export const mathV2_0_path = `contracts/borrow/math/math-v2-0.clar`;
+export const pool0ReserveV2_0_path = `contracts/borrow/vaults/pool-0-reserve-v2-0.clar`;
 
 // v3 nakamoto
+
 export const lp_ststx_v3_path = `contracts/borrow/mocks/token/lp-ststx-v3.clar`;
-export const pool_0_reserve_v2_0 = `contracts/borrow/vaults/pool-0-reserve-v2-0.clar`;
-export const pool_borrow_v2_0 = `contracts/borrow/pool/pool-borrow-v2-0.clar`;
-export const borrow_helper_v2_0 = `contracts/borrow/wrappers/borrow-helper-v2-0.clar`;
-export const liquidation_manager_v2_0 = `contracts/borrow/pool/liquidation-manager-v2-0.clar`;
+export const lp_sbtc_v3_path = `contracts/borrow/mocks/token/lp-sbtc-v3.clar`;
+export const lp_diko_v3_path = `contracts/borrow/mocks/token/lp-diko-v3.clar`;
+export const lp_usda_v3_path = `contracts/borrow/mocks/token/lp-usda-v3.clar`;
+export const lp_wstx_v3_path = `contracts/borrow/mocks/token/lp-wstx-v3.clar`;
+export const lp_xusd_v3_path = `contracts/borrow/mocks/token/lp-xusd-v3.clar`;
+
+export const pool_0_reserve_v2_0_path = `contracts/borrow/vaults/pool-0-reserve-v2-0.clar`;
+export const pool_borrow_v2_0_path = `contracts/borrow/pool/pool-borrow-v2-0.clar`;
+export const borrow_helper_v2_0_path = `contracts/borrow/wrappers/borrow-helper-v2-0.clar`;
+export const liquidation_manager_v2_0_path = `contracts/borrow/pool/liquidation-manager-v2-0.clar`;
+export const pool_reserve_data_2_path = `contracts/borrow/vaults/pool-reserve-data-2.clar`;
 
 export const oracle = "oracle";
 

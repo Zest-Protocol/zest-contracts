@@ -1,4 +1,3 @@
-import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { describe, expect, it, beforeEach } from "vitest";
 import { Cl, cvToJSON, cvToValue } from "@stacks/transactions";
 import { readFileSync } from "fs";
@@ -7,8 +6,9 @@ import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 import { ZToken } from "./models/zToken";
 
-import * as config from "./config";
-import { initSimnetChecker } from "./SimnetChecker";
+import * as config from "./tools/config";
+import { initSimnetChecker } from "./tools/SimnetChecker";
+import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -28,15 +28,19 @@ const lpdiko = "lp-diko";
 const lpsBTC = "lp-sbtc";
 const lpsBTCv1 = "lp-sbtc-v1";
 const lpsBTCv2 = "lp-sbtc-v2";
+const lpsBTCv3 = "lp-sbtc-v3";
 const lpstSTX = "lp-ststx";
 const lpstSTXv1 = "lp-ststx-v1";
 const lpstSTXv2 = "lp-ststx-v2";
+const lpstSTXv3 = "lp-ststx-v3";
 const lpUSDA = "lp-usda";
 const lpUSDAv1 = "lp-usda-v1";
 const lpUSDAv2 = "lp-usda-v2";
+const lpUSDAv3 = "lp-usda-v3";
 const lpxUSD = "lp-xusd";
 
 const lpWSTXv2 = "lp-wstx-v2";
+const lpWSTXv3 = "lp-wstx-v3";
 
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
@@ -46,17 +50,17 @@ const interestRateStrategyDefault = "interest-rate-strategy-default";
 const diko = "diko";
 const sBTC = "sbtc";
 const stSTX = "ststx";
-const zstSTX = lpstSTXv2;
-const zsBTC = lpsBTCv2;
-const zUSDA = lpUSDAv2;
-const zwstx = lpWSTXv2;
+const zstSTX = lpstSTXv3;
+const zsBTC = lpsBTCv3;
+const zUSDA = lpUSDAv3;
+const zwstx = lpWSTXv3;
 const USDA = "usda";
 const xUSD = "xusd";
 const wstx = "wstx";
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
-describe("Supply and redeem", () => {
+describe("Supply and redeem ", () => {
   beforeEach(() => {
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -88,6 +92,10 @@ describe("Supply and redeem", () => {
       deployerAddress
     );
 
+		simnet.setEpoch("3.0");
+		deployV2Contracts(simnet, deployerAddress);
+		deployV2TokenContracts(simnet, deployerAddress);
+
     callResponse = simnet.deployContract(
       "run-1",
       readFileSync(config.initContractsToV2).toString(),
@@ -95,7 +103,7 @@ describe("Supply and redeem", () => {
       deployerAddress
     );
   });
-  it("Supply and immediately redeem without returns", () => {
+  it("Supply and immediately redeem without returns ", () => {
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
@@ -106,7 +114,7 @@ describe("Supply and redeem", () => {
     const stSTXZToken = new ZToken(simnet, deployerAddress, zstSTX);
     const sBTCZToken = new ZToken(simnet, deployerAddress, zsBTC);
 
-    oracleContract.setPrice(
+    let callResponse = oracleContract.setPrice(
       deployerAddress,
       stSTX,
       160_000_000,
@@ -119,7 +127,7 @@ describe("Supply and redeem", () => {
       deployerAddress
     );
 
-    let callResponse = poolBorrow.init(
+    callResponse = poolBorrow.init(
       deployerAddress,
       zstSTX,
       deployerAddress,
@@ -262,9 +270,9 @@ describe("Supply and redeem", () => {
     );
 
     expect(
-      simnet.getAssetsMap().get(`.${zsBTC}.lp-sbtc`)?.get(Borrower_1)
+      simnet.getAssetsMap().get(`.${lpsBTCv2}.lp-sbtc`)?.get(Borrower_1)
     ).toBe(0n);
-    expect(simnet.getAssetsMap().get(`.${zstSTX}.lp-ststx`)?.get(LP_1)).toBe(
+    expect(simnet.getAssetsMap().get(`.${lpstSTXv2}.lp-ststx`)?.get(LP_1)).toBe(
       0n
     );
     expect(simnet.getAssetsMap().get(".sbtc.sbtc")?.get(Borrower_1)).toBe(
@@ -280,7 +288,6 @@ describe("Supply and redeem", () => {
       [Cl.standardPrincipal(LP_1)],
       LP_1
     );
-
     expect(callResponse.result).toBeList([]);
 
     callResponse = simnet.callReadOnlyFn(
@@ -295,12 +302,12 @@ describe("Supply and redeem", () => {
     const poolReserve0 = new PoolReserve(
       simnet,
       deployerAddress,
-      "pool-0-reserve"
+      config.pool0Reserve
     );
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      "pool-borrow-v1-2"
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -886,7 +893,7 @@ describe("Supply and redeem", () => {
     expect(
       balanceBeforeRepay -
         simnet.getAssetsMap().get(".ststx.ststx")?.get(Borrower_1)!
-    ).toBe(100_000_114n);
+    ).toBe(100_000_091n);
 
     callResponse = simnet.callPublicFnCheckOk(
       config.borrowHelper,
@@ -955,13 +962,13 @@ describe("Supply and redeem", () => {
     );
 
     expect(
-      simnet.getAssetsMap().get(`.${zsBTC}.lp-sbtc`)?.get(Borrower_1)
+      simnet.getAssetsMap().get(`.${lpsBTCv2}.lp-sbtc`)?.get(Borrower_1)
     ).toBe(0n);
-    expect(simnet.getAssetsMap().get(`.${zstSTX}.lp-ststx`)?.get(LP_1)).toBe(
+    expect(simnet.getAssetsMap().get(`.${lpstSTXv2}.lp-ststx`)?.get(LP_1)).toBe(
       0n
     );
     expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(LP_1)).toBe(
-      1_000_000_090n
+      1_000_000_070n
     );
   });
   it("Borrower supplies sBTC, borrow stSTX pay back with high interests. LPer gets their stSTX back", () => {
