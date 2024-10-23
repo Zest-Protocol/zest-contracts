@@ -37,6 +37,49 @@ export const zXusdV1 = "zxusd-v1";
 export const zXusdV1_2 = "zxusd-v1-2";
 export const zXusd = zXusdV1_2;
 
+// lp tokens
+export const lpDikoV0 = "lp-diko";
+export const lpDikoV1 = "lp-diko-v1";
+export const lpDikoV1_2 = "lp-diko-v1-2";
+export const lpDikoV2_0 = "lp-diko-v2";
+export const lpDikoV3_0 = "lp-diko-v3";
+export const lpDiko = lpDikoV3_0;
+
+export const lpSbtcV0 = "lp-sbtc";
+export const lpSbtcV1 = "lp-sbtc-v1";
+export const lpSbtcV1_2 = "lp-sbtc-v1-2";
+export const lpSbtcV2_0 = "lp-sbtc-v2";
+export const lpSbtcV3_0 = "lp-sbtc-v3";
+export const lpSbtc = lpSbtcV3_0;
+
+export const lpStstxV0 = "lp-ststx";
+export const lpStstxV1 = "lp-ststx-v1";
+export const lpStstxV1_2 = "lp-ststx-v1-2";
+export const lpStstxV2_0 = "lp-ststx-v2";
+export const lpStstxV3_0 = "lp-ststx-v3";
+export const lpStstx = lpStstxV3_0;
+
+export const lpUsdaV0 = "lp-usda";
+export const lpUsdaV1 = "lp-usda-v1";
+export const lpUsdaV1_2 = "lp-usda-v1-2";
+export const lpUsdaV2_0 = "lp-usda-v2";
+export const lpUsdaV3_0 = "lp-usda-v3";
+export const lpUsda = lpUsdaV3_0;
+
+export const lpwstxV0 = "lp-wstx";
+export const lpwstxv1 = "lp-wstx-v1";
+export const lpwstxv1_2 = "lp-wstx-v1-2";
+export const lpwstxv2_0 = "lp-wstx-v2";
+export const lpwstxv3_0 = "lp-wstx-v3";
+export const lpwstx = lpwstxv3_0;
+
+export const lpXusdV0 = "lp-xusd";
+export const lpXusdV1 = "lp-xusd-v1";
+export const lpXusdV1_2 = "lp-xusd-v1-2";
+export const lpXusdV2_0 = "lp-xusd-v2";
+export const lpXusdV3_0 = "lp-xusd-v3";
+export const lpXusd = lpXusdV3_0;
+
 export const pool0ReserveV0 = "pool-0-reserve";
 export const pool0ReserveV1_2 = "pool-0-reserve-v1-2";
 export const pool0ReserveV2 = "pool-0-reserve-v2-0";
@@ -62,6 +105,8 @@ export const mathV1_2 = "math-v1-2";
 export const mathV2_0 = "math-v2-0";
 export const math = mathV1_2;
 
+export const pool0ReserveRead = "pool-0-reserve-read";
+
 // migrating to v1-2
 export const migrateV0ToV1FilePath = `contracts/borrow/mocks/migrate-v0-v1.clar`;
 export const migrateV1ToV2FilePath = `contracts/borrow/mocks/migrate-v1-v2.clar`;
@@ -75,6 +120,7 @@ export const reserveExtraVariables = `contracts/borrow/mocks/init_scripts/set-re
 // math nakamoto
 export const mathV2_0_path = `contracts/borrow/math/math-v2-0.clar`;
 export const pool0ReserveV2_0_path = `contracts/borrow/vaults/pool-0-reserve-v2-0.clar`;
+export const pool0ReserveRead_path = `contracts/borrow/mocks/read-only/pool-0-reserve-read.clar`;
 
 // v3 nakamoto
 
