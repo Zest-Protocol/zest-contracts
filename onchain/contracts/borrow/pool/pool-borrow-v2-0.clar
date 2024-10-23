@@ -36,6 +36,7 @@
 (define-constant ERR_NON_CORRESPONDING_ASSETS (err u30025))
 (define-constant ERR_INVALID_AMOUNT (err u30026))
 (define-constant ERR_NOT_IN_ISOLATED_MODE (err u30027))
+(define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u30028))
 
 
 (define-map users-id uint principal)
@@ -234,7 +235,7 @@
       )
 
 			(if (is-in-e-mode owner)
-				;; check that the user is borrowing from the same e-mode type
+				;; if in e-mode, check that the user is borrowing same e-mode type
 				(asserts! (is-eq (get-asset-e-mode-type asset) (get-user-e-mode owner)) (err u11111))
 				;; nothing to check
 				true
@@ -252,7 +253,8 @@
             u0
             (get total-borrow-balanceUSD user-global-data)
             (get user-total-feesUSD user-global-data)
-            (get current-ltv user-global-data))))
+            (get current-ltv user-global-data)))
+				)
         (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) ERR_NOT_ZERO)
         (asserts! (<= (get collateral-needed-in-USD amount-collateral-needed) (get total-collateral-balanceUSD user-global-data)) ERR_NOT_ENOUGH_COLLATERAL)
         (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) u0 amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
@@ -423,9 +425,10 @@
 
     (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user asset receiver amount))
     (try! (contract-call? flashloan execute asset receiver amount))
+		;; force transfer of assets to vault
     (try!
       (contract-call? asset transfer
-        (+ amount available-liquidity-before amount-fee)
+        (+ amount amount-fee)
         receiver
         .pool-vault
         none
@@ -460,6 +463,7 @@
     false))
 
 (define-constant e-mode-disabled-type 0x00)
+(define-constant ERR_E_MODE_DOES_NOT_EXIST (err u9888123123))
 
 ;; TURN ON E-MODE
 (define-public (set-e-mode
@@ -468,20 +472,20 @@
 	(new-e-mode-type (buff 1))
 	)
 	(begin
-		(try! (is-approved-contract contract-caller))
 		(asserts! (is-eq tx-sender user) ERR_UNAUTHORIZED)
+		(try! (is-approved-contract contract-caller))
 		(try! (validate-assets assets))
 		;; check that the e-mode type exists
-		(asserts! (e-mode-enabled new-e-mode-type) (err u9888123123))
+		(asserts! (e-mode-enabled new-e-mode-type) ERR_E_MODE_DOES_NOT_EXIST)
 		;; if from default state
-		(asserts! (can-enable-e-mode user new-e-mode-type) (err u99999999))
+		(try! (can-enable-e-mode user new-e-mode-type))
 		(try! (set-e-mode-type user new-e-mode-type))
 		;; check health, or revert
 		(let (
 			(user-global-data (try! (calculate-user-global-data user assets)))
 		)
 			;; check health factor does not go below threshold with new e-mode
-			(asserts! (not (get is-health-factor-below-treshold user-global-data)) (err u9988889))
+			(asserts! (not (get is-health-factor-below-treshold user-global-data)) ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
 			(ok true)
 		)
 	)
@@ -545,16 +549,8 @@
             ;; if disabling as collateral, check user is not using deposited collateral
             (asserts! (try! (contract-call? .pool-0-reserve-v2-0 check-balance-decrease-allowed asset oracle underlying-balance who assets-to-calculate)) ERR_INVALID_DECREASE)
             (if (> (get total-collateral-balanceUSD user-global-data) u0)
-							(begin
-								;; if using anything else as collateral, check it's not enabling an isolated asset
-								(asserts! (not (contract-call? .pool-0-reserve-v2-0 is-isolated-type (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
-								(if (is-in-e-mode who)
-									;; if in e-mode-type, cannot enable asset of other e-mode types as collateral
-									(asserts! (is-eq (get-asset-e-mode-type (contract-of asset)) (get-user-e-mode who)) (err u11999))
-									;; if is not in e-mode, no restrictions to check
-									false
-								)
-							)
+              ;; if using anything else as collateral, check it's not enabling an isolated asset
+              (asserts! (not (contract-call? .pool-0-reserve-v2-0 is-isolated-type (contract-of asset))) ERR_CANNOT_ENABLE_ISOLATED_ASSET)
               ;; if enabling an asset as collateral and not using anything else as collateral, can enable any asset
               true
             )
