@@ -7,7 +7,7 @@ import { Oracle } from "./models/oracle";
 import { ZToken } from "./models/zToken";
 import { MintableToken } from "./models/token";
 
-import * as config from "./config";
+import * as config from "./tools/config";
 
 const simnet = await initSimnet();
 

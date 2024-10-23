@@ -9,27 +9,23 @@
 
 (define-constant one-8 u100000000)
 
-(define-data-var token-uri (string-utf8 256) u"https://token-meta.s3.eu-central-1.amazonaws.com/zstSTX.json")
-(define-data-var token-name (string-ascii 32) "Zest stSTX")
-(define-data-var token-symbol (string-ascii 32) "zstSTX")
-
-(define-constant asset-addr .ststx)
+(define-constant asset-addr .sbtc)
 (define-constant decimals u6)
 
 (define-read-only (get-total-supply)
-  (contract-call? .lp-ststx-v2 get-total-supply))
+	(contract-call? .lp-sbtc-v2 get-total-supply))
 
 (define-read-only (get-name)
-  (contract-call? .lp-ststx-v2 get-name))
+	(contract-call? .lp-sbtc-v2 get-name))
 
 (define-read-only (get-symbol)
-  (contract-call? .lp-ststx-v2 get-symbol))
+	(contract-call? .lp-sbtc-v2 get-symbol))
 
 (define-read-only (get-decimals)
-  (contract-call? .lp-ststx-v2 get-decimals))
+	(contract-call? .lp-sbtc-v2 get-decimals))
 
 (define-read-only (get-token-uri)
-  (contract-call? .lp-ststx-v2 get-token-uri))
+	(contract-call? .lp-sbtc-v2 get-token-uri))
 
 (define-read-only (get-balance (account principal))
   (let (
@@ -37,14 +33,14 @@
   )
     (if (is-eq current-principal-balance u0)
       (ok u0)
-      (let ((cumulated-balance
-              (calculate-cumulated-balance
-                account
-                decimals
-                asset-addr
-                current-principal-balance
-                decimals
-              )))
+      (let (
+        (cumulated-balance
+          (calculate-cumulated-balance
+            account
+            decimals
+            asset-addr
+            current-principal-balance
+            decimals) ) )
         (ok cumulated-balance)
       )
     )
@@ -73,15 +69,15 @@
 )
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (contract-call? .lp-ststx-v2 transfer amount sender recipient memo)
+  (contract-call? .lp-sbtc-v2 transfer amount sender recipient memo)
 )
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (contract-call? .lp-ststx-v2 mint amount owner)
+  (contract-call? .lp-sbtc-v2 mint amount owner)
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (contract-call? .lp-ststx-v2 burn amount owner)
+  (contract-call? .lp-sbtc-v2 burn amount owner)
 )
 
 ;; END sip-010 actions
@@ -108,22 +104,22 @@
 )
 
 (define-read-only (get-principal-balance (account principal))
-  (ok 
-    ;; only need v2 balance because it already adds v0, v1 and v2 balance
-    (unwrap-panic (contract-call? .lp-ststx-v2 get-principal-balance account))
-  )
+	(ok
+		;; only need v2 balance because it already adds v0, v1 and v2 balance
+		(unwrap-panic (contract-call? .lp-sbtc-v2 get-principal-balance account))
+	)
 )
 
 (define-read-only (mul (x uint) (y uint)) (contract-call? .math-v2-0 mul x y))
 (define-read-only (div (x uint) (y uint)) (contract-call? .math-v2-0 div x y))
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
-  (contract-call? .math-v2-0 mul-precision-with-factor a decimals-a b-fixed))
+	(contract-call? .math-v2-0 mul-precision-with-factor a decimals-a b-fixed))
 
 (define-read-only (get-reserve-state (asset principal))
-  (unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-addr)))
+	(unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-addr)))
 
 (define-read-only (get-user-index (user principal) (asset principal))
-  (unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-user-index user asset)))
+	(unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-user-index user asset)))
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
@@ -187,8 +183,8 @@
 
 (define-private (cumulate-balance-internal (account principal))
   (let (
-    (v0-balance (unwrap-panic (contract-call? .lp-ststx get-principal-balance account)))
-    (v1-balance (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance account)))
+    (v0-balance (unwrap-panic (contract-call? .lp-sbtc get-principal-balance account)))
+    (v1-balance (unwrap-panic (contract-call? .lp-sbtc-v1 get-principal-balance account)))
 		;; previous-balance includes v0, v1, v2
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
@@ -204,13 +200,13 @@
     (if (> v0-balance u0)
       (begin
         (try! (mint-internal v0-balance account))
-        (try! (contract-call? .lp-ststx burn v0-balance account))
+        (try! (contract-call? .lp-sbtc burn v0-balance account))
         true
       )
       (if (> v1-balance u0)
         (begin
           (try! (mint-internal v1-balance account))
-          (try! (contract-call? .lp-ststx-v1 burn v1-balance account))
+          (try! (contract-call? .lp-sbtc-v1 burn v1-balance account))
           true
         )
         false
@@ -265,7 +261,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-ststx", payload: owner })
+    (print { type: "set-contract-owner-lp-sbtc", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))
