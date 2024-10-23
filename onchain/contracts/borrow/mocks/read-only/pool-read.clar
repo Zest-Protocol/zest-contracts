@@ -406,6 +406,14 @@
   )
 )
 
+(define-read-only (calculate-compounded-interest
+  (current-liquidity-rate uint)
+  (delta uint))
+  (begin
+    (taylor-6 (get-rt-by-block current-liquidity-rate delta))
+  )
+)
+
 ;; MATH
 (define-constant sb-by-sy u1903)
 (define-constant one-8 u100000000)
@@ -414,13 +422,6 @@
 (define-constant max-value u340282366920938463463374607431768211455)
 (define-read-only (get-max-value) max-value)
 
-(define-read-only (calculate-compounded-interest
-  (current-liquidity-rate uint)
-  (delta uint))
-  (begin
-    (taylor-6 (get-rt-by-block current-liquidity-rate delta))
-  )
-)
 
 (define-read-only (mul (x uint) (y uint))
   (/ (+ (* x y) (/ one-8 u2)) one-8))
