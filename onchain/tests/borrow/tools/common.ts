@@ -29,6 +29,14 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
 		deployerAddress
 	);
 	simnet.deployContract(
+		"liquidation-manager-v2-0",
+		readFileSync(config.liquidation_manager_v2_0_path).toString(),
+		{
+			clarityVersion: 3,
+		},
+		deployerAddress
+	);
+	let callResponse = simnet.deployContract(
 		"pool-0-reserve-read",
 		readFileSync(config.pool0ReserveRead_path).toString(),
 		{
@@ -36,17 +44,10 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
 		},
 		deployerAddress
 	);
+  // console.log(Cl.prettyPrint(callResponse.result));
 	simnet.deployContract(
 		"pool-borrow-v2-0",
 		readFileSync(config.pool_borrow_v2_0_path).toString(),
-		{
-			clarityVersion: 3,
-		},
-		deployerAddress
-	);
-	simnet.deployContract(
-		"liquidation-manager-v2-0",
-		readFileSync(config.liquidation_manager_v2_0_path).toString(),
 		{
 			clarityVersion: 3,
 		},

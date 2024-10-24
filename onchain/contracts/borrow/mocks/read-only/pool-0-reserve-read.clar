@@ -253,6 +253,95 @@
   )
 )
 
+(define-public (borrowing-power-in-asset
+  (asset <ft>)
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (asset-principal (contract-of asset))
+    (reserve-state (unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)))
+    (user-assets (contract-call? .pool-0-reserve-v2-0 get-user-assets user))
+    (user-global-data (try! (calculate-user-global-data user assets)))
+    (asset-price (try! (contract-call? .oracle get-asset-price asset)))
+  )
+    (calculate-available-borrowing-power-in-asset
+      asset
+      (get decimals reserve-state)
+      asset-price
+      (get total-collateral-balanceUSD user-global-data)
+      (get total-borrow-balanceUSD user-global-data)
+      u0
+      (get current-ltv user-global-data)
+      user
+    )
+  )
+)
+
+(define-public (get-decrease-balance-allowed
+  (asset <ft>)
+  (oracle <oracle-trait>)
+  (user principal)
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (reserve-data (unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of asset))))
+    (user-data (unwrap-panic (contract-call? .pool-reserve-data get-user-reserve-data-read user (contract-of asset))))
+    (user-global-data (unwrap-panic (calculate-user-global-data user assets-to-calculate)))
+    (asset-price (unwrap-panic (contract-call? oracle get-asset-price asset)))
+    (useable-collateral-in-base-currency
+      (mul
+        (- (get total-collateral-balanceUSD user-global-data) (+ (get total-borrow-balanceUSD user-global-data) (get user-total-feesUSD user-global-data)))
+        (get current-liquidation-threshold user-global-data)))
+    (amount-to-decrease
+      (contract-call? .math from-fixed-to-precision
+        (div
+          useable-collateral-in-base-currency
+          asset-price
+        )
+        (get decimals reserve-data)
+      ))
+  )
+    (ok { amount-to-decrease: amount-to-decrease, useable-collateral-in-base-currency: useable-collateral-in-base-currency })
+  )
+)
+
+;; calculate how much a user can borrow of a specific asset using the available collateral
+(define-read-only (calculate-available-borrowing-power-in-asset
+  (borrowing-asset <ft>)
+  (decimals uint)
+  (asset-price uint)
+  (current-user-collateral-balance-USD uint)
+  (current-user-borrow-balance-USD uint)
+  (current-fees-USD uint)
+  (current-ltv uint)
+  (user principal)
+  )
+  (let (
+    (available-borrow-power-in-base-currency
+      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD u0))
+        (-
+          (mul current-user-collateral-balance-USD current-ltv)
+          (+ current-user-borrow-balance-USD u0)
+        )
+        u0
+      )
+    )
+    (borrow-power-in-asset-amount
+      (contract-call? .math-v2-0 from-fixed-to-precision
+        (div
+          available-borrow-power-in-base-currency
+          asset-price
+        )
+        decimals
+      )
+    )
+  )
+    (ok borrow-power-in-asset-amount)
+  )
+)
+
+
 ;; util function
 (define-read-only (count-collateral-enabled (asset principal) (ret { who: principal, enabled-count: uint, enabled-assets: (list 100 principal) }))
   (if (get use-as-collateral (get-user-reserve-data (get who ret) asset))

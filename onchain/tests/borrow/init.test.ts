@@ -893,7 +893,7 @@ describe("Supply and redeem ", () => {
     expect(
       balanceBeforeRepay -
         simnet.getAssetsMap().get(".ststx.ststx")?.get(Borrower_1)!
-    ).toBe(100_000_091n);
+    ).toBe(100_000_090n);
 
     callResponse = simnet.callPublicFnCheckOk(
       config.borrowHelper,
