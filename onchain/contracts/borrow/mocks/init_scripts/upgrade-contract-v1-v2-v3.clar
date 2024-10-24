@@ -152,7 +152,7 @@
     (try! (contract-call? .lp-wstx set-approved-contract .liquidation-manager false))
     (try! (contract-call? .lp-wstx set-approved-contract .pool-0-reserve false))
 
-		;; give setting permission
+    ;; give setting permission
     (try! (contract-call? .pool-reserve-data-1 set-approved-contract .pool-borrow-v2-0 true))
     (try! (contract-call? .pool-reserve-data-2 set-approved-contract .pool-borrow-v2-0 true))
     ;; add grace-period variables
