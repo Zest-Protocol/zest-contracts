@@ -5,6 +5,7 @@
 
 (define-constant one-8 (contract-call? .math-v2-0 get-one))
 (define-constant max-value (contract-call? .math-v2-0 get-max-value))
+(define-constant e-mode-disabled-type 0x00)
 
 (define-constant default-user-reserve-data
   {
@@ -34,7 +35,7 @@
 (define-constant ERR_FLASHLOAN_FEE_PROTOCOL_NOT_SET (err u7012))
 (define-constant ERR_INVALID_VALUE (err u7005))
 (define-constant ERR_E_MODE_DOES_NOT_EXIST (err u7006))
-
+(define-constant ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE (err u7007))
 
 (define-public (set-flashloan-fee-total (asset principal) (fee uint))
   (begin
@@ -1451,8 +1452,6 @@
   )
 )
 
-(define-constant e-mode-disabled-type 0x00)
-(define-constant ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE (err u10000000))
 
 ;; to enable e-mode, if user has collateral enabled
 ;; only allow enabling if not borrowing, or if borrowing other assets of same type
@@ -1463,8 +1462,6 @@
 		(user-assets (get-assets-used-by user))
 		(assets-used-as-collateral (get enabled-assets (get-assets-used-as-collateral user)))
 		(assets-borrowed (get assets-borrowed (get-user-assets user)))
-		;; collateral assets are of selected e-mode-type?
-		;; (collateral-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-used-as-collateral { acc: true, e-mode-type: e-mode-type })))
 		;; borrowed assets are of selected e-mode type?
 		(borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
 		)
