@@ -1093,13 +1093,13 @@
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (user-data (get-user-reserve-data user (contract-of asset)))
-		(e-mode-config 
-			(if (is-in-e-mode user)
-				(get-type-e-mode-config (get-asset-e-mode-type (contract-of asset)))
-				{ 
-					ltv: (get base-ltv-as-collateral reserve-data),
-					liquidation-threshold: (get liquidation-threshold reserve-data)
-				}))
+    (e-mode-config 
+      (if (is-in-e-mode user)
+        (get-type-e-mode-config (get-asset-e-mode-type (contract-of asset)))
+        { 
+          ltv: (get base-ltv-as-collateral reserve-data),
+          liquidation-threshold: (get liquidation-threshold reserve-data)
+        }))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     (if (not (get use-as-collateral user-data))
@@ -1552,48 +1552,48 @@
 ;; if user has assets that are being borrowed, assets must be of same e-mode type
 ;; Cannot be in a different e-mode type already
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
-	(let (
-		(user-assets (get-assets-used-by user))
-		(assets-used-as-collateral (get enabled-assets (get-assets-used-as-collateral user)))
-		(assets-borrowed (get assets-borrowed (get-user-assets user)))
-		;; collateral assets are of selected e-mode-type?
-		;; (collateral-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-used-as-collateral { acc: true, e-mode-type: e-mode-type })))
-		;; borrowed assets are of selected e-mode type?
-		(borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
-		)
-		(if (is-eq (len user-assets) u0)
-			;; if never used, allow change
-			(ok true)
-			;; if enabling a type other than default, check that borrowed assets are only of new e-mode type
-			(if (not (is-eq e-mode-type e-mode-disabled-type))
-				(begin
-					(asserts! borrowed-assets-are-e-mode-type ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE)
-					(ok true)
-				)
-				;; if setting to default, allow
-				(ok true)
-			)
-		)
-	)
+  (let (
+    (user-assets (get-assets-used-by user))
+    (assets-used-as-collateral (get enabled-assets (get-assets-used-as-collateral user)))
+    (assets-borrowed (get assets-borrowed (get-user-assets user)))
+    ;; collateral assets are of selected e-mode-type?
+    ;; (collateral-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-used-as-collateral { acc: true, e-mode-type: e-mode-type })))
+    ;; borrowed assets are of selected e-mode type?
+    (borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
+    )
+    (if (is-eq (len user-assets) u0)
+      ;; if never used, allow change
+      (ok true)
+      ;; if enabling a type other than default, check that borrowed assets are only of new e-mode type
+      (if (not (is-eq e-mode-type e-mode-disabled-type))
+        (begin
+          (asserts! borrowed-assets-are-e-mode-type ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE)
+          (ok true)
+        )
+        ;; if setting to default, allow
+        (ok true)
+      )
+    )
+  )
 )
 
 (define-read-only (assets-are-of-e-mode-type
-	(asset principal)
-	(result { acc: bool, e-mode-type: (buff 1) }))
-	(let (
-		(asset-e-mode-type (get-asset-e-mode-type asset))
-		)
-		(if (get acc result)
-			{ acc: (is-eq (get e-mode-type result) asset-e-mode-type), e-mode-type: (get e-mode-type result) }
-			{ acc: false, e-mode-type: (get e-mode-type result) }
-		)
-	)
+  (asset principal)
+  (result { acc: bool, e-mode-type: (buff 1) }))
+  (let (
+    (asset-e-mode-type (get-asset-e-mode-type asset))
+    )
+    (if (get acc result)
+      { acc: (is-eq (get e-mode-type result) asset-e-mode-type), e-mode-type: (get e-mode-type result) }
+      { acc: false, e-mode-type: (get e-mode-type result) }
+    )
+  )
 )
 
 (define-read-only (get-asset-e-mode-type (asset principal))
-	(default-to
-		e-mode-disabled-type
-		(contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset))
+  (default-to
+    e-mode-disabled-type
+    (contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset))
 )
 
 (define-read-only (get-user-e-mode (user principal))
@@ -1620,8 +1620,8 @@
 ;; Note: makes the assumption that ltv and liquidation-threshold are set
 (define-read-only (get-type-e-mode-config (type (buff 1)))
   (default-to
-		{ ltv: u0, liquidation-threshold: u0 }
-		(contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type))
+    { ltv: u0, liquidation-threshold: u0 }
+    (contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type))
 )
 
 ;; if user is in e-mode and the asset is of type of the e-mode enabled
@@ -1664,7 +1664,7 @@
     (is-oracle-ok (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) ERR_INVALID_ORACLE))
     (user-reserve-state (try! (get-user-balance-reserve-data lp-token asset user oracle)))
     (reserve-unit-price (try! (contract-call? oracle get-asset-price asset)))
-		(e-mode-config (try! (get-e-mode-config user (contract-of asset))))
+    (e-mode-config (try! (get-e-mode-config user (contract-of asset))))
     ;; liquidity and collateral balance
     (liquidity-balanceUSD (mul-to-fixed-precision (get underlying-balance user-reserve-state) (get decimals reserve-data) reserve-unit-price))
     (supply-state
@@ -1786,11 +1786,11 @@
   (current-ltv uint)
   )
   (let (
-			(requested-borrow-amount-USD (mul-to-fixed-precision (+ amount u0) decimals asset-price))
-			(collateral-needed-in-USD
-				(div
-					(+ current-user-borrow-balance-USD u0 requested-borrow-amount-USD)
-					current-ltv))
+      (requested-borrow-amount-USD (mul-to-fixed-precision (+ amount u0) decimals asset-price))
+      (collateral-needed-in-USD
+        (div
+          (+ current-user-borrow-balance-USD u0 requested-borrow-amount-USD)
+          current-ltv))
     )
     {
       collateral-needed-in-USD: collateral-needed-in-USD,
