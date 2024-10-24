@@ -12,7 +12,7 @@
 (define-read-only (get-user-e-mode-read (asset principal))
   (map-get? user-e-mode asset))
 
-;; type -> enabled state
+;; is e-mode type enabled
 (define-map e-mode-types (buff 1) bool)
 (define-public (set-asset-e-mode-types (flag (buff 1)) (enabled bool))
   (begin
@@ -24,7 +24,7 @@
 (define-read-only (get-e-mode-types-read (flag (buff 1)))
   (map-get? e-mode-types flag))
 
-;; asset's e-mode type
+;; asset -> e-mode type
 (define-map asset-e-mode-type principal (buff 1))
 (define-public (set-asset-e-mode-type (asset principal) (flag (buff 1)))
   (begin
@@ -36,7 +36,7 @@
 (define-read-only (get-asset-e-mode-type-read (asset principal))
   (map-get? asset-e-mode-type asset))
 
-;; e-mode type's configuration
+;; e-mode type -> configuration
 (define-map type-e-mode-config (buff 1) { ltv: uint, liquidation-threshold: uint })
 (define-public (set-type-e-mode-config
 	(type (buff 1))
