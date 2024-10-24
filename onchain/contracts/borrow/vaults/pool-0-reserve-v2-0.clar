@@ -1471,7 +1471,7 @@
       ;; if enabling a type other than default, check that if it's borrowing assets only of new e-mode type
       (if (not (is-eq e-mode-type e-mode-disabled-type))
         (begin
-          (asserts! (e-mode-enabled e-mode-type) ERR_E_MODE_DOES_NOT_EXIST)
+          (asserts! (e-mode-type-enabled e-mode-type) ERR_E_MODE_DOES_NOT_EXIST)
           (asserts! borrowed-assets-are-e-mode-type ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE)
           (ok true)
         )
@@ -1482,7 +1482,7 @@
   )
 )
 
-(define-read-only (e-mode-enabled (e-mode-type (buff 1)))
+(define-read-only (e-mode-type-enabled (e-mode-type (buff 1)))
   (default-to false (contract-call? .pool-reserve-data-2 get-e-mode-types-read e-mode-type)))
 
 (define-read-only (assets-are-of-e-mode-type
@@ -1509,9 +1509,7 @@
 )
 
 (define-read-only (is-in-e-mode (user principal))
-  (let (
-    (e-mode-state (get-user-e-mode user))
-    )
+  (let ((e-mode-state (get-user-e-mode user)))
     (not (is-eq e-mode-disabled-type e-mode-state))
   )
 )
