@@ -751,8 +751,8 @@ describe("Upgrading z-token to v1-2", () => {
     simnet.mineEmptyBlock();
 
     simnet.setEpoch("3.0");
-		deployV2Contracts(simnet, deployerAddress);
-		deployV2TokenContracts(simnet, deployerAddress);
+    deployV2Contracts(simnet, deployerAddress);
+    deployV2TokenContracts(simnet, deployerAddress);
 
     callResponse = simnet.deployContract(
       "migrate-3",

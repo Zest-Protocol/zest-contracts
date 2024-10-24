@@ -15,7 +15,7 @@ export const OP_CHECKSEQUENCEVERIFY = "b2";
 export const OP_ENDIF = "68";
 export const OP_CHECKSIG = "ac";
 export const OP_HASH160 = "a9";
-export const OP_EQUAL	 = "87";
+export const OP_EQUAL   = "87";
 
 function getHash(contents: string) {
   const hash = new Sha256().update(Buffer.from(contents, "hex"));
