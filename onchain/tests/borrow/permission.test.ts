@@ -58,9 +58,9 @@ const max_value = BigInt("340282366920938463463374607431768211455");
 describe("Confirm pass permission", () => {
   it("Call validate-assets", () => {
 
-		simnet.setEpoch("3.0");
-		deployV2Contracts(simnet, deployerAddress);
-		deployV2TokenContracts(simnet, deployerAddress);
+    simnet.setEpoch("3.0");
+    deployV2Contracts(simnet, deployerAddress);
+    deployV2TokenContracts(simnet, deployerAddress);
 
     let callResponse = simnet.callPublicFn(
       config.pool0Reserve,

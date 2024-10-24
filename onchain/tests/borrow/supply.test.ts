@@ -361,9 +361,9 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
 
-		simnet.setEpoch("3.0");
-		deployV2Contracts(simnet, deployerAddress);
-		deployV2TokenContracts(simnet, deployerAddress);
+    simnet.setEpoch("3.0");
+    deployV2Contracts(simnet, deployerAddress);
+    deployV2TokenContracts(simnet, deployerAddress);
 
     simnet.deployContract(
       "run-1",
