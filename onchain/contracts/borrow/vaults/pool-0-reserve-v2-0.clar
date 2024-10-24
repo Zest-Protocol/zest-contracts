@@ -1453,6 +1453,7 @@
 )
 
 
+;; E-MODE FUNCTIONS
 ;; to enable e-mode, if user has collateral enabled
 ;; only allow enabling if not borrowing, or if borrowing other assets of same type
 ;; if user has assets that are being borrowed, assets must be of same e-mode type
@@ -1484,6 +1485,23 @@
 (define-read-only (e-mode-type-enabled (e-mode-type (buff 1)))
   (default-to false (contract-call? .pool-reserve-data-2 get-e-mode-types-read e-mode-type)))
 
+(define-read-only (get-user-e-mode (user principal))
+  (default-to 0x00 (contract-call? .pool-reserve-data-2 get-user-e-mode-read user)))
+
+(define-read-only (is-in-e-mode (user principal))
+  (not (is-eq e-mode-disabled-type (get-user-e-mode user))))
+
+(define-read-only (get-asset-e-mode-type (asset principal))
+  (default-to
+    e-mode-disabled-type
+    (contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset)))
+
+;; Note: makes the assumption that ltv and liquidation-threshold are set
+(define-read-only (get-type-e-mode-config (type (buff 1)))
+  (default-to
+    { ltv: u0, liquidation-threshold: u0 }
+    (contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type)))
+
 (define-read-only (assets-are-of-e-mode-type
   (asset principal)
   (result { acc: bool, e-mode-type: (buff 1) }))
@@ -1497,38 +1515,14 @@
   )
 )
 
-(define-read-only (get-asset-e-mode-type (asset principal))
-  (default-to
-    e-mode-disabled-type
-    (contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset))
-)
-
-(define-read-only (get-user-e-mode (user principal))
-  (default-to 0x00 (contract-call? .pool-reserve-data-2 get-user-e-mode-read user))
-)
-
-(define-read-only (is-in-e-mode (user principal))
-  (let ((e-mode-state (get-user-e-mode user)))
-    (not (is-eq e-mode-disabled-type e-mode-state))
-  )
-)
-
 (define-read-only (e-mode-allows-borrowing (user principal) (asset-to-borrow principal))
   (let (
-    (user-e-mode-state (unwrap! (contract-call? .pool-reserve-data-2 get-user-e-mode-read user) ERR_DOES_NOT_EXIST))
-    (asset-e-mode-type (unwrap! (contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset-to-borrow) ERR_DOES_NOT_EXIST))
+    (user-e-mode-state (get-user-e-mode user))
+    (asset-e-mode-type (get-asset-e-mode-type asset-to-borrow))
     )
     (ok (is-eq user-e-mode-state asset-e-mode-type))
   )
 )
-
-;; Note: makes the assumption that ltv and liquidation-threshold are set
-(define-read-only (get-type-e-mode-config (type (buff 1)))
-  (default-to
-    { ltv: u0, liquidation-threshold: u0 }
-    (contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type))
-)
-
 
 ;; if user is in e-mode and the asset is of type of the e-mode enabled
 (define-read-only (get-e-mode-config (user principal) (asset principal))
