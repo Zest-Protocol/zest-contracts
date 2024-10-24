@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "vitest run",
+    "test": "(yes | clarinet check --manifest-path ./Clarinet.toml) && vitest run",
     "test:arch": "(yes | clarinet check --manifest-path ./Clarinet.toml) && vitest run ./tests/borrow -- --manifest-path ./Clarinet.toml",
     "test:math": "(yes | clarinet check --manifest-path ./Clarinet.toml) && vitest run ./tests/borrow/math.test.ts -- --manifest-path ./Clarinet.toml -t 'Math with timestamps'",
     "test:costs": "vitest run -- --costs",

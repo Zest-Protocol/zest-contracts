@@ -8,7 +8,6 @@
     (protocol-fee (/ (* amount-fee u3000) u10000))
   )
     (try! (contract-call? .sbtc mint (+ protocol-fee amount-fee) tx-sender))
-    (try! (contract-call? .sbtc transfer (+ amount-fee amount) tx-sender .pool-vault none))
     (ok true)
   )
 )

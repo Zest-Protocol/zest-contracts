@@ -13,23 +13,23 @@
 (define-constant ERR_NO_DEBT (err u90008))
 
 
-(define-constant one-8 (contract-call? .math-v1-2 get-one))
+(define-constant one-8 (contract-call? .math-v2-0 get-one))
 
 (define-read-only (get-liquidation-close-factor-percent (asset principal))
   (unwrap-panic (contract-call? .pool-reserve-data get-liquidation-close-factor-percent-read asset)))
 
 (define-read-only (mul (x uint) (y uint))
-  (contract-call? .math-v1-2 mul x y))
+  (contract-call? .math-v2-0 mul x y))
 
 (define-read-only (div (x uint) (y uint))
-  (contract-call? .math-v1-2 div x y))
+  (contract-call? .math-v2-0 div x y))
 
 
 (define-public (calculate-user-global-data
   (user principal)
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle> })))
   (let (
-    (global-user-data (try! (contract-call? .pool-0-reserve-v1-2 calculate-user-global-data user assets))))
+    (global-user-data (try! (contract-call? .pool-0-reserve-v2-0 calculate-user-global-data user assets))))
     (ok {
       total-liquidity-balanceUSD: (get total-liquidity-balanceUSD global-user-data),
       total-collateral-balanceUSD: (get total-collateral-balanceUSD global-user-data),
@@ -83,14 +83,14 @@
               ;; if it's bad debt, can liquidate
               true
               ;; if time passed is less than grace-period, fail, cannot liquidate
-              (> (- stacks-block-height (try! (get-freeze-end-block collateral))) (try! (get-grace-period-time collateral)))
+              (> (- burn-block-height (try! (get-freeze-end-block collateral))) (try! (get-grace-period-time collateral)))
             )
           ) ERR_IN_GRACE_PERIOD)
         ;; not borrowing anything
         (asserts! (> user-compounded-borrow-balance u0) ERR_NO_DEBT)
         (let (
           (max-debt-to-liquidate
-            (contract-call? .math-v1-2 mul-perc
+            (contract-call? .math-v2-0 mul-perc
               user-compounded-borrow-balance
               (get decimals debt-reserve-data)
               (get-liquidation-close-factor-percent (contract-of debt-asset))))
@@ -122,7 +122,7 @@
             false)
 
           (try!
-            (contract-call? .pool-0-reserve-v1-2 update-state-on-liquidation
+            (contract-call? .pool-0-reserve-v2-0 update-state-on-liquidation
               debt-asset
               collateral
               user
@@ -139,14 +139,14 @@
             (try! (contract-call? lp-token transfer-on-liquidation collateral-to-liquidator user tx-sender))
             (begin
               (try! (contract-call? lp-token burn-on-liquidation collateral-to-liquidator user))
-              (try! (contract-call? .pool-0-reserve-v1-2 transfer-to-user collateral tx-sender collateral-to-liquidator))))
-          (try! (contract-call? .pool-0-reserve-v1-2 transfer-to-reserve debt-asset tx-sender actual-debt-to-liquidate))
+              (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user collateral tx-sender collateral-to-liquidator))))
+          (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-reserve debt-asset tx-sender actual-debt-to-liquidate))
 
           (if (> protocol-fee u0)
             (begin
               ;; burn users' lp and transfer to fee collection address
               (try! (contract-call? lp-token burn-on-liquidation protocol-fee user))
-              (try! (contract-call? .pool-0-reserve-v1-2 transfer-to-user collateral (contract-call? .pool-0-reserve-v1-2 get-collection-address) protocol-fee)))
+              (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user collateral (contract-call? .pool-0-reserve-v2-0 get-collection-address) protocol-fee)))
             u0)
         )
       )
@@ -156,15 +156,15 @@
 )
 
 (define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
-  (contract-call? .math-v1-2 mul-to-fixed-precision a decimals-a b-fixed)
+  (contract-call? .math-v2-0 mul-to-fixed-precision a decimals-a b-fixed)
 )
 
 (define-read-only (div-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
-  (contract-call? .math-v1-2 div-to-fixed-precision a decimals-a b-fixed)
+  (contract-call? .math-v2-0 div-to-fixed-precision a decimals-a b-fixed)
 )
 
 (define-read-only (get-origination-fee-prc (asset principal))
-  (contract-call? .pool-0-reserve-v1-2 get-origination-fee-prc asset))
+  (contract-call? .pool-0-reserve-v2-0 get-origination-fee-prc asset))
 
 (define-read-only (get-y-from-x
   (x uint)
@@ -173,10 +173,10 @@
   (x-price uint)
   (y-price uint)
   )
-  (contract-call? .math-v1-2 get-y-from-x x x-decimals y-decimals x-price y-price)
+  (contract-call? .math-v2-0 get-y-from-x x x-decimals y-decimals x-price y-price)
 )
 
-(define-data-var lending-pool principal .pool-borrow-v1-2)
+(define-data-var lending-pool principal .pool-borrow-v2-0)
 
 (define-data-var admin principal tx-sender)
 (define-read-only (is-admin (caller principal))
@@ -209,14 +209,14 @@
     (principal-reserve-data (unwrap-panic (get-reserve-state principal-asset)))
     (liquidation-bonus (get liquidation-bonus collateral-reserve-data))
     (original-collateral-purchasing-power
-      (contract-call? .math-v1-2 get-y-from-x
+      (contract-call? .math-v2-0 get-y-from-x
         debt-to-liquidate
         (get decimals principal-reserve-data)
         (get decimals collateral-reserve-data)
         debt-currency-price
         collateral-price))
     (max-collateral-amount-from-debt
-      (contract-call? .math-v1-2 mul-perc
+      (contract-call? .math-v2-0 mul-perc
         original-collateral-purchasing-power
         (get decimals collateral-reserve-data)
         (+ one-8 (get liquidation-bonus collateral-reserve-data)))))
@@ -225,8 +225,8 @@
         {
           collateral-amount: user-collateral-balance,
           debt-needed:
-            (contract-call? .math-v1-2 mul-perc
-              (contract-call? .math-v1-2 get-y-from-x
+            (contract-call? .math-v2-0 mul-perc
+              (contract-call? .math-v2-0 get-y-from-x
                 user-collateral-balance
                 (get decimals collateral-reserve-data)
                 (get decimals principal-reserve-data)
@@ -234,13 +234,13 @@
                 debt-currency-price
               )
               (get decimals principal-reserve-data)
-              (contract-call? .math-v1-2 div one-8 (+ one-8 liquidation-bonus))
+              (contract-call? .math-v2-0 div one-8 (+ one-8 liquidation-bonus))
             ),
           liquidation-bonus-collateral:
-            (contract-call? .math-v1-2 mul-perc
+            (contract-call? .math-v2-0 mul-perc
               user-collateral-balance
               (get decimals collateral-reserve-data)
-              (- one-8 (contract-call? .math-v1-2 div one-8 (+ one-8 (get liquidation-bonus collateral-reserve-data))))),
+              (- one-8 (contract-call? .math-v2-0 div one-8 (+ one-8 (get liquidation-bonus collateral-reserve-data))))),
           collateral-price: collateral-price,
           debt-currency-price: debt-currency-price
         }
@@ -257,7 +257,7 @@
 )
 
 (define-read-only (get-user-origination-fee (who principal) (asset <ft>))
-  (contract-call? .pool-0-reserve-v1-2 get-user-origination-fee who asset)
+  (contract-call? .pool-0-reserve-v2-0 get-user-origination-fee who asset)
 )
 
 (define-read-only (get-liquidation-bonus (asset <ft>))
@@ -265,11 +265,11 @@
 )
 
 (define-public (get-user-borrow-balance (who principal) (asset <ft>))
-  (contract-call? .pool-0-reserve-v1-2 get-user-borrow-balance who asset)
+  (contract-call? .pool-0-reserve-v2-0 get-user-borrow-balance who asset)
 )
 
 (define-public (get-reserve-state (asset <ft>))
-  (contract-call? .pool-0-reserve-v1-2 get-reserve-state (contract-of asset))
+  (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of asset))
 )
 
 (define-public (get-freeze-end-block (asset <ft>))
@@ -285,10 +285,10 @@
 )
 
 (define-public (get-user-reserve-state (user principal) (asset <ft>))
-  (ok (contract-call? .pool-0-reserve-v1-2 get-user-reserve-data user (contract-of asset)))
+  (ok (contract-call? .pool-0-reserve-v2-0 get-user-reserve-data user (contract-of asset)))
 )
 
 (define-public (get-reserve-available-liquidity (asset <ft>))
-  (contract-call? .pool-0-reserve-v1-2 get-reserve-available-liquidity asset)
+  (contract-call? .pool-0-reserve-v2-0 get-reserve-available-liquidity asset)
 )
 

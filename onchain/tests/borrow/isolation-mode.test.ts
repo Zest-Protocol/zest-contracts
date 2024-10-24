@@ -6,8 +6,9 @@ import { PoolBorrow } from "./models/poolBorrow";
 import { MintableToken } from "./models/token";
 import { Oracle } from "./models/oracle";
 
-import * as config from "./config";
-import { initSimnetChecker } from "./SimnetChecker";
+import * as config from "./tools/config";
+import { initSimnetChecker } from "./tools/SimnetChecker";
+import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -51,20 +52,15 @@ const lpwstxv1 = "lp-wstx-v1";
 const lpwstxv2 = "lp-wstx-v2";
 const wstx = "wstx";
 
-const zsbtc = lpsBTCv2;
-const zststx = lpstSTXv2;
-const zxusd = lpxUSDv2;
-const zwstx = lpwstxv2;
+const zsbtc = config.lpSbtc;
+const zststx = config.lpStstx;
+const zxusd = config.lpXusd;
+const zwstx = config.lpwstx;
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
 describe("Isolated mode", () => {
   beforeEach(() => {
-    const poolReserve0 = new PoolReserve(
-      simnet,
-      deployerAddress,
-      "pool-0-reserve"
-    );
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
 
     const stSTXToken = new MintableToken(simnet, deployerAddress, stSTX);
@@ -141,6 +137,11 @@ describe("Isolated mode", () => {
       true,
       deployerAddress
     );
+
+    simnet.setEpoch("3.0");
+    deployV2Contracts(simnet, deployerAddress);
+    deployV2TokenContracts(simnet, deployerAddress);
+
     simnet.deployContract(
       "run-1",
       readFileSync(config.initContractsToV2).toString(),
@@ -405,7 +406,7 @@ describe("Isolated mode", () => {
     ]);
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
+      config.pool0ReserveRead,
       "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -472,7 +473,7 @@ describe("Isolated mode", () => {
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -498,7 +499,7 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
+      config.pool0ReserveRead,
       "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -636,8 +637,8 @@ describe("Isolated mode", () => {
       Cl.contractPrincipal(deployerAddress, stSTX),
     ]);
 
-    callResponse = simnet.callPublicFn(
-      "pool-read",
+    callResponse = simnet.callPublicFnCheckOk(
+      config.pool0ReserveRead,
       "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -700,7 +701,7 @@ describe("Isolated mode", () => {
     expect(callResponse.result).toBeOk(Cl.bool(true));
 
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -724,7 +725,10 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    // console.log(cvToValue(callResponse.result));
     let beforeNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
+
+    simnet.mineEmptyBlocks(10);
 
     callResponse = simnet.callPublicFn(
       config.borrowHelper,
@@ -755,9 +759,30 @@ describe("Isolated mode", () => {
       Cl.contractPrincipal(deployerAddress, xUSD),
     ]);
 
-    simnet.mineEmptyBurnBlock();
+    // callResponse = poolBorrow.getUserReserveData(
+    //   Borrower_1,
+    //   deployerAddress,
+    //   xUSD,
+    //   Borrower_1
+    // );
+    // console.log(cvToValue(callResponse.result));
+
+    // callResponse = poolBorrow.getReserveState(deployerAddress, xUSD, Borrower_1);
+    // console.log(cvToValue(callResponse.result));
+
+    // callResponse = simnet.callReadOnlyFn(
+    //   config.pool0Reserve,
+    //   "get-user-borrow-balance",
+    //   [
+    //     Cl.standardPrincipal(Borrower_1),
+    //     Cl.contractPrincipal(deployerAddress, xUSD)
+    //   ],
+    //   Borrower_1
+    // );
+    // console.log(cvToValue(callResponse.result));
+
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -781,9 +806,10 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
+    // console.log(cvToValue(callResponse.result));
     let afterNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
-    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112499999");
-    expect(afterNonIsolatedSupply["health-factor"].value).toBe("112499994");
+    expect(beforeNonIsolatedSupply["health-factor"].value).toBe("112500000");
+    expect(afterNonIsolatedSupply["health-factor"].value).toBe("112499985");
   });
   it(`Supply and borrow supplying only isolated asset. Supply non-isolated asset when enabled as collateral, while isolate asset is allowed as collateral, non-isolated asset does not count as collateral`, () => {
     const poolBorrow = new PoolBorrow(
@@ -897,7 +923,7 @@ describe("Isolated mode", () => {
     ]);
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
+      config.pool0ReserveRead,
       "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -959,7 +985,7 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
+      config.pool0ReserveRead,
       "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -988,7 +1014,7 @@ describe("Isolated mode", () => {
     availableBorrow = Number(cvToValue(callResponse.result)["value"]);
 
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -1016,7 +1042,7 @@ describe("Isolated mode", () => {
     let beforeNonIsolatedSupply = cvToJSON(callResponse.result).value.value;
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
+      config.pool0ReserveRead,
       "get-decrease-balance-allowed",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -1096,7 +1122,7 @@ describe("Isolated mode", () => {
           .getAssetsMap()
           .get(".ststx.ststx")
           ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!
-    ).toBe(499607992n);
+    ).toBe(499607998n);
 
     borrower_data = simnet.callReadOnlyFn(
       `${deployerAddress}.pool-0-reserve`,
@@ -1107,7 +1133,7 @@ describe("Isolated mode", () => {
 
     // console.log("After withdrawing part of the stSTX");
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -1152,7 +1178,7 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
+      config.pool0ReserveRead,
       "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -1253,7 +1279,7 @@ describe("Isolated mode", () => {
     xUSDToken.mint(1_000_000_000, Borrower_1, deployerAddress);
 
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -1285,11 +1311,11 @@ describe("Isolated mode", () => {
       Cl.tuple({
         "current-liquidation-threshold": Cl.uint(90000000),
         "current-ltv": Cl.uint(80000000),
-        "health-factor": Cl.uint(100097994),
+        "health-factor": Cl.uint(100098000),
         "is-health-factor-below-treshold": Cl.bool(false),
-        "total-borrow-balanceUSD": Cl.uint(57600004600),
-        "total-collateral-balanceUSD": Cl.uint(64062721280),
-        "total-liquidity-balanceUSD": Cl.uint(64062721280),
+        "total-borrow-balanceUSD": Cl.uint(57600000100),
+        "total-collateral-balanceUSD": Cl.uint(64062720320),
+        "total-liquidity-balanceUSD": Cl.uint(64062720320),
         "user-total-feesUSD": Cl.uint(0),
       })
     );
@@ -1316,10 +1342,10 @@ describe("Isolated mode", () => {
         .get(".xusd.xusd")
         ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")! -
         balanceBeforeRepay
-    ).toBe(576000046n);
+    ).toBe(576000001n);
 
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -1352,8 +1378,8 @@ describe("Isolated mode", () => {
         ),
         "is-health-factor-below-treshold": Cl.bool(false),
         "total-borrow-balanceUSD": Cl.uint(0),
-        "total-collateral-balanceUSD": Cl.uint(64062721280),
-        "total-liquidity-balanceUSD": Cl.uint(64062721280),
+        "total-collateral-balanceUSD": Cl.uint(64062720320),
+        "total-liquidity-balanceUSD": Cl.uint(64062720320),
         "user-total-feesUSD": Cl.uint(0),
       })
     );
@@ -1437,7 +1463,7 @@ describe("Isolated mode", () => {
 
     // console.log("After stSTX collateral has been disabled");
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -1608,7 +1634,7 @@ describe("Isolated mode", () => {
 
     // console.log("After repayment and sBTC enabled as collateral");
     callResponse = simnet.callPublicFn(
-      "pool-0-reserve",
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -1814,7 +1840,7 @@ describe("Isolated mode", () => {
     ]);
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
+      config.pool0ReserveRead,
       "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -1875,7 +1901,7 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      "pool-read",
+      config.pool0ReserveRead,
       "borrowing-power-in-asset",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
@@ -2219,7 +2245,7 @@ describe("Isolated mode", () => {
     ).toBe(true);
 
     callResponse = simnet.callPublicFn(
-      `${deployerAddress}.pool-0-reserve`,
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_2),
@@ -2302,7 +2328,7 @@ describe("Isolated mode", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      `${deployerAddress}.pool-0-reserve`,
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_2),

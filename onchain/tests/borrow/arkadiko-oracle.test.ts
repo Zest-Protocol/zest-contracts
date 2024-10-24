@@ -7,8 +7,8 @@ import { Oracle } from "./models/oracle";
 import { ZToken } from "./models/zToken";
 import { MintableToken } from "./models/token";
 
-import * as config from "./config";
-import { initSimnetChecker } from "./SimnetChecker";
+import * as config from "./tools/config";
+import { initSimnetChecker } from "./tools/SimnetChecker";
 import { tx } from "@hirosystems/clarinet-sdk";
 
 let simnet = await initSimnetChecker();

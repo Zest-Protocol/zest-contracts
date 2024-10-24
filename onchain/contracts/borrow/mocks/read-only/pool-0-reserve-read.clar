@@ -5,7 +5,6 @@
 
 (define-constant one-8 (contract-call? .math-v2-0 get-one))
 (define-constant max-value (contract-call? .math-v2-0 get-max-value))
-(define-constant e-mode-disabled-type 0x00)
 
 (define-constant default-user-reserve-data
   {
@@ -34,8 +33,6 @@
 (define-constant ERR_FLASHLOAN_FEE_TOTAL_NOT_SET (err u7011))
 (define-constant ERR_FLASHLOAN_FEE_PROTOCOL_NOT_SET (err u7012))
 (define-constant ERR_INVALID_VALUE (err u7005))
-(define-constant ERR_E_MODE_DOES_NOT_EXIST (err u7006))
-(define-constant ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE (err u7007))
 
 (define-public (set-flashloan-fee-total (asset principal) (fee uint))
   (begin
@@ -255,6 +252,95 @@
     }
   )
 )
+
+(define-public (borrowing-power-in-asset
+  (asset <ft>)
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (asset-principal (contract-of asset))
+    (reserve-state (unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)))
+    (user-assets (contract-call? .pool-0-reserve-v2-0 get-user-assets user))
+    (user-global-data (try! (calculate-user-global-data user assets)))
+    (asset-price (try! (contract-call? .oracle get-asset-price asset)))
+  )
+    (calculate-available-borrowing-power-in-asset
+      asset
+      (get decimals reserve-state)
+      asset-price
+      (get total-collateral-balanceUSD user-global-data)
+      (get total-borrow-balanceUSD user-global-data)
+      u0
+      (get current-ltv user-global-data)
+      user
+    )
+  )
+)
+
+(define-public (get-decrease-balance-allowed
+  (asset <ft>)
+  (oracle <oracle-trait>)
+  (user principal)
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  )
+  (let (
+    (reserve-data (unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of asset))))
+    (user-data (unwrap-panic (contract-call? .pool-reserve-data get-user-reserve-data-read user (contract-of asset))))
+    (user-global-data (unwrap-panic (calculate-user-global-data user assets-to-calculate)))
+    (asset-price (unwrap-panic (contract-call? oracle get-asset-price asset)))
+    (useable-collateral-in-base-currency
+      (mul
+        (- (get total-collateral-balanceUSD user-global-data) (+ (get total-borrow-balanceUSD user-global-data) (get user-total-feesUSD user-global-data)))
+        (get current-liquidation-threshold user-global-data)))
+    (amount-to-decrease
+      (contract-call? .math from-fixed-to-precision
+        (div
+          useable-collateral-in-base-currency
+          asset-price
+        )
+        (get decimals reserve-data)
+      ))
+  )
+    (ok { amount-to-decrease: amount-to-decrease, useable-collateral-in-base-currency: useable-collateral-in-base-currency })
+  )
+)
+
+;; calculate how much a user can borrow of a specific asset using the available collateral
+(define-read-only (calculate-available-borrowing-power-in-asset
+  (borrowing-asset <ft>)
+  (decimals uint)
+  (asset-price uint)
+  (current-user-collateral-balance-USD uint)
+  (current-user-borrow-balance-USD uint)
+  (current-fees-USD uint)
+  (current-ltv uint)
+  (user principal)
+  )
+  (let (
+    (available-borrow-power-in-base-currency
+      (if (> (mul current-user-collateral-balance-USD current-ltv) (+ current-user-borrow-balance-USD u0))
+        (-
+          (mul current-user-collateral-balance-USD current-ltv)
+          (+ current-user-borrow-balance-USD u0)
+        )
+        u0
+      )
+    )
+    (borrow-power-in-asset-amount
+      (contract-call? .math-v2-0 from-fixed-to-precision
+        (div
+          available-borrow-power-in-base-currency
+          asset-price
+        )
+        decimals
+      )
+    )
+  )
+    (ok borrow-power-in-asset-amount)
+  )
+)
+
 
 ;; util function
 (define-read-only (count-collateral-enabled (asset principal) (ret { who: principal, enabled-count: uint, enabled-assets: (list 100 principal) }))
@@ -1007,7 +1093,13 @@
   (let (
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (user-data (get-user-reserve-data user (contract-of asset)))
-    (e-mode-config (try! (get-e-mode-config user (contract-of asset))))
+    (e-mode-config 
+      (if (is-in-e-mode user)
+        (get-type-e-mode-config (get-asset-e-mode-type (contract-of asset)))
+        { 
+          ltv: (get base-ltv-as-collateral reserve-data),
+          liquidation-threshold: (get liquidation-threshold reserve-data)
+        }))
   )
     (asserts! (is-lending-pool contract-caller) ERR_UNAUTHORIZED)
     (if (not (get use-as-collateral user-data))
@@ -1452,8 +1544,9 @@
   )
 )
 
+(define-constant e-mode-disabled-type 0x00)
+(define-constant ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE (err u10000000))
 
-;; E-MODE FUNCTIONS
 ;; to enable e-mode, if user has collateral enabled
 ;; only allow enabling if not borrowing, or if borrowing other assets of same type
 ;; if user has assets that are being borrowed, assets must be of same e-mode type
@@ -1461,17 +1554,19 @@
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
   (let (
     (user-assets (get-assets-used-by user))
+    (assets-used-as-collateral (get enabled-assets (get-assets-used-as-collateral user)))
     (assets-borrowed (get assets-borrowed (get-user-assets user)))
+    ;; collateral assets are of selected e-mode-type?
+    ;; (collateral-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-used-as-collateral { acc: true, e-mode-type: e-mode-type })))
     ;; borrowed assets are of selected e-mode type?
     (borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
     )
     (if (is-eq (len user-assets) u0)
       ;; if never used, allow change
       (ok true)
-      ;; if enabling a type other than default, check that if it's borrowing assets only of new e-mode type
+      ;; if enabling a type other than default, check that borrowed assets are only of new e-mode type
       (if (not (is-eq e-mode-type e-mode-disabled-type))
         (begin
-          (asserts! (e-mode-type-enabled e-mode-type) ERR_E_MODE_DOES_NOT_EXIST)
           (asserts! borrowed-assets-are-e-mode-type ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE)
           (ok true)
         )
@@ -1481,26 +1576,6 @@
     )
   )
 )
-
-(define-read-only (e-mode-type-enabled (e-mode-type (buff 1)))
-  (default-to false (contract-call? .pool-reserve-data-2 get-e-mode-types-read e-mode-type)))
-
-(define-read-only (get-user-e-mode (user principal))
-  (default-to 0x00 (contract-call? .pool-reserve-data-2 get-user-e-mode-read user)))
-
-(define-read-only (is-in-e-mode (user principal))
-  (not (is-eq e-mode-disabled-type (get-user-e-mode user))))
-
-(define-read-only (get-asset-e-mode-type (asset principal))
-  (default-to
-    e-mode-disabled-type
-    (contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset)))
-
-;; Note: makes the assumption that ltv and liquidation-threshold are set
-(define-read-only (get-type-e-mode-config (type (buff 1)))
-  (default-to
-    { ltv: u0, liquidation-threshold: u0 }
-    (contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type)))
 
 (define-read-only (assets-are-of-e-mode-type
   (asset principal)
@@ -1515,13 +1590,38 @@
   )
 )
 
+(define-read-only (get-asset-e-mode-type (asset principal))
+  (default-to
+    e-mode-disabled-type
+    (contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset))
+)
+
+(define-read-only (get-user-e-mode (user principal))
+  (default-to 0x00 (contract-call? .pool-reserve-data-2 get-user-e-mode-read user))
+)
+
+(define-read-only (is-in-e-mode (user principal))
+  (let (
+    (e-mode-state (get-user-e-mode user))
+    )
+    (not (is-eq e-mode-disabled-type e-mode-state))
+  )
+)
+
 (define-read-only (e-mode-allows-borrowing (user principal) (asset-to-borrow principal))
   (let (
-    (user-e-mode-state (get-user-e-mode user))
-    (asset-e-mode-type (get-asset-e-mode-type asset-to-borrow))
+    (user-e-mode-state (unwrap! (contract-call? .pool-reserve-data-2 get-user-e-mode-read user) ERR_DOES_NOT_EXIST))
+    (asset-e-mode-type (unwrap! (contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset-to-borrow) ERR_DOES_NOT_EXIST))
     )
     (ok (is-eq user-e-mode-state asset-e-mode-type))
   )
+)
+
+;; Note: makes the assumption that ltv and liquidation-threshold are set
+(define-read-only (get-type-e-mode-config (type (buff 1)))
+  (default-to
+    { ltv: u0, liquidation-threshold: u0 }
+    (contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type))
 )
 
 ;; if user is in e-mode and the asset is of type of the e-mode enabled
@@ -1630,7 +1730,6 @@
   (user principal)
   (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
   (begin
-    (asserts! (or (is-liquidator contract-caller) (is-lending-pool contract-caller)) ERR_UNAUTHORIZED)
     (let (
       (aggregate (try!
           (fold

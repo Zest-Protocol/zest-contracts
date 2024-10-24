@@ -1,4 +1,4 @@
-import { initSimnet } from "@hirosystems/clarinet-sdk";
+import { initSimnet, Simnet, tx } from "@hirosystems/clarinet-sdk";
 import { describe, expect, it, beforeEach } from "vitest";
 import { Cl, ClarityType, cvToValue } from "@stacks/transactions";
 import { readFileSync } from "fs";
@@ -6,7 +6,8 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
-import * as config from "./config";
+import * as config from "./tools/config";
+import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
 const simnet = await initSimnet();
 
@@ -91,6 +92,7 @@ const cvAssets = Cl.list([
     oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
   }),
 ]);
+
 describe("Upgrading z-token to v1-2", () => {
   beforeEach(() => {
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
@@ -749,67 +751,15 @@ describe("Upgrading z-token to v1-2", () => {
     simnet.mineEmptyBlock();
 
     simnet.setEpoch("3.0");
-    callResponse = simnet.deployContract(
-      "math-v2-0",
-      readFileSync(config.mathV2_0).toString(),
-      {
-        clarityVersion: 3,
-      },
-      deployerAddress
-    );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    callResponse = simnet.deployContract(
-      "pool-0-reserve-v2-0",
-      readFileSync(config.pool_0_reserve_v2_0).toString(),
-      {
-        clarityVersion: 3,
-      },
-      deployerAddress
-    );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    callResponse = simnet.deployContract(
-      "pool-borrow-v2-0",
-      readFileSync(config.pool_borrow_v2_0).toString(),
-      {
-        clarityVersion: 3,
-      },
-      deployerAddress
-    );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    callResponse = simnet.deployContract(
-      "liquidation-manager-v2-0",
-      readFileSync(config.liquidation_manager_v2_0).toString(),
-      {
-        clarityVersion: 3,
-      },
-      deployerAddress
-    );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    callResponse = simnet.deployContract(
-      "borrow-helper-v2-0",
-      readFileSync(config.borrow_helper_v2_0).toString(),
-      {
-        clarityVersion: 3,
-      },
-      deployerAddress
-    );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    callResponse = simnet.deployContract(
-      "lp-ststx-v3",
-      readFileSync(config.lp_ststx_v3_path).toString(),
-      {
-        clarityVersion: 3,
-      },
-      deployerAddress
-    );
-    // console.log(Cl.prettyPrint(callResponse.result));
+    deployV2Contracts(simnet, deployerAddress);
+    deployV2TokenContracts(simnet, deployerAddress);
+
     callResponse = simnet.deployContract(
       "migrate-3",
       readFileSync(`contracts/borrow/mocks/migrate-v2-v3.clar`).toString(),
       null,
       deployerAddress
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
     callResponse = simnet.callReadOnlyFn(
       `pool-reserve-data`,
       "get-reserve-state-read",
@@ -818,7 +768,6 @@ describe("Upgrading z-token to v1-2", () => {
       ],
       deployerAddress
     );
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
     callResponse = simnet.callPublicFn(
       "borrow-helper-v2-0",
       "withdraw",
@@ -833,7 +782,6 @@ describe("Upgrading z-token to v1-2", () => {
       ],
       Borrower_1
     );
-    // console.log(simnet.getAssetsMap().get(".ststx.ststx"));
     expect(
       simnet.getAssetsMap().get(".ststx.ststx")?.get(`${deployerAddress}.pool-vault`)
     ).toBe(10000000000n);

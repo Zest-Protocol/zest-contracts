@@ -7,8 +7,9 @@ import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 import { ZToken } from "./models/zToken";
 
-import * as config from "./config";
-import { initSimnetChecker } from "./SimnetChecker";
+import * as config from "./tools/config";
+import { initSimnetChecker } from "./tools/SimnetChecker";
+import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -53,8 +54,8 @@ const USDA = "usda";
 const xUSD = "xusd";
 const wstx = "wstx";
 
-const zsbtc = lpsBTCv2;
-const zststx = lpstSTXv2;
+const zsbtc = config.lpSbtc;
+const zststx = config.lpStstx;
 
 const max_value = BigInt("340282366920938463463374607431768211455");
 
@@ -66,6 +67,10 @@ describe("Supply and redeem", () => {
       null,
       deployerAddress
     );
+
+    simnet.setEpoch("3.0");
+    deployV2Contracts(simnet, deployerAddress);
+    deployV2TokenContracts(simnet, deployerAddress);
 
     callResponse = simnet.deployContract(
       "run-1",
