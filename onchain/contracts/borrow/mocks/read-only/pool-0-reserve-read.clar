@@ -1095,7 +1095,7 @@
     (user-data (get-user-reserve-data user (contract-of asset)))
 		(e-mode-config 
 			(if (is-in-e-mode user)
-				(get-asset-e-mode-config (contract-of asset))
+				(get-type-e-mode-config (get-asset-e-mode-type (contract-of asset)))
 				{ 
 					ltv: (get base-ltv-as-collateral reserve-data),
 					liquidation-threshold: (get liquidation-threshold reserve-data)
@@ -1593,7 +1593,7 @@
 (define-read-only (get-asset-e-mode-type (asset principal))
 	(default-to
 		e-mode-disabled-type
-		(contract-call? .pool-reserve-data-2 get-user-e-mode-read asset))
+		(contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset))
 )
 
 (define-read-only (get-user-e-mode (user principal))
@@ -1610,18 +1610,37 @@
 
 (define-read-only (e-mode-allows-borrowing (user principal) (asset-to-borrow principal))
   (let (
-    (e-mode-state (unwrap! (contract-call? .pool-reserve-data-2 get-user-e-mode-read user) ERR_DOES_NOT_EXIST))
-    (asset-e-mode-type (unwrap! (contract-call? .pool-reserve-data-2 get-user-e-mode-read asset-to-borrow) ERR_DOES_NOT_EXIST))
+    (user-e-mode-state (unwrap! (contract-call? .pool-reserve-data-2 get-user-e-mode-read user) ERR_DOES_NOT_EXIST))
+    (asset-e-mode-type (unwrap! (contract-call? .pool-reserve-data-2 get-asset-e-mode-type-read asset-to-borrow) ERR_DOES_NOT_EXIST))
     )
-    (ok (is-eq e-mode-state asset-e-mode-type))
+    (ok (is-eq user-e-mode-state asset-e-mode-type))
   )
 )
 
 ;; Note: makes the assumption that ltv and liquidation-threshold are set
-(define-read-only (get-asset-e-mode-config (asset principal))
+(define-read-only (get-type-e-mode-config (type (buff 1)))
   (default-to
 		{ ltv: u0, liquidation-threshold: u0 }
-		(contract-call? .pool-reserve-data-2 get-asset-e-mode-config-read asset))
+		(contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type))
+)
+
+;; if user is in e-mode and the asset is of type of the e-mode enabled
+(define-read-only (get-e-mode-config (user principal) (asset principal))
+  (let (
+    (user-e-mode (get-user-e-mode user))
+    (asset-e-mode (get-asset-e-mode-type asset))
+    (reserve-data (try! (get-reserve-state asset)))
+  )
+    (if (and (not (is-eq user-e-mode e-mode-disabled-type)) (is-eq asset-e-mode user-e-mode))
+      (ok (get-type-e-mode-config (get-asset-e-mode-type asset)))
+      (ok 
+        { 
+          ltv: (get base-ltv-as-collateral reserve-data),
+          liquidation-threshold: (get liquidation-threshold reserve-data)
+        }
+      )
+    )
+  )
 )
 
 (define-private (get-user-asset-data
@@ -1645,13 +1664,7 @@
     (is-oracle-ok (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) ERR_INVALID_ORACLE))
     (user-reserve-state (try! (get-user-balance-reserve-data lp-token asset user oracle)))
     (reserve-unit-price (try! (contract-call? oracle get-asset-price asset)))
-		(e-mode-config
-			(if (is-in-e-mode user)
-				(get-asset-e-mode-config (contract-of asset))
-				{ 
-					ltv: (get base-ltv-as-collateral reserve-data),
-					liquidation-threshold: (get liquidation-threshold reserve-data)
-				}))
+		(e-mode-config (try! (get-e-mode-config user (contract-of asset))))
     ;; liquidity and collateral balance
     (liquidity-balanceUSD (mul-to-fixed-precision (get underlying-balance user-reserve-state) (get decimals reserve-data) reserve-unit-price))
     (supply-state
