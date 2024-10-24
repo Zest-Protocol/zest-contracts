@@ -1460,7 +1460,6 @@
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
   (let (
     (user-assets (get-assets-used-by user))
-    (assets-used-as-collateral (get enabled-assets (get-assets-used-as-collateral user)))
     (assets-borrowed (get assets-borrowed (get-user-assets user)))
     ;; borrowed assets are of selected e-mode type?
     (borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
