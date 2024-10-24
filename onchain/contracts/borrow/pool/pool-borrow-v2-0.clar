@@ -316,7 +316,7 @@
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
     (asserts! (is-eq payer tx-sender) ERR_UNAUTHORIZED)
-    
+
     ;; paying back the balance
     (begin
       (try!
@@ -463,8 +463,6 @@
     true
     false))
 
-(define-constant e-mode-disabled-type 0x00)
-
 (define-public (set-e-mode
   (user principal)
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
@@ -488,9 +486,6 @@
     )
   )
 )
-
-(define-read-only (e-mode-enabled (e-mode-type (buff 1)))
-  (default-to false (contract-call? .pool-reserve-data-2 get-e-mode-types-read e-mode-type)))
 
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
   (contract-call? .pool-0-reserve-v2-0 can-enable-e-mode user e-mode-type))
