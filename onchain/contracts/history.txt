@@ -1,3 +1,0 @@
-#V2
-(get-block-info? time block-height)
-(get-block-info? time (- block-height u1))

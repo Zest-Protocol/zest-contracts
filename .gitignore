@@ -1,6 +1,7 @@
 node_modules
 onchain/.cache
 onchain/deployments/default.*
+onchain/deployments/
 onchain/settings/
 !onchain/settings/Devnet.toml
 onchain/history.txt
@@ -9,3 +10,4 @@ src/clarigen
 .DS_Store
 onchain/.requirements/
 onchain/contracts/borrow/deployment_mainnet
+.vscode

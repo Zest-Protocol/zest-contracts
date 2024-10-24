@@ -5,8 +5,9 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
-import * as config from "./config";
-import { initSimnetChecker } from "./SimnetChecker";
+import * as config from "./tools/config";
+import { initSimnetChecker } from "./tools/SimnetChecker";
+import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -51,9 +52,9 @@ const xUSD = "xusd";
 const lpwstx = "lp-wstx";
 const wstx = "wstx";
 
-const zsbtc = lpsBTCv2;
-const zststx = lpstSTXv2;
-const zxusd = lpxUSDv2;
+const zsbtc = config.lpSbtc;
+const zststx = config.lpStstx;
+const zxusd = config.lpXusd;
 
 describe("Liquidation tests", () => {
   beforeEach(() => {
@@ -349,6 +350,10 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
+    simnet.setEpoch("3.0");
+    deployV2Contracts(simnet, deployerAddress);
+    deployV2TokenContracts(simnet, deployerAddress);
+
     simnet.deployContract(
       "run-1",
       readFileSync(config.initContractsToV2).toString(),
@@ -562,7 +567,7 @@ describe("Liquidation tests", () => {
     // simnet.mineEmptyBlocks(10);
 
     let borrower_1_data = simnet.callPublicFn(
-      `${deployerAddress}.pool-0-reserve`,
+      config.pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),

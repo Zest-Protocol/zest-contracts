@@ -4,8 +4,8 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (define-trait redeemeable-trait
-	(
-		(withdraw
+  (
+    (withdraw
       (
         principal
         <ft>
@@ -16,5 +16,5 @@
       )
       (response uint uint)
     )
-	)
+  )
 )

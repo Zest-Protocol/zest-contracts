@@ -17,7 +17,7 @@
 (define-constant decimals u6)
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply lp-diko)))
+  (contract-call? .lp-ststx-v2 get-total-supply))
 
 (define-read-only (get-name)
   (ok (var-get token-name)))

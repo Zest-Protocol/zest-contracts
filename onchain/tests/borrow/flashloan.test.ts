@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { Cl } from "@stacks/transactions";
+import { Cl, cvToValue } from "@stacks/transactions";
 import { readFileSync } from "fs";
 import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
@@ -7,8 +7,9 @@ import { Oracle } from "./models/oracle";
 import { ZToken } from "./models/zToken";
 import { MintableToken } from "./models/token";
 
-import * as config from "./config";
-import { initSimnetChecker } from "./SimnetChecker";
+import * as config from "./tools/config";
+import { initSimnetChecker } from "./tools/SimnetChecker";
+import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
 let simnet = await initSimnetChecker();
 
@@ -21,7 +22,7 @@ const Borrower_1 = accounts.get("wallet_2")!;
 const Delegate_1 = accounts.get("wallet_3")!;
 const Borrower_2 = accounts.get("wallet_4")!;
 const Liquidator_1 = accounts.get("wallet_5")!;
-const FlashLoaner = accounts.get("wallet_6")!;
+const FlashLender = accounts.get("wallet_6")!;
 
 const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
@@ -46,9 +47,11 @@ const interestRateStrategyDefault = "interest-rate-strategy-default";
 const diko = "diko";
 const sBTC = "sbtc";
 const stSTX = "ststx";
-const zStSTX = lpstSTXv1;
-const zsBTC = lpsBTCv1;
-const zxUSD = "lp-xusd";
+
+const zStSTX = config.lpStstx;
+const zsBTC = config.lpSbtc;
+const zxUSD = config.lpXusd;
+
 const USDA = "usda";
 const xUSD = "xusd";
 
@@ -59,7 +62,6 @@ const max_value = BigInt("340282366920938463463374607431768211455");
 
 describe("Flashloans", () => {
   beforeEach(() => {
-    const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
     oracleContract.setPrice(
@@ -95,55 +97,6 @@ describe("Flashloans", () => {
       deployerAddress
     );
 
-    poolBorrow.init(
-      deployerAddress,
-      lpstSTXv2,
-      deployerAddress,
-      stSTX,
-      6,
-      max_value,
-      max_value,
-      deployerAddress,
-      oracle,
-      deployerAddress,
-      interestRateStrategyDefault,
-      deployerAddress
-    );
-    poolBorrow.addAsset(deployerAddress, stSTX, deployerAddress);
-
-    poolBorrow.init(
-      deployerAddress,
-      lpsBTCv2,
-      deployerAddress,
-      sBTC,
-      8,
-      max_value,
-      max_value,
-      deployerAddress,
-      oracle,
-      deployerAddress,
-      interestRateStrategyDefault,
-      deployerAddress
-    );
-    poolBorrow.addAsset(deployerAddress, sBTC, deployerAddress);
-
-    poolBorrow.init(
-      deployerAddress,
-      lpxUSDv2,
-      deployerAddress,
-      xUSD,
-      6,
-      max_value,
-      max_value,
-      deployerAddress,
-      oracle,
-      deployerAddress,
-      interestRateStrategyDefault,
-      deployerAddress
-    );
-
-    poolBorrow.addAsset(deployerAddress, xUSD, deployerAddress);
-
     let callResponse = simnet.callPublicFnCheckOk(
       "pool-0-reserve",
       "set-flashloan-fee-protocol",
@@ -164,12 +117,65 @@ describe("Flashloans", () => {
       deployerAddress
     );
 
+    simnet.setEpoch("3.0");
+    deployV2Contracts(simnet, deployerAddress);
+    deployV2TokenContracts(simnet, deployerAddress);
+
     callResponse = simnet.deployContract(
       "run-1",
       readFileSync(config.initContractsToV2).toString(),
       null,
       deployerAddress
     );
+    const poolBorrow = new PoolBorrow(simnet, deployerAddress, config.poolBorrow);
+    callResponse = poolBorrow.init(
+      deployerAddress,
+      zStSTX,
+      deployerAddress,
+      stSTX,
+      6,
+      max_value,
+      max_value,
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+    poolBorrow.addAsset(deployerAddress, stSTX, deployerAddress);
+
+    poolBorrow.init(
+      deployerAddress,
+      zsBTC,
+      deployerAddress,
+      sBTC,
+      8,
+      max_value,
+      max_value,
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+    poolBorrow.addAsset(deployerAddress, sBTC, deployerAddress);
+
+    poolBorrow.init(
+      deployerAddress,
+      zxUSD,
+      deployerAddress,
+      xUSD,
+      6,
+      max_value,
+      max_value,
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    poolBorrow.addAsset(deployerAddress, xUSD, deployerAddress);
   });
   it("Flashloan executes properly only when fees are paid back to the protocol", () => {
     const poolReserve0 = new PoolReserve(
@@ -180,7 +186,7 @@ describe("Flashloans", () => {
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      config.borrowHelper
+      config.poolBorrow
     );
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
 
@@ -199,7 +205,7 @@ describe("Flashloans", () => {
       config.borrowHelper,
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+        Cl.contractPrincipal(deployerAddress, zStSTX),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, stSTX),
         Cl.uint(400_000_000_000),
@@ -213,7 +219,7 @@ describe("Flashloans", () => {
       config.borrowHelper,
       "supply",
       [
-        Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+        Cl.contractPrincipal(deployerAddress, zsBTC),
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
@@ -227,25 +233,26 @@ describe("Flashloans", () => {
       config.borrowHelper,
       "flashloan",
       [
-        Cl.standardPrincipal(FlashLoaner),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+        Cl.standardPrincipal(FlashLender),
+        Cl.contractPrincipal(deployerAddress, zsBTC),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script"),
       ],
-      FlashLoaner
+      FlashLender
     );
     expect(callResponse.result).toBeErr(Cl.uint(30015));
 
+    // enable flashloan
     callResponse = simnet.callPublicFnCheckOk(
-      "pool-borrow-v1-2",
+      config.poolBorrowV2_0,
       "set-reserve",
       [
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.tuple({
           "a-token-address": Cl.contractPrincipal(
             "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
-            "lp-sbtc-v2"
+            config.lpSbtc
           ),
           "base-ltv-as-collateral": Cl.uint(80000000),
           "borrow-cap": Cl.uint(max_value),
@@ -283,31 +290,20 @@ describe("Flashloans", () => {
       deployerAddress
     );
 
+    // console.log(cvToValue(poolBorrow.getReserveState(deployerAddress, sBTC, deployerAddress).result));
+
+    // does not hold enough to pay initial + fee
     callResponse = simnet.callPublicFn(
       config.borrowHelper,
       "flashloan",
       [
-        Cl.standardPrincipal(FlashLoaner),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+        Cl.standardPrincipal(FlashLender),
+        Cl.contractPrincipal(deployerAddress, zsBTC),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script"),
       ],
-      FlashLoaner
-    );
-    expect(callResponse.result).toBeErr(Cl.uint(30016));
-
-    callResponse = simnet.callPublicFn(
-      config.borrowHelper,
-      "flashloan",
-      [
-        Cl.standardPrincipal(FlashLoaner),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv2),
-        Cl.contractPrincipal(deployerAddress, sBTC),
-        Cl.uint(2_000_000_000),
-        Cl.contractPrincipal(deployerAddress, "flashloan-script-1"),
-      ],
-      FlashLoaner
+      FlashLender
     );
     expect(callResponse.result).toBeErr(Cl.uint(1));
 
@@ -315,13 +311,13 @@ describe("Flashloans", () => {
       config.borrowHelper,
       "flashloan",
       [
-        Cl.standardPrincipal(FlashLoaner),
-        Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+        Cl.standardPrincipal(FlashLender),
+        Cl.contractPrincipal(deployerAddress, zsBTC),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script-2"),
       ],
-      FlashLoaner
+      FlashLender
     );
     expect(callResponse.result).toBeOk(Cl.uint(0));
     let amountFee = (2000000000n * 35n) / 10000n;

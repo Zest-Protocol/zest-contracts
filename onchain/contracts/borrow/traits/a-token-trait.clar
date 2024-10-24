@@ -1,5 +1,5 @@
 (define-trait a-token-trait
-	(
+  (
     ;; Transfer from the caller to a new principal
     (transfer (uint principal principal (optional (buff 34))) (response bool uint))
 
@@ -22,10 +22,10 @@
     (get-token-uri () (response (optional (string-utf8 256)) uint))
 
 
-		(transfer-on-liquidation (uint principal principal) (response uint uint))
+    (transfer-on-liquidation (uint principal principal) (response uint uint))
 
-		(burn-on-liquidation (uint principal) (response uint uint))
+    (burn-on-liquidation (uint principal) (response uint uint))
     
-	)
+  )
 )
 

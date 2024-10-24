@@ -1,0 +1,8 @@
+#V2
+::block-height
+::help
+::get_block_height
+::advance_chain_tip
+::advance_chaintip
+::advance_chain_tip 10
+(get-stacks-block-info? time u9)

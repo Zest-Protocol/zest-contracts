@@ -4,9 +4,9 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 
 (define-trait redeemeable-trait
-	(
+  (
     ;; redeemeable signatures
-		(cumulate-balance
+    (cumulate-balance
       (principal)
       (response (tuple
         (previous-user-balance uint)
@@ -26,5 +26,5 @@
     (get-balance (principal) (response uint uint))
     (get-total-supply () (response uint uint))
     (get-token-uri () (response (optional (string-utf8 256)) uint))
-	)
+  )
 )
