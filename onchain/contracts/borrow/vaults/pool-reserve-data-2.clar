@@ -1,5 +1,6 @@
 (define-constant ERR_UNAUTHORIZED (err u7000))
 
+;; user's e-mode
 (define-map user-e-mode principal (buff 1))
 (define-public (set-user-e-mode (asset principal) (flag (buff 1)))
   (begin
@@ -11,7 +12,7 @@
 (define-read-only (get-user-e-mode-read (asset principal))
   (map-get? user-e-mode asset))
 
-
+;; type -> enabled state
 (define-map e-mode-types (buff 1) bool)
 (define-public (set-asset-e-mode-types (flag (buff 1)) (enabled bool))
   (begin
@@ -23,6 +24,7 @@
 (define-read-only (get-e-mode-types-read (flag (buff 1)))
   (map-get? e-mode-types flag))
 
+;; asset's e-mode type
 (define-map asset-e-mode-type principal (buff 1))
 (define-public (set-asset-e-mode-type (asset principal) (flag (buff 1)))
   (begin
@@ -34,18 +36,19 @@
 (define-read-only (get-asset-e-mode-type-read (asset principal))
   (map-get? asset-e-mode-type asset))
 
-(define-map asset-e-mode-config principal { ltv: uint, liquidation-threshold: uint })
-(define-public (set-asset-e-mode-config
-	(asset principal)
+;; e-mode type's configuration
+(define-map type-e-mode-config (buff 1) { ltv: uint, liquidation-threshold: uint })
+(define-public (set-type-e-mode-config
+	(type (buff 1))
 	(config { ltv: uint, liquidation-threshold: uint }))
   (begin
     (try! (is-approved-contract contract-caller))
-    (print { type: "set-asset-e-mode-config", payload: { key: asset, data: { config: config } } })
-    (ok (map-set asset-e-mode-config asset config))))
-(define-public (get-asset-e-mode-config (asset principal))
-  (ok (map-get? asset-e-mode-config asset)))
-(define-read-only (get-asset-e-mode-config-read (asset principal))
-  (map-get? asset-e-mode-config asset))
+    (print { type: "set-type-e-mode-config", payload: { key: type, data: { config: config } } })
+    (ok (map-set type-e-mode-config type config))))
+(define-public (get-type-e-mode-config (type (buff 1)))
+  (ok (map-get? type-e-mode-config type)))
+(define-read-only (get-type-e-mode-config-read (type (buff 1)))
+  (map-get? type-e-mode-config type))
 
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)

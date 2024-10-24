@@ -37,6 +37,7 @@
 (define-constant ERR_INVALID_AMOUNT (err u30026))
 (define-constant ERR_NOT_IN_ISOLATED_MODE (err u30027))
 (define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u30028))
+(define-constant ERR_MUST_BORROW_E_MODE_TYPE (err u30029))
 
 
 (define-map users-id uint principal)
@@ -236,7 +237,7 @@
 
 			(if (is-in-e-mode owner)
 				;; if in e-mode, check that the user is borrowing same e-mode type
-				(asserts! (is-eq (get-asset-e-mode-type asset) (get-user-e-mode owner)) (err u11111))
+				(asserts! (is-eq (get-asset-e-mode-type asset) (get-user-e-mode owner)) ERR_MUST_BORROW_E_MODE_TYPE)
 				;; nothing to check
 				true
 			)
@@ -463,9 +464,7 @@
     false))
 
 (define-constant e-mode-disabled-type 0x00)
-(define-constant ERR_E_MODE_DOES_NOT_EXIST (err u9888123123))
 
-;; TURN ON E-MODE
 (define-public (set-e-mode
 	(user principal)
 	(assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
@@ -475,18 +474,17 @@
 		(asserts! (is-eq tx-sender user) ERR_UNAUTHORIZED)
 		(try! (is-approved-contract contract-caller))
 		(try! (validate-assets assets))
-		;; check that the e-mode type exists
-		(asserts! (e-mode-enabled new-e-mode-type) ERR_E_MODE_DOES_NOT_EXIST)
+
 		;; if from default state
 		(try! (can-enable-e-mode user new-e-mode-type))
-		(try! (set-e-mode-type user new-e-mode-type))
+		(try! (set-user-e-mode user new-e-mode-type))
 		;; check health, or revert
 		(let (
 			(user-global-data (try! (calculate-user-global-data user assets)))
 		)
 			;; check health factor does not go below threshold with new e-mode
 			(asserts! (not (get is-health-factor-below-treshold user-global-data)) ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
-			(ok true)
+			(ok new-e-mode-type)
 		)
 	)
 )
@@ -497,8 +495,8 @@
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
 	(contract-call? .pool-0-reserve-v2-0 can-enable-e-mode user e-mode-type))
 
-(define-private (set-e-mode-type (who principal) (e-mode-type (buff 1)))
-	(contract-call? .pool-reserve-data-2 set-asset-e-mode-type who e-mode-type))
+(define-private (set-user-e-mode (who principal) (e-mode-type (buff 1)))
+	(contract-call? .pool-reserve-data-2 set-user-e-mode who e-mode-type))
 
 (define-private (calculate-user-global-data
 	(user principal)
