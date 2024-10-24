@@ -189,7 +189,7 @@
   (let (
     (v0-balance (unwrap-panic (contract-call? .lp-ststx get-principal-balance account)))
     (v1-balance (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance account)))
-		;; previous-balance includes v0, v1, v2
+    ;; previous-balance includes v0, v1, v2
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
     (reserve-state (get-reserve-state asset-addr))
