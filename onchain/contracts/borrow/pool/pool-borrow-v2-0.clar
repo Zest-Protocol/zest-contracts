@@ -24,7 +24,7 @@
 (define-constant ERR_FROZEN (err u30013))
 (define-constant ERR_SUPPLYING_BORROWED_ASSET (err u30014))
 (define-constant ERR_FLASHLOAN_DISABLED (err u30015))
-(define-constant ERR_REPAYMENT_SHOULD_BE_EXACT (err u30016))
+
 (define-constant ERR_REPAY_BEFORE_DISABLING (err u30017))
 (define-constant ERR_INVALID_DECREASE (err u30018))
 (define-constant ERR_MUST_DISABLE_ISOLATED_ASSET (err u30019))
@@ -363,7 +363,7 @@
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
 
-    (contract-call? .liquidation-manager-v1-2 liquidation-call
+    (contract-call? .liquidation-manager-v2-0 liquidation-call
       assets
       collateral-lp
       collateral-to-liquidate
