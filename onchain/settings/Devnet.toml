@@ -102,6 +102,9 @@ balance = 100_000_000_000_000
 # stx_address: ST2ZW2EKBWATT2Z7FZ2XY9KYYVFBYBDCZBRZMFNR9
 
 [devnet]
+epoch_3_0 = 144
+stacks_node_image_url = "quay.io/hirosystems/stacks-node:devnet-3.0"
+stacks_signer_image_url = "quay.io/hirosystems/stacks-signer:devnet-3.0"
 # disable_stacks_explorer = false
 # disable_stacks_api = false
 # disable_bitcoin_explorer = true
@@ -136,3 +139,28 @@ balance = 100_000_000_000_000
 # stacks_explorer_image_url = "blockstack/explorer:latest"
 # bitcoin_explorer_image_url = "quay.io/hirosystems/bitcoin-explorer:devnet"
 # postgres_image_url = "postgres:alpine"
+
+# settings/Devnet.toml
+[[devnet.pox_stacking_orders]]
+start_at_cycle = 1
+duration = 10
+auto_extend = true
+wallet = "wallet_1"
+slots = 2
+btc_address = "mr1iPkD9N3RJZZxXRk7xF9d36gffa6exNC"
+
+[[devnet.pox_stacking_orders]]
+start_at_cycle = 1
+duration = 10
+auto_extend = true
+wallet = "wallet_2"
+slots = 2
+btc_address = "muYdXKmX9bByAueDe6KFfHd5Ff1gdN9ErG"
+
+[[devnet.pox_stacking_orders]]
+start_at_cycle = 1
+duration = 10
+auto_extend = true
+wallet = "wallet_3"
+slots = 2
+btc_address = "mvZtbibDAAA3WLpY7zXXFqRa3T4XSknBX7"

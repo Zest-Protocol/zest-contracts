@@ -161,3 +161,53 @@ describe("Math", () => {
     expect(callResponse.result).toBeUint(271_864_460);
   });
 });
+
+describe("Math with timestamps", () => {
+  it("calculate-linear-interest", () => {
+    simnet.mineEmptyBlocks(5000);
+    simnet.setEpoch("3.0");
+    let callResponse = simnet.deployContract(
+      "math-v2-0",
+      readFileSync(config.mathV2_0).toString(),
+      {
+        clarityVersion: 3,
+      },
+      deployerAddress
+    );
+    callResponse = simnet.deployContract(
+      "pool-0-reserve-v2-0",
+      readFileSync(config.mathV2_0).toString(),
+      {
+        clarityVersion: 3,
+      },
+      deployerAddress
+    );
+    const lastUpdatedBlock = simnet.blockHeight;
+    simnet.mineEmptyBlocks(1);
+
+    // console.log("Blockheight ", simnet.blockHeight);
+    // console.log("StacksBlock ", simnet.stacksBlockHeight);
+    // console.log("BurnBlockHeight ", simnet.burnBlockHeight);
+
+    callResponse = simnet.callReadOnlyFn(
+      `math-v2-0`,
+      "get-rt-by-block",
+      [Cl.uint(100000000), Cl.uint((simnet.stacksBlockHeight - lastUpdatedBlock))],
+      deployerAddress
+    );
+    // console.log(cvToValue(callResponse.result));
+  });
+});
+
+function calculateLinearInterestEarned(
+  yearlyInterestRate: number,
+  time: number
+): BigInt {
+  // Calculate interest using simple interest formula: I = P * r * t
+  const interestRate =
+    (BigInt(yearlyInterestRate * 100_000_000) * BigInt(time)) /
+    BigInt(365 * 24 * 60 * 60);
+
+  // Round to 6 decimal places for more precision with small time units
+  return interestRate;
+}

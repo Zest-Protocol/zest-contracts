@@ -1,6 +1,7 @@
 node_modules
 onchain/.cache
 onchain/deployments/default.*
+onchain/deployments/
 onchain/settings/
 !onchain/settings/Devnet.toml
 onchain/history.txt
