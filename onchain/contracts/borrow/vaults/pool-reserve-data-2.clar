@@ -39,8 +39,8 @@
 ;; e-mode type -> configuration
 (define-map type-e-mode-config (buff 1) { ltv: uint, liquidation-threshold: uint })
 (define-public (set-type-e-mode-config
-	(type (buff 1))
-	(config { ltv: uint, liquidation-threshold: uint }))
+  (type (buff 1))
+  (config { ltv: uint, liquidation-threshold: uint }))
   (begin
     (try! (is-approved-contract contract-caller))
     (print { type: "set-type-e-mode-config", payload: { key: type, data: { config: config } } })

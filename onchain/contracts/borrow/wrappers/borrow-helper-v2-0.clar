@@ -179,11 +179,11 @@
 )
 
 (define-public (set-e-mode
-	(user principal)
-	(assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-	(new-e-mode-type (buff 1))
-	)
-	(begin
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  (new-e-mode-type (buff 1))
+  )
+  (begin
     (contract-call? .pool-borrow-v2-0 set-e-mode user assets new-e-mode-type)
   )
 )

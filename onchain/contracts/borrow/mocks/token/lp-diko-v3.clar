@@ -13,19 +13,19 @@
 (define-constant decimals u6)
 
 (define-read-only (get-total-supply)
-	(contract-call? .lp-diko-v2 get-total-supply))
+  (contract-call? .lp-diko-v2 get-total-supply))
 
 (define-read-only (get-name)
-	(contract-call? .lp-diko-v2 get-name))
+  (contract-call? .lp-diko-v2 get-name))
 
 (define-read-only (get-symbol)
-	(contract-call? .lp-diko-v2 get-symbol))
+  (contract-call? .lp-diko-v2 get-symbol))
 
 (define-read-only (get-decimals)
-	(contract-call? .lp-diko-v2 get-decimals))
+  (contract-call? .lp-diko-v2 get-decimals))
 
 (define-read-only (get-token-uri)
-	(contract-call? .lp-diko-v2 get-token-uri))
+  (contract-call? .lp-diko-v2 get-token-uri))
 
 (define-read-only (get-balance (account principal))
   (let (
@@ -104,22 +104,22 @@
 )
 
 (define-read-only (get-principal-balance (account principal))
-	(ok
-		;; only need v2 balance because it already adds v0, v1 and v2 balance
-		(unwrap-panic (contract-call? .lp-diko-v2 get-principal-balance account))
-	)
+  (ok
+    ;; only need v2 balance because it already adds v0, v1 and v2 balance
+    (unwrap-panic (contract-call? .lp-diko-v2 get-principal-balance account))
+  )
 )
 
 (define-read-only (mul (x uint) (y uint)) (contract-call? .math-v2-0 mul x y))
 (define-read-only (div (x uint) (y uint)) (contract-call? .math-v2-0 div x y))
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
-	(contract-call? .math-v2-0 mul-precision-with-factor a decimals-a b-fixed))
+  (contract-call? .math-v2-0 mul-precision-with-factor a decimals-a b-fixed))
 
 (define-read-only (get-reserve-state (asset principal))
-	(unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-addr)))
+  (unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-addr)))
 
 (define-read-only (get-user-index (user principal) (asset principal))
-	(unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-user-index user asset)))
+  (unwrap-panic (contract-call? .pool-0-reserve-v2-0 get-user-index user asset)))
 
 (define-public (transfer-on-liquidation (amount uint) (from principal) (to principal))
   (begin
@@ -185,7 +185,7 @@
   (let (
     (v0-balance (unwrap-panic (contract-call? .lp-diko get-principal-balance account)))
     (v1-balance (unwrap-panic (contract-call? .lp-diko-v1 get-principal-balance account)))
-		;; previous-balance includes v0, v1, v2
+    ;; previous-balance includes v0, v1, v2
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
     (reserve-state (get-reserve-state asset-addr))

@@ -82,12 +82,12 @@
 
       ;; if first supply
       (if (is-eq current-balance u0)
-				;; additional checks for first supply and if it's isolation mode
+        ;; additional checks for first supply and if it's isolation mode
         (if (and (get usage-as-collateral-enabled reserve-state)
             (unwrap-panic
               (validate-use-as-collateral
                 isolated-asset
-								;; we only use base ltv, no need to fetch in case of e-mode
+                ;; we only use base ltv, no need to fetch in case of e-mode
                 (get base-ltv-as-collateral reserve-state)
                 (get enabled-assets assets-used-as-collateral)
                 supplied-asset-principal
@@ -235,12 +235,12 @@
         true
       )
 
-			(if (is-in-e-mode owner)
-				;; if in e-mode, check that the user is borrowing same e-mode type
-				(asserts! (is-eq (get-asset-e-mode-type asset) (get-user-e-mode owner)) ERR_MUST_BORROW_E_MODE_TYPE)
-				;; nothing to check
-				true
-			)
+      (if (is-in-e-mode owner)
+        ;; if in e-mode, check that the user is borrowing same e-mode type
+        (asserts! (is-eq (get-asset-e-mode-type asset) (get-user-e-mode owner)) ERR_MUST_BORROW_E_MODE_TYPE)
+        ;; nothing to check
+        true
+      )
 
       (let (
         (user-global-data (try! (contract-call? .pool-0-reserve-v2-0 calculate-user-global-data owner assets)))
@@ -255,7 +255,7 @@
             (get total-borrow-balanceUSD user-global-data)
             (get user-total-feesUSD user-global-data)
             (get current-ltv user-global-data)))
-				)
+        )
         (asserts! (> (get total-collateral-balanceUSD user-global-data) u0) ERR_NOT_ZERO)
         (asserts! (<= (get collateral-needed-in-USD amount-collateral-needed) (get total-collateral-balanceUSD user-global-data)) ERR_NOT_ENOUGH_COLLATERAL)
         (asserts! (>= (get borrow-cap reserve-state) (+ (get total-borrows-variable reserve-state) u0 amount-to-be-borrowed)) ERR_EXCEED_BORROW_CAP)
@@ -426,7 +426,7 @@
 
     (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user asset receiver amount))
     (try! (contract-call? flashloan execute asset receiver amount))
-		;; force transfer of assets to vault
+    ;; force transfer of assets to vault
     (try!
       (contract-call? asset transfer
         (+ amount amount-fee)
@@ -466,42 +466,42 @@
 (define-constant e-mode-disabled-type 0x00)
 
 (define-public (set-e-mode
-	(user principal)
-	(assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
-	(new-e-mode-type (buff 1))
-	)
-	(begin
-		(asserts! (is-eq tx-sender user) ERR_UNAUTHORIZED)
-		(try! (is-approved-contract contract-caller))
-		(try! (validate-assets assets))
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  (new-e-mode-type (buff 1))
+  )
+  (begin
+    (asserts! (is-eq tx-sender user) ERR_UNAUTHORIZED)
+    (try! (is-approved-contract contract-caller))
+    (try! (validate-assets assets))
 
-		;; if from default state
-		(try! (can-enable-e-mode user new-e-mode-type))
-		(try! (set-user-e-mode user new-e-mode-type))
-		;; check health, or revert
-		(let (
-			(user-global-data (try! (calculate-user-global-data user assets)))
-		)
-			;; check health factor does not go below threshold with new e-mode
-			(asserts! (not (get is-health-factor-below-treshold user-global-data)) ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
-			(ok new-e-mode-type)
-		)
-	)
+    ;; if from default state
+    (try! (can-enable-e-mode user new-e-mode-type))
+    (try! (set-user-e-mode user new-e-mode-type))
+    ;; check health, or revert
+    (let (
+      (user-global-data (try! (calculate-user-global-data user assets)))
+    )
+      ;; check health factor does not go below threshold with new e-mode
+      (asserts! (not (get is-health-factor-below-treshold user-global-data)) ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
+      (ok new-e-mode-type)
+    )
+  )
 )
 
 (define-read-only (e-mode-enabled (e-mode-type (buff 1)))
-	(default-to false (contract-call? .pool-reserve-data-2 get-e-mode-types-read e-mode-type)))
+  (default-to false (contract-call? .pool-reserve-data-2 get-e-mode-types-read e-mode-type)))
 
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
-	(contract-call? .pool-0-reserve-v2-0 can-enable-e-mode user e-mode-type))
+  (contract-call? .pool-0-reserve-v2-0 can-enable-e-mode user e-mode-type))
 
 (define-private (set-user-e-mode (who principal) (e-mode-type (buff 1)))
-	(contract-call? .pool-reserve-data-2 set-user-e-mode who e-mode-type))
+  (contract-call? .pool-reserve-data-2 set-user-e-mode who e-mode-type))
 
 (define-private (calculate-user-global-data
-	(user principal)
-	(assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
-	(contract-call? .pool-0-reserve-v2-0 calculate-user-global-data user assets))
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
+  (contract-call? .pool-0-reserve-v2-0 calculate-user-global-data user assets))
 
 (define-public (set-user-use-reserve-as-collateral
   (who principal)
@@ -561,10 +561,10 @@
 )
 
 (define-read-only (get-asset-e-mode-type (asset principal))
-	(contract-call? .pool-0-reserve-v2-0 get-asset-e-mode-type asset))
+  (contract-call? .pool-0-reserve-v2-0 get-asset-e-mode-type asset))
 
 (define-read-only (get-user-e-mode (user principal))
-	(contract-call? .pool-0-reserve-v2-0 get-user-e-mode user))
+  (contract-call? .pool-0-reserve-v2-0 get-user-e-mode user))
 
 (define-read-only (is-in-e-mode (user principal))
   (contract-call? .pool-0-reserve-v2-0 is-in-e-mode user))
