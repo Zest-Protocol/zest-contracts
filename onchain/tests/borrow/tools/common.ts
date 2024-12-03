@@ -22,7 +22,7 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
   );
   simnet.deployContract(
     "pool-0-reserve-v2-0",
-    readFileSync(config.pool_0_reserve_v2_0_path).toString(),
+    readFileSync(config.pool0ReserveV2_0_path).toString(),
     {
       clarityVersion: 3,
     },
