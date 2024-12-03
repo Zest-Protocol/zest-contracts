@@ -716,7 +716,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     callResponse = simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -816,7 +816,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -962,7 +962,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -1143,7 +1143,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -1291,7 +1291,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -1396,7 +1396,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -1512,7 +1512,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -1746,7 +1746,7 @@ describe("Upgrading a z-token", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -1897,7 +1897,7 @@ describe("Upgrading a z-token", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -2079,7 +2079,7 @@ describe("Upgrading a z-token", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -2277,7 +2277,7 @@ describe("Upgrading a z-token", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -2420,7 +2420,7 @@ describe("Upgrading a z-token", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -2567,7 +2567,7 @@ describe("Upgrading a z-token", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -2730,7 +2730,7 @@ describe("Upgrading a z-token", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -2906,7 +2906,7 @@ describe("Upgrading a z-token", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -3153,7 +3153,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -3298,7 +3298,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -3514,7 +3514,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -3741,7 +3741,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -3966,7 +3966,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -4221,7 +4221,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -4529,7 +4529,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -4933,7 +4933,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -5251,7 +5251,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
@@ -5570,7 +5570,7 @@ describe("Upgrading a z-token", () => {
     // simnet.deployContract(lpstSTXv1, readFileSync(`contracts/borrow/mocks/lp-ststx-v1.clar`).toString(), null, deployerAddress);
     let result = simnet.deployContract(
       "run-1",
-      readFileSync(`contracts/borrow/mocks/migrate-v0-v1.clar`).toString(),
+      readFileSync(config.migrateV0ToV1FilePath).toString(),
       null,
       deployerAddress
     );
