@@ -24,18 +24,6 @@ const Borrower_2 = accounts.get("wallet_4")!;
 const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
-const lpdiko = "lp-diko";
-const lpsBTC = "lp-sbtc";
-const lpsBTCv1 = "lp-sbtc-v1";
-const lpsBTCv2 = "lp-sbtc-v2";
-const lpstSTX = "lp-ststx";
-const lpstSTXv1 = "lp-ststx-v1";
-const lpstSTXv2 = "lp-ststx-v2";
-const lpUSDA = "lp-usda";
-const lpxUSD = "lp-xusd";
-const lpxUSDv1 = "lp-xusd-v1";
-const lpxUSDv2 = "lp-xusd-v2";
-
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
 const feesCalculator = "fees-calculator";

@@ -172,6 +172,15 @@
   )
 )
 
+(define-read-only (get-borrowed-balance-user-usd-usda (who principal))
+  (let (
+    (balance (get-borrowed-balance-user-usda who))
+    (unit-price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.usda-oracle-v1-1 get-price))
+  )
+    (token-to-usd (get compounded-balance balance) u6 unit-price)
+  )
+)
+
 (define-read-only (get-borrowed-balance-user-ststx (who principal))
   (get-user-borrow-balance who 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token)
 )
@@ -195,6 +204,11 @@
 (define-read-only (get-borrowed-balance-user-susdt (who principal))
   (get-user-borrow-balance who 'SP2XD7417HGPRTREMKF748VNEQPDRR0RMANB7X1NK.token-susdt)
 )
+
+(define-read-only (get-borrowed-balance-user-usda (who principal))
+  (get-user-borrow-balance who 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token)
+)
+
 
 (define-read-only (get-borrowed-balance (asset principal))
   (get total-borrows-variable (get-reserve-data asset))

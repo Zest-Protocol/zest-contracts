@@ -9,27 +9,23 @@
 
 (define-constant one-8 u100000000)
 
-(define-data-var token-uri (string-utf8 256) u"https://token-meta.s3.eu-central-1.amazonaws.com/zstSTX.json")
-(define-data-var token-name (string-ascii 32) "Zest stSTX")
-(define-data-var token-symbol (string-ascii 32) "zstSTX")
-
 (define-constant asset-addr .ststx)
 (define-constant decimals u6)
 
 (define-read-only (get-total-supply)
-  (contract-call? .lp-ststx-v2 get-total-supply))
+  (contract-call? .lp-ststx-token get-total-supply))
 
 (define-read-only (get-name)
-  (contract-call? .lp-ststx-v2 get-name))
+  (contract-call? .lp-ststx-token get-name))
 
 (define-read-only (get-symbol)
-  (contract-call? .lp-ststx-v2 get-symbol))
+  (contract-call? .lp-ststx-token get-symbol))
 
 (define-read-only (get-decimals)
-  (contract-call? .lp-ststx-v2 get-decimals))
+  (contract-call? .lp-ststx-token get-decimals))
 
 (define-read-only (get-token-uri)
-  (contract-call? .lp-ststx-v2 get-token-uri))
+  (contract-call? .lp-ststx-token get-token-uri))
 
 (define-read-only (get-balance (account principal))
   (let (
@@ -73,15 +69,15 @@
 )
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (contract-call? .lp-ststx-v2 transfer amount sender recipient memo)
+  (contract-call? .lp-ststx-token transfer amount sender recipient memo)
 )
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (contract-call? .lp-ststx-v2 mint amount owner)
+  (contract-call? .lp-ststx-token mint amount owner)
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (contract-call? .lp-ststx-v2 burn amount owner)
+  (contract-call? .lp-ststx-token burn amount owner)
 )
 
 ;; END sip-010 actions
@@ -108,9 +104,8 @@
 )
 
 (define-read-only (get-principal-balance (account principal))
-  (ok 
-    ;; only need v2 balance because it already adds v0, v1 and v2 balance
-    (unwrap-panic (contract-call? .lp-ststx-v2 get-principal-balance account))
+  (ok
+    (contract-call? .lp-ststx-token get-balance account)
   )
 )
 
@@ -187,9 +182,6 @@
 
 (define-private (cumulate-balance-internal (account principal))
   (let (
-    (v0-balance (unwrap-panic (contract-call? .lp-ststx get-principal-balance account)))
-    (v1-balance (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance account)))
-    ;; previous-balance includes v0, v1, v2
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
     (reserve-state (get-reserve-state asset-addr))
@@ -198,24 +190,6 @@
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
     (try! (contract-call? .pool-0-reserve-v2-0 set-user-index account asset-addr new-user-index))
-
-    ;; transfer previous balance and mint to new token
-    ;; can either have v0-balance or v1-balance, not both
-    (if (> v0-balance u0)
-      (begin
-        (try! (mint-internal v0-balance account))
-        (try! (contract-call? .lp-ststx burn v0-balance account))
-        true
-      )
-      (if (> v1-balance u0)
-        (begin
-          (try! (mint-internal v1-balance account))
-          (try! (contract-call? .lp-ststx-v1 burn v1-balance account))
-          true
-        )
-        false
-      )
-    )
 
     (if (is-eq balance-increase u0)
       false

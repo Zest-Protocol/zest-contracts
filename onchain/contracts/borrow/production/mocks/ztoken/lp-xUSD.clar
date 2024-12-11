@@ -13,19 +13,19 @@
 (define-constant decimals u6)
 
 (define-read-only (get-total-supply)
-  (contract-call? .lp-xusd-v2 get-total-supply))
+  (contract-call? .lp-xusd-token get-total-supply))
 
 (define-read-only (get-name)
-  (contract-call? .lp-xusd-v2 get-name))
+  (contract-call? .lp-xusd-token get-name))
 
 (define-read-only (get-symbol)
-  (contract-call? .lp-xusd-v2 get-symbol))
+  (contract-call? .lp-xusd-token get-symbol))
 
 (define-read-only (get-decimals)
-  (contract-call? .lp-xusd-v2 get-decimals))
+  (contract-call? .lp-xusd-token get-decimals))
 
 (define-read-only (get-token-uri)
-  (contract-call? .lp-xusd-v2 get-token-uri))
+  (contract-call? .lp-xusd-token get-token-uri))
 
 (define-read-only (get-balance (account principal))
   (let (
@@ -33,14 +33,14 @@
   )
     (if (is-eq current-principal-balance u0)
       (ok u0)
-      (let (
-        (cumulated-balance
-          (calculate-cumulated-balance
-            account
-            decimals
-            asset-addr
-            current-principal-balance
-            decimals) ) )
+      (let ((cumulated-balance
+              (calculate-cumulated-balance
+                account
+                decimals
+                asset-addr
+                current-principal-balance
+                decimals
+              )))
         (ok cumulated-balance)
       )
     )
@@ -69,15 +69,15 @@
 )
 
 (define-private (transfer-internal (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
-  (contract-call? .lp-xusd-v2 transfer amount sender recipient memo)
+  (contract-call? .lp-xusd-token transfer amount sender recipient memo)
 )
 
 (define-private (mint-internal (amount uint) (owner principal))
-  (contract-call? .lp-xusd-v2 mint amount owner)
+  (contract-call? .lp-xusd-token mint amount owner)
 )
 
 (define-private (burn-internal (amount uint) (owner principal))
-  (contract-call? .lp-xusd-v2 burn amount owner)
+  (contract-call? .lp-xusd-token burn amount owner)
 )
 
 ;; END sip-010 actions
@@ -105,8 +105,7 @@
 
 (define-read-only (get-principal-balance (account principal))
   (ok
-    ;; only need v2 balance because it already adds v0, v1 and v2 balance
-    (unwrap-panic (contract-call? .lp-xusd-v2 get-principal-balance account))
+    (contract-call? .lp-xusd-token get-balance account)
   )
 )
 
@@ -183,9 +182,6 @@
 
 (define-private (cumulate-balance-internal (account principal))
   (let (
-    (v0-balance (unwrap-panic (contract-call? .lp-xusd get-principal-balance account)))
-    (v1-balance (unwrap-panic (contract-call? .lp-xusd-v1 get-principal-balance account)))
-    ;; previous-balance includes v0, v1, v2
     (previous-balance (unwrap-panic (get-principal-balance account)))
     (balance-increase (- (unwrap-panic (get-balance account)) previous-balance))
     (reserve-state (get-reserve-state asset-addr))
@@ -194,24 +190,6 @@
         (get last-updated-block reserve-state)
         (get last-liquidity-cumulative-index reserve-state))))
     (try! (contract-call? .pool-0-reserve-v2-0 set-user-index account asset-addr new-user-index))
-
-    ;; transfer previous balance and mint to new token
-    ;; can either have v0-balance or v1-balance, not both
-    (if (> v0-balance u0)
-      (begin
-        (try! (mint-internal v0-balance account))
-        (try! (contract-call? .lp-xusd burn v0-balance account))
-        true
-      )
-      (if (> v1-balance u0)
-        (begin
-          (try! (mint-internal v1-balance account))
-          (try! (contract-call? .lp-xusd-v1 burn v1-balance account))
-          true
-        )
-        false
-      )
-    )
 
     (if (is-eq balance-increase u0)
       false
@@ -261,7 +239,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-lp-xusd", payload: owner })
+    (print { type: "set-contract-owner-lp-ststx", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-read-only (is-contract-owner (caller principal))
