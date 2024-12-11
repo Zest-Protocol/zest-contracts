@@ -604,20 +604,9 @@ describe("Supply and Redeem", () => {
     expect(prevLT).toBe(80000000)
     // console.log(Cl.prettyPrint(callResponse.result));
 
-    // give permission
-    callResponse = simnet.callPublicFnCheckOk(
-      "pool-reserve-data-2",
-      "set-approved-contract",
-      [
-        Cl.principal(deployerAddress),
-        Cl.bool(true)
-      ],
-      deployerAddress
-    );
-
     // set up e-mode type settings (STX category)
     callResponse = simnet.callPublicFnCheckOk(
-      "pool-reserve-data-2",
+      config.poolBorrow,
       "set-asset-e-mode-types",
       [
         Cl.bufferFromHex("0x01"),
@@ -627,34 +616,30 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      "pool-reserve-data-2",
+      config.poolBorrow,
       "set-type-e-mode-config",
       [
         Cl.bufferFromHex("0x01"),
-        Cl.tuple({
-          "ltv": Cl.uint(95000000),
-          "liquidation-threshold": Cl.uint(97000000),
-        })
+        Cl.uint(95000000),
+        Cl.uint(97000000),
       ],
       deployerAddress
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      "pool-reserve-data-2",
+      config.poolBorrow,
       "set-type-e-mode-config",
       [
         Cl.bufferFromHex("0x02"),
-        Cl.tuple({
-          "ltv": Cl.uint(95000000),
-          "liquidation-threshold": Cl.uint(97000000),
-        })
+        Cl.uint(95000000),
+        Cl.uint(97000000),
       ],
       deployerAddress
     );
 
     // set up e-mode type settings (STX category)
     callResponse = simnet.callPublicFnCheckOk(
-      "pool-reserve-data-2",
+      config.poolBorrow,
       "set-asset-e-mode-type",
       [
         Cl.contractPrincipal(deployerAddress, wstx),
@@ -663,7 +648,7 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
     callResponse = simnet.callPublicFnCheckOk(
-      "pool-reserve-data-2",
+      config.poolBorrow,
       "set-asset-e-mode-type",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
@@ -674,7 +659,7 @@ describe("Supply and Redeem", () => {
 
     // set up e-mode type settings (stablecoins)
     callResponse = simnet.callPublicFnCheckOk(
-      "pool-reserve-data-2",
+      config.poolBorrow,
       "set-asset-e-mode-types",
       [
         Cl.bufferFromHex("0x02"),
@@ -683,7 +668,7 @@ describe("Supply and Redeem", () => {
       deployerAddress
     );
     callResponse = simnet.callPublicFnCheckOk(
-      "pool-reserve-data-2",
+      config.poolBorrow,
       "set-asset-e-mode-type",
       [
         Cl.contractPrincipal(deployerAddress, USDA),

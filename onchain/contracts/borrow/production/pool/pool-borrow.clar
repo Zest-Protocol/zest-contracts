@@ -745,6 +745,30 @@
   )
 )
 
+(define-public (set-asset-e-mode-types (e-mode-type (buff 1)) (enabled bool))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data-2 set-asset-e-mode-types e-mode-type enabled)
+  )
+)
+
+(define-public (set-type-e-mode-config (e-mode-type (buff 1)) (ltv uint) (liquidation-threshold uint))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data-2 set-type-e-mode-config e-mode-type {
+      ltv: ltv,
+      liquidation-threshold: liquidation-threshold
+    })
+  )
+)
+
+(define-public (set-asset-e-mode-type (asset principal) (e-mode-type (buff 1)))
+  (begin
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
+    (contract-call? .pool-reserve-data-2 set-asset-e-mode-type asset e-mode-type)
+  )
+)
+
 ;; for helper interface
 (define-map approved-contracts principal bool)
 
