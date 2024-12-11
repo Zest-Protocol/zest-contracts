@@ -722,6 +722,8 @@ describe("Upgrading z-token to v1-2", () => {
       Borrower_1,
       Borrower_1
     );
+    // console.log((callResponse.events[0].data.value as any).data.payload.data.data);
+    // console.log((callResponse.events[callResponse.events.length - 1].data.value as any).data.payload.data.data);
 
     callResponse = poolBorrow.supply(
       deployerAddress,
@@ -754,20 +756,81 @@ describe("Upgrading z-token to v1-2", () => {
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
 
+    callResponse = simnet.callPublicFn(
+      "borrow-helper-v1-2",
+      "borrow",
+      [
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.contractPrincipal(deployerAddress, USDA),
+        Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpstSTXv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpsBTCv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, diko),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpdikov2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpUSDAv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpxUSDv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, wstx),
+            "lp-token": Cl.contractPrincipal(deployerAddress, lpwstxv2),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+        Cl.uint(10_000_000),
+        Cl.contractPrincipal(deployerAddress, feesCalculator),
+        Cl.uint(0),
+        Cl.standardPrincipal(Borrower_2),
+      ],
+      Borrower_2
+    );
+
+    callResponse = simnet.callReadOnlyFn(
+      `pool-reserve-data`,
+      "get-reserve-state-read",
+      [
+        Cl.contractPrincipal(deployerAddress, USDA),
+      ],
+      deployerAddress
+    );
+    // console.log(Cl.prettyPrint(callResponse.result));
+    callResponse = simnet.callReadOnlyFn(
+      `pool-reserve-data`,
+      "get-user-reserve-data-read",
+      [
+        Cl.standardPrincipal(Borrower_2),
+        Cl.contractPrincipal(deployerAddress, USDA),
+      ],
+      deployerAddress
+    );
+    // console.log(Cl.prettyPrint(callResponse.result));
+
     callResponse = simnet.deployContract(
       "migrate-3",
       readFileSync(config.migrateV2ToV3FilePath).toString(),
       null,
       deployerAddress
     );
-    callResponse = simnet.callReadOnlyFn(
-      `pool-reserve-data`,
-      "get-reserve-state-read",
-      [
-        Cl.contractPrincipal(deployerAddress, stSTX),
-      ],
-      deployerAddress
-    );
+
     callResponse = simnet.callPublicFn(
       "borrow-helper-v2-0",
       "withdraw",
@@ -786,13 +849,16 @@ describe("Upgrading z-token to v1-2", () => {
       simnet.getAssetsMap().get(".ststx.ststx")?.get(`${deployerAddress}.pool-vault`)
     ).toBe(10000000000n);
     expect(
-      simnet.getAssetsMap().get(".lp-ststx-v2.lp-ststx")?.get(Borrower_1)
+      simnet.getAssetsMap().get(`.lp-ststx-token.lp-ststx`)?.get(Borrower_1)
     ).toBe(0n);
     expect(
-      simnet.getAssetsMap().get(".lp-ststx-v1.lp-ststx")?.get(Borrower_1)
+      simnet.getAssetsMap().get(`.lp-ststx-v2.lp-ststx`)?.get(Borrower_1)
     ).toBe(undefined);
     expect(
-      simnet.getAssetsMap().get(".lp-ststx.lp-ststx")?.get(Borrower_1)
+      simnet.getAssetsMap().get(`.lp-ststx-v1.lp-ststx`)?.get(Borrower_1)
+    ).toBe(undefined);
+    expect(
+      simnet.getAssetsMap().get(`.lp-ststx.lp-ststx`)?.get(Borrower_1)
     ).toBe(0n);
   });
 });
