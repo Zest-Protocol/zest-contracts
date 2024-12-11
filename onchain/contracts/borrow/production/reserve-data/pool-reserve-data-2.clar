@@ -83,5 +83,3 @@
   (if (default-to false (map-get? approved-contracts contract))
     (ok true)
     ERR_UNAUTHORIZED))
-
-(map-set approved-contracts .pool-borrow-v1-2 true)
