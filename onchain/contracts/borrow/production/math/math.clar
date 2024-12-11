@@ -176,8 +176,6 @@
   )
 )
 
-(stx-transfer? u100000000 tx-sender 'STC6G8DC2A0V58A6399M22C06BF4EK5JZSQW7BWP)
-
 (define-read-only (get-sb-by-sy)
   sb-by-sy
 )
