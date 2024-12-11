@@ -5,7 +5,7 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
-import * as config from "./tools/config";
+import { initContractsToV2, lpSbtc, lpStstx, lpXusd, poolBorrow as poolBorrowContractName, pool0Reserve as pool0ReserveContractName, reserveExtraVariables, borrowHelper, pool0ReserveRead } from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
 import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
@@ -24,20 +24,6 @@ const Liquidator_1 = accounts.get("wallet_5")!;
 const contractInterfaces = simnet.getContractsInterfaces();
 const poolv20Interface = contractInterfaces.get(`${deployerAddress}.pool-v2-0`);
 
-const lpdiko = "lp-diko";
-const lpsBTC = "lp-sbtc";
-const lpsBTCv1 = "lp-sbtc-v1";
-const lpsBTCv2 = "lp-sbtc-v2";
-const lpstSTX = "lp-ststx";
-const lpstSTXv1 = "lp-ststx-v1";
-const lpstSTXv2 = "lp-ststx-v2";
-const lpUSDA = "lp-usda";
-const lpUSDAv1 = "lp-usda-v1";
-const lpUSDAv2 = "lp-usda-v2";
-const lpxUSD = "lp-xusd";
-const lpxUSDv1 = "lp-xusd-v1";
-const lpxUSDv2 = "lp-xusd-v2";
-
 const debtToken0 = "debt-token-0";
 const pool0Reserve = "pool-0-reserve";
 const feesCalculator = "fees-calculator";
@@ -52,9 +38,9 @@ const xUSD = "xusd";
 const lpwstx = "lp-wstx";
 const wstx = "wstx";
 
-const zsbtc = config.lpSbtc;
-const zststx = config.lpStstx;
-const zxusd = config.lpXusd;
+const zsbtc = lpSbtc;
+const zststx = lpStstx;
+const zxusd = lpXusd;
 
 describe("Liquidation tests", () => {
   beforeEach(() => {
@@ -345,7 +331,7 @@ describe("Liquidation tests", () => {
 
     simnet.deployContract(
       "run-reserve-extra-variables",
-      readFileSync(config.reserveExtraVariables).toString(),
+      readFileSync(reserveExtraVariables).toString(),
       null,
       deployerAddress
     );
@@ -356,7 +342,7 @@ describe("Liquidation tests", () => {
 
     simnet.deployContract(
       "run-1",
-      readFileSync(config.initContractsToV2).toString(),
+      readFileSync(initContractsToV2).toString(),
       null,
       deployerAddress
     );
@@ -365,7 +351,7 @@ describe("Liquidation tests", () => {
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      config.poolBorrow
+      poolBorrowContractName
     );
 
     const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
@@ -487,7 +473,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -501,7 +487,7 @@ describe("Liquidation tests", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -515,7 +501,7 @@ describe("Liquidation tests", () => {
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -529,7 +515,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFn(
-      config.borrowHelper,
+      borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -567,7 +553,7 @@ describe("Liquidation tests", () => {
     // simnet.mineEmptyBlocks(10);
 
     let borrower_1_data = simnet.callPublicFn(
-      config.pool0ReserveRead,
+      pool0ReserveRead,
       "calculate-user-global-data",
       [
         Cl.standardPrincipal(Borrower_1),
@@ -613,7 +599,7 @@ describe("Liquidation tests", () => {
     // console.log(simnet.getAssetsMap().get(".lp-sBTC.lp-sBTC"));
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -644,7 +630,7 @@ describe("Liquidation tests", () => {
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      config.poolBorrow
+      poolBorrowContractName
     );
 
     let callResponse = simnet.callPublicFnCheckOk(
@@ -748,7 +734,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -761,7 +747,7 @@ describe("Liquidation tests", () => {
       Borrower_1
     );
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -774,7 +760,7 @@ describe("Liquidation tests", () => {
       LP_1
     );
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -788,7 +774,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -837,7 +823,7 @@ describe("Liquidation tests", () => {
     // console.log(simnet.getAssetsMap().get(".lp-xUSD.lp-xUSD"));
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "liquidation-call",
       [
         Cl.list([
@@ -875,7 +861,7 @@ describe("Liquidation tests", () => {
     const poolBorrow = new PoolBorrow(
       simnet,
       deployerAddress,
-      config.poolBorrow
+      poolBorrowContractName
     );
 
     let callResponse = simnet.callPublicFnCheckOk(
@@ -979,7 +965,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -993,7 +979,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zsbtc),
@@ -1007,7 +993,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "supply",
       [
         Cl.contractPrincipal(deployerAddress, zxusd),
@@ -1021,7 +1007,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "borrow",
       [
         Cl.contractPrincipal(deployerAddress, pool0Reserve),
@@ -1067,7 +1053,7 @@ describe("Liquidation tests", () => {
     );
 
     callResponse = simnet.callPublicFnCheckOk(
-      config.borrowHelper,
+      borrowHelper,
       "liquidation-call",
       [
         Cl.list([

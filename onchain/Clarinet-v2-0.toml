@@ -14,37 +14,32 @@ contract_id = 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-swap-v2-1'
 contract_id = 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3'
 
 [contracts.a-token-trait]
-path = "contracts/borrow/traits/a-token-trait.clar"
+path = "contracts/borrow/production/traits/a-token-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.arkadiko-oracle]
-path = "contracts/borrow/mocks/oracle/arkadiko-oracle.clar"
+path = "contracts/borrow/production/mocks/oracle/arkadiko-oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.diko-oracle]
-path = "contracts/borrow/mocks/oracle/diko-oracle.clar"
+path = "contracts/borrow/production/mocks/oracle/diko-oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.dex]
-path = "contracts/borrow/mocks/oracle/dex.clar"
+path = "contracts/borrow/production/mocks/oracle/dex.clar"
 clarity_version = 2
 epoch = 2.4
 
-# [contracts.update-debt-ceiling-1]
-# path = "contracts/borrow/deployment_mainnet/upgrades/zststx/update-debt-ceiling-1.clar"
-# clarity_version = 2
-# epoch = 2.4
-
 [contracts.xusd-oracle]
-path = "contracts/borrow/mocks/xusd-oracle.clar"
+path = "contracts/borrow/production/mocks/oracle/xusd-oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.oracle]
-path = "contracts/borrow/pool/oracle.clar"
+path = "contracts/borrow/production/mocks/oracle/oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
@@ -54,362 +49,308 @@ clarity_version = 2
 epoch = 2.4
 
 [contracts.flashloan-script]
-path = "contracts/borrow/mocks/flashloan-scripts/flashloan-script.clar"
+path = "contracts/borrow/production/mocks/flashloan-scripts/flashloan-script.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.flashloan-script-1]
-path = "contracts/borrow/mocks/flashloan-scripts/flashloan-script-1.clar"
+path = "contracts/borrow/production/mocks/flashloan-scripts/flashloan-script-1.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.flashloan-script-2]
-path = "contracts/borrow/mocks/flashloan-scripts/flashloan-script-2.clar"
+path = "contracts/borrow/production/mocks/flashloan-scripts/flashloan-script-2.clar"
 clarity_version = 2
 epoch = 2.4
 
-[contracts.pool-read]
-path = "contracts/borrow/mocks/read-only/pool-read.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.pool-read-supply]
-path = "contracts/borrow/mocks/read-only/pool-read-supply.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.pool-read-liquidation]
-path = "contracts/borrow/mocks/read-only/pool-read-liquidation.clar"
-clarity_version = 2
-epoch = 2.4
-
-# [contracts.governance-token-trait]
-# path = "contracts/v2_sbtc/dao/traits/governance-token-trait.clar"
+# [contracts.pool-read]
+# path = "contracts/borrow/production/mocks/read-only/pool-read.clar"
 # clarity_version = 2
 # epoch = 2.4
 
-# [contracts.interest-rate-strategy-default]
-# path = "contracts/v2_sbtc/pool/interest-rate-strategy-default.clar"
+# [contracts.pool-read-supply]
+# path = "contracts/borrow/production/mocks/read-only/pool-read-supply.clar"
 # clarity_version = 2
 # epoch = 2.4
 
-# [contracts.liquidity-vault-trait]
-# path = "contracts/v2_sbtc/trait/liquidity-vault-trait.clar"
+# [contracts.pool-read-liquidation]
+# path = "contracts/borrow/production/mocks/read-only/pool-read-liquidation.clar"
 # clarity_version = 2
 # epoch = 2.4
 
-[contracts.lp-diko]
-path = "contracts/borrow/mocks/token/lp-diko.clar"
-clarity_version = 2
-epoch = 2.4
+# [contracts.lp-diko]
+# path = "contracts/borrow/legacy/v0/mocks/ztoken/lp-diko.clar"
+# clarity_version = 2
+# epoch = 2.4
 
-[contracts.lp-diko-v1]
-path = "contracts/borrow/mocks/token/lp-diko-v1.clar"
-clarity_version = 2
-epoch = 2.4
+# [contracts.lp-diko-v1]
+# path = "contracts/borrow/legacy/v1/mocks/ztoken/lp-diko.clar"
+# clarity_version = 2
+# epoch = 2.4
 
-[contracts.lp-diko-v2]
-path = "contracts/borrow/mocks/token/lp-diko-v2.clar"
-clarity_version = 2
-epoch = 2.4
-
-# [contracts.after-deployment-simnet]
-# path = "contracts/v2_sbtc/after-deployment-simnet.clar"
+# [contracts.lp-diko-v2]
+# path = "contracts/borrow/legacy/v1-2/mocks/ztoken/lp-diko.clar"
 # clarity_version = 2
 # epoch = 2.4
 
 [contracts.diko]
-path = "contracts/borrow/mocks/token/diko.clar"
+path = "contracts/borrow/production/mocks/token/diko.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.zToken]
-path = "contracts/borrow/token/zToken.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.lp-sbtc]
-path = "contracts/borrow/mocks/token/lp-sbtc.clar"
+path = "contracts/borrow/legacy/v0/token/zToken.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.sbtc]
-path = "contracts/borrow/mocks/token/sbtc.clar"
+path = "contracts/borrow/production/mocks/token/sbtc.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.lp-diko-token]
+path = "contracts/borrow/production/mocks/ztoken/lp-diko-token.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.lp-ststx-token]
+path = "contracts/borrow/production/mocks/ztoken/lp-ststx-token.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.lp-sbtc-token]
+path = "contracts/borrow/production/mocks/ztoken/lp-sbtc-token.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.lp-usda-token]
+path = "contracts/borrow/production/mocks/ztoken/lp-usda-token.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.lp-wstx-token]
+path = "contracts/borrow/production/mocks/ztoken/lp-wstx-token.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.lp-xusd-token]
+path = "contracts/borrow/production/mocks/ztoken/lp-xusd-token.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.lp-ststx]
-path = "contracts/borrow/mocks/token/lp-ststx.clar"
+path = "contracts/borrow/legacy/v0/mocks/ztoken/lp-stSTX.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.lp-ststx-v1]
-path = "contracts/borrow/mocks/token/lp-ststx-v1.clar"
+path = "contracts/borrow/legacy/v1/mocks/ztoken/lp-ststx.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.lp-ststx-v2]
-path = "contracts/borrow/mocks/token/lp-ststx-v2.clar"
+path = "contracts/borrow/legacy/v1-2/mocks/ztoken/lp-ststx.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.lp-ststx-v3]
-path = "contracts/borrow/mocks/token/lp-ststx-v3.clar"
+path = "contracts/borrow/production/mocks/ztoken/lp-ststx.clar"
 clarity_version = 3
 epoch = 3.0
 
-[contracts.lp-sbtc-v1]
-path = "contracts/borrow/mocks/token/lp-sbtc-v1.clar"
-clarity_version = 2
-epoch = 2.4
+[contracts.lp-diko-v3]
+path = "contracts/borrow/production/mocks/ztoken/lp-diko.clar"
+clarity_version = 3
+epoch = 3.0
 
-[contracts.lp-sbtc-v2]
-path = "contracts/borrow/mocks/token/lp-sbtc-v2.clar"
-clarity_version = 2
-epoch = 2.4
+[contracts.lp-sbtc-v3]
+path = "contracts/borrow/production/mocks/ztoken/lp-sbtc.clar"
+clarity_version = 3
+epoch = 3.0
 
-[contracts.ststx]
-path = "contracts/borrow/mocks/token/ststx.clar"
-clarity_version = 2
-epoch = 2.4
+[contracts.lp-usda-v3]
+path = "contracts/borrow/production/mocks/ztoken/lp-usda.clar"
+clarity_version = 3
+epoch = 3.0
 
-[contracts.lp-wstx]
-path = "contracts/borrow/mocks/token/lp-wstx.clar"
-clarity_version = 2
-epoch = 2.4
+[contracts.lp-wstx-v3]
+path = "contracts/borrow/production/mocks/ztoken/lp-wstx.clar"
+clarity_version = 3
+epoch = 3.0
 
-[contracts.lp-wstx-v1]
-path = "contracts/borrow/mocks/token/lp-wstx-v1.clar"
-clarity_version = 2
-epoch = 2.4
+[contracts.lp-xusd-v3]
+path = "contracts/borrow/production/mocks/ztoken/lp-xusd.clar"
+clarity_version = 3
+epoch = 3.0
 
-[contracts.lp-wstx-v2]
-path = "contracts/borrow/mocks/token/lp-wstx-v2.clar"
-clarity_version = 2
-epoch = 2.4
 
-[contracts.wstx]
-path = 'contracts/borrow/mocks/token/wstx.clar'
-clarity_version = 2
-epoch = 2.4
-
-[contracts.lp-usda]
-path = "contracts/borrow/mocks/token/lp-usda.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.lp-usda-v1]
-path = "contracts/borrow/mocks/token/lp-usda-v1.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.lp-usda-v2]
-path = "contracts/borrow/mocks/token/lp-usda-v2.clar"
+[contracts.xusd]
+path = 'contracts/borrow/production/mocks/token/xusd.clar'
 clarity_version = 2
 epoch = 2.4
 
 [contracts.usda]
-path = 'contracts/borrow/mocks/token/usda.clar'
+path = 'contracts/borrow/production/mocks/token/usda.clar'
 clarity_version = 2
 epoch = 2.4
 
-[contracts.lp-xusd]
-path = "contracts/borrow/mocks/token/lp-xusd.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.lp-xusd-v1]
-path = "contracts/borrow/mocks/token/lp-xusd-v1.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.lp-xusd-v2]
-path = "contracts/borrow/mocks/token/lp-xusd-v2.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.xusd]
-path = 'contracts/borrow/mocks/token/xusd.clar'
-clarity_version = 2
-epoch = 2.4
-
-[contracts.borrow-helper]
-path = "contracts/borrow/mocks/borrow-helper.clar"
-clarity_version = 2
-epoch = 2.4
-
-# [contracts.borrow-helper-v1-2]
-# path = "contracts/borrow/mocks/borrow-helper-v1-2.clar"
-# clarity_version = 2
-# epoch = 2.4
-
-[contracts.borrow-helper-v1-2]
-path = "contracts/borrow/wrappers/borrow-helper-v1-2.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.borrow-helper-v1-3]
-path = "contracts/borrow/wrappers/borrow-helper-v1-3.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.borrow-helper-v2-0]
-path = "contracts/borrow/wrappers/borrow-helper-v2-0.clar"
-clarity_version = 3
-epoch = 3.0
-
-# [contracts.supply-wrapped]
-# path = "contracts/borrow/wrappers/supply-wrapped.clar"
-# clarity_version = 2
-# epoch = 2.4
-
-[contracts.pool-borrow]
-path = "contracts/borrow/pool/pool-borrow.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.pool-borrow-v1-1]
-path = "contracts/borrow/pool/pool-borrow-v1-1.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.pool-borrow-v1-2]
-path = "contracts/borrow/pool/pool-borrow-v1-2.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.pool-borrow-v2-0]
-path = "contracts/borrow/pool/pool-borrow-v2-0.clar"
-clarity_version = 3
-epoch = 3.0
-
-[contracts.pool-0-reserve]
-path = "contracts/borrow/vaults/pool-0-reserve.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.pool-0-reserve-v1-2]
-path = "contracts/borrow/vaults/pool-0-reserve-v1-2.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.pool-0-reserve-v2-0]
-path = "contracts/borrow/vaults/pool-0-reserve-v2-0.clar"
-clarity_version = 3
-epoch = 3.0
-
-[contracts.pool-0-reserve-read]
-path = "contracts/borrow/mocks/read-only/pool-0-reserve-read.clar"
-clarity_version = 3
-epoch = 3.0
-
-[contracts.pool-vault]
-path = "contracts/borrow/vaults/pool-vault.clar"
-clarity_version = 2
-epoch = 2.4
-
-# [contracts.pool-vault-transferrer]
-# path = "contracts/borrow/vaults/pool-vault-transferrer.clar"
-# clarity_version = 2
-# epoch = 2.4
-
-[contracts.liquidation-manager]
-path = "contracts/borrow/pool/liquidation-manager.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.liquidation-manager-v1-1]
-path = "contracts/borrow/pool/liquidation-manager-v1-1.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.liquidation-manager-v1-2]
-path = "contracts/borrow/pool/liquidation-manager-v1-2.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.liquidation-manager-v2-0]
-path = "contracts/borrow/pool/liquidation-manager-v2-0.clar"
-clarity_version = 3
-epoch = 3.0
-
-[contracts.lp-token-trait]
-path = "contracts/v2_sbtc/trait/lp-token-trait.clar"
+[contracts.wstx]
+path = 'contracts/borrow/production/mocks/token/wstx.clar'
 clarity_version = 2
 epoch = 2.4
 
 [contracts.ownable-trait]
-path = "contracts/v2_sbtc/trait/ownable-trait.clar"
+path = "contracts/borrow/production/traits/ownable-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
+# [contracts.lp-ststx-token]
+# path = "contracts/borrow/production/mocks/ztoken/lp-ststx-token.clar"
+# clarity_version = 3
+# epoch = 3.0
+
+[contracts.ststx]
+path = "contracts/borrow/production/mocks/token/ststx.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.borrow-helper]
+path = "contracts/borrow/legacy/v0/mocks/wrappers/borrow-helper.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.borrow-helper-v1-2]
+path = "contracts/borrow/legacy/v1-2/wrappers/borrow-helper.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.borrow-helper-v1-3]
+path = "contracts/borrow/legacy/v1-2/wrappers/borrow-helper-v1-1.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-borrow]
+path = "contracts/borrow/legacy/v0/pool/pool-borrow.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-borrow-v1-1]
+path = "contracts/borrow/legacy/v1/pool/pool-borrow.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-borrow-v1-2]
+path = "contracts/borrow/legacy/v1-2/pool/pool-borrow.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-borrow-v2-0]
+path = "contracts/borrow/production/pool/pool-borrow.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pool-0-reserve]
+path = "contracts/borrow/production/vaults/pool-0-reserve.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-0-reserve-v1-2]
+path = "contracts/borrow/legacy/v1-2/vaults/pool-0-reserve.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.pool-0-reserve-v2-0]
+path = "contracts/borrow/production/vaults/pool-0-reserve-v2-0.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pool-vault]
+path = "contracts/borrow/production/vaults/pool-vault.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.liquidation-manager]
+path = "contracts/borrow/legacy/v0/pool/liquidation-manager.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.liquidation-manager-v1-1]
+path = "contracts/borrow/legacy/v1/pool/liquidation-manager.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.liquidation-manager-v1-2]
+path = "contracts/borrow/legacy/v1-2/pool/liquidation-manager.clar"
+clarity_version = 2
+epoch = 2.4
+
+[contracts.liquidation-manager-v2-0]
+path = "contracts/borrow/production/pool/liquidation-manager.clar"
+clarity_version = 3
+epoch = 3.0
+
 [contracts.ft-trait]
-path = "contracts/v2_sbtc/trait/ft-trait.clar"
+path = "contracts/borrow/production/traits/ft-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.ft-mint-trait]
-path = "contracts/v2_sbtc/trait/ft-mint-trait.clar"
+path = "contracts/borrow/production/traits/ft-mint-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.redeemeable-trait]
-path = "contracts/borrow/traits/redeemeable-trait.clar"
+path = "contracts/borrow/legacy/v0/traits/redeemeable-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.redeemeable-trait-v1-2]
-path = "contracts/borrow/traits/redeemeable-trait-v1-2.clar"
+path = "contracts/borrow/production/traits/redeemeable-trait-v1-2.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.vault-trait]
-path = "contracts/borrow/traits/vault-trait.clar"
+path = "contracts/borrow/production/traits/vault-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.oracle-trait]
-path = "contracts/borrow/traits/oracle-trait.clar"
+path = "contracts/borrow/production/traits/oracle-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.flash-loan-trait]
-path = "contracts/borrow/traits/flash-loan-trait.clar"
+path = "contracts/borrow/production/traits/flash-loan-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.pool-reserve-data]
-path = "contracts/borrow/vaults/pool-reserve-data.clar"
+path = "contracts/borrow/production/reserve-data/pool-reserve-data.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.pool-reserve-data-1]
-path = "contracts/borrow/vaults/pool-reserve-data-1.clar"
+path = "contracts/borrow/production/reserve-data/pool-reserve-data-1.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.pool-reserve-data-2]
-path = "contracts/borrow/vaults/pool-reserve-data-2.clar"
+path = "contracts/borrow/production/reserve-data/pool-reserve-data-2.clar"
 clarity_version = 3
 epoch = 3.0
 
 [contracts.math]
-path = "contracts/borrow/math/math.clar"
+path = "contracts/borrow/legacy/v0/math/math.clar"
 clarity_version = 2
 epoch = 2.4
 
 [contracts.math-v1-2]
-path = "contracts/borrow/math/math-v1-2.clar"
+path = "contracts/borrow/legacy/v1-2/math/math.clar"
 clarity_version = 2
 epoch = 2.4
 
-# [contracts.math-v2-0]
-# path = "contracts/borrow/math/math-v2-0.clar"
-# clarity_version = 3
-# epoch = 3.0
-
 [contracts.math-v2-0]
-path = "contracts/borrow/math/math-v2-0.clar"
+path = "contracts/borrow/production/math/math.clar"
 clarity_version = 3
 epoch = 3.0
 

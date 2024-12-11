@@ -65,8 +65,24 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
 
 export const deployV2TokenContracts = (simnet: Simnet, deployerAddress: string) => {
   simnet.deployContract(
+    "lp-diko-token",
+    readFileSync(config.lp_diko_token_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
     "lp-diko-v3",
     readFileSync(config.lp_diko_v3_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "lp-sbtc-token",
+    readFileSync(config.lp_sbtc_token_path).toString(),
     {
       clarityVersion: 3,
     },
@@ -81,8 +97,24 @@ export const deployV2TokenContracts = (simnet: Simnet, deployerAddress: string) 
     deployerAddress
   );
   simnet.deployContract(
+    "lp-ststx-token",
+    readFileSync(config.lp_ststx_token_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
     "lp-ststx-v3",
     readFileSync(config.lp_ststx_v3_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "lp-usda-token",
+    readFileSync(config.lp_usda_token_path).toString(),
     {
       clarityVersion: 3,
     },
@@ -97,8 +129,24 @@ export const deployV2TokenContracts = (simnet: Simnet, deployerAddress: string) 
     deployerAddress
   );
   simnet.deployContract(
+    "lp-wstx-token",
+    readFileSync(config.lp_wstx_token_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
     "lp-wstx-v3",
     readFileSync(config.lp_wstx_v3_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "lp-xusd-token",
+    readFileSync(config.lp_xusd_token_path).toString(),
     {
       clarityVersion: 3,
     },

@@ -128,6 +128,11 @@ path = "contracts/borrow/legacy/v1-2/mocks/ztoken/lp-ststx.clar"
 clarity_version = 2
 epoch = 2.4
 
+# [contracts.lp-ststx-token]
+# path = "contracts/borrow/production/mocks/ztoken/lp-ststx-token.clar"
+# clarity_version = 2
+# epoch = 2.4
+
 [contracts.lp-sbtc-v1]
 path = "contracts/borrow/legacy/v1/mocks/ztoken/lp-sbtc.clar"
 clarity_version = 2

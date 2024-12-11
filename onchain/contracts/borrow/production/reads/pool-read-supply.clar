@@ -284,6 +284,14 @@
   )
 )
 
+(define-read-only (get-supplied-balance-user-usd-usda (who principal) (oracle principal))
+  (token-to-usd
+    (get-supplied-balance-user-usda who)
+    u6
+    (get-usda-price)
+  )
+)
+
 (define-read-only (get-supplied-balance-user-ststx (who principal))
   (let ((principal (unwrap-panic (contract-call? .zststx-v1-2 get-principal-balance who))))
     (calculate-cumulated-balance who u6 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token principal u6)
@@ -317,6 +325,12 @@
 (define-read-only (get-supplied-balance-user-susdt (who principal))
   (let ((principal (unwrap-panic (contract-call? .zsusdt-v1-2 get-principal-balance who))))
     (calculate-cumulated-balance who u8 'SP2XD7417HGPRTREMKF748VNEQPDRR0RMANB7X1NK.token-susdt principal u8)
+  )
+)
+
+(define-read-only (get-supplied-balance-user-usda (who principal))
+  (let ((principal (unwrap-panic (contract-call? .zusda-v1-2 get-principal-balance who))))
+    (calculate-cumulated-balance who u6 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token principal u6)
   )
 )
 
@@ -368,6 +382,14 @@
   )
 )
 
+(define-read-only (get-supplied-balance-usd-usda)
+  (token-to-usd
+    (unwrap-panic (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token get-balance .pool-vault))
+    u6
+    (get-usda-price)
+  )
+)
+
 (define-read-only (get-supplied-balance-ststx)
   (unwrap-panic (contract-call? 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token get-balance .pool-vault))
 )
@@ -392,6 +414,9 @@
   (unwrap-panic (contract-call? 'SP2XD7417HGPRTREMKF748VNEQPDRR0RMANB7X1NK.token-susdt get-balance .pool-vault))
 )
 
+(define-read-only (get-supplied-balance-usda)
+  (unwrap-panic (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token get-balance .pool-vault))
+)
 ;; utils functions
 
 (define-read-only (get-ststx-price)
@@ -431,6 +456,14 @@
     (price (contract-call? 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.susdt-oracle-v1-0 get-price))
   )
     price
+  )
+)
+
+(define-read-only (get-usda-price)
+  (let (
+    (price (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "USDA")))
+  )
+    (* price u100)
   )
 )
 

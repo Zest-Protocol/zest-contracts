@@ -113,6 +113,7 @@
 
     ;; STSTX UPGRADE
     ;; give permission for burn/mint of previous versions to new version
+    (try! (contract-call? .lp-ststx-token set-approved-contract v3-version-1 true))
     (try! (contract-call? .lp-ststx set-approved-contract v3-version-1 true))
     (try! (contract-call? .lp-ststx-v1 set-approved-contract v3-version-1 true))
     (try! (contract-call? .lp-ststx-v2 set-approved-contract v3-version-1 true))
@@ -224,6 +225,95 @@
   )
 )
 
+(define-public (burn-mint-v3)
+  (let (
+    (addr-1 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG)
+    (addr-2 'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND)
+    (balance-1 (unwrap-panic (contract-call? .lp-ststx-v2 get-principal-balance addr-1))) 
+    (balance-2 (unwrap-panic (contract-call? .lp-ststx-v2 get-principal-balance addr-2)))
+  )
+    (try! (contract-call? .lp-ststx set-approved-contract (as-contract tx-sender) true))
+    (try! (contract-call? .lp-ststx-v3 set-approved-contract (as-contract tx-sender) true))
+    (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) true))
+
+    ;; set to last updated block height of the v2 version for borrowers
+    (try!
+      (contract-call? .pool-reserve-data set-user-reserve-data
+      addr-2 .usda
+      (merge
+        (unwrap-panic (contract-call? .pool-reserve-data get-user-reserve-data-read addr-2 .usda))
+        { last-updated-block: u117 })))
+    
+    ;; set to last updated block height of the v2 version for the reserve
+    (try!
+      (contract-call? .pool-reserve-data set-reserve-state
+      .ststx
+      (merge
+        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .ststx))
+        { last-updated-block: u118 })))
+    (try!
+      (contract-call? .pool-reserve-data set-reserve-state
+      .sbtc
+      (merge
+        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .sbtc))
+        { last-updated-block: u118 })))
+    (try!
+      (contract-call? .pool-reserve-data set-reserve-state
+      .diko
+      (merge
+        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .diko))
+        { last-updated-block: u118 })))
+    (try!
+      (contract-call? .pool-reserve-data set-reserve-state
+      .usda
+      (merge
+        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .usda))
+        { last-updated-block: u118 })))
+    (try!
+      (contract-call? .pool-reserve-data set-reserve-state
+      .xusd
+      (merge
+        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .xusd))
+        { last-updated-block: u118 })))
+    (try!
+      (contract-call? .pool-reserve-data set-reserve-state
+      .wstx
+      (merge
+        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .wstx))
+        { last-updated-block: u118 })))
+
+    (try!
+      (contract-call? .lp-ststx
+        burn
+        balance-1
+        addr-1
+      )
+    )
+    (try!
+      (contract-call? .lp-ststx-v3
+        mint
+        balance-1
+        addr-1
+      )
+    )
+    (try!
+      (contract-call? .lp-ststx
+        burn
+        balance-2
+        addr-2
+      )
+    )
+    (try!
+      (contract-call? .lp-ststx-v3
+        mint
+        balance-2
+        addr-2
+      )
+    )
+    (ok true)
+  )
+)
+
 (define-read-only (can-execute)
   (begin
     (asserts! (not (var-get executed)) (err u10))
@@ -232,3 +322,4 @@
 )
 
 (run-update)
+(burn-mint-v3)

@@ -104,49 +104,42 @@
     (try! (contract-call? .pool-reserve-data set-approved-contract .pool-borrow-v2-0 true))
 
     ;; give permission for burn/mint of previos version to new version
-    (try! (contract-call? .lp-ststx set-approved-contract ststx-version-3_0 true))
-    (try! (contract-call? .lp-ststx-v1 set-approved-contract ststx-version-3_0 true))
-    (try! (contract-call? .lp-ststx-v2 set-approved-contract ststx-version-3_0 true))
-    ;; (try! (contract-call? .lp-ststx set-approved-contract new-version-1 true))
+    (try! (contract-call? .lp-ststx-token set-approved-contract ststx-version-3_0 true))
+
     (try! (contract-call? .lp-ststx set-approved-contract .pool-borrow false))
     (try! (contract-call? .lp-ststx set-approved-contract .liquidation-manager false))
     (try! (contract-call? .lp-ststx set-approved-contract .pool-0-reserve false))
-    ;; (try! (contract-call? .lp-usda set-approved-contract new-version-2 true))
-    (try! (contract-call? .lp-usda set-approved-contract usda-version-3_0 true))
-    (try! (contract-call? .lp-usda-v1 set-approved-contract usda-version-3_0 true))
-    (try! (contract-call? .lp-usda-v2 set-approved-contract usda-version-3_0 true))
+
+
+    (try! (contract-call? .lp-usda-token set-approved-contract usda-version-3_0 true))
 
     (try! (contract-call? .lp-usda set-approved-contract .pool-borrow false))
     (try! (contract-call? .lp-usda set-approved-contract .liquidation-manager false))
     (try! (contract-call? .lp-usda set-approved-contract .pool-0-reserve false))
-    ;; (try! (contract-call? .lp-sbtc set-approved-contract new-version-3 true))
-    (try! (contract-call? .lp-sbtc set-approved-contract sbtc-version-3_0 true))
-    (try! (contract-call? .lp-sbtc-v1 set-approved-contract sbtc-version-3_0 true))
-    (try! (contract-call? .lp-sbtc-v2 set-approved-contract sbtc-version-3_0 true))
+
+
+    (try! (contract-call? .lp-sbtc-token set-approved-contract sbtc-version-3_0 true))
 
     (try! (contract-call? .lp-sbtc set-approved-contract .pool-borrow false))
     (try! (contract-call? .lp-sbtc set-approved-contract .liquidation-manager false))
     (try! (contract-call? .lp-sbtc set-approved-contract .pool-0-reserve false))
-    ;; (try! (contract-call? .lp-xusd set-approved-contract new-version-4 true))
-    (try! (contract-call? .lp-xusd set-approved-contract xusd-version-3_0 true))
-    (try! (contract-call? .lp-xusd-v1 set-approved-contract xusd-version-3_0 true))
-    (try! (contract-call? .lp-xusd-v2 set-approved-contract xusd-version-3_0 true))
+
+
+    (try! (contract-call? .lp-xusd-token set-approved-contract xusd-version-3_0 true))
 
     (try! (contract-call? .lp-xusd set-approved-contract .pool-borrow false))
     (try! (contract-call? .lp-xusd set-approved-contract .liquidation-manager false))
     (try! (contract-call? .lp-xusd set-approved-contract .pool-0-reserve false))
-    ;; (try! (contract-call? .lp-diko set-approved-contract new-version-5 true))
-    (try! (contract-call? .lp-diko set-approved-contract diko-version-3_0 true))
-    (try! (contract-call? .lp-diko-v1 set-approved-contract diko-version-3_0 true))
-    (try! (contract-call? .lp-diko-v2 set-approved-contract diko-version-3_0 true))
+
+
+    (try! (contract-call? .lp-diko-token set-approved-contract diko-version-3_0 true))
 
     (try! (contract-call? .lp-diko set-approved-contract .pool-borrow false))
     (try! (contract-call? .lp-diko set-approved-contract .liquidation-manager false))
     (try! (contract-call? .lp-diko set-approved-contract .pool-0-reserve false))
-    ;; (try! (contract-call? .lp-wstx set-approved-contract new-version-5 true))
-    (try! (contract-call? .lp-wstx set-approved-contract wstx-version-3_0 true))
-    (try! (contract-call? .lp-wstx-v1 set-approved-contract wstx-version-3_0 true))
-    (try! (contract-call? .lp-wstx-v2 set-approved-contract wstx-version-3_0 true))
+
+
+    (try! (contract-call? .lp-wstx-token set-approved-contract wstx-version-3_0 true))
 
     (try! (contract-call? .lp-wstx set-approved-contract .pool-borrow false))
     (try! (contract-call? .lp-wstx set-approved-contract .liquidation-manager false))
