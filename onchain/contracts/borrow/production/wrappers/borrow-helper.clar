@@ -209,7 +209,6 @@
 
 (define-public (flashloan
   (receiver principal)
-  (lp <ft>)
   (asset <ft>)
   (amount uint)
   (flashloan-script <flash-loan>))
@@ -217,7 +216,6 @@
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (contract-call? .pool-borrow-v2-0 flashloan
       receiver
-      lp
       asset
       amount
       flashloan-script)

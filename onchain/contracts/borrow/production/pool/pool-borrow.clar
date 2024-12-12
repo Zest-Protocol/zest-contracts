@@ -404,7 +404,6 @@
 
 (define-public (flashloan
   (receiver principal)
-  (lp <ft>)
   (asset <ft>)
   (amount uint)
   (flashloan <flash-loan>))
@@ -422,7 +421,6 @@
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
-    (asserts! (is-eq (contract-of lp) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
 
     (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user asset receiver amount))
     (try! (contract-call? flashloan execute asset receiver amount))

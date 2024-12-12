@@ -234,7 +234,6 @@ describe("Flashloans", () => {
       "flashloan",
       [
         Cl.standardPrincipal(FlashLender),
-        Cl.contractPrincipal(deployerAddress, zsBTC),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script"),
@@ -298,7 +297,6 @@ describe("Flashloans", () => {
       "flashloan",
       [
         Cl.standardPrincipal(FlashLender),
-        Cl.contractPrincipal(deployerAddress, zsBTC),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script"),
@@ -312,7 +310,6 @@ describe("Flashloans", () => {
       "flashloan",
       [
         Cl.standardPrincipal(FlashLender),
-        Cl.contractPrincipal(deployerAddress, zsBTC),
         Cl.contractPrincipal(deployerAddress, sBTC),
         Cl.uint(2_000_000_000),
         Cl.contractPrincipal(deployerAddress, "flashloan-script-2"),
