@@ -33,9 +33,9 @@
 (define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u7010))
 (define-constant ERR_FLASHLOAN_FEE_TOTAL_NOT_SET (err u7011))
 (define-constant ERR_FLASHLOAN_FEE_PROTOCOL_NOT_SET (err u7012))
-(define-constant ERR_INVALID_VALUE (err u7005))
-(define-constant ERR_E_MODE_DOES_NOT_EXIST (err u7006))
-(define-constant ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE (err u7007))
+(define-constant ERR_INVALID_VALUE (err u7013))
+(define-constant ERR_E_MODE_DOES_NOT_EXIST (err u7014))
+(define-constant ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE (err u7015))
 
 (define-public (set-flashloan-fee-total (asset principal) (fee uint))
   (begin
