@@ -67,8 +67,8 @@
 ;; get the price from the oracle and use the average dex price for sanity checks
 (define-public (get-asset-price (token <ft>))
   (let (
-    (last-price (to-fixed (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "DIKO")) u6))
-    ;; (last-price (to-fixed (get last-price (contract-call? .arkadiko-oracle get-price "DIKO")) u6))
+    (oracle-data (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "DIKO"))
+    (last-price (to-fixed (get last-price oracle-data) u6))
   )
     (if (var-get validate-oracle-price)
       (try! (validate-price last-price))
@@ -77,6 +77,8 @@
     ;; sanity check
     (asserts! (> last-price (var-get min-price)) err-below-threshold)
     (asserts! (< last-price (var-get max-price)) err-above-threshold)
+
+    (asserts! (<= (- burn-block-height (get last-block oracle-data)) u10) err-stale-price)
 
     (ok last-price)
   )
