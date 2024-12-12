@@ -13,16 +13,16 @@
   (map-get? user-e-mode user))
 
 ;; is e-mode type enabled
-(define-map e-mode-types (buff 1) bool)
-(define-public (set-e-mode-types (flag (buff 1)) (enabled bool))
+(define-map e-mode-type-enabled (buff 1) bool)
+(define-public (set-e-mode-type-enabled (flag (buff 1)) (enabled bool))
   (begin
     (try! (is-approved-contract contract-caller))
-    (print { type: "set-e-mode-types", payload: { key: flag, data: { enabled: enabled } } })
-    (ok (map-set e-mode-types flag enabled))))
-(define-public (get-e-mode-types (flag (buff 1)))
-  (ok (map-get? e-mode-types flag)))
-(define-read-only (get-e-mode-types-read (flag (buff 1)))
-  (map-get? e-mode-types flag))
+    (print { type: "set-e-mode-type-enabled", payload: { key: flag, data: { enabled: enabled } } })
+    (ok (map-set e-mode-type-enabled flag enabled))))
+(define-public (get-e-mode-type-enabled (flag (buff 1)))
+  (ok (map-get? e-mode-type-enabled flag)))
+(define-read-only (get-e-mode-type-enabled-read (flag (buff 1)))
+  (map-get? e-mode-type-enabled flag))
 
 ;; asset -> e-mode type
 (define-map asset-e-mode-type principal (buff 1))
@@ -37,18 +37,18 @@
   (map-get? asset-e-mode-type asset))
 
 ;; e-mode type -> configuration
-(define-map type-e-mode-config (buff 1) { ltv: uint, liquidation-threshold: uint })
-(define-public (set-type-e-mode-config
+(define-map e-mode-type-config (buff 1) { ltv: uint, liquidation-threshold: uint })
+(define-public (set-e-mode-type-config
   (type (buff 1))
   (config { ltv: uint, liquidation-threshold: uint }))
   (begin
     (try! (is-approved-contract contract-caller))
-    (print { type: "set-type-e-mode-config", payload: { key: type, data: { config: config } } })
-    (ok (map-set type-e-mode-config type config))))
-(define-public (get-type-e-mode-config (type (buff 1)))
-  (ok (map-get? type-e-mode-config type)))
-(define-read-only (get-type-e-mode-config-read (type (buff 1)))
-  (map-get? type-e-mode-config type))
+    (print { type: "set-e-mode-type-config", payload: { key: type, data: { config: config } } })
+    (ok (map-set e-mode-type-config type config))))
+(define-public (get-e-mode-type-config (type (buff 1)))
+  (ok (map-get? e-mode-type-config type)))
+(define-read-only (get-e-mode-type-config-read (type (buff 1)))
+  (map-get? e-mode-type-config type))
 
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)

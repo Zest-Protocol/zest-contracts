@@ -9,12 +9,12 @@ The user's e-mode is a boolean value that indicates whether the user has enabled
 The e-mode-types is a boolean value that indicates whether the e-mode type is enabled.
 
 #### asset-e-mode-type (principal -> buff 1)
-The asset-e-mode-type is a buff 1 value that indicates the e-mode type for a given asset.
+The asset-e-mode-type is a buff 1 value that indicates the e-mode type for a given asset address.
 
-STX, stSTX, and other STX derivative would have the same e-mode type. USDA, aeUSDC, and other USD stablecoins would have the same e-mode type.
+STX, stSTX, and other STX derivative would have the same e-mode type. USDA, aeUSDC, and other USD stablecoins would have the same e-mode buffer value.
 
-#### type-e-mode-config (buff 1 -> { ltv: uint, liquidation-threshold: uint })
-The type-e-mode-config is a tuple that contains the ltv and liquidation-threshold for a given e-mode type. These are higher than the values from reserve-data in pool-reserve-data.clar.
+#### e-mode-type-config (buff 1 -> { ltv: uint, liquidation-threshold: uint })
+The e-mode-type-config is a tuple that contains the ltv and liquidation-threshold for a given e-mode type. These are higher than the values from reserve-data in pool-reserve-data.clar.
 
 
 ## math.clar
@@ -56,7 +56,7 @@ This function is used to check if the user is in e-mode.
 
 This function is used to get the e-mode type for a given asset.
 
-#### get-type-e-mode-config
+#### get-e-mode-type-config
 
 This function is used to get the e-mode config for a given e-mode type.
 
