@@ -14,7 +14,7 @@
 
 ;; is e-mode type enabled
 (define-map e-mode-types (buff 1) bool)
-(define-public (set-asset-e-mode-types (flag (buff 1)) (enabled bool))
+(define-public (set-e-mode-types (flag (buff 1)) (enabled bool))
   (begin
     (try! (is-approved-contract contract-caller))
     (print { type: "set-e-mode-types", payload: { key: flag, data: { enabled: enabled } } })
