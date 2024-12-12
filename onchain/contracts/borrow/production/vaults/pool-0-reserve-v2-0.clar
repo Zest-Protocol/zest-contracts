@@ -1020,9 +1020,9 @@
             (collateral-balance-in-base-currency (get total-collateral-balanceUSD user-global-data))
             (amount-to-decrease-in-base-currency (mul-to-fixed-precision amount (get decimals reserve-data) (try! (contract-call? oracle get-asset-price asset))))
             (collateral-balance-after-decrease
-              (if (<= (get total-collateral-balanceUSD user-global-data) amount-to-decrease-in-base-currency)
+              (if (<= collateral-balance-in-base-currency amount-to-decrease-in-base-currency)
                 u0
-                (- (get total-collateral-balanceUSD user-global-data) amount-to-decrease-in-base-currency)
+                (- collateral-balance-in-base-currency amount-to-decrease-in-base-currency)
               )
             )
           )
