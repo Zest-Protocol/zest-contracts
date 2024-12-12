@@ -1093,7 +1093,7 @@
     (user-data (get-user-reserve-data user (contract-of asset)))
     (e-mode-config 
       (if (is-in-e-mode user)
-        (get-type-e-mode-config (get-asset-e-mode-type (contract-of asset)))
+        (get-e-mode-type-config (get-asset-e-mode-type (contract-of asset)))
         { 
           ltv: (get base-ltv-as-collateral reserve-data),
           liquidation-threshold: (get liquidation-threshold reserve-data)
@@ -1616,10 +1616,10 @@
 )
 
 ;; Note: makes the assumption that ltv and liquidation-threshold are set
-(define-read-only (get-type-e-mode-config (type (buff 1)))
+(define-read-only (get-e-mode-type-config (type (buff 1)))
   (default-to
     { ltv: u0, liquidation-threshold: u0 }
-    (contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type))
+    (contract-call? .pool-reserve-data-2 get-e-mode-type-config-read type))
 )
 
 ;; if user is in e-mode and the asset is of type of the e-mode enabled
@@ -1630,7 +1630,7 @@
     (reserve-data (try! (get-reserve-state asset)))
   )
     (if (and (not (is-eq user-e-mode e-mode-disabled-type)) (is-eq asset-e-mode user-e-mode))
-      (ok (get-type-e-mode-config (get-asset-e-mode-type asset)))
+      (ok (get-e-mode-type-config (get-asset-e-mode-type asset)))
       (ok 
         { 
           ltv: (get base-ltv-as-collateral reserve-data),

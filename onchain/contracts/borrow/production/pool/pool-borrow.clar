@@ -745,17 +745,17 @@
   )
 )
 
-(define-public (set-e-mode-types (e-mode-type (buff 1)) (enabled bool))
+(define-public (set-e-mode-type-enabled (e-mode-type (buff 1)) (enabled bool))
   (begin
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data-2 set-e-mode-types e-mode-type enabled)
+    (contract-call? .pool-reserve-data-2 set-e-mode-type-enabled e-mode-type enabled)
   )
 )
 
-(define-public (set-type-e-mode-config (e-mode-type (buff 1)) (ltv uint) (liquidation-threshold uint))
+(define-public (set-e-mode-type-config (e-mode-type (buff 1)) (ltv uint) (liquidation-threshold uint))
   (begin
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data-2 set-type-e-mode-config e-mode-type {
+    (contract-call? .pool-reserve-data-2 set-e-mode-type-config e-mode-type {
       ltv: ltv,
       liquidation-threshold: liquidation-threshold
     })
