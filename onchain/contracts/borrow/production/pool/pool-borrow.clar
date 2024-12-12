@@ -745,10 +745,10 @@
   )
 )
 
-(define-public (set-asset-e-mode-types (e-mode-type (buff 1)) (enabled bool))
+(define-public (set-e-mode-types (e-mode-type (buff 1)) (enabled bool))
   (begin
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-    (contract-call? .pool-reserve-data-2 set-asset-e-mode-types e-mode-type enabled)
+    (contract-call? .pool-reserve-data-2 set-e-mode-types e-mode-type enabled)
   )
 )
 
