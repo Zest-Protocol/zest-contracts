@@ -607,7 +607,7 @@ describe("Supply and Redeem", () => {
     // set up e-mode type settings (STX category)
     callResponse = simnet.callPublicFnCheckOk(
       config.poolBorrow,
-      "set-asset-e-mode-types",
+      "set-e-mode-types",
       [
         Cl.bufferFromHex("0x01"),
         Cl.bool(true)
@@ -660,7 +660,7 @@ describe("Supply and Redeem", () => {
     // set up e-mode type settings (stablecoins)
     callResponse = simnet.callPublicFnCheckOk(
       config.poolBorrow,
-      "set-asset-e-mode-types",
+      "set-e-mode-types",
       [
         Cl.bufferFromHex("0x02"),
         Cl.bool(true)
