@@ -1461,7 +1461,7 @@
     (user-assets (get-assets-used-by user))
     (assets-borrowed (get assets-borrowed (get-user-assets user)))
     ;; borrowed assets are of selected e-mode type?
-    (borrowed-assets-are-e-mode-type (get acc (fold assets-are-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
+    (borrowed-assets-are-same-e-mode-type (get acc (fold asset-is-of-e-mode-type assets-borrowed { acc: true, e-mode-type: e-mode-type })))
     )
     (if (is-eq (len user-assets) u0)
       ;; if never used, allow change
@@ -1470,7 +1470,7 @@
       (if (not (is-eq e-mode-type e-mode-disabled-type))
         (begin
           (asserts! (e-mode-type-enabled e-mode-type) ERR_E_MODE_DOES_NOT_EXIST)
-          (asserts! borrowed-assets-are-e-mode-type ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE)
+          (asserts! borrowed-assets-are-same-e-mode-type ERR_CANNOT_BORROW_DIFFERENT_E_MODE_TYPE)
           (ok true)
         )
         ;; if setting to default, allow
@@ -1500,7 +1500,7 @@
     { ltv: u0, liquidation-threshold: u0 }
     (contract-call? .pool-reserve-data-2 get-type-e-mode-config-read type)))
 
-(define-read-only (assets-are-of-e-mode-type
+(define-read-only (asset-is-of-e-mode-type
   (asset principal)
   (result { acc: bool, e-mode-type: (buff 1) }))
   (let (
