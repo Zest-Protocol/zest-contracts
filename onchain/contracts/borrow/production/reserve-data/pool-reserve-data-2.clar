@@ -2,15 +2,15 @@
 
 ;; user's e-mode
 (define-map user-e-mode principal (buff 1))
-(define-public (set-user-e-mode (asset principal) (flag (buff 1)))
+(define-public (set-user-e-mode (user principal) (flag (buff 1)))
   (begin
     (try! (is-approved-contract contract-caller))
-    (print { type: "set-user-e-mode", payload: { key: asset, data: { flag: flag } } })
-    (ok (map-set user-e-mode asset flag))))
-(define-public (get-user-e-mode (asset principal))
-  (ok (map-get? user-e-mode asset)))
-(define-read-only (get-user-e-mode-read (asset principal))
-  (map-get? user-e-mode asset))
+    (print { type: "set-user-e-mode", payload: { key: user, data: { flag: flag } } })
+    (ok (map-set user-e-mode user flag))))
+(define-public (get-user-e-mode (user principal))
+  (ok (map-get? user-e-mode user)))
+(define-read-only (get-user-e-mode-read (user principal))
+  (map-get? user-e-mode user))
 
 ;; is e-mode type enabled
 (define-map e-mode-types (buff 1) bool)
