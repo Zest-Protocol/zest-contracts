@@ -5,6 +5,9 @@
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-token .redeemeable-trait-v1-2.redeemeable-trait)
 
+
+(define-constant ERR_UNAUTHORIZED (err u1000000000000))
+
 (define-public (supply
   (lp <redeemeable-token>)
   (pool-reserve principal)
@@ -13,7 +16,10 @@
   (owner principal)
   (referral (optional principal)))
   (let ((asset-principal (contract-of asset)))
+
+    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (try! (contract-call? .pool-borrow-v2-0 supply lp pool-reserve asset amount owner))
+
     (print { type: "supply-call", payload: { key: owner, data: {
       reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)),
       user-reserve-state: (contract-call? .pool-0-reserve-v2-0 get-user-reserve-data owner asset-principal),
@@ -38,10 +44,11 @@
   (fee-calculator principal)
   (interest-rate-mode uint)
   (owner principal))
-  (let (
-    (asset-principal (contract-of asset-to-borrow))
-  )
+  (let ((asset-principal (contract-of asset-to-borrow)))
+
+    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (try! (contract-call? .pool-borrow-v2-0 borrow pool-reserve oracle asset-to-borrow lp assets amount-to-be-borrowed fee-calculator interest-rate-mode owner))
+
     (print { type: "borrow-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)),
         user-reserve-state: (contract-call? .pool-0-reserve-v2-0 get-user-reserve-data owner asset-principal),
@@ -63,7 +70,10 @@
   )
   (let (
     (asset-principal (contract-of asset))
-    (payback-amount (try! (contract-call? .pool-borrow-v2-0 repay asset amount-to-repay on-behalf-of payer))))
+    (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
+    (payback-amount (try! (contract-call? .pool-borrow-v2-0 repay asset amount-to-repay on-behalf-of payer)))
+    )
+
     (print { type: "repay-call", payload: { key: on-behalf-of, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)),
         user-reserve-state: (contract-call? .pool-0-reserve-v2-0 get-user-reserve-data on-behalf-of asset-principal),
@@ -90,7 +100,10 @@
     (asset-principal (contract-of asset))
     (reserve-state (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)))
     )
+
+    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (try! (contract-call? .pool-borrow-v2-0 set-user-use-reserve-as-collateral who lp-token asset enable-as-collateral oracle assets-to-calculate))
+
     (print { type: "set-user-use-reserve-as-collateral-call", payload: { key: who, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)),
         user-reserve-state: (contract-call? .pool-0-reserve-v2-0 get-user-reserve-data who asset-principal),
@@ -113,8 +126,10 @@
   )
   (let (
     (asset-principal (contract-of asset))
+    (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
     (withdraw-res (try! (contract-call? .pool-borrow-v2-0 withdraw pool-reserve asset lp oracle assets amount owner)))
     )
+
     (print { type: "withdraw-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)),
         user-reserve-state: (contract-call? .pool-0-reserve-v2-0 get-user-reserve-data owner asset-principal),
@@ -143,6 +158,9 @@
     (collateral-asset-principal (contract-of collateral-to-liquidate))
     (liquidator tx-sender)
     )
+
+    (asserts! (is-eq liquidator contract-caller) ERR_UNAUTHORIZED)
+
     (try! (contract-call? .pool-borrow-v2-0 liquidation-call
       assets
       collateral-lp
@@ -184,6 +202,7 @@
   (new-e-mode-type (buff 1))
   )
   (begin
+    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (contract-call? .pool-borrow-v2-0 set-e-mode user assets new-e-mode-type)
   )
 )
@@ -195,6 +214,7 @@
   (amount uint)
   (flashloan-script <flash-loan>))
   (begin
+    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (contract-call? .pool-borrow-v2-0 flashloan
       receiver
       lp
