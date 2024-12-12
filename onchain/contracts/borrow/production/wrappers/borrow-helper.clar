@@ -203,7 +203,12 @@
   )
   (begin
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
-    (contract-call? .pool-borrow-v2-0 set-e-mode user assets new-e-mode-type)
+    (try! (contract-call? .pool-borrow-v2-0 set-e-mode user assets new-e-mode-type))
+
+    (print { type: "set-e-mode-call", payload: { key: user, data: {
+        user-e-mode: (contract-call? .pool-reserve-data-2 get-user-e-mode-read user),
+      }}})
+    (ok true)
   )
 )
 
@@ -214,10 +219,17 @@
   (flashloan-script <flash-loan>))
   (begin
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
-    (contract-call? .pool-borrow-v2-0 flashloan
-      receiver
-      asset
-      amount
-      flashloan-script)
+
+    (try! 
+      (contract-call? .pool-borrow-v2-0 flashloan
+        receiver
+        asset
+        amount
+        flashloan-script))
+
+    (print { type: "flashloan-call", payload: { key: receiver, data: {
+      reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of asset))),
+    }}})
+    (ok u0)
   )
 )
