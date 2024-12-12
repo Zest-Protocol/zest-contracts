@@ -1,5 +1,4 @@
 (define-constant one-8 u100000000)
-(define-constant one-12 u1000000000000)
 (define-constant fixed-precision u8)
 
 (define-constant max-value u340282366920938463463374607431768211455)
@@ -7,11 +6,6 @@
 (define-constant e 271828182)
 ;; (* u144 u365 u10 u60)
 (define-constant seconds-in-year u31536000)
-;; (* u10 u60)
-(define-constant seconds-in-block u600)
-;; seconds-year/seconds-block, to multiply with number of blocks to determine seconds passed in x number of blocks, is in fixed-precision
-;; (/ (* seconds-in-block one-8) u31536000)
-(define-constant sb-by-sy u1903)
 
 (define-read-only (get-max-value)
   max-value
@@ -176,20 +170,12 @@
   )
 )
 
-(define-read-only (get-sb-by-sy)
-  sb-by-sy
-)
-
 (define-read-only (get-e) e)
 
 (define-read-only (get-one) one-8)
 
 (define-read-only (get-seconds-in-year)
   seconds-in-year
-)
-
-(define-read-only (get-seconds-in-block)
-  seconds-in-block
 )
 
 (define-constant fact_2 u200000000)
