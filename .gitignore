@@ -9,5 +9,8 @@ onchain/scripts
 src/clarigen
 .DS_Store
 onchain/.requirements/
-onchain/contracts/borrow/deployment_mainnet
+onchain/contracts/borrow/deployment_mainnet/add-asset
+onchain/contracts/borrow/deployment_mainnet/update
+onchain/contracts/borrow/deployment_mainnet/upgrades
+onchain/contracts/borrow/deployment_mainnet/update-asset
 .vscode
