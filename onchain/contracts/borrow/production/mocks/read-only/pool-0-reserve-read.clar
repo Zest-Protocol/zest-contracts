@@ -54,14 +54,12 @@
     (contract-call? .pool-reserve-data set-health-factor-liquidation-threshold hf)))
     
 
-(define-read-only (get-seconds-in-block) (contract-call? .math-v2-0 get-seconds-in-block))
 (define-read-only (get-seconds-in-year) (contract-call? .math-v2-0 get-seconds-in-year))
 (define-read-only (mul (x uint) (y uint)) (contract-call? .math-v2-0 mul x y))
 (define-read-only (div (x uint) (y uint)) (contract-call? .math-v2-0 div x y))
 (define-read-only (is-odd (x uint)) (contract-call? .math-v2-0 is-odd x))
 (define-read-only (is-even (x uint)) (contract-call? .math-v2-0 is-even x))
 (define-read-only (taylor-6 (x uint)) (contract-call? .math-v2-0 taylor-6 x))
-(define-read-only (get-sb-by-sy) (contract-call? .math-v2-0 get-sb-by-sy))
 
 (define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
   (contract-call? .math-v2-0 mul-to-fixed-precision a decimals-a b-fixed))
