@@ -889,7 +889,7 @@ describe("Supply and Redeem", () => {
       ],
       Borrower_1
     );
-    expect(callResponse.result).toBeErr(Cl.uint(30029));
+    expect(callResponse.result).toBeErr(Cl.uint(30016));
 
     callResponse = simnet.callPublicFnCheckOk(
       config.borrowHelper,
