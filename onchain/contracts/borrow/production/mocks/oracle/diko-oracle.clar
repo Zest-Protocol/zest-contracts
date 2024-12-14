@@ -34,6 +34,9 @@
 ;; 0.01USD
 (define-data-var min-price uint u1000000)
 
+;; number of blocks before a price is considered stale
+(define-data-var stale-block-threshold uint u10)
+
 (define-data-var validate-oracle-price bool false)
 
 (define-public (set-validate-oracle-price (enabled bool))
@@ -64,6 +67,13 @@
   )
 )
 
+(define-public (set-stale-block-threshold (blocks uint))
+  (begin
+    (asserts! (is-eq tx-sender deployer) err-unauthorized)
+    (ok (var-set stale-block-threshold blocks))
+  )
+)
+
 ;; get the price from the oracle and use the average dex price for sanity checks
 (define-public (get-asset-price (token <ft>))
   (let (
@@ -78,7 +88,7 @@
     (asserts! (> last-price (var-get min-price)) err-below-threshold)
     (asserts! (< last-price (var-get max-price)) err-above-threshold)
 
-    (asserts! (<= (- burn-block-height (get last-block oracle-data)) u10) err-stale-price)
+    (asserts! (<= (- burn-block-height (get last-block oracle-data)) (var-get stale-block-threshold)) err-stale-price)
 
     (ok last-price)
   )
@@ -88,11 +98,11 @@
 (define-read-only (get-price)
   (let (
     (last-price (to-fixed (get last-price (contract-call? 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-oracle-v2-3 get-price "DIKO")) u6))
-    ;; (last-price (to-fixed (get last-price (contract-call? .arkadiko-oracle get-price "DIKO")) u6))
   )
     last-price
   )
 )
+
 
 (define-read-only (validate-price (oracle-price uint))
   (let (
