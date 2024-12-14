@@ -50,6 +50,18 @@
 (define-read-only (get-e-mode-type-config-read (type (buff 1)))
   (map-get? e-mode-type-config type))
 
+;; asset -> base supply rate
+(define-map base-supply-rates principal uint)
+(define-public (set-base-supply-rate (asset principal) (rate uint))
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (print { type: "set-base-supply-rate", payload: { key: asset, data: rate } })
+    (ok (map-set base-supply-rates asset rate))))
+(define-public (get-base-supply-rate (asset principal))
+  (ok (map-get? base-supply-rates asset)))
+(define-read-only (get-base-supply-rate-read (asset principal))
+  (map-get? base-supply-rates asset))
+
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)
 (define-public (set-contract-owner (owner principal))
