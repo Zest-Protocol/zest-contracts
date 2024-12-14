@@ -177,6 +177,9 @@
 (define-read-only (get-variable-rate-slope-2 (asset principal))
   (ok (unwrap! (contract-call? .pool-reserve-data get-variable-rate-slope-2-read asset) ERR_VARIABLE_RATE_SLOPE_2_NOT_SET)) )
 
+(define-read-only (get-base-supply-rate (asset principal))
+  (default-to u0 (contract-call? .pool-reserve-data-2 get-base-supply-rate-read asset)))
+
 (define-read-only (is-borroweable-isolated (asset principal))
   (match (index-of? (contract-call? .pool-reserve-data get-borroweable-isolated-read) asset)
     res true
@@ -1772,10 +1775,13 @@
           (ok 
             {
               current-liquidity-rate:
-              (mul
-                new-variable-borrow-rate
-                utilization-rate
-              ),
+                (+
+                  (mul
+                    new-variable-borrow-rate
+                    utilization-rate
+                  )
+                  (get-base-supply-rate asset)
+                ),
               current-variable-borrow-rate: new-variable-borrow-rate,
               utilization-rate: utilization-rate,
             }
@@ -1792,12 +1798,12 @@
           (ok 
             {
               current-liquidity-rate:
-                (mul
-                  (mul 
-                    new-variable-borrow-rate
-                    utilization-rate
+                (+
+                  (mul
+                    (mul new-variable-borrow-rate utilization-rate)
+                    (- one-8 (get-reserve-factor asset))
                   )
-                  (- one-8 (get-reserve-factor asset))
+                  (get-base-supply-rate asset)
                 ),
               current-variable-borrow-rate: new-variable-borrow-rate,
               utilization-rate: utilization-rate,
