@@ -699,6 +699,8 @@ describe("Upgrading z-token to v1-2", () => {
     );
     const poolBorrow = new PoolBorrow(simnet, deployerAddress, "pool-borrow");
 
+    const initialSupply = 10_000_000_000n;
+
     let callResponse = poolBorrow.supply(
       deployerAddress,
       lpstSTX,
@@ -706,7 +708,7 @@ describe("Upgrading z-token to v1-2", () => {
       pool0Reserve,
       deployerAddress,
       stSTX,
-      10_000_000_000,
+      initialSupply,
       Borrower_2,
       Borrower_2
     );
@@ -829,6 +831,23 @@ describe("Upgrading z-token to v1-2", () => {
       readFileSync(config.migrateV2ToV3FilePath).toString(),
       null,
       deployerAddress
+    );
+
+    expect(
+      simnet.getAssetsMap().get(`.lp-ststx-token.lp-ststx`)?.get(Borrower_2)
+    ).toBe(initialSupply);
+
+    callResponse = simnet.callReadOnlyFn(
+      `pool-reserve-data`,
+      "get-user-reserve-data-read",
+      [
+        Cl.standardPrincipal(Borrower_2),
+        Cl.contractPrincipal(deployerAddress, USDA),
+      ],
+      deployerAddress
+    );
+    expect(Cl.prettyPrint(callResponse.result)).toBe(
+      `(some { last-updated-block: u117, last-variable-borrow-cumulative-index: u100000000, origination-fee: u0, principal-borrow-balance: u10000000, stable-borrow-rate: u0, use-as-collateral: false })`
     );
 
     callResponse = simnet.callPublicFn(
