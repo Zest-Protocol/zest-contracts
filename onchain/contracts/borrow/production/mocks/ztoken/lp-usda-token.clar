@@ -9,9 +9,9 @@
 
 (define-fungible-token lp-usda)
 
-(define-data-var token-uri (string-utf8 256) u"https://token-meta.s3.eu-central-1.amazonaws.com/zusda.json")
-(define-data-var token-name (string-ascii 32) "Zest usda")
-(define-data-var token-symbol (string-ascii 32) "zusda")
+(define-data-var token-uri (string-utf8 256) u"https://token-meta.s3.eu-central-1.amazonaws.com/zUSDA.json")
+(define-data-var token-name (string-ascii 32) "Zest USDA")
+(define-data-var token-symbol (string-ascii 32) "zUSDA")
 
 (define-constant decimals u6)
 
