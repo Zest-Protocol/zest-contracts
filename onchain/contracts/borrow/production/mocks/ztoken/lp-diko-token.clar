@@ -9,7 +9,7 @@
 
 (define-fungible-token lp-diko)
 
-(define-data-var token-uri (string-utf8 256) u"https://token-meta.s3.eu-central-1.amazonaws.com/zdiko.json")
+(define-data-var token-uri (string-utf8 256) u"https://token-meta.s3.eu-central-1.amazonaws.com/zDiko.json")
 (define-data-var token-name (string-ascii 32) "Zest diko")
 (define-data-var token-symbol (string-ascii 32) "zdiko")
 
