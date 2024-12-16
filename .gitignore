@@ -11,6 +11,12 @@ src/clarigen
 onchain/.requirements/
 onchain/contracts/borrow/deployment_mainnet/add-asset
 onchain/contracts/borrow/deployment_mainnet/update
-onchain/contracts/borrow/deployment_mainnet/upgrades
+onchain/contracts/borrow/deployment_mainnet/upgrades/borrow-helper
+onchain/contracts/borrow/deployment_mainnet/upgrades/zaeusdc
+onchain/contracts/borrow/deployment_mainnet/upgrades/zdiko
+onchain/contracts/borrow/deployment_mainnet/upgrades/zststx
+onchain/contracts/borrow/deployment_mainnet/upgrades/zsusdt
+onchain/contracts/borrow/deployment_mainnet/upgrades/zusdh
+onchain/contracts/borrow/deployment_mainnet/upgrades/zwstx
 onchain/contracts/borrow/deployment_mainnet/update-asset
 .vscode
