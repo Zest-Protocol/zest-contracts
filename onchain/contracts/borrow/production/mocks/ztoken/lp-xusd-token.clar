@@ -9,9 +9,9 @@
 
 (define-fungible-token lp-xusd)
 
-(define-data-var token-uri (string-utf8 256) u"https://token-meta.s3.eu-central-1.amazonaws.com/zxUSD.json")
-(define-data-var token-name (string-ascii 32) "Zest xUSD")
-(define-data-var token-symbol (string-ascii 32) "zxUSD")
+(define-data-var token-uri (string-utf8 256) u"https://token-meta.s3.eu-central-1.amazonaws.com/zaeUSDC.json")
+(define-data-var token-name (string-ascii 32) "Zest aeUSDC")
+(define-data-var token-symbol (string-ascii 32) "zaeUSDC")
 
 (define-constant decimals u6)
 
