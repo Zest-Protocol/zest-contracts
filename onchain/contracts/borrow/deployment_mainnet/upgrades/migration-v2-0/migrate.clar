@@ -4,6 +4,7 @@
 (define-data-var executed bool false)
 (define-data-var executed-burn-mint bool false)
 (define-data-var executed-reserve-data-update bool false)
+(define-data-var executed-borrower-block-height bool false)
 
 (define-constant ststx-address 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token)
 (define-constant aeusdc-address 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc)
@@ -312,7 +313,7 @@
 
 (define-public (set-ststx-borrower-block-height)
   (begin
-    (asserts! (not (var-get executed-ststx-borrower-block-height)) (err u10))
+    (asserts! (not (var-get executed-borrower-block-height)) (err u10))
     ;; enabled access
     (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) true))
 
@@ -323,7 +324,7 @@
     ;; disable access
     (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) false))
 
-    (var-set executed-ststx-borrower-block-height true)
+    (var-set executed-borrower-block-height true)
     (ok true)
   )
 )
@@ -337,10 +338,6 @@
     (try! (contract-call? .zststx-v1-2 set-approved-contract (as-contract tx-sender) true))
     (try! (contract-call? .zststx-v2-0 set-approved-contract (as-contract tx-sender) true))
     (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) true))
-
-    ;; set to last updated block height of the v2 version for borrowers
-    ;; only addr-2 is a borrower in this case
-    (try! (fold check-err (map set-ststx-user-burn-block-height-lambda ststx-borrowers) (ok true)))
 
     ;; burn/mint v2 to v3
     (try! (fold check-err (map consolidate-ststx-lambda ststx-holders) (ok true)))
