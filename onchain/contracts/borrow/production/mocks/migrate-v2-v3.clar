@@ -288,10 +288,6 @@
     (try! (contract-call? .lp-ststx-v3 set-approved-contract (as-contract tx-sender) true))
     (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) true))
 
-    ;; set to last updated block height of the v2 version for borrowers
-    ;; only addr-2 is a borrower in this case
-    (try! (fold check-err (map set-usda-user-burn-block-height-lambda usda-borrowers) (ok true)))
-
     ;; burn/mint v2 to v3
     (try! (fold check-err (map consolidate-ststx-lambda ststx-holders) (ok true)))
 
