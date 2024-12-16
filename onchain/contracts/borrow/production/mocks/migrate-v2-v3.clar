@@ -2,6 +2,9 @@
 ;; Must be called after deploying migrate-v0-v1.clar
 
 (define-data-var executed bool false)
+(define-data-var executed-burn-mint bool false)
+(define-data-var executed-reserve-data-update bool false)
+(define-data-var executed-usda-borrower-block-height bool false)
 
 (define-constant ststx-address .ststx)
 (define-constant usda-address .usda)
@@ -231,8 +234,53 @@
 (define-constant usda-borrowers (list { borrower: 'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND, new-height: u117 }))
 (define-constant ststx-holders (list 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG 'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND))
 
-(define-public (burn-mint-v3)
+(define-constant reserve-stacks-block-height-ststx u118)
+(define-constant reserve-stacks-block-height-sbtc u118)
+(define-constant reserve-stacks-block-height-usda u118)
+(define-constant reserve-stacks-block-height-xusd u118)
+(define-constant reserve-stacks-block-height-wstx u118)
+(define-constant reserve-stacks-block-height-diko u118)
+
+(define-public (set-reserve-block-height)
   (begin
+    (asserts! (not (var-get executed-reserve-data-update)) (err u11))
+    (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) true))
+
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .ststx reserve-stacks-block-height-ststx))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .sbtc reserve-stacks-block-height-sbtc))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .usda reserve-stacks-block-height-usda))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .xusd reserve-stacks-block-height-xusd))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .wstx reserve-stacks-block-height-wstx))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .diko reserve-stacks-block-height-diko))
+
+    (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) false))
+    
+    (var-set executed-reserve-data-update true)
+    (ok true)
+  )
+)
+
+(define-public (set-usda-borrower-block-height)
+  (begin
+    (asserts! (not (var-get executed-usda-borrower-block-height)) (err u12))
+    ;; enabled access
+    (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) true))
+
+    ;; set to last updated block height of the v2 version for borrowers
+    ;; only addr-2 is a borrower in this case
+    (try! (fold check-err (map set-usda-user-burn-block-height-lambda usda-borrowers) (ok true)))
+
+    ;; disable access
+    (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) false))
+
+    (var-set executed-usda-borrower-block-height true)
+    (ok true)
+  )
+)
+
+(define-public (burn-mint-ststx)
+  (begin
+    (asserts! (not (var-get executed-burn-mint)) (err u13))
     ;; enabled access
     (try! (contract-call? .lp-ststx set-approved-contract (as-contract tx-sender) true))
     (try! (contract-call? .lp-ststx-v1 set-approved-contract (as-contract tx-sender) true))
@@ -244,14 +292,6 @@
     ;; only addr-2 is a borrower in this case
     (try! (fold check-err (map set-usda-user-burn-block-height-lambda usda-borrowers) (ok true)))
 
-    ;; set to last updated block height of the v2 version for the reserve
-    (try! (set-reserve-burn-block-height-to-stacks-block-height .ststx u118))
-    (try! (set-reserve-burn-block-height-to-stacks-block-height .sbtc u118))
-    (try! (set-reserve-burn-block-height-to-stacks-block-height .usda u118))
-    (try! (set-reserve-burn-block-height-to-stacks-block-height .xusd u118))
-    (try! (set-reserve-burn-block-height-to-stacks-block-height .wstx u118))
-    (try! (set-reserve-burn-block-height-to-stacks-block-height .diko u118))
-
     ;; burn/mint v2 to v3
     (try! (fold check-err (map consolidate-ststx-lambda ststx-holders) (ok true)))
 
@@ -261,6 +301,8 @@
     (try! (contract-call? .lp-ststx-v2 set-approved-contract (as-contract tx-sender) false))
     (try! (contract-call? .lp-ststx-v3 set-approved-contract (as-contract tx-sender) false))
     (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) false))
+
+    (var-set executed-burn-mint true)
     (ok true)
   )
 )
@@ -353,4 +395,6 @@
 )
 
 (run-update)
-(burn-mint-v3)
+(burn-mint-ststx)
+(set-reserve-block-height)
+(set-usda-borrower-block-height)
