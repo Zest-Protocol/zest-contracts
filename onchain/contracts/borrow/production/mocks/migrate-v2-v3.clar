@@ -228,97 +228,117 @@
   )
 )
 
+(define-constant usda-borrowers (list { borrower: 'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND, new-height: u117 }))
+(define-constant ststx-holders (list 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG 'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND))
+
 (define-public (burn-mint-v3)
-  (let (
-    (addr-1 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG)
-    (addr-2 'ST2NEB84ASENDXKYGJPQW86YXQCEFEX2ZQPG87ND)
-    (balance-1 (unwrap-panic (contract-call? .lp-ststx-v2 get-principal-balance addr-1))) 
-    (balance-2 (unwrap-panic (contract-call? .lp-ststx-v2 get-principal-balance addr-2)))
-  )
+  (begin
+    ;; enabled access
     (try! (contract-call? .lp-ststx set-approved-contract (as-contract tx-sender) true))
+    (try! (contract-call? .lp-ststx-v1 set-approved-contract (as-contract tx-sender) true))
+    (try! (contract-call? .lp-ststx-v2 set-approved-contract (as-contract tx-sender) true))
     (try! (contract-call? .lp-ststx-v3 set-approved-contract (as-contract tx-sender) true))
     (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) true))
 
     ;; set to last updated block height of the v2 version for borrowers
-    (try!
-      (contract-call? .pool-reserve-data set-user-reserve-data
-      addr-2 .usda
-      (merge
-        (unwrap-panic (contract-call? .pool-reserve-data get-user-reserve-data-read addr-2 .usda))
-        ;; last updated block height is converted from burn-block-height to stacks-block-height
-        { last-updated-block: u117 })))
-    
+    ;; only addr-2 is a borrower in this case
+    (try! (fold check-err (map set-usda-user-burn-block-height-lambda usda-borrowers) (ok true)))
+
     ;; set to last updated block height of the v2 version for the reserve
-    (try!
-      (contract-call? .pool-reserve-data set-reserve-state
-      .ststx
-      (merge
-        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .ststx))
-        ;; last updated block height is converted from burn-block-height to stacks-block-height
-        { last-updated-block: u118 })))
-    (try!
-      (contract-call? .pool-reserve-data set-reserve-state
-      .sbtc
-      (merge
-        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .sbtc))
-        ;; last updated block height is converted from burn-block-height to stacks-block-height
-        { last-updated-block: u118 })))
-    (try!
-      (contract-call? .pool-reserve-data set-reserve-state
-      .diko
-      (merge
-        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .diko))
-        ;; last updated block height is converted from burn-block-height to stacks-block-height
-        { last-updated-block: u118 })))
-    (try!
-      (contract-call? .pool-reserve-data set-reserve-state
-      .usda
-      (merge
-        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .usda))
-        ;; last updated block height is converted from burn-block-height to stacks-block-height
-        { last-updated-block: u118 })))
-    (try!
-      (contract-call? .pool-reserve-data set-reserve-state
-      .xusd
-      (merge
-        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .xusd))
-        ;; last updated block height is converted from burn-block-height to stacks-block-height
-        { last-updated-block: u118 })))
-    (try!
-      (contract-call? .pool-reserve-data set-reserve-state
-      .wstx
-      (merge
-        (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read .wstx))
-        ;; last updated block height is converted from burn-block-height to stacks-block-height
-        { last-updated-block: u118 })))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .ststx u118))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .sbtc u118))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .usda u118))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .xusd u118))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .wstx u118))
+    (try! (set-reserve-burn-block-height-to-stacks-block-height .diko u118))
 
     ;; burn/mint v2 to v3
+    (try! (fold check-err (map consolidate-ststx-lambda ststx-holders) (ok true)))
+
+    ;; disable access
+    (try! (contract-call? .lp-ststx set-approved-contract (as-contract tx-sender) false))
+    (try! (contract-call? .lp-ststx-v1 set-approved-contract (as-contract tx-sender) false))
+    (try! (contract-call? .lp-ststx-v2 set-approved-contract (as-contract tx-sender) false))
+    (try! (contract-call? .lp-ststx-v3 set-approved-contract (as-contract tx-sender) false))
+    (try! (contract-call? .pool-reserve-data set-approved-contract (as-contract tx-sender) false))
+    (ok true)
+  )
+)
+
+(define-private (set-usda-user-burn-block-height-lambda (usda-borrower (tuple (borrower principal) (new-height uint))))
+  (set-user-burn-block-height-to-stacks-block-height
+    (get borrower usda-borrower)
+    .usda
+    (get new-height usda-borrower))
+)
+
+(define-private (consolidate-ststx-lambda (account principal))
+  (consolidate-ststx-balance-to-v3 account)
+)
+
+(define-private (check-err (result (response bool uint)) (prior (response bool uint)))
+  (match prior ok-value result err-value (err err-value))
+)
+
+(define-private (set-user-burn-block-height-to-stacks-block-height
+  (account principal)
+  (asset principal)
+  (new-stacks-block-height uint))
+  (begin
     (try!
-      (contract-call? .lp-ststx
-        burn
-        balance-1
-        addr-1
-      )
+      (contract-call? .pool-reserve-data set-user-reserve-data
+        account
+        asset
+          (merge
+            (unwrap-panic (contract-call? .pool-reserve-data get-user-reserve-data-read account asset))
+            { last-updated-block: new-stacks-block-height })))
+    (ok true)
+  )
+)
+
+(define-private (set-reserve-burn-block-height-to-stacks-block-height
+  (asset principal)
+  (new-stacks-block-height uint))
+  (begin
+    (try!
+      (contract-call? .pool-reserve-data set-reserve-state
+        asset
+        (merge
+          (unwrap-panic (contract-call? .pool-reserve-data get-reserve-state-read asset))
+          { last-updated-block: new-stacks-block-height })))
+    (ok true)
+  )
+)
+
+(define-private (consolidate-ststx-balance-to-v3 (account principal))
+  (let (
+    ;; burns old balances and mints to the latest version
+    (v0-balance (unwrap-panic (contract-call? .lp-ststx get-principal-balance account)))
+    (v1-balance (unwrap-panic (contract-call? .lp-ststx-v1 get-principal-balance account)))
+    (v2-balance (unwrap-panic (contract-call? .lp-ststx-v2 get-principal-balance account)))
     )
-    (try!
-      (contract-call? .lp-ststx-v3
-        mint
-        balance-1
-        addr-1
+    (if (> v0-balance u0)
+      (begin
+        (try! (contract-call? .lp-ststx burn v0-balance account))
+        (try! (contract-call? .lp-ststx-v3 mint v0-balance account))
+        true
       )
-    )
-    (try!
-      (contract-call? .lp-ststx
-        burn
-        balance-2
-        addr-2
-      )
-    )
-    (try!
-      (contract-call? .lp-ststx-v3
-        mint
-        balance-2
-        addr-2
+      ;; if doesn't have v0 balance, then check if has v1 balance
+      (if (> v1-balance u0)
+        (begin
+          (try! (contract-call? .lp-ststx-v1 burn v1-balance account))
+          (try! (contract-call? .lp-ststx-v3 mint v1-balance account))
+          true
+        )
+        ;; if doesn't have v1 balance, then check if has v2 balance
+        (if (> v2-balance u0)
+          (begin
+            (try! (contract-call? .lp-ststx-v2 burn v2-balance account))
+            (try! (contract-call? .lp-ststx-v3 mint v2-balance account))
+            true
+          )
+          false
+        )
       )
     )
     (ok true)
