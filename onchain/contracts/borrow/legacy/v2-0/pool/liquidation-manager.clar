@@ -176,7 +176,7 @@
   (contract-call? .math-v2-0 get-y-from-x x x-decimals y-decimals x-price y-price)
 )
 
-(define-data-var lending-pool principal .pool-borrow-v2-1)
+(define-data-var lending-pool principal .pool-borrow-v2-0)
 
 (define-data-var admin principal tx-sender)
 (define-read-only (is-admin (caller principal))

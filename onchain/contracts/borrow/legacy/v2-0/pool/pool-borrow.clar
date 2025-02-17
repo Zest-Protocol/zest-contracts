@@ -271,9 +271,6 @@
   )
 )
 
-;; (define-read-only (get-isolation-mode-total-debt (asset principal))
-;;   (default-to u0 (contract-call? .pool-reserve-data-3 get-isolation-mode-total-debt asset)))
-
 (define-private (validate-borrow-in-isolated-mode
   (isolated-asset principal)
   (borrowed-asset principal)
@@ -284,17 +281,16 @@
 )
   (let (
     (isolated-reserve (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state isolated-asset)))
-    ;; (total-isolated-debt (get-isolation-mode-total-debt isolated-asset))
+    (total-isolated-debt (try! (contract-call? .pool-0-reserve-v2-0 sum-total-debt-in-base-currency assets)))
   )
     (asserts! (contract-call? .pool-0-reserve-v2-0 is-borroweable-isolated borrowed-asset) ERR_NOT_SILOED_ASSET)
-    ;; (if (> (get debt-ceiling isolated-reserve) u0)
-    ;;   (begin
-    ;;     (asserts! (<= (+ amount-to-be-borrowed-in-base-currency total-isolated-debt) (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
-    ;;     (ok true)
-    ;;   )
-    ;;   (ok true)
-    ;; )
-    (ok true)
+    (if (> (get debt-ceiling isolated-reserve) u0)
+      (begin
+        (asserts! (<= (+ amount-to-be-borrowed-in-base-currency total-isolated-debt) (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
+        (ok true)
+      )
+      (ok true)
+    )
   )
 )
 
@@ -367,7 +363,7 @@
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
 
-    (contract-call? .liquidation-manager-v2-1 liquidation-call
+    (contract-call? .liquidation-manager-v2-0 liquidation-call
       assets
       collateral-lp
       collateral-to-liquidate

@@ -1,0 +1,6 @@
+{
+    "name": "Zest sBTC",
+    "symbol": "zsBTC",
+    "description": "Yield-bearing asset for sBTC supplied in Zest.",
+    "image": "https://token-meta.s3.eu-central-1.amazonaws.com/icons/zsBTC.png"
+  }

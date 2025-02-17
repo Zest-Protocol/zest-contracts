@@ -2,6 +2,9 @@ import { Simnet } from "@hirosystems/clarinet-sdk";
 import { Cl} from "@stacks/transactions";
 import { readFileSync } from "fs";
 import * as config from "./config";
+import { sBTC, stSTX, wstx, xUSD } from "./config";
+
+const one_day = 144;
 
 export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
   simnet.deployContract(
@@ -15,6 +18,14 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
   simnet.deployContract(
     "pool-reserve-data-2",
     readFileSync(config.pool_reserve_data_2_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "pool-reserve-data-3",
+    readFileSync(config.pool_reserve_data_3_path).toString(),
     {
       clarityVersion: 3,
     },
@@ -36,7 +47,15 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
     },
     deployerAddress
   );
-  let callResponse = simnet.deployContract(
+  simnet.deployContract(
+    "liquidation-manager-v2-1",
+    readFileSync(config.liquidation_manager_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
     "pool-0-reserve-read",
     readFileSync(config.pool0ReserveRead_path).toString(),
     {
@@ -158,6 +177,100 @@ export const deployV2TokenContracts = (simnet: Simnet, deployerAddress: string) 
     {
       clarityVersion: 3,
     },
+    deployerAddress
+  );
+}
+
+export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => {
+  simnet.deployContract(
+    "pool-borrow-v2-1",
+    readFileSync(config.pool_borrow_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "borrow-helper-v2-1",
+    readFileSync(config.borrow_helper_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+}
+
+export const setGracePeriodVars = (simnet: Simnet, deployerAddress: string) => {
+  let callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-grace-period-enabled",
+    [Cl.contractPrincipal(deployerAddress, stSTX), Cl.bool(true)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-grace-period-time",
+    [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(one_day)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-grace-period-enabled",
+    [Cl.contractPrincipal(deployerAddress, sBTC), Cl.bool(true)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-grace-period-time",
+    [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(one_day)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-grace-period-enabled",
+    [Cl.contractPrincipal(deployerAddress, xUSD), Cl.bool(true)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-grace-period-time",
+    [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(one_day)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-grace-period-enabled",
+    [Cl.contractPrincipal(deployerAddress, wstx), Cl.bool(true)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-grace-period-time",
+    [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(one_day)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-freeze-end-block",
+    [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(simnet.burnBlockHeight)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-freeze-end-block",
+    [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(simnet.burnBlockHeight)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-freeze-end-block",
+    [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(simnet.burnBlockHeight)],
+    deployerAddress
+  );
+  callResponse = simnet.callPublicFn(
+    config.poolBorrow,
+    "set-freeze-end-block",
+    [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(simnet.burnBlockHeight)],
     deployerAddress
   );
 }

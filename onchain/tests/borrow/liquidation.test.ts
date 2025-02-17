@@ -5,9 +5,9 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
-import { initContractsToV2, lpSbtc, lpStstx, lpXusd, poolBorrow as poolBorrowContractName, pool0Reserve as pool0ReserveContractName, reserveExtraVariables, borrowHelper, pool0ReserveRead } from "./tools/config";
+import { initContractsToV2, lpSbtc, lpStstx, lpXusd, poolBorrow as poolBorrowContractName, pool0Reserve as pool0ReserveContractName, reserveExtraVariables, borrowHelper, pool0ReserveRead, initContractsToV2_1 } from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, setGracePeriodVars } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -339,13 +339,16 @@ describe("Liquidation tests", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployV2_1Contracts(simnet, deployerAddress);
 
     simnet.deployContract(
       "run-1",
-      readFileSync(initContractsToV2).toString(),
+      readFileSync(initContractsToV2_1).toString(),
       null,
       deployerAddress
     );
+
+    setGracePeriodVars(simnet, deployerAddress);
   });
   it("Supply sBTC, borrow xUSD, price goes below health factor", () => {
     const poolBorrow = new PoolBorrow(

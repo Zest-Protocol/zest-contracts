@@ -167,22 +167,22 @@ describe("Math", () => {
 //     simnet.mineEmptyBlocks(5000);
 //     simnet.setEpoch("3.0");
 //     let callResponse = simnet.deployContract(
-//       "math-v2-0",
-//       readFileSync(config.mathV2_0).toString(),
+//       "test-user-asset",
+//       readFileSync("/Users/fernandofoy/Documents/zest-protocol-repos/zest-contracts/onchain/contracts/borrow/production/mocks/test-wrappers/user-asset.clar").toString(),
 //       {
 //         clarityVersion: 3,
 //       },
 //       deployerAddress
 //     );
-//     callResponse = simnet.deployContract(
-//       "pool-0-reserve-v2-0",
-//       readFileSync(config.mathV2_0).toString(),
-//       {
-//         clarityVersion: 3,
-//       },
-//       deployerAddress
-//     );
-//     const lastUpdatedBlock = simnet.blockHeight;
+//     // callResponse = simnet.deployContract(
+//     //   "pool-0-reserve-v2-0",
+//     //   readFileSync(config.mathV2_0).toString(),
+//     //   {
+//     //     clarityVersion: 3,
+//     //   },
+//     //   deployerAddress
+//     // );
+//     // const lastUpdatedBlock = simnet.blockHeight;
 //     simnet.mineEmptyBlocks(1);
 
 //     // console.log("Blockheight ", simnet.blockHeight);
@@ -190,12 +190,15 @@ describe("Math", () => {
 //     // console.log("BurnBlockHeight ", simnet.burnBlockHeight);
 
 //     callResponse = simnet.callReadOnlyFn(
-//       `math-v2-0`,
-//       "get-rt-by-block",
-//       [Cl.uint(100000000), Cl.uint((simnet.stacksBlockHeight - lastUpdatedBlock))],
+//       `test-user-asset`,
+//       "calculate-user-global-data",
+//       [
+//         Cl.uint(10000000),
+//         Cl.uint((31536000))
+//       ],
 //       deployerAddress
 //     );
-//     // console.log(cvToValue(callResponse.result));
+//     console.log(cvToValue(callResponse.result));
 //   });
 // });
 

@@ -8,7 +8,7 @@ import { ZToken } from "./models/zToken";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -61,6 +61,7 @@ describe("Confirm pass permission", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployV2_1Contracts(simnet, deployerAddress);
 
     let callResponse = simnet.callPublicFn(
       config.pool0Reserve,
