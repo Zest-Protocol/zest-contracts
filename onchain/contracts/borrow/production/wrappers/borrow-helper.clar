@@ -64,6 +64,7 @@
 
 (define-public (repay
   (asset <ft>)
+  (oracle <oracle-trait>)
   (amount-to-repay uint)
   (on-behalf-of principal)
   (payer principal)
@@ -71,7 +72,7 @@
   (let (
     (asset-principal (contract-of asset))
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
-    (payback-amount (try! (contract-call? .pool-borrow-v2-1 repay asset amount-to-repay on-behalf-of payer)))
+    (payback-amount (try! (contract-call? .pool-borrow-v2-1 repay asset oracle amount-to-repay on-behalf-of payer)))
     )
 
     (print { type: "repay-call", payload: { key: on-behalf-of, data: {

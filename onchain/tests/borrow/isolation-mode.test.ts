@@ -1318,6 +1318,7 @@ describe("Isolated mode", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
@@ -1992,6 +1993,7 @@ describe("Isolated mode", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, xUSD),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),

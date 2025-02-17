@@ -271,8 +271,36 @@
   )
 )
 
-;; (define-read-only (get-isolation-mode-total-debt (asset principal))
-;;   (default-to u0 (contract-call? .pool-reserve-data-3 get-isolation-mode-total-debt asset)))
+(define-read-only (get-isolation-mode-total-debt (asset principal))
+  (default-to u0 (contract-call? .pool-reserve-data-3 get-isolation-mode-total-debt-read asset)))
+
+(define-private (reduce-isolated-mode-debt
+  (isolated-asset principal)
+  (borrowed-asset <ft>)
+  (borrowed-asset-oracle <oracle-trait>)
+  (amount uint))
+  (let (
+    (isolated-reserve (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state isolated-asset)))
+    (borrowed-asset-reserve (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of borrowed-asset))))
+    (total-isolated-debt (get-isolation-mode-total-debt isolated-asset))
+    (amount-in-base-currency (contract-call? .pool-0-reserve-v2-0 mul-to-fixed-precision
+      amount
+      (get decimals borrowed-asset-reserve)
+      (try! (contract-call? borrowed-asset-oracle get-asset-price borrowed-asset))))
+  )
+    ;; amount paid back can be bigger because it's paying interest + principal
+    (if (> amount-in-base-currency total-isolated-debt)
+      (try! (contract-call? .pool-reserve-data-3 set-isolation-mode-total-debt
+        isolated-asset
+        u0
+      ))
+      (try! (contract-call? .pool-reserve-data-3 set-isolation-mode-total-debt
+        isolated-asset
+        (- total-isolated-debt amount-in-base-currency)))
+    )
+    (ok true)
+  )
+)
 
 (define-private (validate-borrow-in-isolated-mode
   (isolated-asset principal)
@@ -284,22 +312,27 @@
 )
   (let (
     (isolated-reserve (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state isolated-asset)))
-    ;; (total-isolated-debt (get-isolation-mode-total-debt isolated-asset))
+    (total-isolated-debt (+ amount-to-be-borrowed-in-base-currency (get-isolation-mode-total-debt isolated-asset)))
   )
     (asserts! (contract-call? .pool-0-reserve-v2-0 is-borroweable-isolated borrowed-asset) ERR_NOT_SILOED_ASSET)
-    ;; (if (> (get debt-ceiling isolated-reserve) u0)
-    ;;   (begin
-    ;;     (asserts! (<= (+ amount-to-be-borrowed-in-base-currency total-isolated-debt) (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
-    ;;     (ok true)
-    ;;   )
-    ;;   (ok true)
-    ;; )
+    (if (> (get debt-ceiling isolated-reserve) u0)
+      (begin
+        (asserts! (<= total-isolated-debt (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
+      )
+      ;; check nothing
+      false
+    )
+    ;; only adds principal, not interest
+    (try! (contract-call? .pool-reserve-data-3 set-isolation-mode-total-debt
+          isolated-asset
+          total-isolated-debt))
     (ok true)
   )
 )
 
 (define-public (repay
   (asset <ft>)
+  (oracle <oracle-trait>)
   (amount-to-repay uint)
   (on-behalf-of principal)
   (payer principal)
@@ -313,12 +346,25 @@
         amount-due
         (if (> amount-to-repay amount-due)
           amount-due
-          amount-to-repay ))))
+          amount-to-repay )))
+    (is-in-isolation-mode (contract-call? .pool-0-reserve-v2-0 is-in-isolation-mode on-behalf-of))
+    )
     (try! (is-approved-contract contract-caller))
     (asserts! (> (get compounded-balance ret) u0) ERR_NOT_ZERO)
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
     (asserts! (is-eq payer tx-sender) ERR_UNAUTHORIZED)
+
+    (match is-in-isolation-mode
+      isolated-asset (begin
+        (try! (reduce-isolated-mode-debt
+          isolated-asset
+          asset
+          oracle
+          payback-amount))
+      )
+      true
+    )
 
     ;; paying back the balance
     (begin

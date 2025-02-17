@@ -1131,6 +1131,7 @@ describe("Supply and redeem ", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(LP_1),
         Cl.standardPrincipal(Borrower_1),
@@ -1335,6 +1336,7 @@ describe("Supply and redeem ", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
@@ -1615,6 +1617,7 @@ describe("Supply and redeem ", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
@@ -1664,6 +1667,7 @@ describe("Supply and redeem ", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),

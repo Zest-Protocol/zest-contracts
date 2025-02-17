@@ -289,6 +289,11 @@ path = "contracts/borrow/production/pool/liquidation-manager.clar"
 clarity_version = 3
 epoch = 3.0
 
+[contracts.liquidation-manager-v2-1]
+path = "contracts/borrow/production/pool/liquidation-manager.clar"
+clarity_version = 3
+epoch = 3.0
+
 [contracts.ft-trait]
 path = "contracts/borrow/production/traits/ft-trait.clar"
 clarity_version = 2
@@ -336,6 +341,11 @@ epoch = 2.4
 
 [contracts.pool-reserve-data-2]
 path = "contracts/borrow/production/reserve-data/pool-reserve-data-2.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pool-reserve-data-3]
+path = "contracts/borrow/production/reserve-data/pool-reserve-data-3.clar"
 clarity_version = 3
 epoch = 3.0
 
