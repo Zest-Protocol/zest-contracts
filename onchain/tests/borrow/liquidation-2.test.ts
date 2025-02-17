@@ -21,7 +21,8 @@ import {
   lpSbtcToken,
   lpXusdToken,
 } from "./tools/config";
-import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, setGracePeriodVars } from "./tools/common";
+import * as config from "./tools/config";
 
 const simnet = await initSimnet();
 
@@ -165,13 +166,15 @@ describe("Liquidations", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployV2_1Contracts(simnet, deployerAddress);
 
     simnet.deployContract(
       "run-1",
-      readFileSync(initContractsToV2).toString(),
+      readFileSync(config.initContractsToV2_1).toString(),
       null,
       deployerAddress
     );
+    setGracePeriodVars(simnet, deployerAddress);
     simnet.mineEmptyBlocks(100);
   });
   it("Use wstx: Borrower_1 falls below health factor threshold and gets all their collateral liquidated", () => {
@@ -4463,78 +4466,79 @@ describe("Liquidations", () => {
       Borrower_1
     );
 
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-grace-period-enabled",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.bool(true)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-grace-period-time",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(144)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-grace-period-enabled",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.bool(true)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-grace-period-time",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(144)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-grace-period-enabled",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.bool(true)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-grace-period-time",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(144)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-grace-period-enabled",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.bool(true)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-grace-period-time",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(144)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-freeze-end-block",
-      [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(84)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-freeze-end-block",
-      [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(84)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-freeze-end-block",
-      [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(84)],
-      deployerAddress
-    );
-    callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
-      "set-freeze-end-block",
-      [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(84)],
-      deployerAddress
-    );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-grace-period-enabled",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX), Cl.bool(true)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-grace-period-time",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(144)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-grace-period-enabled",
+    //   [Cl.contractPrincipal(deployerAddress, sBTC), Cl.bool(true)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-grace-period-time",
+    //   [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(144)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-grace-period-enabled",
+    //   [Cl.contractPrincipal(deployerAddress, xUSD), Cl.bool(true)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-grace-period-time",
+    //   [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(144)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-grace-period-enabled",
+    //   [Cl.contractPrincipal(deployerAddress, wstx), Cl.bool(true)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-grace-period-time",
+    //   [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(144)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-freeze-end-block",
+    //   [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(84)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-freeze-end-block",
+    //   [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(84)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-freeze-end-block",
+    //   [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(84)],
+    //   deployerAddress
+    // );
+    // callResponse = simnet.callPublicFn(
+    //   config.poolBorrow,
+    //   "set-freeze-end-block",
+    //   [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(84)],
+    //   deployerAddress
+    // );
+    setGracePeriodVars(simnet, deployerAddress);
 
     oracleContract.setPrice(
       deployerAddress,
@@ -4815,73 +4819,73 @@ describe("Liquidations", () => {
 
     const lastBlock = simnet.burnBlockHeight;
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-grace-period-enabled",
       [Cl.contractPrincipal(deployerAddress, stSTX), Cl.bool(true)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-grace-period-time",
       [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(144)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-grace-period-enabled",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.bool(true)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-grace-period-time",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(144)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-grace-period-enabled",
       [Cl.contractPrincipal(deployerAddress, xUSD), Cl.bool(true)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-grace-period-time",
       [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(144)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-grace-period-enabled",
       [Cl.contractPrincipal(deployerAddress, wstx), Cl.bool(true)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-grace-period-time",
       [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(144)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-freeze-end-block",
       [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(lastBlock)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-freeze-end-block",
       [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(lastBlock)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-freeze-end-block",
       [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(lastBlock)],
       deployerAddress
     );
     callResponse = simnet.callPublicFn(
-      "pool-borrow-v1-2",
+      config.poolBorrow,
       "set-freeze-end-block",
       [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(lastBlock)],
       deployerAddress

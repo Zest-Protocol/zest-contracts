@@ -9,7 +9,7 @@ import { ZToken } from "./models/zToken";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -71,10 +71,11 @@ describe("Supply and redeem", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployV2_1Contracts(simnet, deployerAddress);
 
     callResponse = simnet.deployContract(
       "run-1",
-      readFileSync(config.initContractsToV2).toString(),
+      readFileSync(config.initContractsToV2_1).toString(),
       null,
       deployerAddress
     );
