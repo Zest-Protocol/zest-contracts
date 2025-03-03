@@ -294,6 +294,21 @@ path = "contracts/borrow/production/pool/liquidation-manager.clar"
 clarity_version = 3
 epoch = 3.0
 
+[contracts.incentives]
+path = "contracts/borrow/production/rewards/incentives.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.rewards-data]
+path = "contracts/borrow/production/reserve-data/rewards-data.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.incentives-trait]
+path = "contracts/borrow/production/traits/incentives.clar"
+clarity_version = 3
+epoch = 3.0
+
 [contracts.ft-trait]
 path = "contracts/borrow/production/traits/ft-trait.clar"
 clarity_version = 2
