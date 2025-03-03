@@ -191,6 +191,38 @@ export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => 
     deployerAddress
   );
   simnet.deployContract(
+    "incentives-trait",
+    readFileSync(config.incentives_trait_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "rewards-data",
+    readFileSync(config.rewards_data_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "incentives-dummy",
+    readFileSync(config.incentives_dummy_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "incentives",
+    readFileSync(config.incentives_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
     "borrow-helper-v2-1",
     readFileSync(config.borrow_helper_path).toString(),
     {

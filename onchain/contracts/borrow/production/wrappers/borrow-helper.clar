@@ -4,7 +4,7 @@
 (use-trait flash-loan .flash-loan-trait.flash-loan-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-token .redeemeable-trait-v1-2.redeemeable-trait)
-
+(use-trait incentives-trait .incentives-trait.incentives-trait)
 
 (define-constant ERR_UNAUTHORIZED (err u1000000000000))
 
@@ -14,10 +14,14 @@
   (asset <ft>)
   (amount uint)
   (owner principal)
-  (referral (optional principal)))
+  (referral (optional principal))
+  (incentives <incentives-trait>)
+  )
   (let ((asset-principal (contract-of asset)))
 
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
+
+    (try! (contract-call? incentives claim-rewards lp asset owner))
     (try! (contract-call? .pool-borrow-v2-1 supply lp pool-reserve asset amount owner))
 
     (print { type: "supply-call", payload: { key: owner, data: {
@@ -124,10 +128,12 @@
   (amount uint)
   (owner principal)
   (assets (list 100 { asset: <ft>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
+  (incentives <incentives-trait>)
   )
   (let (
     (asset-principal (contract-of asset))
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
+    (result-claim (try! (contract-call? incentives claim-rewards lp asset owner)))
     (withdraw-res (try! (contract-call? .pool-borrow-v2-1 withdraw pool-reserve asset lp oracle assets amount owner)))
     )
 
@@ -140,6 +146,29 @@
         withdrawn-amount: withdraw-res,
         balance: (try! (contract-call? lp get-balance owner)),
       }}})
+    (ok true)
+  )
+)
+
+(define-constant max-value u340282366920938463463374607431768211455)
+
+(define-public (claim-rewards
+  (lp <redeemeable-token>)
+  (pool-reserve principal)
+  (asset <ft>)
+  (oracle <oracle-trait>)
+  (owner principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
+  (reward-asset <ft>)
+  (incentives <incentives-trait>)
+  )
+  (let (
+    (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
+    (balance (try! (contract-call? .pool-borrow-v2-1 withdraw pool-reserve asset lp oracle assets max-value owner)))
+    )
+    (try! (contract-call? .pool-borrow-v2-1 supply lp pool-reserve asset balance owner))
+    (try! (contract-call? incentives claim-rewards lp asset owner))
+
     (ok true)
   )
 )
