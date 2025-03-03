@@ -7,6 +7,11 @@
 (use-trait incentives-trait .incentives-trait.incentives-trait)
 
 (define-constant ERR_UNAUTHORIZED (err u1000000000000))
+(define-constant ERR_REWARDS_CONTRACT (err u1000000000001))
+
+(define-read-only (is-rewards-contract (contract principal))
+  (is-eq contract (contract-call? .rewards-data get-rewards-contract-read))
+)
 
 (define-public (supply
   (lp <redeemeable-token>)
@@ -20,7 +25,7 @@
   (let ((asset-principal (contract-of asset)))
 
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
-
+    (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT)
     (try! (contract-call? incentives claim-rewards lp asset owner))
     (try! (contract-call? .pool-borrow-v2-1 supply lp pool-reserve asset amount owner))
 
@@ -133,6 +138,7 @@
   (let (
     (asset-principal (contract-of asset))
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
+    (check-on-rewards (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT))
     (result-claim (try! (contract-call? incentives claim-rewards lp asset owner)))
     (withdraw-res (try! (contract-call? .pool-borrow-v2-1 withdraw pool-reserve asset lp oracle assets amount owner)))
     )
@@ -166,6 +172,7 @@
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
     (balance (try! (contract-call? .pool-borrow-v2-1 withdraw pool-reserve asset lp oracle assets max-value owner)))
     )
+    (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT)
     (try! (contract-call? .pool-borrow-v2-1 supply lp pool-reserve asset balance owner))
     (try! (contract-call? incentives claim-rewards lp asset owner))
 
