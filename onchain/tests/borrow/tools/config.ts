@@ -114,11 +114,17 @@ export const poolReserveData = "pool-reserve-data";
 export const poolReserveData1 = "pool-reserve-data-1";
 export const poolReserveData2 = "pool-reserve-data-2";
 export const poolReserveData3 = "pool-reserve-data-3";
+export const rewardsData = "rewards-data";
 
 export const mathV0 = "math";
 export const mathV1_2 = "math-v1-2";
 export const mathV2_0 = "math-v2-0";
-export const math = mathV1_2;
+export const math = mathV2_0;
+
+export const incentives_V2_1 = "incentives";
+export const incentives = incentives_V2_1;
+export const incentivesDummy = "incentives-dummy";
+export const incentivesTrait = "incentives-trait";
 
 export const pool0ReserveRead = "pool-0-reserve-read";
 
@@ -163,6 +169,10 @@ export const liquidation_manager_v2_0_path = `contracts/borrow/legacy/v2-0/pool/
 export const liquidation_manager_path = `contracts/borrow/production/pool/liquidation-manager.clar`;
 export const pool_reserve_data_2_path = `contracts/borrow/production/reserve-data/pool-reserve-data-2.clar`;
 export const pool_reserve_data_3_path = `contracts/borrow/production/reserve-data/pool-reserve-data-3.clar`;
+export const rewards_data_path = `contracts/borrow/production/reserve-data/rewards-data.clar`;
+export const incentives_path = `contracts/borrow/production/rewards/incentives.clar`;
+export const incentives_dummy_path = `contracts/borrow/production/rewards/incentives-dummy.clar`;
+export const incentives_trait_path = `contracts/borrow/production/traits/incentives.clar`;
 export const oracle = "oracle";
 
 export const max_value = BigInt("340282366920938463463374607431768211455");
