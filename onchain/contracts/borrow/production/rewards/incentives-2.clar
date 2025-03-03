@@ -106,6 +106,7 @@
         (if (is-eq (contract-of supplied-asset) .sbtc)
             (begin
                 (try! (claim-rewards-priv lp-supplied-asset .sbtc .wstx who))
+                (try! (claim-rewards-priv lp-supplied-asset .sbtc .diko who))
             )
             ;; next check
             false
@@ -168,7 +169,6 @@
     (match (get-user-program-index who supplied-asset reward-asset)
         index (ok index)
         (let ((balance (try! (contract-call? lp-supplied-asset get-balance who))))
-            ;; (print { balance: balance, this: "adsadasd" })
             (if (> balance u0)
                 ;; if had a balance already, receive all income
                 (ok one)
@@ -224,7 +224,6 @@
   (asset-decimals uint))
   (let (
     (rewarded-reserve-data (unwrap! (get-reward-program-income supplied-asset reward-asset) err-not-found))
-    (duh (print { heh: (get-user-program-index-eval who lp-supplied-asset supplied-asset reward-asset) }) )
     (reserve-normalized-income
       (get-normalized-income
         (get liquidity-rate rewarded-reserve-data)
@@ -297,7 +296,6 @@
 (define-read-only (is-contract-owner (caller principal))
   (is-eq caller (var-get contract-owner)))
 
-
 ;; for helper interface
 (define-map approved-contracts principal bool)
 
@@ -313,7 +311,6 @@
     (ok true)
     ERR_UNAUTHORIZED))
 
-
 ;; math
 (define-read-only (get-y-from-x
   (x uint)
@@ -327,3 +324,4 @@
 (define-read-only (div (x uint) (y uint)) (contract-call? .math-v2-0 div x y))
 (define-read-only (mul-precision-with-factor (a uint) (decimals-a uint) (b-fixed uint))
   (contract-call? .math-v2-0 mul-precision-with-factor a decimals-a b-fixed))
+

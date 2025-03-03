@@ -125,7 +125,7 @@ export const incentives_V2_1 = "incentives";
 export const incentives = incentives_V2_1;
 export const incentivesDummy = "incentives-dummy";
 export const incentivesTrait = "incentives-trait";
-
+export const incentives_2 = "incentives-2";
 export const pool0ReserveRead = "pool-0-reserve-read";
 
 // migrating to v1-2
@@ -173,6 +173,7 @@ export const rewards_data_path = `contracts/borrow/production/reserve-data/rewar
 export const incentives_path = `contracts/borrow/production/rewards/incentives.clar`;
 export const incentives_dummy_path = `contracts/borrow/production/rewards/incentives-dummy.clar`;
 export const incentives_trait_path = `contracts/borrow/production/traits/incentives.clar`;
+export const incentives_2_path = `contracts/borrow/production/rewards/incentives-2.clar`;
 export const oracle = "oracle";
 
 export const max_value = BigInt("340282366920938463463374607431768211455");

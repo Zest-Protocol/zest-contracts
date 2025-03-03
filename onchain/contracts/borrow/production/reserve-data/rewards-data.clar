@@ -53,6 +53,16 @@
 (define-read-only (get-asset-precision-read (asset principal))
     (map-get? asset-precision asset))
 
+(define-data-var rewards-contract principal .incentives)
+(define-public (set-rewards-contract (contract principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (print { type: "set-rewards-contract", payload: contract })
+    (ok (var-set rewards-contract contract))))
+(define-public (get-rewards-contract)
+  (ok (var-get rewards-contract)))
+(define-read-only (get-rewards-contract-read)
+  (var-get rewards-contract))
 
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)
