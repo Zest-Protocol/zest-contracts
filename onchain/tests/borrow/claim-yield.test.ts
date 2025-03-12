@@ -8,6 +8,7 @@ import { Oracle } from "./models/oracle";
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
 import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { isWithinMarginOfError } from "../utils/utils";
 
 const simnet = await initSimnetChecker();
 
@@ -1161,6 +1162,260 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
     const lp2_rewards_after = simnet.getAssetsMap().get("STX")!.get(LP_2)!;
     expect(lp2_rewards_after).toEqual(lp2_rewards);
   });
+  it(`Supply before yield is active, claim rewards after yield is active and earn rewards.
+Stop rewards, have different supplier increase income. Then claim again.`, () => {
+    const assets = [
+      Cl.tuple({
+        asset: Cl.contractPrincipal(deployerAddress, stSTX),
+        "lp-token": Cl.contractPrincipal(deployerAddress, config.lpStstx),
+        oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+      }),
+      Cl.tuple({
+        asset: Cl.contractPrincipal(deployerAddress, sBTC),
+        "lp-token": Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+      }),
+    ]
+
+    simnet.transferSTX(100000000000, `${deployerAddress}.incentives`, deployerAddress);
+
+    let callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+
+    callResponse = simnet.callPublicFnCheckOk(
+      config.incentives,
+      "set-liquidity-rate",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.uint(1000000),
+      ],
+      deployerAddress
+    );
+
+    simnet.mineEmptyStacksBlocks(100000);
+    const wstxBalanceBeforeClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+    const wstxBalanceAfterClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
+    expect(wstxBalanceAfterClaim).toBeGreaterThan(wstxBalanceBeforeClaim);
+
+    // have 2nd supplier to increase the income
+    callResponse = simnet.callPublicFnCheckOk(
+      sBTC,
+      "mint",
+      [Cl.uint(1_000_000_000), Cl.standardPrincipal(LP_2)],
+      deployerAddress
+    );
+
+    simnet.mineEmptyStacksBlocks(100000);
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_2),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_2
+    );
+
+    callResponse = simnet.callPublicFnCheckOk(
+      config.incentives,
+      "set-liquidity-rate",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.uint(0),
+      ],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.uint(max_value),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+    expect(simnet.getAssetsMap().get("STX")!.get(LP_1)!).toBeGreaterThan(wstxBalanceBeforeClaim);
+
+    const lp2_rewards = simnet.getAssetsMap().get("STX")!.get(LP_2)!;
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.uint(max_value),
+        Cl.standardPrincipal(LP_2),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_2
+    );
+    const lp2_rewards_after = simnet.getAssetsMap().get("STX")!.get(LP_2)!;
+    expect(lp2_rewards_after).toEqual(lp2_rewards);
+  });
+  it(`Supply, withdraw everything, someone else supplies and withdraws.
+First user should not earn anything when they come back.`, () => {
+    const assets = [
+      Cl.tuple({
+        asset: Cl.contractPrincipal(deployerAddress, stSTX),
+        "lp-token": Cl.contractPrincipal(deployerAddress, config.lpStstx),
+        oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+      }),
+      Cl.tuple({
+        asset: Cl.contractPrincipal(deployerAddress, sBTC),
+        "lp-token": Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+      }),
+    ]
+
+    simnet.transferSTX(100000000000, `${deployerAddress}.incentives`, deployerAddress);
+
+    let callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+
+    callResponse = simnet.callPublicFnCheckOk(
+      config.incentives,
+      "set-liquidity-rate",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.uint(1000000),
+      ],
+      deployerAddress
+    );
+
+    simnet.mineEmptyStacksBlocks(100000);
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.uint(max_value),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+
+    // have 2nd supplier to increase the income
+    callResponse = simnet.callPublicFnCheckOk(
+      sBTC,
+      "mint",
+      [Cl.uint(1_000_000_000), Cl.standardPrincipal(LP_2)],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_2),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_2
+    );
+
+    simnet.mineEmptyStacksBlocks(100000);
+    const lp2_rewards = simnet.getAssetsMap().get("STX")!.get(LP_2)!;
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.uint(max_value),
+        Cl.standardPrincipal(LP_2),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_2
+    );
+    const lp2_rewards_after = simnet.getAssetsMap().get("STX")!.get(LP_2)!;
+
+    const wstxBalanceBeforeClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
+    simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+    const wstxBalanceAfterClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
+    expect(wstxBalanceAfterClaim).toEqual(wstxBalanceBeforeClaim);
+  });
   it(`Supply before yield is active, borrow and earn interest. Claim rewards.`, () => {
         const assets = [
           Cl.tuple({
@@ -1739,7 +1994,6 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
     expect(callResponse.result).toBeErr(Cl.uint(30002));
   });
   it(`Have 2 reward assets.`, () => {
-
     simnet.callPublicFnCheckOk(
       config.incentives_2,
       "set-approved-contract",
@@ -1959,4 +2213,91 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
     expect(callResponse.result).toBeErr(Cl.uint(30002));
   });
 
+
+  it(`Verify yield is correct amount.`, () => {
+    const assets = [
+      Cl.tuple({
+        asset: Cl.contractPrincipal(deployerAddress, stSTX),
+        "lp-token": Cl.contractPrincipal(deployerAddress, config.lpStstx),
+        oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+      }),
+      Cl.tuple({
+        asset: Cl.contractPrincipal(deployerAddress, sBTC),
+        "lp-token": Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+      }),
+    ]
+
+    simnet.transferSTX(100000000000000, `${deployerAddress}.incentives`, deployerAddress);
+
+    let callResponse = simnet.callPublicFnCheckOk(
+      config.incentives,
+      "set-liquidity-rate",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.uint(1000000),
+      ],
+      deployerAddress
+    );
+
+    const wstxBalanceBefore = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
+
+    // console.log(simnet.getAssetsMap());
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+
+    const one_year = 52560;
+    simnet.mineEmptyBurnBlocks(one_year);
+
+    expect(simnet.getAssetsMap().get("STX")!.get(LP_1)!).toEqual(wstxBalanceBefore);
+
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.uint(max_value),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+    // console.log(simnet.getAssetsMap().get("STX")!.get(LP_1));
+    const wstxBalanceFirstClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
+    // console.log((callResponse.events[callResponse.events.length - 13] as any).data.value.data);
+
+    const rewardedAmount = Number(wstxBalanceFirstClaim - wstxBalanceBefore);
+
+    // expect 10sBTC to be rewarded 1% of interest in STX
+    callResponse = simnet.callReadOnlyFn(
+      `incentives`,
+      "convert-to",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.uint(1_000_000_000 * 0.01),
+      ],
+      deployerAddress
+    );
+    const expectedRewardedAmount = Number(cvToValue(callResponse.result).value);
+
+    expect(isWithinMarginOfError(rewardedAmount, expectedRewardedAmount, 0.01)).toBe(true);
+  });
 });

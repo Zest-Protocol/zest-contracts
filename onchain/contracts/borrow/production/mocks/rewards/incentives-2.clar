@@ -179,6 +179,7 @@
     )
 )
 
+
 (define-read-only (get-apy
     (supplied-asset <ft>)
     (reward-asset <ft>)
@@ -189,9 +190,9 @@
     )
     (ok {
         liquidity-rate: liquidity-rate,
-        apy-in-reward-asset: (+ one (try! (convert-to supplied-asset reward-asset (- liquidity-rate one))))
+        apy-in-reward-asset: (try! (convert-to supplied-asset reward-asset liquidity-rate))
         })
-    ) 
+    )
 )
 
 (define-read-only (convert-to
@@ -240,7 +241,7 @@
   )
 )
 
-(define-private (update-cumulative-index (supplied-asset <ft>) (reward-asset <ft>))  
+(define-private (update-cumulative-index (supplied-asset <ft>) (reward-asset <ft>))
     (let (
         (asset-state (unwrap! (get-reward-program-income supplied-asset reward-asset) err-not-found))
         (cumulated-liquidity-interest
@@ -285,7 +286,7 @@
 (define-public (set-contract-owner (owner principal))
   (begin
     (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
-    (print { type: "set-contract-owner-pool-reserve-data", payload: owner })
+    (print { type: "set-contract-owner", payload: owner })
     (ok (var-set contract-owner owner))))
 
 (define-public (get-contract-owner)

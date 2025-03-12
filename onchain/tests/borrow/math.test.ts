@@ -8,6 +8,7 @@ import { MintableToken } from "./models/token";
 import { Oracle } from "./models/oracle";
 
 import * as config from "./tools/config";
+import { deployV2Contracts } from "./tools/common";
 
 const simnet = await initSimnet();
 
@@ -45,6 +46,17 @@ const max_value = BigInt("340282366920938463463374607431768211455");
 const ONE = 100_000_000;
 
 describe("Math", () => {
+  beforeEach(() => {
+    simnet.setEpoch("3.0");
+    simnet.deployContract(
+      "math-v2-0",
+      readFileSync(config.mathV2_0_path).toString(),
+      {
+        clarityVersion: 3,
+      },
+      deployerAddress
+    );
+  });
   it("Get correct price from assets with different decimals", () => {
     let callResponse = simnet.callReadOnlyFn(
       config.math,

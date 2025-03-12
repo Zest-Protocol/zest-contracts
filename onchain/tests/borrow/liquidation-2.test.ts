@@ -20,8 +20,9 @@ import {
   poolBorrow as poolBorrowContractName,
   lpSbtcToken,
   lpXusdToken,
+  incentivesDummy,
 } from "./tools/config";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, setGracePeriodVars } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards, setGracePeriodVars } from "./tools/common";
 import * as config from "./tools/config";
 
 const simnet = await initSimnet();
@@ -174,6 +175,7 @@ describe("Liquidations", () => {
       null,
       deployerAddress
     );
+    initializeRewards(simnet, deployerAddress);
     setGracePeriodVars(simnet, deployerAddress);
     simnet.mineEmptyBlocks(100);
   });
@@ -254,6 +256,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -268,6 +271,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -774,6 +778,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -788,6 +793,7 @@ describe("Liquidations", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -1269,6 +1275,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -1283,6 +1290,7 @@ describe("Liquidations", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -1497,6 +1505,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -1511,6 +1520,7 @@ describe("Liquidations", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -1761,6 +1771,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -1776,6 +1787,7 @@ describe("Liquidations", () => {
         Cl.uint(suppliedSbtcByDeployer),
         Cl.standardPrincipal(deployerAddress),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       deployerAddress
     );
@@ -1791,6 +1803,7 @@ describe("Liquidations", () => {
         Cl.uint(suppliedSbtcByBorrower),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -2278,6 +2291,7 @@ describe("Liquidations", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Liquidator_1
     );
@@ -2329,6 +2343,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -2343,6 +2358,7 @@ describe("Liquidations", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -2357,6 +2373,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(deployerAddress),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       deployerAddress
     );
@@ -2682,6 +2699,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -2696,6 +2714,7 @@ describe("Liquidations", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -2709,6 +2728,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000_000),
         Cl.standardPrincipal(deployerAddress),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       deployerAddress
     );
@@ -3062,6 +3082,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -3076,6 +3097,7 @@ describe("Liquidations", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -3090,6 +3112,7 @@ describe("Liquidations", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -3429,6 +3452,7 @@ describe("Liquidations", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -3499,6 +3523,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -3513,6 +3538,7 @@ describe("Liquidations", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -3557,6 +3583,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -4044,6 +4071,7 @@ describe("Liquidations", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -4107,6 +4135,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -4121,6 +4150,7 @@ describe("Liquidations", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -4344,6 +4374,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -4358,6 +4389,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -4466,78 +4498,6 @@ describe("Liquidations", () => {
       Borrower_1
     );
 
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-grace-period-enabled",
-    //   [Cl.contractPrincipal(deployerAddress, stSTX), Cl.bool(true)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-grace-period-time",
-    //   [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(144)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-grace-period-enabled",
-    //   [Cl.contractPrincipal(deployerAddress, sBTC), Cl.bool(true)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-grace-period-time",
-    //   [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(144)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-grace-period-enabled",
-    //   [Cl.contractPrincipal(deployerAddress, xUSD), Cl.bool(true)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-grace-period-time",
-    //   [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(144)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-grace-period-enabled",
-    //   [Cl.contractPrincipal(deployerAddress, wstx), Cl.bool(true)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-grace-period-time",
-    //   [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(144)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-freeze-end-block",
-    //   [Cl.contractPrincipal(deployerAddress, stSTX), Cl.uint(84)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-freeze-end-block",
-    //   [Cl.contractPrincipal(deployerAddress, sBTC), Cl.uint(84)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-freeze-end-block",
-    //   [Cl.contractPrincipal(deployerAddress, xUSD), Cl.uint(84)],
-    //   deployerAddress
-    // );
-    // callResponse = simnet.callPublicFn(
-    //   config.poolBorrow,
-    //   "set-freeze-end-block",
-    //   [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(84)],
-    //   deployerAddress
-    // );
     setGracePeriodVars(simnet, deployerAddress);
 
     oracleContract.setPrice(
@@ -4694,6 +4654,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -4708,6 +4669,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -5204,6 +5166,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -5218,6 +5181,7 @@ describe("Liquidations", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );

@@ -7,7 +7,8 @@ import { Oracle } from "./models/oracle";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
+import { incentivesDummy } from "./tools/config";
 
 const simnet = await initSimnetChecker();
 
@@ -372,6 +373,8 @@ describe("Supply and Redeem", () => {
       null,
       deployerAddress
     );
+
+    initializeRewards(simnet, deployerAddress);
   });
 
   it("Supply STX, enable STX e-mode, borrow STX category, try borrow outside of STX category get error, try to go back to default fail, repay, go back to default", () => {
@@ -542,6 +545,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(50_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -556,6 +560,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(100_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -570,6 +575,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(3_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );

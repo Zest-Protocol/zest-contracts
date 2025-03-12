@@ -7,7 +7,8 @@ import { Oracle } from "./models/oracle";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
+import { incentivesDummy } from "./tools/config";
 
 const simnet = await initSimnetChecker();
 
@@ -372,6 +373,7 @@ describe("Supply and Redeem", () => {
       null,
       deployerAddress
     );
+    initializeRewards(simnet, deployerAddress);
 
   });
   it("Supply and immediately redeem without returns", () => {
@@ -415,6 +417,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -443,6 +446,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -766,6 +770,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(100_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -780,6 +785,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -794,6 +800,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(10_000_000_000),
         Cl.standardPrincipal(Borrower_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_2
     );
@@ -917,6 +924,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_2
     );
@@ -979,6 +987,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_3),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_3
     );
@@ -1072,6 +1081,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -1113,6 +1123,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_2
     );
@@ -1155,6 +1166,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_3
     );
@@ -1496,6 +1508,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -1512,6 +1525,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(BigInt("100000000000000")),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -1526,6 +1540,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1),
         Cl.standardPrincipal(Borrower_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_2
     );
@@ -1540,6 +1555,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(100_000_000),
         Cl.standardPrincipal(deployerAddress),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       deployerAddress
     );
@@ -1640,18 +1656,6 @@ describe("Supply and Redeem", () => {
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
     // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log("Borrowing a small amount relative to entire pool")
-    // console.log(callResponse.events);
-
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[5].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[6].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[8].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     // console.log("Reserve state after small borrow");
     callResponse = poolBorrow.getReserveState(
@@ -1688,6 +1692,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1),
         Cl.standardPrincipal(Borrower_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_2
     );
@@ -1782,6 +1787,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_2
     );
@@ -1843,6 +1849,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_3),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_3
     );
@@ -1933,6 +1940,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -1974,6 +1982,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_2
     );
@@ -2016,6 +2025,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_3
     );
@@ -2141,6 +2151,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -2165,6 +2176,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_2
     );
@@ -2402,6 +2414,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_2
     );
@@ -2415,6 +2428,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_2
     );
@@ -2770,6 +2784,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -2784,6 +2799,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -2896,6 +2912,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(250_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -3582,6 +3599,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(100_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -3596,6 +3614,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(1_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -3610,6 +3629,7 @@ describe("Supply and Redeem", () => {
         Cl.uint(10_000_000_000),
         Cl.standardPrincipal(Borrower_2),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_2
     );
