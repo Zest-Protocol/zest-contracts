@@ -1,0 +1,14 @@
+[project]
+name = "migration-test"
+authors = []
+description = ""
+telemetry = false
+requirements = [
+    "SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token"
+]
+
+[contracts.migrate]
+path = "contracts/migrate.clar"
+clarity_version = 3
+epoch = 3.0
+
