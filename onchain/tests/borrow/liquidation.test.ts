@@ -5,9 +5,9 @@ import { PoolReserve } from "./models/poolReserve";
 import { PoolBorrow } from "./models/poolBorrow";
 import { Oracle } from "./models/oracle";
 
-import { initContractsToV2, lpSbtc, lpStstx, lpXusd, poolBorrow as poolBorrowContractName, pool0Reserve as pool0ReserveContractName, reserveExtraVariables, borrowHelper, pool0ReserveRead, initContractsToV2_1 } from "./tools/config";
+import { initContractsToV2, lpSbtc, lpStstx, lpXusd, poolBorrow as poolBorrowContractName, pool0Reserve as pool0ReserveContractName, reserveExtraVariables, borrowHelper, pool0ReserveRead, initContractsToV2_1, incentivesDummy } from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, setGracePeriodVars } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards, setGracePeriodVars } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -347,6 +347,7 @@ describe("Liquidation tests", () => {
       null,
       deployerAddress
     );
+    initializeRewards(simnet, deployerAddress);
 
     setGracePeriodVars(simnet, deployerAddress);
   });
@@ -485,6 +486,7 @@ describe("Liquidation tests", () => {
         Cl.uint(100_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -499,6 +501,7 @@ describe("Liquidation tests", () => {
         Cl.uint(1_000_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -513,6 +516,7 @@ describe("Liquidation tests", () => {
         Cl.uint(100_000_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -545,16 +549,6 @@ describe("Liquidation tests", () => {
       Borrower_1
     );
 
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
-
-    // simnet.mineEmptyBlocks(10);
-
     let borrower_1_data = simnet.callPublicFn(
       pool0ReserveRead,
       "calculate-user-global-data",
@@ -583,12 +577,6 @@ describe("Liquidation tests", () => {
       deployerAddress
     );
 
-    // console.log(
-    //   simnet
-    //     .getAssetsMap()
-    //     .get(".sBTC.sBTC")
-    //     ?.get("ST2REHHS5J3CERCRBEPMGH7921Q6PYKAADT7JP2VB")
-    // );
     const prevUsdamount = simnet
       .getAssetsMap()
       .get(".xUSD.xUSD")
@@ -746,6 +734,7 @@ describe("Liquidation tests", () => {
         Cl.uint(100_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -759,6 +748,7 @@ describe("Liquidation tests", () => {
         Cl.uint(1_000_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -772,6 +762,7 @@ describe("Liquidation tests", () => {
         Cl.uint(100_000_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -977,6 +968,7 @@ describe("Liquidation tests", () => {
         Cl.uint(100_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
@@ -991,6 +983,7 @@ describe("Liquidation tests", () => {
         Cl.uint(100_000_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -1005,6 +998,7 @@ describe("Liquidation tests", () => {
         Cl.uint(100_000_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );

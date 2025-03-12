@@ -240,6 +240,17 @@ export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => 
   );
 }
 
+export const initializeRewards = (simnet: Simnet, deployerAddress: string) => {
+  simnet.callPublicFn(
+    config.rewardsData,
+    "set-rewards-contract",
+    [
+      Cl.contractPrincipal(deployerAddress, config.incentivesDummy),
+    ],
+    deployerAddress
+  );
+}
+
 export const setGracePeriodVars = (simnet: Simnet, deployerAddress: string) => {
   let callResponse = simnet.callPublicFn(
     config.poolBorrow,

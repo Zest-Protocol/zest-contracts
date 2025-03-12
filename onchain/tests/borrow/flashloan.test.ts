@@ -9,7 +9,8 @@ import { MintableToken } from "./models/token";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
+import { incentivesDummy } from "./tools/config";
 
 let simnet = await initSimnetChecker();
 
@@ -122,6 +123,8 @@ describe("Flashloans", () => {
     deployV2TokenContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
 
+    initializeRewards(simnet, deployerAddress);
+
     callResponse = simnet.deployContract(
       "run-1",
       readFileSync(config.initContractsToV2_1).toString(),
@@ -212,6 +215,7 @@ describe("Flashloans", () => {
         Cl.uint(400_000_000_000),
         Cl.standardPrincipal(LP_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       LP_1
     );
@@ -226,6 +230,7 @@ describe("Flashloans", () => {
         Cl.uint(2_000_000_000),
         Cl.standardPrincipal(Borrower_1),
         Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
       ],
       Borrower_1
     );
