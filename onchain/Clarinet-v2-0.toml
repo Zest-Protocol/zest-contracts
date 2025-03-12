@@ -38,6 +38,11 @@ path = "contracts/borrow/production/mocks/oracle/xusd-oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.incentives-read]
+path = "contracts/borrow/production/rewards/incentives-read.clar"
+clarity_version = 3
+epoch = 3.0
+
 [contracts.oracle]
 path = "contracts/borrow/production/mocks/oracle/oracle.clar"
 clarity_version = 2
@@ -62,36 +67,6 @@ epoch = 2.4
 path = "contracts/borrow/production/mocks/flashloan-scripts/flashloan-script-2.clar"
 clarity_version = 2
 epoch = 2.4
-
-# [contracts.pool-read]
-# path = "contracts/borrow/production/mocks/read-only/pool-read.clar"
-# clarity_version = 2
-# epoch = 2.4
-
-# [contracts.pool-read-supply]
-# path = "contracts/borrow/production/mocks/read-only/pool-read-supply.clar"
-# clarity_version = 2
-# epoch = 2.4
-
-# [contracts.pool-read-liquidation]
-# path = "contracts/borrow/production/mocks/read-only/pool-read-liquidation.clar"
-# clarity_version = 2
-# epoch = 2.4
-
-# [contracts.lp-diko]
-# path = "contracts/borrow/legacy/v0/mocks/ztoken/lp-diko.clar"
-# clarity_version = 2
-# epoch = 2.4
-
-# [contracts.lp-diko-v1]
-# path = "contracts/borrow/legacy/v1/mocks/ztoken/lp-diko.clar"
-# clarity_version = 2
-# epoch = 2.4
-
-# [contracts.lp-diko-v2]
-# path = "contracts/borrow/legacy/v1-2/mocks/ztoken/lp-diko.clar"
-# clarity_version = 2
-# epoch = 2.4
 
 [contracts.diko]
 path = "contracts/borrow/production/mocks/token/diko.clar"
@@ -204,11 +179,6 @@ path = "contracts/borrow/production/traits/ownable-trait.clar"
 clarity_version = 2
 epoch = 2.4
 
-# [contracts.lp-ststx-token]
-# path = "contracts/borrow/production/mocks/ztoken/lp-ststx-token.clar"
-# clarity_version = 3
-# epoch = 3.0
-
 [contracts.ststx]
 path = "contracts/borrow/production/mocks/token/ststx.clar"
 clarity_version = 2
@@ -295,7 +265,7 @@ clarity_version = 3
 epoch = 3.0
 
 [contracts.incentives]
-path = "contracts/borrow/production/rewards/incentives.clar"
+path = "contracts/borrow/production/mocks/rewards/incentives.clar"
 clarity_version = 3
 epoch = 3.0
 
