@@ -103,15 +103,9 @@
 )
     (begin
         (try! (is-approved-contract contract-caller))
-        (if (is-eq (contract-of supplied-asset) 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
+        (if (is-eq (contract-of supplied-asset) .sbtc)
             (begin
-                (try!
-                    (claim-rewards-priv lp-supplied-asset
-                        'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
-                        'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.wstx
-                        who
-                    )
-                )
+                (try! (claim-rewards-priv lp-supplied-asset .sbtc .wstx who))
             )
             ;; next check
             false
@@ -193,7 +187,7 @@
         (liquidity-rate (get liquidity-rate reward-program-income-state))
     )
     (ok {
-        liquidity-rate: liquidity-rate,
+        conversion-rate: (try! (convert-to supplied-asset reward-asset one)),
         apy-in-reward-asset: (try! (convert-to supplied-asset reward-asset liquidity-rate))
         })
     )

@@ -170,10 +170,10 @@ export const liquidation_manager_path = `contracts/borrow/production/pool/liquid
 export const pool_reserve_data_2_path = `contracts/borrow/production/reserve-data/pool-reserve-data-2.clar`;
 export const pool_reserve_data_3_path = `contracts/borrow/production/reserve-data/pool-reserve-data-3.clar`;
 export const rewards_data_path = `contracts/borrow/production/reserve-data/rewards-data.clar`;
-export const incentives_path = `contracts/borrow/production/rewards/incentives.clar`;
-export const incentives_dummy_path = `contracts/borrow/production/rewards/incentives-dummy.clar`;
+export const incentives_path = `contracts/borrow/production/mocks/rewards/incentives.clar`;
+export const incentives_dummy_path = `contracts/borrow/production/mocks/rewards/incentives-dummy.clar`;
 export const incentives_trait_path = `contracts/borrow/production/traits/incentives.clar`;
-export const incentives_2_path = `contracts/borrow/production/rewards/incentives-2.clar`;
+export const incentives_2_path = `contracts/borrow/production/mocks/rewards/incentives-2.clar`;
 export const oracle = "oracle";
 
 export const max_value = BigInt("340282366920938463463374607431768211455");

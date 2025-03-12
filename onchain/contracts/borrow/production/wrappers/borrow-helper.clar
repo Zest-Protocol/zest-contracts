@@ -9,9 +9,10 @@
 (define-constant ERR_UNAUTHORIZED (err u1000000000000))
 (define-constant ERR_REWARDS_CONTRACT (err u1000000000001))
 
+(define-constant max-value u340282366920938463463374607431768211455)
+
 (define-read-only (is-rewards-contract (contract principal))
-  (is-eq contract (contract-call? .rewards-data get-rewards-contract-read))
-)
+  (is-eq contract (contract-call? .rewards-data get-rewards-contract-read)))
 
 (define-public (supply
   (lp <redeemeable-token>)
@@ -156,7 +157,6 @@
   )
 )
 
-(define-constant max-value u340282366920938463463374607431768211455)
 
 (define-public (claim-rewards
   (lp <redeemeable-token>)

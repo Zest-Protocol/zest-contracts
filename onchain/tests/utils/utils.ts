@@ -14,5 +14,20 @@ export function parseCustomStringToJson(inputString: string): object | null {
   }
 }
 
-// Example usage
-// const inputStr = "{ a-token-address: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.lp-token-0, base-ltv-as-collateral: u0, borrowing-enabled: false, current-average-stable-borrow-rate: u0, current-liquidity-rate: u450000, current-stable-borrow
+/**
+ * Checks if a number is within a specified margin of error from an expected value
+ * @param actual The actual value to check
+ * @param expected The expected value to compare against
+ * @param marginOfError The acceptable margin of error (default is 0.0001 or 0.01%)
+ * @returns boolean indicating if the actual value is within the margin of error
+ */
+export function isWithinMarginOfError(
+  actual: number,
+  expected: number,
+  marginOfError: number = 0.0001
+): boolean {
+  const difference = Math.abs(actual - expected);
+  const allowedDifference = expected * marginOfError;
+  return difference <= allowedDifference;
+}
+
