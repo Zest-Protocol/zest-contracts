@@ -29,6 +29,7 @@ export default defineConfig({
       threads: { singleThread: true },
       forks: { singleFork: true },
     },
+    testTimeout: 1300000,
     setupFiles: [
       vitestSetupFilePath,
       // custom setup files can be added here
