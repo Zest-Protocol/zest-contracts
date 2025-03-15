@@ -128,6 +128,18 @@ export const incentivesTrait = "incentives-trait";
 export const incentives_2 = "incentives-2";
 export const pool0ReserveRead = "pool-0-reserve-read";
 
+export const wormholeCoreV3 = "wormhole-core-v3";
+export const wormholeCore = wormholeCoreV3;
+
+export const pythOracleV3 = "pyth-oracle-v3";
+export const pythOracle = pythOracleV3;
+
+export const pythStorageV3 = "pyth-storage-v3";
+export const pythStorage = pythStorageV3;
+
+export const pythPnauDecoderV2 = "pyth-pnau-decoder-v2";
+export const pythPnauDecoder = pythPnauDecoderV2;
+
 // migrating to v1-2
 export const migrateV0ToV1FilePath = `contracts/borrow/production/mocks/migrate-v0-v1.clar`;
 export const migrateV1ToV2FilePath = `contracts/borrow/production/mocks/migrate-v1-v2.clar`;
@@ -174,6 +186,24 @@ export const incentives_path = `contracts/borrow/production/mocks/rewards/incent
 export const incentives_dummy_path = `contracts/borrow/production/mocks/rewards/incentives-dummy.clar`;
 export const incentives_trait_path = `contracts/borrow/production/traits/incentives.clar`;
 export const incentives_2_path = `contracts/borrow/production/mocks/rewards/incentives-2.clar`;
+
+export const wormhole_traits_v1_path = `contracts/borrow/production/mocks/oracle/pyth/wormhole/wormhole-traits-v1.clar`;
+export const wormhole_core_v3_path = `contracts/borrow/production/mocks/oracle/pyth/wormhole/wormhole-core-v3.clar`;
+export const pyth_governance_v2_path = `contracts/borrow/production/mocks/oracle/pyth/pyth-governance-v2.clar`;
+export const pyth_oracle_v3_path = `contracts/borrow/production/mocks/oracle/pyth/pyth-oracle-v3.clar`;
+export const pyth_pnau_decoder_v2_path = `contracts/borrow/production/mocks/oracle/pyth/pyth-pnau-decoder-v2.clar`;
+export const pyth_storage_v3_path = `contracts/borrow/production/mocks/oracle/pyth/pyth-storage-v3.clar`;
+export const pyth_traits_v1_path = `contracts/borrow/production/mocks/oracle/pyth/pyth-traits-v1.clar`;
+
+export const hk_cursor_v2_path = `contracts/borrow/production/mocks/oracle/pyth/hiro-kit/hk-cursor-v2.clar`;
+export const hk_ecc_v1_path = `contracts/borrow/production/mocks/oracle/pyth/hiro-kit/hk-ecc-v1.clar`;
+export const hk_merkle_tree_keccak160_v1_path = `contracts/borrow/production/mocks/oracle/pyth/hiro-kit/hk-merkle-tree-keccak160-v1.clar`;
+
+export const pyth_oracle_path = `contracts/borrow/production/mocks/oracle/pyth-oracle.clar`;
+
 export const oracle = "oracle";
+
+
+
 
 export const max_value = BigInt("340282366920938463463374607431768211455");
