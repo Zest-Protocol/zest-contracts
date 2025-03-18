@@ -539,7 +539,10 @@ describe("Liquidations", () => {
       ],
       Liquidator_1
     );
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
+    // console.log(callResponse.events[10].data);
+    // console.log(callResponse.events[11].data);
+    // console.log(callResponse.events[12].data);
+    // console.log(callResponse.events[13].data);
     const collateralPurchased = BigInt(callResponse.events[11].data.amount);
     const debtPurchased = BigInt(callResponse.events[12].data.amount);
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
