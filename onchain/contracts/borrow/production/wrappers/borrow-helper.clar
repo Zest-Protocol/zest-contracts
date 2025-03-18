@@ -302,7 +302,6 @@
       (ok true)
     )
     (begin
-      (print "no-feed-update")
       ;; do nothing if none
       (ok true)
     )
