@@ -53,10 +53,13 @@
   (amount-to-be-borrowed uint)
   (fee-calculator principal)
   (interest-rate-mode uint)
-  (owner principal))
+  (owner principal)
+  (price-feed-bytes (optional (buff 8192)))
+  )
   (let ((asset-principal (contract-of asset-to-borrow)))
 
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
+    (try! (write-feed price-feed-bytes))
     (try! (contract-call? .pool-borrow-v2-1 borrow pool-reserve oracle asset-to-borrow lp assets amount-to-be-borrowed fee-calculator interest-rate-mode owner))
 
     (print { type: "borrow-call", payload: { key: owner, data: {
@@ -106,13 +109,16 @@
   (asset <ft>)
   (enable-as-collateral bool)
   (oracle <oracle-trait>)
-  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
+  (assets-to-calculate (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  (price-feed-bytes (optional (buff 8192)))
+  )
   (let (
     (asset-principal (contract-of asset))
     (reserve-state (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)))
     )
 
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
+    (try! (write-feed price-feed-bytes))
     (try! (contract-call? .pool-borrow-v2-1 set-user-use-reserve-as-collateral who lp-token asset enable-as-collateral oracle assets-to-calculate))
 
     (print { type: "set-user-use-reserve-as-collateral-call", payload: { key: who, data: {
@@ -135,11 +141,13 @@
   (owner principal)
   (assets (list 100 { asset: <ft>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
   (incentives <incentives-trait>)
+  (price-feed-bytes (optional (buff 8192)))
   )
   (let (
     (asset-principal (contract-of asset))
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
     (check-on-rewards (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT))
+    (price-ok (try! (write-feed price-feed-bytes)))
     (result-claim (try! (contract-call? incentives claim-rewards lp asset owner)))
     (withdraw-res (try! (contract-call? .pool-borrow-v2-1 withdraw pool-reserve asset lp oracle assets amount owner)))
     )
@@ -167,9 +175,11 @@
   (assets (list 100 { asset: <ft>, lp-token: <ft-mint-trait>, oracle: <oracle-trait> }))
   (reward-asset <ft>)
   (incentives <incentives-trait>)
+  (price-feed-bytes (optional (buff 8192)))
   )
   (let (
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
+    (price-ok (try! (write-feed price-feed-bytes)))
     (balance (try! (contract-call? .pool-borrow-v2-1 withdraw pool-reserve asset lp oracle assets max-value owner)))
     )
     (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT)
@@ -189,7 +199,9 @@
   (debt-oracle <oracle-trait>)
   (liquidated-user principal)
   (debt-amount uint)
-  (to-receive-atoken bool))
+  (to-receive-atoken bool)
+  (price-feed-bytes (optional (buff 8192)))
+  )
   (let (
     (debt-asset-principal (contract-of debt-asset))
     (collateral-asset-principal (contract-of collateral-to-liquidate))
@@ -197,6 +209,7 @@
     )
 
     (asserts! (is-eq liquidator contract-caller) ERR_UNAUTHORIZED)
+    (try! (write-feed price-feed-bytes))
 
     (try! (contract-call? .pool-borrow-v2-1 liquidation-call
       assets
@@ -237,9 +250,11 @@
   (user principal)
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
   (new-e-mode-type (buff 1))
+  (price-feed-bytes (optional (buff 8192)))
   )
   (begin
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
+    (try! (write-feed price-feed-bytes))
     (try! (contract-call? .pool-borrow-v2-1 set-e-mode user assets new-e-mode-type))
 
     (print { type: "set-e-mode-call", payload: { key: user, data: {
@@ -268,5 +283,28 @@
       reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of asset))),
     }}})
     (ok u0)
+  )
+)
+
+(define-private (write-feed (price-feed-bytes (optional (buff 8192))))
+  (match price-feed-bytes
+    bytes (begin
+      (try! 
+        (contract-call? .pyth-oracle-v3 verify-and-update-price-feeds
+          bytes
+          {
+            pyth-storage-contract: .pyth-storage-v3,
+            pyth-decoder-contract: .pyth-pnau-decoder-v2,
+            wormhole-core-contract: .wormhole-core-v3,
+          }
+        )
+      )
+      (ok true)
+    )
+    (begin
+      (print "no-feed-update")
+      ;; do nothing if none
+      (ok true)
+    )
   )
 )
