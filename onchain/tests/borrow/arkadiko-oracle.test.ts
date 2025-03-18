@@ -287,14 +287,6 @@ describe("Flashloans", () => {
       deployerAddress
     );
     expect(callResponse.result).toBeErr(Cl.uint(3003));
-    // simnet.mineEmptyBlocks(1);
-    // let callResponse = simnet.callReadOnlyFn(
-    //   `diko-oracle`,
-    //   "huh",
-    //   [],
-    //   deployerAddress
-    // );
-    // console.log(Cl.prettyPrint(callResponse.result));
   });
   it("Oracle manip", () => {
     let callResponses = simnet.mineBlock([

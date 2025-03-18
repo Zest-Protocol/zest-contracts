@@ -349,6 +349,61 @@ path = "contracts/borrow/production/math/math.clar"
 clarity_version = 3
 epoch = 3.0
 
+[contracts.hk-cursor-v2]
+path = "contracts/borrow/production/mocks/oracle/pyth/hiro-kit/hk-cursor-v2.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.hk-ecc-v1]
+path = "contracts/borrow/production/mocks/oracle/pyth/hiro-kit/hk-ecc-v1.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.hk-merkle-tree-keccak160-v1]
+path = "contracts/borrow/production/mocks/oracle/pyth/hiro-kit/hk-merkle-tree-keccak160-v1.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.wormhole-traits-v1]
+path = "contracts/borrow/production/mocks/oracle/pyth/wormhole/wormhole-traits-v1.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.wormhole-core-v3]
+path = "contracts/borrow/production/mocks/oracle/pyth/wormhole/wormhole-core-v3.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pyth-traits-v1]
+path = "contracts/borrow/production/mocks/oracle/pyth/pyth-traits-v1.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pyth-storage-v3]
+path = "contracts/borrow/production/mocks/oracle/pyth/pyth-storage-v3.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pyth-pnau-decoder-v2]
+path = "contracts/borrow/production/mocks/oracle/pyth/pyth-pnau-decoder-v2.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pyth-oracle-v3]
+path = "contracts/borrow/production/mocks/oracle/pyth/pyth-oracle-v3.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pyth-governance-v2]
+path = "contracts/borrow/production/mocks/oracle/pyth/pyth-governance-v2.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.pyth-oracle]
+path = "contracts/borrow/production/mocks/oracle/pyth-oracle.clar"
+clarity_version = 3
+epoch = 3.0
+
 [repl]
 costs_version = 1
 parser_version = 2

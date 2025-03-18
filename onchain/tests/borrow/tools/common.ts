@@ -1,5 +1,5 @@
 import { Simnet, tx } from "@hirosystems/clarinet-sdk";
-import { Cl} from "@stacks/transactions";
+import { Cl, cvToValue, cvToJSON} from "@stacks/transactions";
 import { readFileSync } from "fs";
 import * as config from "./config";
 import { sBTC, stSTX, wstx, xUSD } from "./config";
@@ -477,4 +477,54 @@ export const setGracePeriodVars = (simnet: Simnet, deployerAddress: string) => {
     [Cl.contractPrincipal(deployerAddress, wstx), Cl.uint(simnet.burnBlockHeight)],
     deployerAddress
   );
+}
+
+export const getReserveState = async (simnet: Simnet, deployerAddress: string, asset: string) => {
+  const callResponse = simnet.callReadOnlyFn(
+    `${deployerAddress}.${config.poolReserveData}`,
+    "get-reserve-state-read",
+    [
+      Cl.contractPrincipal(deployerAddress, asset)
+    ],
+    deployerAddress
+  );
+  const reserveState = cvToValue(callResponse.result).value;
+
+  return {
+    "a-token-address": Cl.contractPrincipal(
+      reserveState['a-token-address'].value.split('.')[0],
+      reserveState['a-token-address'].value.split('.')[1]
+    ),
+    "base-ltv-as-collateral": Cl.uint(reserveState['base-ltv-as-collateral'].value),
+    "borrow-cap": Cl.uint(reserveState['borrow-cap'].value),
+    "borrowing-enabled": Cl.bool(reserveState['borrowing-enabled'].value),
+    "current-average-stable-borrow-rate": Cl.uint(reserveState['current-average-stable-borrow-rate'].value),
+    "current-liquidity-rate": Cl.uint(reserveState['current-liquidity-rate'].value),
+    "current-stable-borrow-rate": Cl.uint(reserveState['current-stable-borrow-rate'].value),
+    "current-variable-borrow-rate": Cl.uint(reserveState['current-variable-borrow-rate'].value),
+    "debt-ceiling": Cl.uint(reserveState['debt-ceiling'].value),
+    "accrued-to-treasury": Cl.uint(reserveState['accrued-to-treasury'].value),
+    decimals: Cl.uint(reserveState['decimals'].value),
+    "flashloan-enabled": Cl.bool(reserveState['flashloan-enabled'].value),
+    "interest-rate-strategy-address": Cl.contractPrincipal(
+      reserveState['interest-rate-strategy-address'].value.split('.')[0],
+      reserveState['interest-rate-strategy-address'].value.split('.')[1]
+    ),
+    "is-active": Cl.bool(reserveState['is-active'].value),
+    "is-frozen": Cl.bool(reserveState['is-frozen'].value),
+    "is-stable-borrow-rate-enabled": Cl.bool(reserveState['is-stable-borrow-rate-enabled'].value),
+    "last-liquidity-cumulative-index": Cl.uint(reserveState['last-liquidity-cumulative-index'].value),
+    "last-updated-block": Cl.uint(simnet.stacksBlockHeight),
+    "last-variable-borrow-cumulative-index": Cl.uint(reserveState['last-variable-borrow-cumulative-index'].value),
+    "liquidation-bonus": Cl.uint(reserveState['liquidation-bonus'].value),
+    "liquidation-threshold": Cl.uint(reserveState['liquidation-threshold'].value),
+    oracle: Cl.contractPrincipal(
+      reserveState['oracle'].value.split('.')[0],
+      reserveState['oracle'].value.split('.')[1]
+    ),
+    "supply-cap": Cl.uint(reserveState['supply-cap'].value),
+    "total-borrows-stable": Cl.uint(reserveState['total-borrows-stable'].value),
+    "total-borrows-variable": Cl.uint(reserveState['total-borrows-variable'].value),
+    "usage-as-collateral-enabled": Cl.bool(reserveState['usage-as-collateral-enabled'].value),
+  };
 }

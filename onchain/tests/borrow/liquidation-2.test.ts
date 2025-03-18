@@ -22,7 +22,7 @@ import {
   lpXusdToken,
   incentivesDummy,
 } from "./tools/config";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards, setGracePeriodVars } from "./tools/common";
+import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards, setGracePeriodVars } from "./tools/common";
 import * as config from "./tools/config";
 
 const simnet = await initSimnet();
@@ -167,6 +167,7 @@ describe("Liquidations", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployPythContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
 
     simnet.deployContract(
@@ -382,6 +383,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -533,6 +535,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -640,6 +643,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -889,6 +893,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1028,6 +1033,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -1132,6 +1138,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -1386,6 +1393,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1433,6 +1441,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -1616,6 +1625,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1671,6 +1681,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -1899,6 +1910,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1934,6 +1946,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(LP_1),
+        Cl.none(),
       ],
       LP_1
     );
@@ -2060,6 +2073,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(true),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -2149,6 +2163,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(true),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -2192,6 +2207,7 @@ describe("Liquidations", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -2243,6 +2259,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(true),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -2292,6 +2309,7 @@ describe("Liquidations", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -2468,6 +2486,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -2572,6 +2591,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -2606,6 +2626,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -2822,6 +2843,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -2888,6 +2910,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(deployerAddress),
+        Cl.none(),
       ],
       deployerAddress
     );
@@ -3019,6 +3042,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -3142,6 +3166,7 @@ describe("Liquidations", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3238,6 +3263,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3308,6 +3334,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -3346,6 +3373,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -3383,6 +3411,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -3419,6 +3448,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -3453,6 +3483,7 @@ describe("Liquidations", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3569,9 +3600,6 @@ describe("Liquidations", () => {
       ],
       Borrower_1
     );
-    const sBTCCollateralValueBeforePriceReduction = cvToJSON(
-      callResponse.result
-    )["value"]["value"]["total-collateral-balanceUSD"]["value"];
 
     callResponse = simnet.callPublicFn(
       borrowHelper,
@@ -3644,6 +3672,7 @@ describe("Liquidations", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3739,6 +3768,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3868,6 +3898,7 @@ describe("Liquidations", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3936,6 +3967,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -3970,6 +4002,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -4004,6 +4037,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -4038,6 +4072,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -4072,6 +4107,7 @@ describe("Liquidations", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -4184,6 +4220,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -4249,6 +4286,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -4292,6 +4330,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -4462,6 +4501,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -4572,6 +4612,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -4742,6 +4783,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -4929,6 +4971,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -5003,6 +5046,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -5044,6 +5088,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -5084,6 +5129,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );
@@ -5254,6 +5300,7 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -5439,6 +5486,7 @@ describe("Liquidations", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.uint(maxBorrowAmount),
         Cl.bool(false),
+        Cl.none(),
       ],
       Liquidator_1
     );

@@ -7,7 +7,7 @@ import { Oracle } from "./models/oracle";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 import { getRewardedAmount, isWithinMarginOfError } from "../utils/utils";
 
 const simnet = await initSimnetChecker();
@@ -378,6 +378,7 @@ describe("Claim rewards", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployPythContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
 
     callResponse = simnet.deployContract(
@@ -566,6 +567,7 @@ describe("Claim rewards", () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentivesDummy),
+        Cl.none(),
       ],
       LP_1
     );
@@ -632,6 +634,7 @@ describe("Claim rewards", () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -650,6 +653,7 @@ describe("Claim rewards", () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -674,6 +678,7 @@ describe("Claim rewards", () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -711,6 +716,7 @@ describe("Claim rewards", () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -765,6 +771,7 @@ describe("Claim rewards", () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -783,6 +790,7 @@ describe("Claim rewards", () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -807,6 +815,7 @@ describe("Claim rewards", () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -854,6 +863,7 @@ describe("Claim rewards", () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentivesDummy),
+        Cl.none(),
       ],
       LP_1
     );
@@ -918,6 +928,7 @@ describe("Claim rewards", () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -936,6 +947,7 @@ describe("Claim rewards", () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -960,6 +972,7 @@ describe("Claim rewards", () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1021,6 +1034,7 @@ describe("Claim rewards", () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1085,6 +1099,7 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1138,6 +1153,7 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1156,6 +1172,7 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
         Cl.standardPrincipal(LP_2),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_2
     );
@@ -1219,6 +1236,7 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1272,6 +1290,7 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1290,6 +1309,7 @@ Stop rewards, have different supplier increase income. Then claim again.`, () =>
         Cl.standardPrincipal(LP_2),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_2
     );
@@ -1352,6 +1372,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1393,6 +1414,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_2),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_2
     );
@@ -1494,6 +1516,7 @@ First user should not earn anything when they come back.`, () => {
             Cl.list(assets),
             Cl.contractPrincipal(deployerAddress, wstx),
             Cl.contractPrincipal(deployerAddress, config.incentives),
+            Cl.none(),
           ],
           LP_1
         );
@@ -1537,6 +1560,7 @@ First user should not earn anything when they come back.`, () => {
           Cl.contractPrincipal(deployerAddress, feesCalculator),
           Cl.uint(0),
           Cl.standardPrincipal(LP_2),
+          Cl.none(),
         ],
         LP_2
       );
@@ -1566,6 +1590,7 @@ First user should not earn anything when they come back.`, () => {
             Cl.list(assets),
             Cl.contractPrincipal(deployerAddress, wstx),
             Cl.contractPrincipal(deployerAddress, config.incentives),
+            Cl.none(),
           ],
           LP_1
         );
@@ -1619,6 +1644,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1758,6 +1784,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1844,6 +1871,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1970,6 +1998,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1988,6 +2017,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -2187,6 +2217,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives_2),
+        Cl.none(),
       ],
       LP_1
     );
@@ -2207,6 +2238,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives_2),
+        Cl.none(),
       ],
       LP_1
     );
@@ -2295,6 +2327,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -2402,6 +2435,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -2409,8 +2443,6 @@ First user should not earn anything when they come back.`, () => {
     const wstxBalanceFirstClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
     // console.log((callResponse.events[callResponse.events.length - 13] as any).data.value.data);
     const rewardedAmount = Number(wstxBalanceFirstClaim - wstxBalanceBefore);
-    console.log("huh")
-    console.log(rewardedAmount / 1000000);
 
     callResponse = simnet.callPublicFnCheckOk(
       config.borrowHelper,
@@ -2441,6 +2473,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_2),
         Cl.list(assets),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_2
     );

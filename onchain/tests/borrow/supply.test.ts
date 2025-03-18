@@ -7,7 +7,7 @@ import { Oracle } from "./models/oracle";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
+import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
 import { incentivesDummy } from "./tools/config";
 
 const simnet = await initSimnetChecker();
@@ -365,6 +365,7 @@ describe("Supply and Redeem", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployPythContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
 
     callResponse = simnet.deployContract(
@@ -447,6 +448,7 @@ describe("Supply and Redeem", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_1
     );
@@ -844,6 +846,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -889,21 +892,12 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
     // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(Cl.bool(true));
-
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[3].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[4].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[5].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[6].data.value!));
-
     // console.log(callResponse.events);
     callResponse = poolBorrow.getUserReserveData(
       Borrower_1,
@@ -970,6 +964,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -1082,6 +1077,7 @@ describe("Supply and Redeem", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1124,6 +1120,7 @@ describe("Supply and Redeem", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_2
     );
@@ -1167,6 +1164,7 @@ describe("Supply and Redeem", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_3
     );
@@ -1606,6 +1604,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(deployerAddress),
+        Cl.none(),
       ],
       deployerAddress
     );
@@ -1651,6 +1650,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1663,17 +1663,6 @@ describe("Supply and Redeem", () => {
       stSTX,
       deployerAddress
     );
-    // console.log(Cl.prettyPrint(callResponse.result));
-
-    // callResponse = simnet.callReadOnlyFn(
-    //   "pool-read",
-    //   "get-borrowed-balance-user-ststx",
-    //   [Cl.standardPrincipal(Borrower_1)],
-    //   Borrower_1
-    // );
-    // console.log("Borrower balance same block as borrowed")
-    // console.log(Borrower_1);
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     callResponse = simnet.callPublicFn(
       `pool-reserve-data`,
@@ -1714,11 +1703,6 @@ describe("Supply and Redeem", () => {
 
     // console.log("Reserve state after repay");
     // callResponse = poolBorrow.getReserveState(deployerAddress, stSTX, deployerAddress);
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(callResponse.events);
-    // console.log(Cl.prettyPrint(callResponse.events[7].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[8].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.result));
 
     // simnet.mineEmptyBlocks(10);
 
@@ -1761,6 +1745,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1832,6 +1817,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -1860,48 +1846,8 @@ describe("Supply and Redeem", () => {
     );
 
     callResponse = poolBorrow.getReserveState(deployerAddress, USDA, Borrower_1);
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log(simnet.getAssetsMap());
-    // expect(callResponse.result).toBeOk(Cl.uint(200_000_086));
 
-    // callResponse = simnet.callReadOnlyFn(
-    //   config.pool0Reserve,
-    //   "get-user-borrow-balance",
-    //   [
-    //     Cl.standardPrincipal(Borrower_1),
-    //     Cl.contractPrincipal(deployerAddress, USDA)
-    //   ],
-    //   Borrower_1
-    // );
-    // console.log(cvToValue(callResponse.result));
     simnet.mineEmptyBlocks(1000)
-    // callResponse = simnet.callReadOnlyFn(
-    //   config.pool0Reserve,
-    //   "get-user-borrow-balance",
-    //   [
-    //     Cl.standardPrincipal(Borrower_1),
-    //     Cl.contractPrincipal(deployerAddress, USDA)
-    //   ],
-    //   Borrower_1
-    // );
-    // console.log(cvToValue(callResponse.result));
-    // callResponse = poolBorrow.getUserReserveData(Borrower_1, deployerAddress, USDA, Borrower_1);
-    // console.log(cvToValue(callResponse.result))
-    // console.log(simnet.getAssetsMap().get(".usda.usda"))
-    // callResponse = simnet.callPublicFnCheckOk(
-    //   config.borrowHelper,
-    //   "repay",
-        // Cl.contractPrincipal(deployerAddress, "oracle"),
-    //   [
-    //     Cl.contractPrincipal(deployerAddress, USDA),
-    //     Cl.uint(max_value),
-    //     Cl.standardPrincipal(Borrower_1),
-    //     Cl.standardPrincipal(Borrower_1),
-    //   ],
-    //   Borrower_1
-    // );
-    // expect(callResponse.result).toBeOk(Cl.bool(true));
-    // console.log(simnet.getAssetsMap().get(".usda.usda"))
 
     callResponse = simnet.callPublicFnCheckOk(
       config.borrowHelper,
@@ -1941,6 +1887,7 @@ describe("Supply and Redeem", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1983,6 +1930,7 @@ describe("Supply and Redeem", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_2
     );
@@ -2026,6 +1974,7 @@ describe("Supply and Redeem", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_3
     );
@@ -2252,6 +2201,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -2291,6 +2241,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -2346,6 +2297,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -2373,6 +2325,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       LP_2
     );
@@ -2399,6 +2352,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       LP_2
     );
@@ -2504,6 +2458,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(LP_2),
+        Cl.none(),
       ],
       LP_2
     );
@@ -2620,13 +2575,6 @@ describe("Supply and Redeem", () => {
       [Cl.uint(1000000000000000), Cl.standardPrincipal(Borrower_1)],
       deployerAddress
     );
-
-    // callResponse =  simnet.transferSTX(
-    //   250_000_000_000_000,
-    //   Borrower_1,
-    //   deployerAddress
-    // );
-    // console.log(Cl.prettyPrint(callResponse.result))
 
     callResponse = poolBorrow.init(
       deployerAddress,
@@ -2895,6 +2843,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3027,6 +2976,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3135,6 +3085,7 @@ describe("Supply and Redeem", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -3232,6 +3183,7 @@ describe("Supply and Redeem", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );

@@ -9,7 +9,7 @@ import { MintableToken } from "./models/token";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
+import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
 import { incentivesDummy } from "./tools/config";
 
 let simnet = await initSimnetChecker();
@@ -121,6 +121,7 @@ describe("Flashloans", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployPythContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
 
     initializeRewards(simnet, deployerAddress);

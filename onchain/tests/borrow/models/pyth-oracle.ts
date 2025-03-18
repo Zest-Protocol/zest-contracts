@@ -1,14 +1,15 @@
-import { Simnet } from "@hirosystems/clarinet-sdk";
+import { Simnet, tx } from "@hirosystems/clarinet-sdk";
 import { IntegerType } from "@stacks/common";
 import { Cl, cvToValue } from "@stacks/transactions";
 import * as config from "../tools/config";
+import { SimnetChecker } from "../tools/SimnetChecker";
 
 class PythOracle {
-  simnet: Simnet;
+  simnet: SimnetChecker;
   deployerAddress: string;
   contractName: string;
 
-  constructor(simnet: Simnet, deployerAddress: string, contractName: string) {
+  constructor(simnet: SimnetChecker, deployerAddress: string, contractName: string) {
     this.simnet = simnet;
     this.deployerAddress = deployerAddress;
     this.contractName = contractName;
@@ -18,7 +19,8 @@ class PythOracle {
     assetDeployerAddress: string,
     assetContractName: string,
     priceFeedId: string,
-    time: bigint,
+    // expected threshold time in seconds
+    time: number,
     caller: string
   ) {
     let callResponse = this.simnet.callReadOnlyFn(
@@ -36,14 +38,9 @@ class PythOracle {
       [],
       this.deployerAddress
     );
-    let stalePriceThreshold = time + (this.simnet.getBlockTime() - BigInt(Math.floor(Date.now() / 1000)));
+    let stalePriceThreshold = BigInt(time) + (this.simnet.getBlockTime() - BigInt(Math.floor(Date.now() / 1000)));
 
-    // const stalePriceThreshold = BigInt(cvToValue(callResponse.result));
-    console.log("catched")
-    console.log(this.simnet.getBlockTime());
-    console.log(publishTime);
-    console.log(stalePriceThreshold);
-    return this.simnet.getBlockTime() - publishTime - stalePriceThreshold;
+    return (publishTime + stalePriceThreshold) - this.simnet.getBlockTime();
   }
 
 
@@ -54,25 +51,34 @@ class PythOracle {
     caller: string
   ) {
     let regtestDelay = this.simnet.getBlockTime() - BigInt(Math.floor(Date.now() / 1000));
-    const stalePriceThreshold = this.simnet.callReadOnlyFn(
+    // increase delay by delay of the test suite and priceTimeThreshold
+    const txs = [
+      tx.callPublicFn(
+        this.contractName,
+        "set-stale-price-threshold",
+        [Cl.uint(BigInt(priceTimeThreshold) + regtestDelay)],
+        this.deployerAddress
+      ),
+      tx.callPublicFn(
+        this.contractName,
+        "get-asset-price",
+        [
+          Cl.contractPrincipal(assetDeployerAddress, assetContractName),
+        ],
+        caller
+      )
+    ];
+
+    return this.simnet.mineBlock(txs);
+  }
+
+
+  convertToFixed8(price: number, expo: number) {
+    return this.simnet.callReadOnlyFn(
       this.contractName,
-      "get-stale-price-threshold",
-      [],
+      "convert-to-fixed-8",
+      [Cl.int(price), Cl.int(expo)],
       this.deployerAddress
-    );
-    this.simnet.callPublicFn(
-      this.contractName,
-      "set-stale-price-threshold",
-      [Cl.uint(BigInt(priceTimeThreshold) + regtestDelay)],
-      this.deployerAddress
-    );
-    return this.simnet.callPublicFn(
-      this.contractName,
-      "get-asset-price",
-      [
-        Cl.contractPrincipal(assetDeployerAddress, assetContractName),
-      ],
-      caller
     );
   }
 }
