@@ -10,8 +10,8 @@ import { tx } from "@hirosystems/clarinet-sdk";
 import * as config from "./tools/config";
 import { reserveExtraVariables, initContractsToV2, borrowHelper, lpStstxToken, poolBorrow as poolBorrowContractName, pool0Reserve, lpSbtcToken, zSbtc, initContractsToV2_1, incentivesDummy  } from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards, initPyth } from "./tools/common";
-import { getFinalRate, getPriceVaaFromTimestamp, getPriceVaaLatest, getRewardedAmount } from "../utils/utils";
+import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, getReserveState, initializeRewards, initPyth } from "./tools/common";
+import { getFinalRate, getPriceVaaFromTimestamp, getPriceVaaLatest, getPriceVaas, getRewardedAmount, verifyTxsOk } from "../utils/utils";
 import { PythOracle } from "./models/pyth-oracle";
 const simnet = await initSimnetChecker();
 
@@ -97,6 +97,7 @@ describe("Pyth oracle", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployPythContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
 
     callResponse = simnet.deployContract(
@@ -108,9 +109,241 @@ describe("Pyth oracle", () => {
 
     initializeRewards(simnet, deployerAddress);
 
-    deployPythContracts(simnet, deployerAddress);
-
   });
+  it("Update 2 assets to pyth oracle, only update the price of one.", async () => {
+    const poolBorrow = new PoolBorrow(
+      simnet,
+      deployerAddress,
+      poolBorrowContractName
+    );
+    const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
+
+    const stSTXZToken = new ZToken(simnet, deployerAddress, zstSTX);
+    const sBTCZToken = new ZToken(simnet, deployerAddress, zsBTC);
+
+    let callResponse = oracleContract.setPrice(
+      deployerAddress,
+      stSTX,
+      160_000_000,
+      deployerAddress
+    );
+    oracleContract.setPrice(
+      deployerAddress,
+      sBTC,
+      4000000000000,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.init(
+      deployerAddress,
+      zstSTX,
+      deployerAddress,
+      stSTX,
+      6,
+      max_value,
+      max_value,
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+    callResponse = poolBorrow.addAsset(deployerAddress, stSTX, deployerAddress);
+    callResponse = poolBorrow.init(
+      deployerAddress,
+      zsBTC,
+      deployerAddress,
+      sBTC,
+      8,
+      max_value,
+      max_value,
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+    callResponse = poolBorrow.addAsset(deployerAddress, sBTC, deployerAddress);
+    callResponse = poolBorrow.init(
+      deployerAddress,
+      zUSDA,
+      deployerAddress,
+      USDA,
+      6,
+      max_value,
+      max_value,
+      deployerAddress,
+      "pyth-oracle",
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+    callResponse = poolBorrow.addAsset(deployerAddress, USDA, deployerAddress);
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
+      deployerAddress
+    );
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      USDA,
+      true,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
+      deployerAddress,
+      sBTC,
+      true,
+      80000000,
+      90000000,
+      50000000,
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFnCheckOk(
+      stSTX,
+      "mint",
+      [Cl.uint(1_000_000_000), Cl.standardPrincipal(LP_1)],
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFnCheckOk(
+      sBTC,
+      "mint",
+      [Cl.uint(2_000_000_000), Cl.standardPrincipal(Borrower_1)],
+      deployerAddress
+    );
+
+    simnet.deployContract(
+      "pyth-oracle",
+      readFileSync(config.pyth_oracle_path).toString(),
+      {
+        clarityVersion: 3,
+      },
+      deployerAddress
+    );
+    initPyth(simnet, deployerAddress);
+
+    callResponse = simnet.callPublicFnCheckOk(
+      borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, zstSTX),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
+      ],
+      LP_1
+    );
+
+    callResponse = simnet.callPublicFnCheckOk(
+      borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, zsBTC),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(2_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
+      ],
+      Borrower_1
+    );
+
+    let reserveValues = await getReserveState(simnet, deployerAddress, sBTC);
+
+    // enable flashloan
+    callResponse = simnet.callPublicFnCheckOk(
+      poolBorrowContractName,
+      "set-reserve",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.tuple({ 
+          ...reserveValues,
+          "oracle": Cl.contractPrincipal(deployerAddress, "pyth-oracle"),
+        }),
+      ],
+      deployerAddress
+    );
+
+
+    callResponse = simnet.callPublicFnCheckOk(
+      borrowHelper,
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, zstSTX),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.uint(1_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, oracle),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "pyth-oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zUSDA),
+            oracle: Cl.contractPrincipal(deployerAddress, "pyth-oracle"),
+          }),
+        ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
+      ],
+      LP_1
+    );
+
+    let vaa = await getPriceVaaLatest('btc') as string;
+
+    // works when updating only the assets the user is using
+    callResponse = simnet.callPublicFnCheckOk(
+      borrowHelper,
+      "withdraw",
+      [
+        Cl.contractPrincipal(deployerAddress, zsBTC),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, "pyth-oracle"),
+        Cl.uint(2_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, oracle),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsBTC),
+            oracle: Cl.contractPrincipal(deployerAddress, "pyth-oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, USDA),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zUSDA),
+            oracle: Cl.contractPrincipal(deployerAddress, "pyth-oracle"),
+          }),
+        ]),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.some(Cl.bufferFromHex(vaa)),
+      ],
+      Borrower_1
+    );
+  });
+
   // test might fail because the timestamp in regtest is ahead of real time by 7640 seconds
   // it might also be 7639 seconds. 
   it("Gets asset price before it's stale and after, then refresh and get again", async () => {
@@ -131,13 +364,13 @@ describe("Pyth oracle", () => {
     const btcPriceFeedId = "e62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43";
     const stxPriceFeedId = "ec7a775f46379b5e943c3526b1c8d54cd49749176b0b98e02dde68d1bd335c17";
     const aeusdcPriceFeedId = "eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a";
-    let vaa = await getPriceVaaFromTimestamp('btc', pythTimestamp) as string;
 
+    let vaas = await getPriceVaas(['btc', 'stx', 'usdc']);
     callResponse = simnet.callPublicFnCheckOk(
       config.pythOracle,
       "verify-and-update-price-feeds",
       [
-        Cl.bufferFromHex(vaa),
+        Cl.bufferFromHex(vaas),
         Cl.tuple({
           "pyth-storage-contract": Cl.contractPrincipal(deployerAddress, config.pythStorage),
           "pyth-decoder-contract": Cl.contractPrincipal(deployerAddress, config.pythPnauDecoder),
@@ -146,88 +379,43 @@ describe("Pyth oracle", () => {
       ],
       deployerAddress
     );
+    const expectedTimeThreshold = 10;
 
-    vaa = await getPriceVaaFromTimestamp('stx', pythTimestamp) as string;
-    callResponse = simnet.callPublicFnCheckOk(
-      config.pythOracle,
-      "verify-and-update-price-feeds",
-      [
-        Cl.bufferFromHex(vaa),
-        Cl.tuple({
-          "pyth-storage-contract": Cl.contractPrincipal(deployerAddress, config.pythStorage),
-          "pyth-decoder-contract": Cl.contractPrincipal(deployerAddress, config.pythPnauDecoder),
-          "wormhole-core-contract": Cl.contractPrincipal(deployerAddress, config.wormholeCore),
-        })
-      ],
-      deployerAddress
-    );
-
-    vaa = await getPriceVaaFromTimestamp('usdc', pythTimestamp) as string;
-    callResponse = simnet.callPublicFnCheckOk(
-      config.pythOracle,
-      "verify-and-update-price-feeds",
-      [
-        Cl.bufferFromHex(vaa),
-        Cl.tuple({
-          "pyth-storage-contract": Cl.contractPrincipal(deployerAddress, config.pythStorage),
-          "pyth-decoder-contract": Cl.contractPrincipal(deployerAddress, config.pythPnauDecoder),
-          "wormhole-core-contract": Cl.contractPrincipal(deployerAddress, config.wormholeCore),
-        })
-      ],
-      deployerAddress
-    );
-
-    callResponse = oracle.getAssetPrice(
-      10,
+    let getAssetPriceResponse = oracle.getAssetPrice(
+      expectedTimeThreshold,
       deployerAddress,
       config.sBTC,
       deployerAddress
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    verifyTxsOk(getAssetPriceResponse);
     // console.log((callResponse.events[0].data.value as any).value);
-    // console.log((callResponse.events[1].data.value as any).value);
 
-    const remainingTime = oracle.getRemainingTimeUntilPriceIsStale(
+    const remainingSeconds = oracle.getRemainingTimeUntilPriceIsStale(
       deployerAddress,
       config.sBTC,
       btcPriceFeedId,
-      10n,
+      expectedTimeThreshold,
       deployerAddress
     );
-    console.log(remainingTime);
-
     // let 6 seconds pass before price is stale
-    // await new Promise(resolve => setTimeout(resolve, 6000));
-    callResponse = oracle.getAssetPrice(
-      10,
+    await new Promise(resolve => setTimeout(resolve, 1000 * Number(remainingSeconds - 1n)));
+    getAssetPriceResponse = oracle.getAssetPrice(
+      expectedTimeThreshold,
       deployerAddress,
       config.sBTC,
       deployerAddress
     );
-    // console.log((callResponse.events[0].data.value as any).value);
-    // console.log((callResponse.events[1].data.value as any).value);
-    // expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
+    verifyTxsOk(getAssetPriceResponse);
 
-    // price should fail after it's over the 10 seconds threshold
-    // await new Promise(resolve => setTimeout(resolve, 6000));
-    callResponse = oracle.getAssetPrice(
-      10,
+    // price should fail after
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    getAssetPriceResponse = oracle.getAssetPrice(
+      expectedTimeThreshold,
       deployerAddress,
       config.sBTC,
       deployerAddress
     );
-    console.log(Cl.prettyPrint(callResponse.result));
-    // expect(callResponse.result).toBeErr(Cl.uint(5001));
-
-    callResponse = simnet.callReadOnlyFn(
-      "pyth-oracle",
-      "get-price",
-      [
-        Cl.contractPrincipal(deployerAddress, config.stSTX),
-      ],
-      deployerAddress
-    );
-    console.log(Cl.prettyPrint(callResponse.result));
+    expect(getAssetPriceResponse[1].result).toBeErr(Cl.uint(6001));
 
     callResponse = simnet.callReadOnlyFn(
       "pyth-oracle",
@@ -237,52 +425,74 @@ describe("Pyth oracle", () => {
       ],
       deployerAddress
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    const wstxPrice = BigInt(cvToValue(callResponse.result).value);
 
-    // const convertToFixed8 = simnet.callReadOnlyFn(
-    //   "pyth-oracle",
-    //   "convert-to-fixed-8",
-    //   [
-    //     Cl.int(1500),
-    //     Cl.int(-5)
-    //   ],
-    //   deployerAddress
-    // );
-    // console.log(Cl.prettyPrint(convertToFixed8.result));
-    // force wait to get a new vaa, wait 11 seconds because 1 block increase 10 secs in regtest
-    //  1 more second for the vaa to be ahead by 1 second
-    // await new Promise(resolve => setTimeout(resolve, 100000));
+    callResponse = simnet.callReadOnlyFn(
+      "pyth-oracle",
+      "get-price",
+      [
+        Cl.contractPrincipal(deployerAddress, config.stSTX),
+      ],
+      deployerAddress
+    );
+    const ststxPrice = BigInt(cvToValue(callResponse.result).value);
 
-    // vaa = await getPriceVaaLatest('btc') as string;
+    const ratio = 1080000n;
+    const stxDecimals = 1000000n;
+    expect(ststxPrice).toBe(wstxPrice * ratio / stxDecimals);
 
-    // let block = simnet.mineBlock([
-    //   tx.callPublicFn(
-    //     config.pythOracle,
-    //     "verify-and-update-price-feeds",
-    //     [
-    //       Cl.bufferFromHex(vaa),
-    //       Cl.tuple({
-    //         "pyth-storage-contract": Cl.contractPrincipal(deployerAddress, config.pythStorage),
-    //         "pyth-decoder-contract": Cl.contractPrincipal(deployerAddress, config.pythPnauDecoder),
-    //         "wormhole-core-contract": Cl.contractPrincipal(deployerAddress, config.wormholeCore),
-    //       })
-    //     ],
-    //     deployerAddress
-    //   ),
-    // ])
+    vaas = await getPriceVaas(['btc', 'stx', 'usdc']);
+    callResponse = simnet.callPublicFnCheckOk(
+      config.pythOracle,
+      "verify-and-update-price-feeds",
+      [
+        Cl.bufferFromHex(vaas),
+        Cl.tuple({
+          "pyth-storage-contract": Cl.contractPrincipal(deployerAddress, config.pythStorage),
+          "pyth-decoder-contract": Cl.contractPrincipal(deployerAddress, config.pythPnauDecoder),
+          "wormhole-core-contract": Cl.contractPrincipal(deployerAddress, config.wormholeCore),
+        })
+      ],
+      deployerAddress
+    );
 
-    // callResponse = oracle.getAssetPrice(
-    //   10,
-    //   deployerAddress,
-    //   config.sBTC,
-    //   deployerAddress
-    // );
-    // console.log(Cl.prettyPrint(callResponse.result));
-    // console.log((callResponse.events[0].data.value as any).value);
-    // console.log((callResponse.events[1].data.value as any).value);
+    // after updating, price feed should be ok
+    getAssetPriceResponse = oracle.getAssetPrice(
+      expectedTimeThreshold,
+      deployerAddress,
+      config.sBTC,
+      deployerAddress
+    );
+    verifyTxsOk(getAssetPriceResponse);
 
-    // // expect(block[1].result).toBeErr(Cl.uint(5001));
-    // // console.log(Cl.prettyPrint(block[0].result));
-    // expect(block[0].result).toHaveClarityType(ClarityType.ResponseOk);
+  });
+  it("convert-to-fixed-8", async () => {
+    initPyth(simnet, deployerAddress);
+    const oracle = new PythOracle(simnet, deployerAddress, "pyth-oracle");
+    simnet.deployContract(
+      "pyth-oracle",
+      readFileSync(config.pyth_oracle_path).toString(),
+      {
+        clarityVersion: 3,
+      },
+      deployerAddress
+    );
+
+    let convertToFixed8 = oracle.convertToFixed8(1500, -5);
+    expect(convertToFixed8.result).toBeOk(Cl.uint(1500000));
+    convertToFixed8 = oracle.convertToFixed8(12276250, -5);
+    expect(convertToFixed8.result).toBeOk(Cl.uint(12276250000));
+    convertToFixed8 = oracle.convertToFixed8(1500, 0);
+    expect(convertToFixed8.result).toBeOk(Cl.uint(150000000000));
+    convertToFixed8 = oracle.convertToFixed8(1500, -8);
+    expect(convertToFixed8.result).toBeOk(Cl.uint(1500));
+    convertToFixed8 = oracle.convertToFixed8(123456789, -10);
+    expect(convertToFixed8.result).toBeOk(Cl.uint(1234567));
+    convertToFixed8 = oracle.convertToFixed8(123456789, -16);
+    expect(convertToFixed8.result).toBeOk(Cl.uint(1));
+    convertToFixed8 = oracle.convertToFixed8(123456789, 1);
+    expect(convertToFixed8.result).toBeErr(Cl.uint(6004));
+    convertToFixed8 = oracle.convertToFixed8(123456789, 8);
+    expect(convertToFixed8.result).toBeErr(Cl.uint(6004));
   });
 });

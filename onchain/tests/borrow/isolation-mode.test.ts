@@ -8,7 +8,7 @@ import { Oracle } from "./models/oracle";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
+import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
 import { incentivesDummy } from "./tools/config";
 
 const simnet = await initSimnetChecker();
@@ -130,6 +130,7 @@ describe("Isolated mode", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployPythContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
 
     simnet.deployContract(
@@ -282,6 +283,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -458,6 +460,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -692,6 +695,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -980,6 +984,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1113,6 +1118,7 @@ describe("Isolated mode", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1238,6 +1244,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1270,6 +1277,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1305,10 +1313,6 @@ describe("Isolated mode", () => {
       ],
       Borrower_1
     );
-    // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[1].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.events[2].data.value!));
-    // console.log(Cl.prettyPrint(callResponse.result));
     expect(callResponse.result).toBeOk(
       Cl.tuple({
         "current-liquidation-threshold": Cl.uint(90000000),
@@ -1427,6 +1431,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1459,6 +1464,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1525,6 +1531,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1557,6 +1564,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1589,6 +1597,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1621,6 +1630,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1705,6 +1715,7 @@ describe("Isolated mode", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1903,6 +1914,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1964,6 +1976,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -1998,6 +2011,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -2049,6 +2063,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -2324,6 +2339,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -2408,6 +2424,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -2482,6 +2499,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -2537,6 +2555,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -2592,6 +2611,7 @@ describe("Isolated mode", () => {
             oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
           }),
         ]),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -2649,6 +2669,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
       ],
       Borrower_2
     );
@@ -2689,6 +2710,7 @@ describe("Isolated mode", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_2),
+        Cl.none(),
       ],
       Borrower_2
     );

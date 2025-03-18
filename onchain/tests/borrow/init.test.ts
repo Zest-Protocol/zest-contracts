@@ -8,7 +8,7 @@ import { ZToken } from "./models/zToken";
 
 import { reserveExtraVariables, initContractsToV2, borrowHelper, lpStstxToken, poolBorrow as poolBorrowContractName, pool0Reserve, lpSbtcToken, zSbtc, initContractsToV2_1, incentivesDummy  } from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
+import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -94,6 +94,7 @@ describe("Supply and redeem ", () => {
     simnet.setEpoch("3.0");
     deployV2Contracts(simnet, deployerAddress);
     deployV2TokenContracts(simnet, deployerAddress);
+    deployPythContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
 
     callResponse = simnet.deployContract(
@@ -246,6 +247,7 @@ describe("Supply and redeem ", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_1
     );
@@ -273,6 +275,7 @@ describe("Supply and redeem ", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -309,15 +312,6 @@ describe("Supply and redeem ", () => {
 
 
   it("Supply, set base supply rate and redeem with returns", async () => {
-
-    // simnet.deployContract(
-    //   "test-user-asset",
-    //   readFileSync("/Users/fernandofoy/Documents/zest-protocol-repos/zest-contracts/onchain/contracts/borrow/production/mocks/test-wrappers/user-asset.clar").toString(),
-    //   {
-    //     clarityVersion: 3,
-    //   },
-    //   deployerAddress
-    // );
 
     const poolBorrow = new PoolBorrow(
       simnet,
@@ -646,6 +640,7 @@ describe("Supply and redeem ", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -858,6 +853,7 @@ describe("Supply and redeem ", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -887,6 +883,7 @@ describe("Supply and redeem ", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1058,6 +1055,7 @@ describe("Supply and redeem ", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(LP_1),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1236,6 +1234,7 @@ describe("Supply and redeem ", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1265,6 +1264,7 @@ describe("Supply and redeem ", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1298,7 +1298,7 @@ describe("Supply and redeem ", () => {
     expect(
       balanceBeforeRepay -
         simnet.getAssetsMap().get(".ststx.ststx")?.get(Borrower_1)!
-    ).toBe(100_000_088n);
+    ).toBe(100_000_086n);
 
     callResponse = simnet.callPublicFnCheckOk(
       borrowHelper,
@@ -1323,6 +1323,7 @@ describe("Supply and redeem ", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1364,6 +1365,7 @@ describe("Supply and redeem ", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1526,6 +1528,7 @@ describe("Supply and redeem ", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1555,6 +1558,7 @@ describe("Supply and redeem ", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1605,6 +1609,7 @@ describe("Supply and redeem ", () => {
         Cl.contractPrincipal(deployerAddress, feesCalculator),
         Cl.uint(0),
         Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
       ],
       Borrower_1
     );
@@ -1654,6 +1659,7 @@ describe("Supply and redeem ", () => {
           }),
         ]),
         Cl.contractPrincipal(deployerAddress, incentivesDummy),
+        Cl.none(),
       ],
       LP_1
     );
