@@ -2477,7 +2477,7 @@ First user should not earn anything when they come back.`, () => {
       ],
       LP_2
     );
-    console.log(Number(simnet.getAssetsMap().get("STX")!.get(LP_2)! - 100000000000000n) / 1000000);
+    expect(Number(simnet.getAssetsMap().get("STX")!.get(LP_2)! - 100000000000000n) / 1000000).toBeGreaterThan(0);
     // console.log(getRewardedAmount(92000, 0.80, 473, 0.0093));
   });
 });
