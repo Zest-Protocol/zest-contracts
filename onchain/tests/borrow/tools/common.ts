@@ -3,7 +3,6 @@ import { Cl, cvToValue, cvToJSON} from "@stacks/transactions";
 import { readFileSync } from "fs";
 import * as config from "./config";
 import { sBTC, stSTX, wstx, xUSD } from "./config";
-import { list } from "@stacks/transactions/dist/cl";
 
 const one_day = 144;
 
@@ -27,6 +26,14 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
   simnet.deployContract(
     "pool-reserve-data-3",
     readFileSync(config.pool_reserve_data_3_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "pool-reserve-data-4",
+    readFileSync(config.pool_reserve_data_4_path).toString(),
     {
       clarityVersion: 3,
     },
