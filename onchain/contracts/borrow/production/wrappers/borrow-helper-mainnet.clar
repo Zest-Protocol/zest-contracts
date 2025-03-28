@@ -28,7 +28,7 @@
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT)
     (try! (contract-call? incentives claim-rewards lp asset owner))
-    (try! (contract-call? .pool-borrow-v2-0 supply lp pool-reserve asset amount owner))
+    (try! (contract-call? .pool-borrow-v2-0-1 supply lp pool-reserve asset amount owner))
 
     (print { type: "supply-call", payload: { key: owner, data: {
       reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)),
@@ -60,7 +60,7 @@
 
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (try! (write-feed price-feed-bytes))
-    (try! (contract-call? .pool-borrow-v2-0 borrow pool-reserve oracle asset-to-borrow lp assets amount-to-be-borrowed fee-calculator interest-rate-mode owner))
+    (try! (contract-call? .pool-borrow-v2-0-1 borrow pool-reserve oracle asset-to-borrow lp assets amount-to-be-borrowed fee-calculator interest-rate-mode owner))
 
     (print { type: "borrow-call", payload: { key: owner, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)),
@@ -84,7 +84,7 @@
   (let (
     (asset-principal (contract-of asset))
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
-    (payback-amount (try! (contract-call? .pool-borrow-v2-0 repay asset amount-to-repay on-behalf-of payer)))
+    (payback-amount (try! (contract-call? .pool-borrow-v2-0-1 repay asset amount-to-repay on-behalf-of payer)))
     )
 
     (print { type: "repay-call", payload: { key: on-behalf-of, data: {
@@ -118,7 +118,7 @@
 
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (try! (write-feed price-feed-bytes))
-    (try! (contract-call? .pool-borrow-v2-0 set-user-use-reserve-as-collateral who lp-token asset enable-as-collateral oracle assets-to-calculate))
+    (try! (contract-call? .pool-borrow-v2-0-1 set-user-use-reserve-as-collateral who lp-token asset enable-as-collateral oracle assets-to-calculate))
 
     (print { type: "set-user-use-reserve-as-collateral-call", payload: { key: who, data: {
         reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state asset-principal)),
@@ -148,7 +148,7 @@
     (check-on-rewards (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT))
     (price-ok (try! (write-feed price-feed-bytes)))
     (result-claim (try! (contract-call? incentives claim-rewards lp asset owner)))
-    (withdraw-res (try! (contract-call? .pool-borrow-v2-0 withdraw pool-reserve asset lp oracle assets amount owner)))
+    (withdraw-res (try! (contract-call? .pool-borrow-v2-0-1 withdraw pool-reserve asset lp oracle assets amount owner)))
     )
 
     (print { type: "withdraw-call", payload: { key: owner, data: {
@@ -179,10 +179,10 @@
   (let (
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
     (price-ok (try! (write-feed price-feed-bytes)))
-    (balance (try! (contract-call? .pool-borrow-v2-0 withdraw pool-reserve asset lp oracle assets max-value owner)))
+    (balance (try! (contract-call? .pool-borrow-v2-0-1 withdraw pool-reserve asset lp oracle assets max-value owner)))
     )
     (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT)
-    (try! (contract-call? .pool-borrow-v2-0 supply lp pool-reserve asset balance owner))
+    (try! (contract-call? .pool-borrow-v2-0-1 supply lp pool-reserve asset balance owner))
     (try! (contract-call? incentives claim-rewards lp asset owner))
 
     (ok true)
@@ -210,7 +210,7 @@
     (asserts! (is-eq liquidator contract-caller) ERR_UNAUTHORIZED)
     (try! (write-feed price-feed-bytes))
 
-    (try! (contract-call? .pool-borrow-v2-0 liquidation-call
+    (try! (contract-call? .pool-borrow-v2-0-1 liquidation-call
       assets
       collateral-lp
       collateral-to-liquidate
@@ -254,7 +254,7 @@
   (begin
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (try! (write-feed price-feed-bytes))
-    (try! (contract-call? .pool-borrow-v2-0 set-e-mode user assets new-e-mode-type))
+    (try! (contract-call? .pool-borrow-v2-0-1 set-e-mode user assets new-e-mode-type))
 
     (print { type: "set-e-mode-call", payload: { key: user, data: {
         user-e-mode: (contract-call? .pool-reserve-data-2 get-user-e-mode-read user),
@@ -272,7 +272,7 @@
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
 
     (try! 
-      (contract-call? .pool-borrow-v2-0 flashloan
+      (contract-call? .pool-borrow-v2-0-1 flashloan
         receiver
         asset
         amount
