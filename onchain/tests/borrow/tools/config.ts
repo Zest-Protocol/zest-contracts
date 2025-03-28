@@ -114,6 +114,7 @@ export const poolReserveData = "pool-reserve-data";
 export const poolReserveData1 = "pool-reserve-data-1";
 export const poolReserveData2 = "pool-reserve-data-2";
 export const poolReserveData3 = "pool-reserve-data-3";
+export const poolReserveData4 = "pool-reserve-data-4";
 export const rewardsData = "rewards-data";
 
 export const mathV0 = "math";
@@ -175,12 +176,14 @@ export const lp_xusd_token_path = `contracts/borrow/production/mocks/ztoken/lp-x
 
 export const pool_borrow_v2_0_path = `contracts/borrow/legacy/v2-0/pool/pool-borrow.clar`;
 export const pool_borrow_path = `contracts/borrow/production/pool/pool-borrow.clar`;
+export const pool_borrow_v2_0_1_path = `contracts/borrow/production/pool/pool-borrow-v2-0-1.clar`;
 export const borrow_helper_v2_0_path = `contracts/borrow/legacy/v2-0/wrappers/borrow-helper.clar`;
 export const borrow_helper_path = `contracts/borrow/production/wrappers/borrow-helper.clar`;
 export const liquidation_manager_v2_0_path = `contracts/borrow/legacy/v2-0/pool/liquidation-manager.clar`;
 export const liquidation_manager_path = `contracts/borrow/production/pool/liquidation-manager.clar`;
 export const pool_reserve_data_2_path = `contracts/borrow/production/reserve-data/pool-reserve-data-2.clar`;
 export const pool_reserve_data_3_path = `contracts/borrow/production/reserve-data/pool-reserve-data-3.clar`;
+export const pool_reserve_data_4_path = `contracts/borrow/production/reserve-data/pool-reserve-data-4.clar`;
 export const rewards_data_path = `contracts/borrow/production/reserve-data/rewards-data.clar`;
 export const incentives_path = `contracts/borrow/production/mocks/rewards/incentives.clar`;
 export const incentives_dummy_path = `contracts/borrow/production/mocks/rewards/incentives-dummy.clar`;
