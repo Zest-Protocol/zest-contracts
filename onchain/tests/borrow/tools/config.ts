@@ -95,18 +95,21 @@ export const lpXusdToken = "lp-xusd-token";
 export const pool0ReserveV0 = "pool-0-reserve";
 export const pool0ReserveV1_2 = "pool-0-reserve-v1-2";
 export const pool0ReserveV2 = "pool-0-reserve-v2-0";
+export const pool0ReserveV2_0_2 = "pool-0-reserve-v2-0-2";
 export const pool0Reserve = pool0ReserveV2;
 
 export const borrowHelperV1 = "borrow-helper";
 export const borrowHelperV1_2 = "borrow-helper-v1-2";
 export const borrowHelperV1_3 = "borrow-helper-v1-3";
 export const borrowHelperV2_0 = "borrow-helper-v2-0";
+export const borrowHelperV2_0_2 = "borrow-helper-v2-0-2";
 export const borrowHelperV2_1 = "borrow-helper-v2-1";
 export const borrowHelper = borrowHelperV2_1;
 
 export const poolBorrowV0 = "pool-borrow";
 export const poolBorrowV1_2 = "pool-borrow-v1-2";
 export const poolBorrowV2_0 = "pool-borrow-v2-0";
+export const poolBorrowV2_0_2 = "pool-borrow-v2-0-2";
 export const poolBorrowV2_1 = "pool-borrow-v2-1";
 export const poolBorrow = poolBorrowV2_1;
 
@@ -157,6 +160,7 @@ export const reserveExtraVariables = `contracts/borrow/production/mocks/init_scr
 // math nakamoto
 export const mathV2_0_path = `contracts/borrow/production/math/math.clar`;
 export const pool0ReserveV2_0_path = `contracts/borrow/production/vaults/pool-0-reserve-v2-0.clar`;
+export const pool0ReserveV2_0_2_path = `contracts/borrow/legacy/v2-0-2/vaults/pool-0-reserve.clar`;
 export const pool0ReserveRead_path = `contracts/borrow/production/mocks/read-only/pool-0-reserve-read.clar`;
 
 // v3 nakamoto
@@ -175,11 +179,14 @@ export const lp_wstx_token_path = `contracts/borrow/production/mocks/ztoken/lp-w
 export const lp_xusd_token_path = `contracts/borrow/production/mocks/ztoken/lp-xusd-token.clar`;
 
 export const pool_borrow_v2_0_path = `contracts/borrow/legacy/v2-0/pool/pool-borrow.clar`;
+export const pool_borrow_v2_0_2_path = `contracts/borrow/legacy/v2-0-2/pool/pool-borrow.clar`;
 export const pool_borrow_path = `contracts/borrow/production/pool/pool-borrow.clar`;
 export const pool_borrow_v2_0_1_path = `contracts/borrow/production/pool/pool-borrow-v2-0-1.clar`;
 export const borrow_helper_v2_0_path = `contracts/borrow/legacy/v2-0/wrappers/borrow-helper.clar`;
+export const borrow_helper_v2_0_2_path = `contracts/borrow/legacy/v2-0-2/wrappers/borrow-helper.clar`;
 export const borrow_helper_path = `contracts/borrow/production/wrappers/borrow-helper.clar`;
 export const liquidation_manager_v2_0_path = `contracts/borrow/legacy/v2-0/pool/liquidation-manager.clar`;
+export const liquidation_manager_v2_0_2_path = `contracts/borrow/legacy/v2-0-2/pool/liquidation-manager.clar`;
 export const liquidation_manager_path = `contracts/borrow/production/pool/liquidation-manager.clar`;
 export const pool_reserve_data_2_path = `contracts/borrow/production/reserve-data/pool-reserve-data-2.clar`;
 export const pool_reserve_data_3_path = `contracts/borrow/production/reserve-data/pool-reserve-data-3.clar`;

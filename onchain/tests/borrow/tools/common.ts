@@ -56,14 +56,6 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
     deployerAddress
   );
   simnet.deployContract(
-    "liquidation-manager-v2-1",
-    readFileSync(config.liquidation_manager_path).toString(),
-    {
-      clarityVersion: 3,
-    },
-    deployerAddress
-  );
-  simnet.deployContract(
     "pool-0-reserve-read",
     readFileSync(config.pool0ReserveRead_path).toString(),
     {
@@ -71,7 +63,6 @@ export const deployV2Contracts = (simnet: Simnet, deployerAddress: string) => {
     },
     deployerAddress
   );
-  // console.log(Cl.prettyPrint(callResponse.result));
   simnet.deployContract(
     "pool-borrow-v2-0",
     readFileSync(config.pool_borrow_v2_0_path).toString(),
@@ -191,8 +182,24 @@ export const deployV2TokenContracts = (simnet: Simnet, deployerAddress: string) 
 
 export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => {
   simnet.deployContract(
+    "liquidation-manager-v2-1",
+    readFileSync(config.liquidation_manager_v2_0_2_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "pool-reserve-v2-0-1",
+    readFileSync(config.pool0ReserveV2_0_2_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
     "pool-borrow-v2-1",
-    readFileSync(config.pool_borrow_path).toString(),
+    readFileSync(config.pool_borrow_v2_0_2_path).toString(),
     {
       clarityVersion: 3,
     },
@@ -240,7 +247,7 @@ export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => 
   );
   simnet.deployContract(
     "borrow-helper-v2-1",
-    readFileSync(config.borrow_helper_path).toString(),
+    readFileSync(config.borrow_helper_v2_0_2_path).toString(),
     {
       clarityVersion: 3,
     },
