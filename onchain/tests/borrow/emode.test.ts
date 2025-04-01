@@ -2212,7 +2212,7 @@ describe("Supply and Redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.contractPrincipal(deployerAddress, config.lpUsda),
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.bool(false),
+        Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         assets,
         Cl.none(),
@@ -2228,14 +2228,13 @@ describe("Supply and Redeem", () => {
         Cl.standardPrincipal(Borrower_1),
         Cl.contractPrincipal(deployerAddress, config.lpStstx),
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.bool(false),
+        Cl.bool(true),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         assets,
         Cl.none(),
       ],
       Borrower_1
     );
-    
   });
   it("Supply STX, set to STX e-mode, supply USDA and should not be able to set use as collateral.", () => {
     const assets = 
