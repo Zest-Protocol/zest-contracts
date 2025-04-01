@@ -37,7 +37,12 @@
 (define-constant ERR_INVALID_AMOUNT (err u30026))
 (define-constant ERR_NOT_IN_ISOLATED_MODE (err u30027))
 (define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u30028))
+(define-constant ERR_E_MODE_TYPE_MISMATCH (err u30029))
+(define-constant ERR_NO_ASSETS_USED_AS_COLLATERAL (err u30030))
+(define-constant ERR_MUST_ENABLE_ASSET_AS_COLLATERAL (err u30031))
 
+
+(define-constant e-mode-disabled-type 0x00)
 
 (define-map users-id uint principal)
 
@@ -83,17 +88,23 @@
       (if (is-eq current-balance u0)
         ;; additional checks for first supply and if it's isolation mode
         (if (and (get usage-as-collateral-enabled reserve-state)
-            (unwrap-panic
-              (validate-use-as-collateral
-                isolated-asset
-                ;; we only use base ltv, no need to fetch in case of e-mode
-                (get base-ltv-as-collateral reserve-state)
-                (get enabled-assets assets-used-as-collateral)
-                supplied-asset-principal
-                owner
-                (get debt-ceiling reserve-state)
-              ))
+              (unwrap-panic
+                (validate-use-as-collateral
+                  isolated-asset
+                  ;; we only use base ltv, no need to fetch in case of e-mode
+                  (get base-ltv-as-collateral reserve-state)
+                  (get enabled-assets assets-used-as-collateral)
+                  supplied-asset-principal
+                  owner
+                  (get debt-ceiling reserve-state)
+                ))
+              (if (is-in-e-mode owner)
+                ;; if in e-mode, can only enable use-as-collateral for same e-mode type
+                (is-eq (get-asset-e-mode-type supplied-asset-principal) (get-user-e-mode owner))
+                ;; nothing to check
+                true
               )
+            )
           (try! (contract-call? .pool-0-reserve-v2-0 set-user-reserve-as-collateral owner asset true))
           false
         )
@@ -363,7 +374,7 @@
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
 
-    (contract-call? .liquidation-manager-v2-0-1 liquidation-call
+    (contract-call? .liquidation-manager-v2-1 liquidation-call
       assets
       collateral-lp
       collateral-to-liquidate
@@ -470,8 +481,19 @@
     (try! (is-approved-contract contract-caller))
     (try! (validate-assets assets))
 
-    ;; if from default state
-    (try! (can-enable-e-mode user new-e-mode-type))
+    (if (is-eq new-e-mode-type e-mode-disabled-type)
+      ;; if going to disabled e-mode type, only need to check enough collateral
+      true
+      (let (
+        (assets-used-as-collateral (contract-call? .pool-0-reserve-v2-0 get-assets-used-as-collateral user))
+      )
+        ;; if going to any other state
+        ;; check borrows are of e-mode type
+        (try! (can-enable-e-mode user new-e-mode-type))
+        ;; check collateral assets are of e-mode type
+        (asserts! (collateral-assets-are-of-e-mode-type user assets new-e-mode-type) ERR_E_MODE_TYPE_MISMATCH)
+      )
+    )
     (try! (set-user-e-mode user new-e-mode-type))
     ;; check health, or revert
     (let (
@@ -486,6 +508,37 @@
 
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
   (contract-call? .pool-0-reserve-v2-0 can-enable-e-mode user e-mode-type))
+
+(define-private (collateral-assets-are-of-e-mode-type
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  (e-mode-type (buff 1))
+  )
+  (not (get found-mismatch (fold collateral-assets-of-e-mode-type assets { found-mismatch: false, user: user, e-mode-type: e-mode-type })))
+)
+
+(define-private (collateral-assets-of-e-mode-type
+  (reserve { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })
+  (result { found-mismatch: bool, user: principal, e-mode-type: (buff 1) }))
+  (let (
+    (asset-contract (get asset reserve))
+    (asset-principal (contract-of asset-contract))
+    (current-asset-e-mode-type (contract-call? .pool-0-reserve-v2-0 get-asset-e-mode-type asset-principal))
+    (user-reserve-data (contract-call? .pool-0-reserve-v2-0 get-user-reserve-data (get user result) asset-principal))
+  )
+    ;; if already found mismatch, stop
+    (if (get found-mismatch result)
+      result
+      (if (and
+          ;; if asset is used as collateral and e-mode type mismatch, set found-mismatch to true
+          (get use-as-collateral user-reserve-data)
+          (not (is-eq (get e-mode-type result) current-asset-e-mode-type)))
+        { found-mismatch: true, user: (get user result), e-mode-type: (get e-mode-type result) }
+        result
+      )
+    )
+  )
+)
 
 (define-private (set-user-e-mode (who principal) (e-mode-type (buff 1)))
   (contract-call? .pool-reserve-data-2 set-user-e-mode who e-mode-type))
@@ -515,6 +568,13 @@
     (asserts! (get usage-as-collateral-enabled reserve-data) ERR_COLLATERAL_DISABLED)
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) ERR_INVALID_ORACLE)
+
+    (if (is-in-e-mode who)
+      ;; if in e-mode, check that the user is enabling asset of the same e-mode type
+      (asserts! (is-eq (get-asset-e-mode-type (contract-of asset)) (get-user-e-mode who)) ERR_MUST_ENABLE_ASSET_AS_COLLATERAL)
+      ;; nothing to check
+      true
+    )
 
     (let (
       (underlying-balance (try! (contract-call? lp-token get-balance who)))
