@@ -39,7 +39,7 @@
 (define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u30028))
 (define-constant ERR_E_MODE_TYPE_MISMATCH (err u30029))
 (define-constant ERR_NO_ASSETS_USED_AS_COLLATERAL (err u30030))
-(define-constant ERR_MUST_ENABLE_ASSET_AS_COLLATERAL (err u30031))
+(define-constant ERR_MUST_ENABLE_ASSET_OF_E_MODE (err u30031))
 
 
 (define-constant e-mode-disabled-type 0x00)
@@ -374,7 +374,7 @@
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
 
-    (contract-call? .liquidation-manager-v2-1 liquidation-call
+    (contract-call? .liquidation-manager-v2-0-2 liquidation-call
       assets
       collateral-lp
       collateral-to-liquidate
@@ -569,9 +569,9 @@
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) ERR_INVALID_ORACLE)
 
-    (if (is-in-e-mode who)
+    (if (and enable-as-collateral (is-in-e-mode who))
       ;; if in e-mode, check that the user is enabling asset of the same e-mode type
-      (asserts! (is-eq (get-asset-e-mode-type (contract-of asset)) (get-user-e-mode who)) ERR_MUST_ENABLE_ASSET_AS_COLLATERAL)
+      (asserts! (is-eq (get-asset-e-mode-type (contract-of asset)) (get-user-e-mode who)) ERR_MUST_ENABLE_ASSET_OF_E_MODE)
       ;; nothing to check
       true
     )
