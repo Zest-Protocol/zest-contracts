@@ -11,9 +11,11 @@
 (define-constant ERR_NOT_SET (err u90006))
 (define-constant ERR_IN_GRACE_PERIOD (err u90007))
 (define-constant ERR_NO_DEBT (err u90008))
+(define-constant ERR_E_MODE_BONUS_NOT_SET (err u90009))
 
 
 (define-constant one-8 (contract-call? .math-v2-0 get-one))
+(define-constant e-mode-disabled-type 0x00)
 
 (define-read-only (get-liquidation-close-factor-percent (asset principal))
   (unwrap-panic (contract-call? .pool-reserve-data get-liquidation-close-factor-percent-read asset)))
@@ -106,7 +108,8 @@
                 collateral-oracle
                 debt-asset-oracle
                 debt-to-liquidate
-                user-collateral-balance)))
+                user-collateral-balance
+                user)))
           (origination-fee (get-origination-fee-prc (contract-of collateral)))
           (protocol-fee (/ (* origination-fee (get liquidation-bonus-collateral available-collateral-principal)) u10000))
           (collateral-to-liquidator (- (get collateral-amount available-collateral-principal) protocol-fee))
@@ -176,7 +179,7 @@
   (contract-call? .math-v2-0 get-y-from-x x x-decimals y-decimals x-price y-price)
 )
 
-(define-data-var lending-pool principal .pool-borrow-v2-1)
+(define-data-var lending-pool principal .pool-borrow-v2-0-1)
 
 (define-data-var admin principal tx-sender)
 (define-read-only (is-admin (caller principal))
@@ -201,13 +204,15 @@
   (collateral-oracle <oracle>)
   (principal-oracle <oracle>)
   (debt-to-liquidate uint)
-  (user-collateral-balance uint))
+  (user-collateral-balance uint)
+  (user principal)
+  )
   (let (
     (collateral-price (try! (contract-call? collateral-oracle get-asset-price collateral)))
     (debt-currency-price (try! (contract-call? principal-oracle get-asset-price principal-asset)))
     (collateral-reserve-data (unwrap-panic (get-reserve-state collateral)))
     (principal-reserve-data (unwrap-panic (get-reserve-state principal-asset)))
-    (liquidation-bonus (get liquidation-bonus collateral-reserve-data))
+    (liquidation-bonus (try! (get-liquidation-bonus user collateral)))
     (original-collateral-purchasing-power
       (contract-call? .math-v2-0 get-y-from-x
         debt-to-liquidate
@@ -219,7 +224,7 @@
       (contract-call? .math-v2-0 mul-perc
         original-collateral-purchasing-power
         (get decimals collateral-reserve-data)
-        (+ one-8 (get liquidation-bonus collateral-reserve-data)))))
+        (+ one-8 liquidation-bonus))))
     (ok
       (if (> max-collateral-amount-from-debt user-collateral-balance)
         {
@@ -240,7 +245,7 @@
             (contract-call? .math-v2-0 mul-perc
               user-collateral-balance
               (get decimals collateral-reserve-data)
-              (- one-8 (contract-call? .math-v2-0 div one-8 (+ one-8 (get liquidation-bonus collateral-reserve-data))))),
+              (- one-8 (contract-call? .math-v2-0 div one-8 (+ one-8 liquidation-bonus)))),
           collateral-price: collateral-price,
           debt-currency-price: debt-currency-price
         }
@@ -260,8 +265,23 @@
   (contract-call? .pool-0-reserve-v2-0 get-user-origination-fee who asset)
 )
 
-(define-read-only (get-liquidation-bonus (asset <ft>))
-  (ok (get liquidation-bonus (try! (get-reserve-state asset))))
+(define-read-only (get-liquidation-bonus (who principal) (asset <ft>))
+  (let (
+    (user-e-mode (contract-call? .pool-0-reserve-v2-0 get-user-e-mode who))
+  )
+    (if (and (not (is-eq user-e-mode e-mode-disabled-type)) (is-eq (get-asset-e-mode-type asset) user-e-mode))
+      (get-asset-e-mode-liquidation-bonus asset)
+      (ok (get liquidation-bonus (try! (get-reserve-state asset))))
+    )
+  )
+)
+
+(define-read-only (get-asset-e-mode-type (asset <ft>))
+  (contract-call? .pool-0-reserve-v2-0 get-asset-e-mode-type (contract-of asset))
+)
+
+(define-read-only (get-asset-e-mode-liquidation-bonus (asset <ft>))
+  (ok (unwrap! (contract-call? .pool-reserve-data-4 get-liquidation-bonus-e-mode-read (contract-of asset)) ERR_E_MODE_BONUS_NOT_SET))
 )
 
 (define-public (get-user-borrow-balance (who principal) (asset <ft>))
