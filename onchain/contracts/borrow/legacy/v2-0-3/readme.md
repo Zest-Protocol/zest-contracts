@@ -1,0 +1,1 @@
+- Fixing claim-rewards when user is borrowing assets

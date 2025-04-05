@@ -1,7 +1,7 @@
 (use-trait ft .ft-trait.ft-trait)
 (define-constant err-not-found (err u8000000))
 (define-constant ERR_UNAUTHORIZED (err u8000001))
-(define-constant ERR_INVALID_Z_TOKEN (err u8000002))
+
 (define-constant one u100000000)
 
 (define-read-only (get-asset-data (asset <ft>))
@@ -103,14 +103,20 @@
 )
     (begin
         (try! (is-approved-contract contract-caller))
-        (if (is-eq (contract-of supplied-asset) .sbtc)
+        (if (is-eq (contract-of supplied-asset) 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
             (begin
-                (asserts! (is-eq (contract-of lp-supplied-asset) .lp-sbtc-v3) ERR_INVALID_Z_TOKEN)
-                (claim-rewards-priv lp-supplied-asset .sbtc .wstx who)
+                (try!
+                    (claim-rewards-priv lp-supplied-asset
+                        'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
+                        'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.wstx
+                        who
+                    )
+                )
             )
-            ;; other rewards to add
-            (ok u0)
+            ;; next check
+            false
         )
+        (ok true)
     )
 )
 
@@ -148,10 +154,10 @@
                 (if (> balance-increase u0)
                     (begin
                         (try! (send-rewards who reward-asset balance-increase))
-                        (ok balance-increase)
+                        (ok true)
                     )
                     ;; do nothing
-                    (ok u0)
+                    (ok true)
                 )
             )
         )
@@ -187,7 +193,7 @@
         (liquidity-rate (get liquidity-rate reward-program-income-state))
     )
     (ok {
-        conversion-rate: (try! (convert-to supplied-asset reward-asset one)),
+        liquidity-rate: liquidity-rate,
         apy-in-reward-asset: (try! (convert-to supplied-asset reward-asset liquidity-rate))
         })
     )

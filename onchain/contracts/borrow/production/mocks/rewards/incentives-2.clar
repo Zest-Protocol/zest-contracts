@@ -1,6 +1,8 @@
 (use-trait ft .ft-trait.ft-trait)
+(impl-trait .incentives-trait.incentives-trait)
 (define-constant err-not-found (err u8000000))
 (define-constant ERR_UNAUTHORIZED (err u8000001))
+(define-constant ERR_INVALID_Z_TOKEN (err u8000002))
 
 (define-constant one u100000000)
 
@@ -104,14 +106,16 @@
     (begin
         (try! (is-approved-contract contract-caller))
         (if (is-eq (contract-of supplied-asset) .sbtc)
-            (begin
-                (try! (claim-rewards-priv lp-supplied-asset .sbtc .wstx who))
-                (try! (claim-rewards-priv lp-supplied-asset .sbtc .diko who))
+            (let (
+                (check-ok (asserts! (is-eq (contract-of lp-supplied-asset) .lp-sbtc-v3) ERR_INVALID_Z_TOKEN))
+                (claimed-rewards-1 (try! (claim-rewards-priv lp-supplied-asset .sbtc .wstx who)))
+                (claimed-rewards-2 (try! (claim-rewards-priv lp-supplied-asset .sbtc .diko who)))
             )
-            ;; next check
-            false
+                (ok (+ claimed-rewards-1 claimed-rewards-2))
+            )
+            ;; other rewards to add
+            (ok u0)
         )
-        (ok true)
     )
 )
 
@@ -149,10 +153,10 @@
                 (if (> balance-increase u0)
                     (begin
                         (try! (send-rewards who reward-asset balance-increase))
-                        (ok true)
+                        (ok balance-increase)
                     )
                     ;; do nothing
-                    (ok true)
+                    (ok u0)
                 )
             )
         )

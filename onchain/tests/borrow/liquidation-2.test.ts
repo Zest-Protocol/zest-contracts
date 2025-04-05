@@ -543,8 +543,8 @@ describe("Liquidations", () => {
     // console.log(callResponse.events[11].data);
     // console.log(callResponse.events[12].data);
     // console.log(callResponse.events[13].data);
-    const collateralPurchased = BigInt(callResponse.events[11].data.amount);
-    const debtPurchased = BigInt(callResponse.events[12].data.amount);
+    const collateralPurchased = BigInt(callResponse.events[12].data.amount);
+    const debtPurchased = BigInt(callResponse.events[13].data.amount);
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
 
     // console.log(Cl.prettyPrint(callResponse.events[callResponse.events.length - 1].data.value!));
@@ -1043,7 +1043,7 @@ describe("Liquidations", () => {
     // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(callResponse.events);
     // console.log(Cl.prettyPrint(callResponse.events[0].data.value!));
-    const debtPurchased = BigInt(callResponse.events[12].data.amount);
+    const debtPurchased = BigInt(callResponse.events[13].data.amount);
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
 
     // console.log(Cl.prettyPrint(callResponse.events[callResponse.events.length - 1].data.value!));
