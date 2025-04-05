@@ -247,7 +247,7 @@ export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => 
   );
   simnet.deployContract(
     "borrow-helper-v2-1",
-    readFileSync(config.borrow_helper_v2_0_2_path).toString(),
+    readFileSync(config.borrow_helper_v2_0_3_path).toString(),
     {
       clarityVersion: 3,
     },
