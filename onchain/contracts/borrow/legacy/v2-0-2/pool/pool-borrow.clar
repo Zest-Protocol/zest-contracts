@@ -374,7 +374,7 @@
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
 
-    (contract-call? .liquidation-manager-v2-0-2 liquidation-call
+    (contract-call? .liquidation-manager-v2-1 liquidation-call
       assets
       collateral-lp
       collateral-to-liquidate

@@ -1,6 +1,8 @@
 (use-trait ft .ft-trait.ft-trait)
+(impl-trait .incentives-trait-v2-0.incentives-trait)
 (define-constant err-not-found (err u8000000))
 (define-constant ERR_UNAUTHORIZED (err u8000001))
+(define-constant ERR_INVALID_Z_TOKEN (err u8000002))
 
 (define-constant one u100000000)
 
@@ -105,18 +107,16 @@
         (try! (is-approved-contract contract-caller))
         (if (is-eq (contract-of supplied-asset) 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
             (begin
-                (try!
-                    (claim-rewards-priv lp-supplied-asset
-                        'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
-                        'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.wstx
-                        who
-                    )
+                (asserts! (is-eq (contract-of lp-supplied-asset) .zsbtc-v2-0) ERR_INVALID_Z_TOKEN)
+                (claim-rewards-priv lp-supplied-asset
+                    'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
+                    'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.wstx
+                    who
                 )
             )
-            ;; next check
-            false
+            ;; other rewards to add
+            (ok u0)
         )
-        (ok true)
     )
 )
 
@@ -154,10 +154,10 @@
                 (if (> balance-increase u0)
                     (begin
                         (try! (send-rewards who reward-asset balance-increase))
-                        (ok true)
+                        (ok balance-increase)
                     )
                     ;; do nothing
-                    (ok true)
+                    (ok u0)
                 )
             )
         )

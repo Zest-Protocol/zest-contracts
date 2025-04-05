@@ -103,6 +103,7 @@ export const borrowHelperV1_2 = "borrow-helper-v1-2";
 export const borrowHelperV1_3 = "borrow-helper-v1-3";
 export const borrowHelperV2_0 = "borrow-helper-v2-0";
 export const borrowHelperV2_0_2 = "borrow-helper-v2-0-2";
+export const borrowHelperV2_0_3 = "borrow-helper-v2-0-3";
 export const borrowHelperV2_1 = "borrow-helper-v2-1";
 export const borrowHelper = borrowHelperV2_1;
 
@@ -184,6 +185,7 @@ export const pool_borrow_path = `contracts/borrow/production/pool/pool-borrow.cl
 export const pool_borrow_v2_0_1_path = `contracts/borrow/production/pool/pool-borrow-v2-0-1.clar`;
 export const borrow_helper_v2_0_path = `contracts/borrow/legacy/v2-0/wrappers/borrow-helper.clar`;
 export const borrow_helper_v2_0_2_path = `contracts/borrow/legacy/v2-0-2/wrappers/borrow-helper.clar`;
+export const borrow_helper_v2_0_3_path = `contracts/borrow/legacy/v2-0-3/wrappers/borrow-helper.clar`;
 export const borrow_helper_path = `contracts/borrow/production/wrappers/borrow-helper.clar`;
 export const liquidation_manager_v2_0_path = `contracts/borrow/legacy/v2-0/pool/liquidation-manager.clar`;
 export const liquidation_manager_v2_0_2_path = `contracts/borrow/legacy/v2-0-2/pool/liquidation-manager.clar`;

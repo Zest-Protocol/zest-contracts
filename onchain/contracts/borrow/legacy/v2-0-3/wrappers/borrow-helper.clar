@@ -4,10 +4,11 @@
 (use-trait flash-loan .flash-loan-trait.flash-loan-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-token .redeemeable-trait-v1-2.redeemeable-trait)
-(use-trait incentives-trait .incentives-trait.incentives-trait)
+(use-trait incentives-trait .incentives-trait-v2-0.incentives-trait)
 
 (define-constant ERR_UNAUTHORIZED (err u1000000000000))
 (define-constant ERR_REWARDS_CONTRACT (err u1000000000001))
+(define-constant ERR_NO_REWARDS (err u1000000000003))
 
 (define-constant max-value u340282366920938463463374607431768211455)
 
@@ -176,14 +177,11 @@
   (incentives <incentives-trait>)
   (price-feed-bytes (optional (buff 8192)))
   )
-  (let (
-    (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
-    (price-ok (try! (write-feed price-feed-bytes)))
-    (balance (try! (contract-call? .pool-borrow-v2-0-2 withdraw pool-reserve asset lp oracle assets u1 owner)))
-    )
+  (begin
+    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT)
-    (try! (contract-call? .pool-borrow-v2-0-2 supply lp pool-reserve asset u1 owner))
-    (try! (contract-call? incentives claim-rewards lp asset owner))
+
+    (asserts! (> (try! (contract-call? incentives claim-rewards lp asset owner)) u0) ERR_NO_REWARDS)
 
     (ok true)
   )
