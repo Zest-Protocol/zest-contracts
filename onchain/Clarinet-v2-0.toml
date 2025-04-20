@@ -189,9 +189,9 @@ path = "contracts/borrow/legacy/v0/mocks/wrappers/borrow-helper.clar"
 clarity_version = 2
 epoch = 2.4
 
-[contracts.borrow-helper-v2-0]
-path = "contracts/borrow/legacy/v2-0-3/wrappers/borrow-helper.clar"
-clarity_version = 2
+[contracts.borrow-helper-v2-1]
+path = "contracts/borrow/production/wrappers/borrow-helper.clar"
+clarity_version = 3
 epoch = 3.0
 
 
@@ -210,13 +210,8 @@ path = "contracts/borrow/legacy/v1-2/pool/pool-borrow.clar"
 clarity_version = 2
 epoch = 2.4
 
-[contracts.pool-borrow-v2-0]
-path = "contracts/borrow/production/pool/pool-borrow.clar"
-clarity_version = 3
-epoch = 3.0
-
 [contracts.pool-borrow-v2-1]
-path = "contracts/borrow/legacy/v2-0-2/pool/pool-borrow.clar"
+path = "contracts/borrow/production/pool/pool-borrow.clar"
 clarity_version = 3
 epoch = 3.0
 
@@ -247,16 +242,15 @@ clarity_version = 2
 epoch = 2.4
 
 
-[contracts.e-mode-stx-enable]
-path = "contracts/borrow/deployment_mainnet/upgrades/emode/e-mode-stx-enable.clar"
-clarity_version = 3
-epoch = 3.0
+# [contracts.e-mode-stx-enable]
+# path = "contracts/borrow/deployment_mainnet/upgrades/emode/e-mode-stx-enable.clar"
+# clarity_version = 3
+# epoch = 3.0
 
-
-[contracts.borrow-sbtc]
-path = "contracts/borrow/deployment_mainnet/upgrades/zsbtc/sbtc-deployment/borrow-sbtc.clar"
-clarity_version = 3
-epoch = 3.0
+# [contracts.borrow-sbtc]
+# path = "contracts/borrow/deployment_mainnet/upgrades/zsbtc/sbtc-deployment/borrow-sbtc.clar"
+# clarity_version = 3
+# epoch = 3.0
 
 [contracts.liquidation-manager]
 path = "contracts/borrow/legacy/v0/pool/liquidation-manager.clar"
@@ -309,6 +303,11 @@ clarity_version = 3
 epoch = 3.0
 
 [contracts.incentives-trait]
+path = "contracts/borrow/production/traits/incentives.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.incentives-trait-v2-0]
 path = "contracts/borrow/production/traits/incentives.clar"
 clarity_version = 3
 epoch = 3.0

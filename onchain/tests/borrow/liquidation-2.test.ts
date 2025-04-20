@@ -5495,4 +5495,318 @@ describe("Liquidations", () => {
     );
     expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
   });
+
+
+  it("Borrower_1 falls below health factor threshold and gets collateral liquidated, verify isolated debt is reduced", () => {
+    const poolBorrow = new PoolBorrow(
+      simnet,
+      deployerAddress,
+      poolBorrowContractName
+    );
+    const oracleContract = new Oracle(simnet, deployerAddress, "oracle");
+
+    const stSTXToken = new MintableToken(simnet, deployerAddress, stSTX);
+    const sBTCToken = new MintableToken(simnet, deployerAddress, sBTC);
+    const xUSDToken = new MintableToken(simnet, deployerAddress, xUSD);
+
+    let callResponse = stSTXToken.mint(400_000_000_000, LP_1, deployerAddress);
+    callResponse = sBTCToken.mint(2_000_000_000, Borrower_1, deployerAddress);
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setBorroweableIsolated(
+      deployerAddress,
+      stSTX,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.setUsageAsCollateralEnabled(
+      deployerAddress,
+      sBTC,
+      true,
+      80000000,
+      90000000,
+      5000000,
+      deployerAddress
+    );
+
+    callResponse = poolBorrow.addIsolatedAsset(
+      deployerAddress,
+      sBTC,
+      32_100_000_000_000_000n,
+      deployerAddress
+    );
+
+    callResponse = simnet.callPublicFn(
+      borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, zststx),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.uint(400_000_000_000),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
+      ],
+      LP_1
+    );
+
+    callResponse = simnet.callPublicFn(
+      borrowHelper,
+      "supply",
+      [
+        Cl.contractPrincipal(deployerAddress, zsbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.uint(2_000_000_000),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
+      ],
+      Borrower_1
+    );
+
+    callResponse = simnet.callPublicFn(
+      pool0ReserveRead,
+      "calculate-user-global-data",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+    expect(
+      BigInt(
+        cvToJSON(callResponse.result)["value"]["value"]["health-factor"][
+          "value"
+        ]
+      )
+    ).toBe(max_value);
+
+    callResponse = simnet.callPublicFn(
+      pool0ReserveRead,
+      "borrowing-power-in-asset",
+      [
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+    const maxBorrowAmount =
+      Number(cvToValue(callResponse.result)["value"]) * 1.0;
+
+    callResponse = simnet.callPublicFn(
+      borrowHelper,
+      "borrow",
+      [
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.contractPrincipal(deployerAddress, zststx),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+        Cl.uint(Math.floor(maxBorrowAmount)),
+        Cl.contractPrincipal(deployerAddress, feesCalculator),
+        Cl.uint(0),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
+      Borrower_1
+    );
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+
+    callResponse = simnet.callPrivateFn(
+      config.poolBorrow,
+      "calculate-total-isolated-debt",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+    expect(BigInt(cvToValue(callResponse.result).value.sum.value))
+      .toBe(BigInt((maxBorrowAmount * 200000000) / 1000000));
+
+    oracleContract.setPrice(
+      deployerAddress,
+      sBTC,
+      2000000000000,
+      deployerAddress
+    );
+
+    callResponse = stSTXToken.mint(
+      BigInt("10000000000000000"),
+      Liquidator_1,
+      deployerAddress
+    );
+
+    callResponse = simnet.callReadOnlyFn(
+      config.poolReserveData3,
+      "get-asset-isolation-mode-debt-read",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      Borrower_1
+    );
+    // some debt left from interest
+    expect(callResponse.result).toBeSome(Cl.uint(maxBorrowAmount));
+
+
+    let prevVaultBalance = simnet
+      .getAssetsMap()
+      .get(".ststx.ststx")
+      ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
+    // console.log(prevVaultBalance);
+
+    callResponse = simnet.callPublicFn(
+      borrowHelper,
+      "liquidation-call",
+      [
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+        Cl.contractPrincipal(deployerAddress, zsbtc),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.contractPrincipal(deployerAddress, "oracle"),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.uint(maxBorrowAmount),
+        Cl.bool(false),
+        Cl.none(),
+      ],
+      Liquidator_1
+    );
+    expect(callResponse.result).toHaveClarityType(ClarityType.ResponseOk);
+    let afterVaultBalance = simnet
+      .getAssetsMap()
+      .get(".ststx.ststx")
+      ?.get("ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.pool-vault")!;
+    // console.log(afterVaultBalance);
+    const debtRepaid = (afterVaultBalance - prevVaultBalance);
+
+    callResponse = simnet.callReadOnlyFn(
+      config.poolReserveData3,
+      "get-asset-isolation-mode-debt-read",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      Borrower_1
+    );
+    expect(callResponse.result).toBeSome(Cl.uint(BigInt(maxBorrowAmount) - debtRepaid));
+    
+    callResponse = simnet.callPrivateFn(
+      config.poolBorrow,
+      "calculate-total-isolated-debt",
+      [
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zststx),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, sBTC),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zsbtc),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, xUSD),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zxusd),
+            oracle: Cl.contractPrincipal(deployerAddress, "oracle"),
+          }),
+        ]),
+      ],
+      Borrower_1
+    );
+    expect(BigInt(cvToValue(callResponse.result).value.sum.value))
+      .toBe(BigInt(((maxBorrowAmount - Number(debtRepaid)) * 200000000) / 1000000));
+  });
 });
