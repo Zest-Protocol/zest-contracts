@@ -969,7 +969,6 @@ describe("Supply and Redeem", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, wstx),
-        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),

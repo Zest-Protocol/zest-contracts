@@ -1002,7 +1002,6 @@ describe("Supply and Redeem", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(200_000_086),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
@@ -1016,7 +1015,6 @@ describe("Supply and Redeem", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(200_000_008 / 2),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
@@ -1030,7 +1028,6 @@ describe("Supply and Redeem", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
@@ -1692,7 +1689,6 @@ describe("Supply and Redeem", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, stSTX),
-        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(Borrower_1),
         Cl.standardPrincipal(Borrower_1),
@@ -2507,7 +2503,6 @@ describe("Supply and Redeem", () => {
       "repay",
       [
         Cl.contractPrincipal(deployerAddress, USDA),
-        Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.uint(max_value),
         Cl.standardPrincipal(LP_2),
         Cl.standardPrincipal(LP_2),
