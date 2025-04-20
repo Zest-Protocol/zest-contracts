@@ -1,16 +1,23 @@
 (define-constant ERR_UNAUTHORIZED (err u7003))
 
 ;; asset -> isolation-mode-total-debt
-(define-map isolation-mode-total-debt principal uint)
-(define-public (set-isolation-mode-total-debt (asset principal) (new-isolation-mode-total-debt uint))
+(define-map asset-isolation-mode-debt { collateral-asset: principal, borrowed-asset: principal } uint)
+(define-public (set-asset-isolation-mode-debt
+  (collateral-asset principal)
+  (borrowed-asset principal)
+  (new-asset-isolation-mode-debt uint))
   (begin
     (try! (is-approved-contract contract-caller))
-    (print { type: "set-isolation-mode-total-debt", payload: { key: asset, data: new-isolation-mode-total-debt } })
-    (ok (map-set isolation-mode-total-debt asset new-isolation-mode-total-debt))))
-(define-public (get-isolation-mode-total-debt (asset principal))
-  (ok (map-get? isolation-mode-total-debt asset)))
-(define-read-only (get-isolation-mode-total-debt-read (asset principal))
-  (map-get? isolation-mode-total-debt asset))
+    (print { type: "set-asset-isolation-mode-debt", payload: { key: { collateral-asset: collateral-asset, borrowed-asset: borrowed-asset }, data: new-asset-isolation-mode-debt } })
+    (ok (map-set asset-isolation-mode-debt { collateral-asset: collateral-asset, borrowed-asset: borrowed-asset } new-asset-isolation-mode-debt))))
+(define-public (get-asset-isolation-mode-debt
+  (collateral-asset principal)
+  (borrowed-asset principal))
+  (ok (map-get? asset-isolation-mode-debt { collateral-asset: collateral-asset, borrowed-asset: borrowed-asset })))
+(define-read-only (get-asset-isolation-mode-debt-read
+  (collateral-asset principal)
+  (borrowed-asset principal))
+  (map-get? asset-isolation-mode-debt { collateral-asset: collateral-asset, borrowed-asset: borrowed-asset }))
 
 ;; -- ownable-trait --
 (define-data-var contract-owner principal tx-sender)
