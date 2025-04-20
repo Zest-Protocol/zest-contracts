@@ -1,5 +1,5 @@
 (use-trait ft .ft-trait.ft-trait)
-(impl-trait .incentives-trait.incentives-trait)
+(impl-trait .incentives-trait-v2-0.incentives-trait)
 (define-constant err-not-found (err u8000000))
 (define-constant ERR_UNAUTHORIZED (err u8000001))
 (define-constant ERR_INVALID_Z_TOKEN (err u8000002))
