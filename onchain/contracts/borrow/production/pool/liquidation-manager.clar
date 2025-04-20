@@ -151,12 +151,18 @@
               (try! (contract-call? lp-token burn-on-liquidation protocol-fee user))
               (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user collateral (contract-call? .pool-0-reserve-v2-0 get-collection-address) protocol-fee)))
             u0)
+          (ok actual-debt-to-liquidate)
         )
       )
-      (ok u0)
     )
   )
 )
+
+(define-read-only (get-asset-isolation-mode-debt
+  (collateral-asset principal)
+  (borrowed-asset principal))
+  (default-to u0 (contract-call? .pool-reserve-data-3 get-asset-isolation-mode-debt-read collateral-asset borrowed-asset)))
+
 
 (define-read-only (mul-to-fixed-precision (a uint) (decimals-a uint) (b-fixed uint))
   (contract-call? .math-v2-0 mul-to-fixed-precision a decimals-a b-fixed)
