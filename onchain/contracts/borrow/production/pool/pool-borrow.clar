@@ -37,7 +37,12 @@
 (define-constant ERR_INVALID_AMOUNT (err u30026))
 (define-constant ERR_NOT_IN_ISOLATED_MODE (err u30027))
 (define-constant ERR_HEALTH_FACTOR_LIQUIDATION_THRESHOLD (err u30028))
+(define-constant ERR_E_MODE_TYPE_MISMATCH (err u30029))
+(define-constant ERR_NO_ASSETS_USED_AS_COLLATERAL (err u30030))
+(define-constant ERR_MUST_ENABLE_ASSET_OF_E_MODE (err u30031))
 
+
+(define-constant e-mode-disabled-type 0x00)
 
 (define-map users-id uint principal)
 
@@ -83,17 +88,23 @@
       (if (is-eq current-balance u0)
         ;; additional checks for first supply and if it's isolation mode
         (if (and (get usage-as-collateral-enabled reserve-state)
-            (unwrap-panic
-              (validate-use-as-collateral
-                isolated-asset
-                ;; we only use base ltv, no need to fetch in case of e-mode
-                (get base-ltv-as-collateral reserve-state)
-                (get enabled-assets assets-used-as-collateral)
-                supplied-asset-principal
-                owner
-                (get debt-ceiling reserve-state)
-              ))
+              (unwrap-panic
+                (validate-use-as-collateral
+                  isolated-asset
+                  ;; we only use base ltv, no need to fetch in case of e-mode
+                  (get base-ltv-as-collateral reserve-state)
+                  (get enabled-assets assets-used-as-collateral)
+                  supplied-asset-principal
+                  owner
+                  (get debt-ceiling reserve-state)
+                ))
+              (if (is-in-e-mode owner)
+                ;; if in e-mode, can only enable use-as-collateral for same e-mode type
+                (is-eq (get-asset-e-mode-type supplied-asset-principal) (get-user-e-mode owner))
+                ;; nothing to check
+                true
               )
+            )
           (try! (contract-call? .pool-0-reserve-v2-0 set-user-reserve-as-collateral owner asset true))
           false
         )
@@ -271,32 +282,47 @@
   )
 )
 
-(define-read-only (get-isolation-mode-total-debt (asset principal))
-  (default-to u0 (contract-call? .pool-reserve-data-3 get-isolation-mode-total-debt-read asset)))
+(define-private
+  (reduce-isolated-mode-debt-liquidation
+    (borrowed-asset <ft>)
+    (amount uint)
+    (user principal)
+  )
+  (begin
+    (try! (is-approved-contract contract-caller))
+    (let ((is-in-isolation-mode (contract-call? .pool-0-reserve-v2-0 is-in-isolation-mode user)))
+      (match is-in-isolation-mode
+        isolated-asset (begin
+          (try! (reduce-isolated-mode-debt isolated-asset borrowed-asset amount))
+        )
+        true
+      )
+    )
+    (ok true)
+  )
+)
 
 (define-private (reduce-isolated-mode-debt
   (isolated-asset principal)
   (borrowed-asset <ft>)
-  (borrowed-asset-oracle <oracle-trait>)
   (amount uint))
   (let (
-    (isolated-reserve (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state isolated-asset)))
-    (borrowed-asset-reserve (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of borrowed-asset))))
-    (total-isolated-debt (get-isolation-mode-total-debt isolated-asset))
-    (amount-in-base-currency (contract-call? .pool-0-reserve-v2-0 mul-to-fixed-precision
-      amount
-      (get decimals borrowed-asset-reserve)
-      (try! (contract-call? borrowed-asset-oracle get-asset-price borrowed-asset))))
+    (borrowed-asset-principal (contract-of borrowed-asset))
+    (isolated-reserve (try! (get-reserve-state isolated-asset)))
+    (borrowed-asset-reserve (try! (get-reserve-state borrowed-asset-principal)))
+    (asset-isolated-debt (get-asset-isolation-mode-debt isolated-asset borrowed-asset-principal))
   )
     ;; amount paid back can be bigger because it's paying interest + principal
-    (if (> amount-in-base-currency total-isolated-debt)
-      (try! (contract-call? .pool-reserve-data-3 set-isolation-mode-total-debt
+    (if (> amount asset-isolated-debt)
+      (try! (contract-call? .pool-reserve-data-3 set-asset-isolation-mode-debt
         isolated-asset
+        borrowed-asset-principal
         u0
       ))
-      (try! (contract-call? .pool-reserve-data-3 set-isolation-mode-total-debt
+      (try! (contract-call? .pool-reserve-data-3 set-asset-isolation-mode-debt
         isolated-asset
-        (- total-isolated-debt amount-in-base-currency)))
+        borrowed-asset-principal
+        (- asset-isolated-debt amount)))
     )
     (ok true)
   )
@@ -311,28 +337,91 @@
   (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
 )
   (let (
-    (isolated-reserve (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state isolated-asset)))
-    (total-isolated-debt (+ amount-to-be-borrowed-in-base-currency (get-isolation-mode-total-debt isolated-asset)))
+    (isolated-reserve (try! (get-reserve-state isolated-asset)))
+    (total-asset-isolated-debt
+      (+ amount-to-be-borrowed (get-asset-isolation-mode-debt isolated-asset borrowed-asset)))
+    (total-isolated-asset-debt-in-base-currency
+      (+
+        amount-to-be-borrowed-in-base-currency
+        (get sum (try! (calculate-total-isolated-debt isolated-asset assets)))))
   )
     (asserts! (contract-call? .pool-0-reserve-v2-0 is-borroweable-isolated borrowed-asset) ERR_NOT_SILOED_ASSET)
     (if (> (get debt-ceiling isolated-reserve) u0)
       (begin
-        (asserts! (<= total-isolated-debt (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
+        (asserts! (<= total-isolated-asset-debt-in-base-currency (get debt-ceiling isolated-reserve)) ERR_EXCEED_DEBT_CEIL)
       )
       ;; check nothing
       false
     )
     ;; only adds principal, not interest
-    (try! (contract-call? .pool-reserve-data-3 set-isolation-mode-total-debt
-          isolated-asset
-          total-isolated-debt))
+    (try! (contract-call? .pool-reserve-data-3 set-asset-isolation-mode-debt
+      isolated-asset
+      borrowed-asset
+      total-asset-isolated-debt))
     (ok true)
   )
 )
 
+(define-private (calculate-total-isolated-debt
+  (isolated-asset principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })))
+  (let (
+    (isolated-reserve (try! (get-reserve-state isolated-asset)))
+  )
+    (fold acc-debt assets (ok { sum: u0, isolated-asset: isolated-asset }))
+  )
+)
+
+(define-private (acc-debt
+  (current-asset { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })
+  (total (response { sum: uint, isolated-asset: principal } uint)))
+  (let (
+    (oracle-contract (get oracle current-asset))
+    (borrowed-asset-contract (get asset current-asset))
+    (unwrapped-resp (try! total))
+    (isolated-asset-contract (get isolated-asset unwrapped-resp))
+    (asset-reserve (try! (get-reserve-state (contract-of borrowed-asset-contract))))
+    (price (try! (contract-call? oracle-contract get-asset-price borrowed-asset-contract)))
+    (amount (get-asset-isolation-mode-debt isolated-asset-contract (contract-of borrowed-asset-contract)))
+    (amount-in-base-currency (try! (calculate-price
+      amount
+      (get decimals asset-reserve)
+      oracle-contract
+      borrowed-asset-contract)))
+  )
+    (ok {
+      sum: (+ (get sum unwrapped-resp) amount-in-base-currency),
+      isolated-asset: (get isolated-asset unwrapped-resp)
+    })
+  )
+)
+
+(define-private (calculate-price
+  (amount uint)
+  (decimals uint)
+  (oracle <oracle-trait>)
+  (asset <ft>))
+  (let (
+    (price (try! (contract-call? oracle get-asset-price asset)))
+  )
+    (ok (mul-to-fixed-precision amount decimals price))
+  )
+)
+
+(define-read-only (mul-to-fixed-precision
+  (amount uint)
+  (decimals uint)
+  (price uint))
+  (contract-call? .pool-0-reserve-v2-0 mul-to-fixed-precision amount decimals price))
+
+
+(define-read-only (get-asset-isolation-mode-debt
+  (collateral-asset principal)
+  (borrowed-asset principal))
+  (default-to u0 (contract-call? .pool-reserve-data-3 get-asset-isolation-mode-debt-read collateral-asset borrowed-asset)))
+
 (define-public (repay
   (asset <ft>)
-  (oracle <oracle-trait>)
   (amount-to-repay uint)
   (on-behalf-of principal)
   (payer principal)
@@ -357,11 +446,7 @@
 
     (match is-in-isolation-mode
       isolated-asset (begin
-        (try! (reduce-isolated-mode-debt
-          isolated-asset
-          asset
-          oracle
-          payback-amount))
+        (try! (reduce-isolated-mode-debt isolated-asset asset payback-amount))
       )
       true
     )
@@ -413,17 +498,25 @@
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
 
-    (contract-call? .liquidation-manager-v2-1 liquidation-call
-      assets
-      collateral-lp
-      collateral-to-liquidate
-      debt-asset
-      collateral-oracle
-      debt-oracle
-      liquidated-user
-      debt-amount
-      to-receive-atoken
+    (try!
+      (reduce-isolated-mode-debt-liquidation
+        debt-asset
+        ;; returns actual-debt-to-liquidate
+        (try! (contract-call? .liquidation-manager-v2-1 liquidation-call
+          assets
+          collateral-lp
+          collateral-to-liquidate
+          debt-asset
+          collateral-oracle
+          debt-oracle
+          liquidated-user
+          debt-amount
+          to-receive-atoken
+        ))
+        liquidated-user
+      )
     )
+    (ok u0)
   )
 )
 
@@ -520,8 +613,19 @@
     (try! (is-approved-contract contract-caller))
     (try! (validate-assets assets))
 
-    ;; if from default state
-    (try! (can-enable-e-mode user new-e-mode-type))
+    (if (is-eq new-e-mode-type e-mode-disabled-type)
+      ;; if going to disabled e-mode type, only need to check enough collateral
+      true
+      (let (
+        (assets-used-as-collateral (contract-call? .pool-0-reserve-v2-0 get-assets-used-as-collateral user))
+      )
+        ;; if going to any other state
+        ;; check borrows are of e-mode type
+        (try! (can-enable-e-mode user new-e-mode-type))
+        ;; check collateral assets are of e-mode type
+        (asserts! (collateral-assets-are-of-e-mode-type user assets new-e-mode-type) ERR_E_MODE_TYPE_MISMATCH)
+      )
+    )
     (try! (set-user-e-mode user new-e-mode-type))
     ;; check health, or revert
     (let (
@@ -536,6 +640,38 @@
 
 (define-read-only (can-enable-e-mode (user principal) (e-mode-type (buff 1)))
   (contract-call? .pool-0-reserve-v2-0 can-enable-e-mode user e-mode-type))
+
+(define-private (collateral-assets-are-of-e-mode-type
+  (user principal)
+  (assets (list 100 { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> }))
+  (e-mode-type (buff 1))
+  )
+  (not (get found-mismatch (fold collateral-assets-of-e-mode-type assets { found-mismatch: false, user: user, e-mode-type: e-mode-type })))
+)
+
+(define-private (collateral-assets-of-e-mode-type
+  (reserve { asset: <ft>, lp-token: <ft>, oracle: <oracle-trait> })
+  (result { found-mismatch: bool, user: principal, e-mode-type: (buff 1) }))
+  (let (
+    (asset-contract (get asset reserve))
+    (asset-principal (contract-of asset-contract))
+    (current-asset-e-mode-type (contract-call? .pool-0-reserve-v2-0 get-asset-e-mode-type asset-principal))
+    (user-reserve-data (contract-call? .pool-0-reserve-v2-0 get-user-reserve-data (get user result) asset-principal))
+  )
+    ;; if already found mismatch, stop
+    (if (get found-mismatch result)
+      result
+      (if (and
+          ;; if asset is used as collateral and e-mode type mismatch, set found-mismatch to true
+          (get use-as-collateral user-reserve-data)
+          (not (is-eq (get e-mode-type result) current-asset-e-mode-type)))
+        { found-mismatch: true, user: (get user result), e-mode-type: (get e-mode-type result) }
+        result
+      )
+    )
+  )
+)
+
 
 (define-private (set-user-e-mode (who principal) (e-mode-type (buff 1)))
   (contract-call? .pool-reserve-data-2 set-user-e-mode who e-mode-type))
@@ -565,6 +701,13 @@
     (asserts! (get usage-as-collateral-enabled reserve-data) ERR_COLLATERAL_DISABLED)
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) ERR_INVALID_ORACLE)
+
+    (if (and enable-as-collateral (is-in-e-mode who))
+      ;; if in e-mode, check that the user is enabling asset of the same e-mode type
+      (asserts! (is-eq (get-asset-e-mode-type (contract-of asset)) (get-user-e-mode who)) ERR_MUST_ENABLE_ASSET_OF_E_MODE)
+      ;; nothing to check
+      true
+    )
 
     (let (
       (underlying-balance (try! (contract-call? lp-token get-balance who)))
@@ -830,4 +973,3 @@
   (if (default-to false (map-get? approved-contracts contract))
     (ok true)
     ERR_UNAUTHORIZED))
-
