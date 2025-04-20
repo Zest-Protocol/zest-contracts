@@ -4,10 +4,11 @@
 (use-trait flash-loan .flash-loan-trait.flash-loan-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-token .redeemeable-trait-v1-2.redeemeable-trait)
-(use-trait incentives-trait .incentives-trait.incentives-trait)
+(use-trait incentives-trait .incentives-trait-v2-0.incentives-trait)
 
 (define-constant ERR_UNAUTHORIZED (err u1000000000000))
 (define-constant ERR_REWARDS_CONTRACT (err u1000000000001))
+(define-constant ERR_NO_REWARDS (err u1000000000003))
 
 (define-constant max-value u340282366920938463463374607431768211455)
 
@@ -77,7 +78,6 @@
 
 (define-public (repay
   (asset <ft>)
-  (oracle <oracle-trait>)
   (amount-to-repay uint)
   (on-behalf-of principal)
   (payer principal)
@@ -85,7 +85,7 @@
   (let (
     (asset-principal (contract-of asset))
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
-    (payback-amount (try! (contract-call? .pool-borrow-v2-1 repay asset oracle amount-to-repay on-behalf-of payer)))
+    (payback-amount (try! (contract-call? .pool-borrow-v2-1 repay asset amount-to-repay on-behalf-of payer)))
     )
 
     (print { type: "repay-call", payload: { key: on-behalf-of, data: {
@@ -177,14 +177,11 @@
   (incentives <incentives-trait>)
   (price-feed-bytes (optional (buff 8192)))
   )
-  (let (
-    (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
-    (price-ok (try! (write-feed price-feed-bytes)))
-    (balance (try! (contract-call? .pool-borrow-v2-1 withdraw pool-reserve asset lp oracle assets max-value owner)))
-    )
+  (begin
+    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT)
-    (try! (contract-call? .pool-borrow-v2-1 supply lp pool-reserve asset balance owner))
-    (try! (contract-call? incentives claim-rewards lp asset owner))
+
+    (asserts! (> (try! (contract-call? incentives claim-rewards lp asset owner)) u0) ERR_NO_REWARDS)
 
     (ok true)
   )
@@ -302,6 +299,7 @@
       (ok true)
     )
     (begin
+      (print "no-feed-update")
       ;; do nothing if none
       (ok true)
     )
