@@ -4,7 +4,7 @@
 (use-trait flash-loan .flash-loan-trait.flash-loan-trait)
 (use-trait oracle-trait .oracle-trait.oracle-trait)
 (use-trait redeemeable-token .redeemeable-trait-v1-2.redeemeable-trait)
-(use-trait incentives-trait .incentives-trait-v2-0.incentives-trait)
+(use-trait incentives-trait .incentives-trait-v2-1.incentives-trait)
 
 (define-constant ERR_UNAUTHORIZED (err u1000000000000))
 (define-constant ERR_REWARDS_CONTRACT (err u1000000000001))
@@ -28,7 +28,7 @@
 
     (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
     (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT)
-    (try! (contract-call? incentives claim-rewards lp asset owner))
+    (try! (contract-call? incentives claim-rewards-to-vault lp asset owner))
     (try! (contract-call? .pool-borrow-v2-1 supply lp pool-reserve asset amount owner))
 
     (print { type: "supply-call", payload: { key: owner, data: {
@@ -148,7 +148,7 @@
     (check-ok (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED))
     (check-on-rewards (asserts! (is-rewards-contract (contract-of incentives)) ERR_REWARDS_CONTRACT))
     (price-ok (try! (write-feed price-feed-bytes)))
-    (result-claim (try! (contract-call? incentives claim-rewards lp asset owner)))
+    (result-claim (try! (contract-call? incentives claim-rewards-to-vault lp asset owner)))
     (withdraw-res (try! (contract-call? .pool-borrow-v2-1 withdraw pool-reserve asset lp oracle assets amount owner)))
     )
 

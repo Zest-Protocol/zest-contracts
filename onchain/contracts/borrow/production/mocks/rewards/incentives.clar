@@ -103,16 +103,73 @@
 )
     (begin
         (try! (is-approved-contract contract-caller))
-        (if (is-eq (contract-of supplied-asset) .sbtc)
+        (update-claim-state lp-supplied-asset supplied-asset who true)
+    )
+)
+
+(define-public (claim-rewards-to-vault
+    (lp-supplied-asset <ft>)
+    (supplied-asset <ft>)
+    (who principal)
+)
+    (begin
+        (try! (is-approved-contract contract-caller))
+        (update-claim-state lp-supplied-asset supplied-asset who false)
+    )
+)
+
+(define-private (set-vault-rewards (user principal) (supplied-asset principal) (reward-asset principal) (amount uint))
+    (contract-call? .rewards-data-1 set-vault-rewards
+        user
+        supplied-asset
+        reward-asset
+        amount
+    )
+)
+
+(define-read-only (get-vault-rewards (user principal) (supplied-asset principal) (reward-asset principal))
+    (default-to u0 (contract-call? .rewards-data-1 get-vault-rewards-read user supplied-asset reward-asset)))
+
+(define-private (update-claim-state
+    (lp-supplied-asset <ft>)
+    (supplied-asset <ft>)
+    (who principal)
+    (user-claim bool)
+)
+    (begin
+        (if (and (is-eq (contract-of supplied-asset) .sbtc))
             (begin
                 (asserts! (is-eq (contract-of lp-supplied-asset) .lp-sbtc-v3) ERR_INVALID_Z_TOKEN)
-                (claim-rewards-priv lp-supplied-asset .sbtc .wstx who)
+                (let (
+                    (balance (try! (claim-rewards-priv lp-supplied-asset .sbtc .wstx who)))
+                    (vault-rewards (get-vault-rewards who .sbtc .wstx))
+                )
+                    (if (> balance u0)
+                        ;; if there is a balance increase
+                        (try! (set-vault-rewards who .sbtc .wstx (+ vault-rewards balance)))
+                        false
+                    )
+                    ;; if user is claiming, send everything and clear
+                    (if user-claim
+                        (if (> (+ vault-rewards balance) u0)
+                            (begin
+                                (try! (send-rewards who .wstx (+ vault-rewards balance)))
+                                (try! (set-vault-rewards who .sbtc .wstx u0))
+                            )
+                            false
+                        )
+                        ;; do nothing if user is not claiming
+                        false
+                    )
+                    (ok (+ vault-rewards balance))
+                )
             )
             ;; other rewards to add
             (ok u0)
         )
     )
 )
+
 
 (define-private (claim-rewards-priv
     (lp-supplied-asset <ft>)
@@ -145,14 +202,7 @@
                     (get last-liquidity-cumulative-index reward-program-income-state))))
                 ;; update income of the rewarded asset to latest
                 (try! (set-user-program-index who supplied-asset reward-asset new-user-index))
-                (if (> balance-increase u0)
-                    (begin
-                        (try! (send-rewards who reward-asset balance-increase))
-                        (ok balance-increase)
-                    )
-                    ;; do nothing
-                    (ok u0)
-                )
+                (ok balance-increase)
             )
         )
     )

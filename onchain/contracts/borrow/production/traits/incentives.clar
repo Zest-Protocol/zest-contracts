@@ -4,5 +4,6 @@
   (
     ;; Transfer from the caller to a new principal
     (claim-rewards (<ft> <ft> principal) (response uint uint))
+    (claim-rewards-to-vault (<ft> <ft> principal) (response uint uint))
   )
 )

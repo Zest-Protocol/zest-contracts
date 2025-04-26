@@ -214,6 +214,14 @@ export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => 
     deployerAddress
   );
   simnet.deployContract(
+    "incentives-trait-v2-1",
+    readFileSync(config.incentives_trait_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
     "rewards-data",
     readFileSync(config.rewards_data_path).toString(),
     {
@@ -224,6 +232,49 @@ export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => 
   simnet.deployContract(
     "incentives-dummy",
     readFileSync(config.incentives_dummy_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  // simnet.deployContract(
+  //   "incentives",
+  //   readFileSync(config.incentives_path).toString(),
+  //   {
+  //     clarityVersion: 3,
+  //   },
+  //   deployerAddress
+  // );
+  // simnet.deployContract(
+  //   "incentives-2",
+  //   readFileSync(config.incentives_2_path).toString(),
+  //   {
+  //     clarityVersion: 3,
+  //   },
+  //   deployerAddress
+  // );
+  simnet.deployContract(
+    "borrow-helper-v2-1",
+    readFileSync(config.borrow_helper_path).toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+  simnet.deployContract(
+    "user-data",
+    readFileSync("contracts/borrow/production/reads/user-data.clar").toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
+}
+
+export const deployV2_1_1Contracts = (simnet: Simnet, deployerAddress: string) => {
+  simnet.deployContract(
+    "rewards-data-1",
+    readFileSync(config.rewards_data_1_path).toString(),
     {
       clarityVersion: 3,
     },
@@ -240,22 +291,6 @@ export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => 
   simnet.deployContract(
     "incentives-2",
     readFileSync(config.incentives_2_path).toString(),
-    {
-      clarityVersion: 3,
-    },
-    deployerAddress
-  );
-  simnet.deployContract(
-    "borrow-helper-v2-1",
-    readFileSync(config.borrow_helper_path).toString(),
-    {
-      clarityVersion: 3,
-    },
-    deployerAddress
-  );
-  simnet.deployContract(
-    "user-data",
-    readFileSync("contracts/borrow/production/reads/user-data.clar").toString(),
     {
       clarityVersion: 3,
     },

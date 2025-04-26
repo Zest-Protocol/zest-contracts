@@ -7,7 +7,7 @@ import { Oracle } from "./models/oracle";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
+import { deployPythContracts, deployV2_1_1Contracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts } from "./tools/common";
 import { getRewardedAmount, isWithinMarginOfError } from "../utils/utils";
 
 const simnet = await initSimnetChecker();
@@ -380,6 +380,7 @@ describe("Claim rewards", () => {
     deployV2TokenContracts(simnet, deployerAddress);
     deployPythContracts(simnet, deployerAddress);
     deployV2_1Contracts(simnet, deployerAddress);
+    deployV2_1_1Contracts(simnet, deployerAddress);
 
     callResponse = simnet.deployContract(
       "run-1",
@@ -429,6 +430,15 @@ describe("Claim rewards", () => {
 
     simnet.callPublicFnCheckOk(
       config.rewardsData,
+      "set-approved-contract",
+      [
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.bool(true),
+      ],
+      deployerAddress
+    );
+    simnet.callPublicFnCheckOk(
+      config.rewardsData1,
       "set-approved-contract",
       [
         Cl.contractPrincipal(deployerAddress, config.incentives),
@@ -1648,6 +1658,22 @@ First user should not earn anything when they come back.`, () => {
       ],
       LP_1
     );
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
+      ],
+      LP_1
+    );
     const wstxBalanceAfterClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
     expect(wstxBalanceAfterClaim).toBeGreaterThan(wstxBalanceBeforeClaim);
   });
@@ -1715,6 +1741,22 @@ First user should not earn anything when they come back.`, () => {
         Cl.standardPrincipal(LP_1),
         Cl.none(),
         Cl.contractPrincipal(deployerAddress, config.incentives),
+      ],
+      LP_1
+    );
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
       ],
       LP_1
     );
@@ -1788,9 +1830,24 @@ First user should not earn anything when they come back.`, () => {
       ],
       LP_1
     );
-    // console.log(simnet.getAssetsMap().get("STX")!.get(LP_1));
+    
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
+      ],
+      LP_1
+    );
     const wstxBalanceFirstClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
-
     expect(wstxBalanceFirstClaim).toBeGreaterThan(wstxBalanceBefore);
   });
   it(`Activate yield, claim supply after, partial withdraw and earn rewards.`, () => {
@@ -1875,9 +1932,23 @@ First user should not earn anything when they come back.`, () => {
       ],
       LP_1
     );
-    // console.log(simnet.getAssetsMap().get("STX")!.get(LP_1));
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
+      ],
+      LP_1
+    );
     const wstxBalanceFirstClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
-
     expect(wstxBalanceFirstClaim).toBeGreaterThan(wstxBalanceBefore);
   });
   it(`Supply and receive no rewards, when no distribution.
@@ -1945,9 +2016,23 @@ First user should not earn anything when they come back.`, () => {
       ],
       LP_1
     );
-    // console.log(simnet.getAssetsMap().get("STX")!.get(LP_1));
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
+      ],
+      LP_1
+    );
     const wstxBalanceFirstClaim = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
-
     expect(wstxBalanceFirstClaim).toBeGreaterThan(wstxBalanceBefore);
   });
   it(`Activate yield before supply, fully withdraw and earn rewards. Try to claim rewards after and fails.`, () => {
@@ -1997,6 +2082,22 @@ First user should not earn anything when they come back.`, () => {
         Cl.uint(max_value),
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
+      ],
+      LP_1
+    );
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
         Cl.none(),
       ],
@@ -2119,6 +2220,15 @@ First user should not earn anything when they come back.`, () => {
       deployerAddress
     );
     simnet.callPublicFnCheckOk(
+      config.rewardsData1,
+      "set-approved-contract",
+      [
+        Cl.contractPrincipal(deployerAddress, config.incentives_2),
+        Cl.bool(true),
+      ],
+      deployerAddress
+    );
+    simnet.callPublicFnCheckOk(
       config.incentives_2,
       "initialize-reward-program-data",
       [
@@ -2216,6 +2326,22 @@ First user should not earn anything when they come back.`, () => {
         Cl.uint(max_value),
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, config.incentives_2),
+        Cl.none(),
+      ],
+      LP_1
+    );
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives_2),
         Cl.none(),
       ],
@@ -2326,6 +2452,22 @@ First user should not earn anything when they come back.`, () => {
         Cl.uint(max_value),
         Cl.standardPrincipal(LP_1),
         Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
+      ],
+      LP_1
+    );
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_1),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
         Cl.contractPrincipal(deployerAddress, config.incentives),
         Cl.none(),
       ],
@@ -2477,7 +2619,47 @@ First user should not earn anything when they come back.`, () => {
       ],
       LP_2
     );
-    expect(Number(simnet.getAssetsMap().get("STX")!.get(LP_2)! - 100000000000000n) / 1000000).toBeGreaterThan(0);
+    callResponse = simnet.callReadOnlyFn(
+      config.incentives,
+      "get-vault-rewards",
+      [
+        Cl.standardPrincipal(LP_2),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+      ],
+      deployerAddress
+    );
+    const vaultRewardsBeforeClaim = Number(cvToValue(callResponse.result));
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_2),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
+      ],
+      LP_1
+    );
+    expect(Number(simnet.getAssetsMap().get("STX")!.get(LP_2)! - 100000000000000n)).toBe(vaultRewardsBeforeClaim);
+
+    callResponse = simnet.callReadOnlyFn(
+      config.incentives,
+      "get-vault-rewards",
+      [
+        Cl.standardPrincipal(LP_2),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+      ],
+      deployerAddress
+    );
+    const vaultRewardsAfterClaim = Number(cvToValue(callResponse.result));
+    expect(vaultRewardsAfterClaim).toBe(0);
     // console.log(getRewardedAmount(92000, 0.80, 473, 0.0093));
   });
   it(`Trying to claim-rewards with a different asset`, () => {
@@ -2639,6 +2821,19 @@ First user should not earn anything when they come back.`, () => {
       ],
       LP_1
     );
+    callResponse = simnet.callReadOnlyFn(
+      config.incentives,
+      "get-vault-rewards",
+      [
+        Cl.standardPrincipal(LP_1),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+      ],
+      deployerAddress
+    );
+    // console.log(Number(cvToValue(callResponse.result)));
+    expect(Number(cvToValue(callResponse.result))).toBeGreaterThan(0);
+    // const vaultRewardsAfterClaim = Number(cvToValue(callResponse.result));
     // console.log(simnet.getAssetsMap().get("STX")!.get(LP_1)! - wstxBalanceBeforeClaiming);
     let wstxBalanceAfterClaiming = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
     simnet.mineEmptyStacksBlocks(100000);
@@ -2657,8 +2852,18 @@ First user should not earn anything when they come back.`, () => {
       LP_1
     );
     expect(simnet.getAssetsMap().get("STX")!.get(LP_1)! - wstxBalanceAfterClaiming).toBe(0n);
+    callResponse = simnet.callReadOnlyFn(
+      config.incentives,
+      "get-vault-rewards",
+      [
+        Cl.standardPrincipal(LP_1),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+      ],
+      deployerAddress
+    );
+    const rewardsToBeClaimed = BigInt(cvToValue(callResponse.result));
     wstxBalanceAfterClaiming = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
-    simnet.mineEmptyStacksBlocks(1000);
     callResponse = simnet.callPublicFnCheckOk(
       config.borrowHelper,
       "claim-rewards",
@@ -2675,8 +2880,20 @@ First user should not earn anything when they come back.`, () => {
       ],
       LP_1
     );
+    callResponse = simnet.callReadOnlyFn(
+      config.incentives,
+      "get-vault-rewards",
+      [
+        Cl.standardPrincipal(LP_1),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, wstx),
+      ],
+      deployerAddress
+    );
+    expect(Number(cvToValue(callResponse.result))).toBe(0);
+    // console.log(simnet.getAssetsMap().get("STX")!.get(LP_1)! - wstxBalanceAfterClaiming);
     // only expect rewards to be back
-    expect(simnet.getAssetsMap().get("STX")!.get(LP_1)! - wstxBalanceAfterClaiming).toBeGreaterThan(0n);
+    expect(simnet.getAssetsMap().get("STX")!.get(LP_1)! - wstxBalanceAfterClaiming).toBe(rewardsToBeClaimed);
     wstxBalanceAfterClaiming = simnet.getAssetsMap().get("STX")!.get(LP_1)!;
     simnet.mineEmptyStacksBlocks(1000);
     callResponse = simnet.callPublicFnCheckOk(

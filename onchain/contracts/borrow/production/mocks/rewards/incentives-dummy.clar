@@ -12,3 +12,14 @@
         (ok u0)
     )
 )
+
+(define-public (claim-rewards-to-vault
+    (lp-supplied-asset <ft>)
+    (supplied-asset <ft>)
+    (who principal)
+)
+    (begin
+        (asserts! true (err u123456789))
+        (ok u0)
+    )
+)
