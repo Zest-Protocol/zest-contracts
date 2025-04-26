@@ -1,10 +1,12 @@
 (use-trait ft .ft-trait.ft-trait)
-(impl-trait .incentives-trait-v2-0.incentives-trait)
 (define-constant err-not-found (err u8000000))
 (define-constant ERR_UNAUTHORIZED (err u8000001))
 (define-constant ERR_INVALID_Z_TOKEN (err u8000002))
-
 (define-constant one u100000000)
+
+(define-constant zsbtc-token .zsbtc-v2-0)
+(define-constant sbtc-token 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
+(define-constant wstx-token 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.wstx)
 
 (define-read-only (get-asset-data (asset <ft>))
     (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of asset)))
@@ -23,7 +25,7 @@
 
 (define-public (initialize-reward-program-data (supplied-asset <ft>) (reward-asset <ft>))
     (begin
-        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+        (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
         (set-reward-program-income supplied-asset reward-asset {
             last-updated-block: stacks-block-height,
             last-liquidity-cumulative-index: one,
@@ -48,7 +50,7 @@
 
 (define-public (set-price (asset <ft>) (new-price uint))
     (begin
-        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+        (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
         (try!
             (contract-call? .rewards-data set-price
                 (contract-of asset)
@@ -61,7 +63,7 @@
 
 (define-public (set-precision (asset <ft>) (precision uint))
     (begin
-        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+        (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
         (try!
             (contract-call? .rewards-data set-asset-precision
                 (contract-of asset)
@@ -74,7 +76,7 @@
 
 (define-public (set-liquidity-rate (supplied-asset <ft>) (reward-asset <ft>) (rate uint))
     (begin
-        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+        (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
         (set-reward-program-income supplied-asset reward-asset
             (merge
                 (unwrap! (get-reward-program-income supplied-asset reward-asset) err-not-found)
@@ -90,7 +92,7 @@
 
 (define-public (withdraw-assets (asset <ft>) (amount uint) (who principal))
     (begin
-        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+        (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
         (as-contract (contract-call? asset transfer amount tx-sender who none)))
 )
 
@@ -105,13 +107,65 @@
 )
     (begin
         (try! (is-approved-contract contract-caller))
-        (if (is-eq (contract-of supplied-asset) 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
+        (update-claim-state lp-supplied-asset supplied-asset who true)
+    )
+)
+
+(define-public (claim-rewards-to-vault
+    (lp-supplied-asset <ft>)
+    (supplied-asset <ft>)
+    (who principal)
+)
+    (begin
+        (try! (is-approved-contract contract-caller))
+        (update-claim-state lp-supplied-asset supplied-asset who false)
+    )
+)
+
+(define-private (set-vault-rewards (user principal) (supplied-asset principal) (reward-asset principal) (amount uint))
+    (contract-call? .rewards-data-1 set-vault-rewards
+        user
+        supplied-asset
+        reward-asset
+        amount
+    )
+)
+
+(define-read-only (get-vault-rewards (user principal) (supplied-asset principal) (reward-asset principal))
+    (default-to u0 (contract-call? .rewards-data-1 get-vault-rewards-read user supplied-asset reward-asset)))
+
+(define-private (update-claim-state
+    (lp-supplied-asset <ft>)
+    (supplied-asset <ft>)
+    (who principal)
+    (user-claim bool)
+)
+    (begin
+        (if (and (is-eq (contract-of supplied-asset) sbtc-token))
             (begin
-                (asserts! (is-eq (contract-of lp-supplied-asset) .zsbtc-v2-0) ERR_INVALID_Z_TOKEN)
-                (claim-rewards-priv lp-supplied-asset
-                    'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
-                    'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.wstx
-                    who
+                (asserts! (is-eq (contract-of lp-supplied-asset) zsbtc-token) ERR_INVALID_Z_TOKEN)
+                (let (
+                    (balance (try! (claim-rewards-priv lp-supplied-asset sbtc-token wstx-token who)))
+                    (vault-rewards (get-vault-rewards who sbtc-token wstx-token))
+                )
+                    (if (> balance u0)
+                        ;; if there is a balance increase
+                        (try! (set-vault-rewards who sbtc-token wstx-token (+ vault-rewards balance)))
+                        false
+                    )
+                    ;; if user is claiming, send everything and clear
+                    (if user-claim
+                        (if (> (+ vault-rewards balance) u0)
+                            (begin
+                                (try! (send-rewards who wstx-token (+ vault-rewards balance)))
+                                (try! (set-vault-rewards who sbtc-token wstx-token u0))
+                            )
+                            false
+                        )
+                        ;; do nothing if user is not claiming
+                        false
+                    )
+                    (ok (+ vault-rewards balance))
                 )
             )
             ;; other rewards to add
@@ -119,6 +173,7 @@
         )
     )
 )
+
 
 (define-private (claim-rewards-priv
     (lp-supplied-asset <ft>)
@@ -151,14 +206,7 @@
                     (get last-liquidity-cumulative-index reward-program-income-state))))
                 ;; update income of the rewarded asset to latest
                 (try! (set-user-program-index who supplied-asset reward-asset new-user-index))
-                (if (> balance-increase u0)
-                    (begin
-                        (try! (send-rewards who reward-asset balance-increase))
-                        (ok balance-increase)
-                    )
-                    ;; do nothing
-                    (ok u0)
-                )
+                (ok balance-increase)
             )
         )
     )
@@ -193,7 +241,7 @@
         (liquidity-rate (get liquidity-rate reward-program-income-state))
     )
     (ok {
-        liquidity-rate: liquidity-rate,
+        conversion-rate: (try! (convert-to supplied-asset reward-asset one)),
         apy-in-reward-asset: (try! (convert-to supplied-asset reward-asset liquidity-rate))
         })
     )
@@ -289,7 +337,7 @@
 (define-data-var contract-owner principal tx-sender)
 (define-public (set-contract-owner (owner principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+    (asserts! (is-contract-owner tx-sender) ERR_UNAUTHORIZED)
     (print { type: "set-contract-owner", payload: owner })
     (ok (var-set contract-owner owner))))
 

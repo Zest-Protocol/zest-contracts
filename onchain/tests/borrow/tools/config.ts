@@ -120,6 +120,7 @@ export const poolReserveData2 = "pool-reserve-data-2";
 export const poolReserveData3 = "pool-reserve-data-3";
 export const poolReserveData4 = "pool-reserve-data-4";
 export const rewardsData = "rewards-data";
+export const rewardsData1 = "rewards-data-1";
 
 export const mathV0 = "math";
 export const mathV1_2 = "math-v1-2";
@@ -194,6 +195,7 @@ export const pool_reserve_data_2_path = `contracts/borrow/production/reserve-dat
 export const pool_reserve_data_3_path = `contracts/borrow/production/reserve-data/pool-reserve-data-3.clar`;
 export const pool_reserve_data_4_path = `contracts/borrow/production/reserve-data/pool-reserve-data-4.clar`;
 export const rewards_data_path = `contracts/borrow/production/reserve-data/rewards-data.clar`;
+export const rewards_data_1_path = `contracts/borrow/production/reserve-data/rewards-data-1.clar`;
 export const incentives_path = `contracts/borrow/production/mocks/rewards/incentives.clar`;
 export const incentives_dummy_path = `contracts/borrow/production/mocks/rewards/incentives-dummy.clar`;
 export const incentives_trait_path = `contracts/borrow/production/traits/incentives.clar`;

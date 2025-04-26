@@ -105,19 +105,96 @@
 )
     (begin
         (try! (is-approved-contract contract-caller))
+        (update-claim-state lp-supplied-asset supplied-asset who true)
+    )
+)
+
+;; can only claim 1 type of reward
+(define-public (claim-rewards-to-vault
+    (lp-supplied-asset <ft>)
+    (supplied-asset <ft>)
+    (who principal)
+)
+    (begin
+        (try! (is-approved-contract contract-caller))
+        (update-claim-state lp-supplied-asset supplied-asset who false)
+    )
+)
+
+(define-private (update-claim-state
+    (lp-supplied-asset <ft>)
+    (supplied-asset <ft>)
+    (who principal)
+    (user-claim bool)
+)
+    (begin
         (if (is-eq (contract-of supplied-asset) .sbtc)
             (let (
                 (check-ok (asserts! (is-eq (contract-of lp-supplied-asset) .lp-sbtc-v3) ERR_INVALID_Z_TOKEN))
-                (claimed-rewards-1 (try! (claim-rewards-priv lp-supplied-asset .sbtc .wstx who)))
-                (claimed-rewards-2 (try! (claim-rewards-priv lp-supplied-asset .sbtc .diko who)))
+                (balance-1 (try! (claim-rewards-priv lp-supplied-asset .sbtc .wstx who)))
+                (balance-2 (try! (claim-rewards-priv lp-supplied-asset .sbtc .diko who)))
+                (vault-rewards-1 (get-vault-rewards who .sbtc .wstx))
+                (vault-rewards-2 (get-vault-rewards who .sbtc .diko))
             )
-                (ok (+ claimed-rewards-1 claimed-rewards-2))
+                (if (> balance-1 u0)
+                    ;; if there is a balance increase
+                    (try! (set-vault-rewards who .sbtc .wstx (+ vault-rewards-1 balance-1)))
+                    false
+                )
+                (if (> balance-2 u0)
+                    ;; if there is a balance increase
+                    (try! (set-vault-rewards who .sbtc .diko (+ vault-rewards-2 balance-2)))
+                    false
+                )
+                ;; if user is claiming, send everything and clear
+                (if user-claim
+                    (begin
+                        (if (> (+ vault-rewards-1 balance-1) u0)
+                            (begin
+                                (try! (send-rewards who .wstx (+ vault-rewards-1 balance-1)))
+                                (try! (set-vault-rewards who .sbtc .wstx u0))
+                            )
+                            false
+                        )
+                        (if (> (+ vault-rewards-2 balance-2) u0)
+                            (begin
+                                (try! (send-rewards who .diko (+ vault-rewards-2 balance-2)))
+                                (try! (set-vault-rewards who .sbtc .diko u0))
+                            )
+                            false
+                        )
+                    )
+                    ;; do nothing if user is not claiming
+                    false
+                )
+                (ok (+ vault-rewards-1 balance-1 vault-rewards-2 balance-2))
             )
             ;; other rewards to add
             (ok u0)
         )
     )
 )
+
+(define-private (set-vault-rewards
+    (user principal)
+    (supplied-asset principal)
+    (reward-asset principal)
+    (amount uint)
+    )
+    (contract-call? .rewards-data-1 set-vault-rewards
+        user
+        supplied-asset
+        reward-asset
+        amount
+    )
+)
+
+(define-read-only (get-vault-rewards
+    (user principal)
+    (supplied-asset principal)
+    (reward-asset principal)
+    )
+    (default-to u0 (contract-call? .rewards-data-1 get-vault-rewards-read user supplied-asset reward-asset)))
 
 (define-private (claim-rewards-priv
     (lp-supplied-asset <ft>)
@@ -150,14 +227,7 @@
                     (get last-liquidity-cumulative-index reward-program-income-state))))
                 ;; update income of the rewarded asset to latest
                 (try! (set-user-program-index who supplied-asset reward-asset new-user-index))
-                (if (> balance-increase u0)
-                    (begin
-                        (try! (send-rewards who reward-asset balance-increase))
-                        (ok balance-increase)
-                    )
-                    ;; do nothing
-                    (ok u0)
-                )
+                (ok balance-increase)
             )
         )
     )
