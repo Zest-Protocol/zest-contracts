@@ -245,14 +245,14 @@ export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => 
   //   },
   //   deployerAddress
   // );
-  // simnet.deployContract(
-  //   "incentives-2",
-  //   readFileSync(config.incentives_2_path).toString(),
-  //   {
-  //     clarityVersion: 3,
-  //   },
-  //   deployerAddress
-  // );
+  simnet.deployContract(
+    "flashloan-data",
+    readFileSync("contracts/borrow/production/reserve-data/flashloan-data.clar").toString(),
+    {
+      clarityVersion: 3,
+    },
+    deployerAddress
+  );
   simnet.deployContract(
     "borrow-helper-v2-1",
     readFileSync(config.borrow_helper_path).toString(),

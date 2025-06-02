@@ -463,6 +463,62 @@ describe("Supply and Redeem", () => {
       1_000_000_000n
     );
   });
+
+  it("Supply all", () => {
+    const poolBorrow = new PoolBorrow(
+      simnet,
+      deployerAddress,
+      config.poolBorrow
+    );
+
+    let callResponse = poolBorrow.init(
+      deployerAddress,
+      config.lpStstx,
+      deployerAddress,
+      stSTX,
+      6,
+      BigInt("340282366920938463463374607431768211455"),
+      BigInt("340282366920938463463374607431768211455"),
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+
+    poolBorrow.addAsset(deployerAddress, stSTX, deployerAddress);
+
+    callResponse = simnet.callPublicFnCheckOk(
+      stSTX,
+      "mint",
+      [Cl.uint(1_000_000_000), Cl.standardPrincipal(LP_1)],
+      deployerAddress
+    );
+
+    // console.log(simnet.getAssetsMap());
+    callResponse = simnet.callPublicFnCheckOk(
+      config.borrowHelper,
+      "supply-all",
+      [
+        Cl.uint(1_000_000_000),
+        Cl.uint(0),
+        Cl.uint(0),
+        Cl.uint(0),
+        Cl.uint(0),
+        Cl.uint(0),
+        Cl.uint(0),
+        Cl.uint(0),
+        Cl.uint(0),
+        Cl.uint(0),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.standardPrincipal(LP_1),
+        Cl.none(),
+        Cl.contractPrincipal(deployerAddress, incentivesDummy),
+      ],
+      LP_1
+    );
+    // console.log(simnet.getAssetsMap());
+  });
   it("Supply and immediately redeem without returns", () => {
     const poolBorrow = new PoolBorrow(
       simnet,

@@ -236,10 +236,23 @@ clarity_version = 3
 epoch = 3.0
 
 
+# [contracts.reserve-data]
+# path = "contracts/borrow/production/reads/reserve-data.clar"
+# clarity_version = 3
+# epoch = 3.0
+
+[contracts.incentives-vault]
+path = "contracts/borrow/production/mocks/rewards/incentives-vault.clar"
+clarity_version = 3
+epoch = 3.0
+
+
 [contracts.pool-vault]
 path = "contracts/borrow/production/vaults/pool-vault.clar"
 clarity_version = 2
 epoch = 2.4
+
+
 
 
 # [contracts.e-mode-stx-enable]
@@ -287,6 +300,16 @@ path = "contracts/borrow/production/mocks/rewards/incentives.clar"
 clarity_version = 3
 epoch = 3.0
 
+[contracts.incentives-v2-0]
+path = "contracts/borrow/production/mocks/rewards/incentives.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.incentives-v2-1]
+path = "contracts/borrow/production/mocks/rewards/incentives.clar"
+clarity_version = 3
+epoch = 3.0
+
 [contracts.incentives-2]
 path = "contracts/borrow/production/mocks/rewards/incentives-2.clar"
 clarity_version = 3
@@ -302,12 +325,28 @@ path = "contracts/borrow/production/reserve-data/rewards-data.clar"
 clarity_version = 3
 epoch = 3.0
 
+
+[contracts.flashloan-data]
+path = "contracts/borrow/production/reserve-data/flashloan-data.clar"
+clarity_version = 2
+epoch = 2.4
+
+# [contracts.rewards-deployment]
+# path = "contracts/borrow/deployment_mainnet/upgrades/rewards/rewards-deployment-v2-1.clar"
+# clarity_version = 3
+# epoch = 3.0
+
 [contracts.incentives-trait]
 path = "contracts/borrow/production/traits/incentives.clar"
 clarity_version = 3
 epoch = 3.0
 
 [contracts.incentives-trait-v2-0]
+path = "contracts/borrow/production/traits/incentives.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.incentives-trait-v2-1]
 path = "contracts/borrow/production/traits/incentives.clar"
 clarity_version = 3
 epoch = 3.0
@@ -369,6 +408,11 @@ epoch = 3.0
 
 [contracts.pool-reserve-data-4]
 path = "contracts/borrow/production/reserve-data/pool-reserve-data-4.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.rewards-data-1]
+path = "contracts/borrow/production/reserve-data/rewards-data-1.clar"
 clarity_version = 3
 epoch = 3.0
 

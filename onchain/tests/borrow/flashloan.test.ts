@@ -181,6 +181,17 @@ describe("Flashloans", () => {
     );
 
     poolBorrow.addAsset(deployerAddress, xUSD, deployerAddress);
+
+
+    callResponse = simnet.callPublicFnCheckOk(
+      "flashloan-data",
+      "set-approved-sender",
+      [
+        Cl.standardPrincipal(FlashLender),
+        Cl.bool(true),
+      ],
+      deployerAddress
+    );
   });
   it("Flashloan executes properly only when fees are paid back to the protocol", () => {
     const poolReserve0 = new PoolReserve(
@@ -476,7 +487,7 @@ describe("Flashloans", () => {
       ],
       deployerAddress
     );
-    console.log(cvToValue(callResponse.result).value["last-liquidity-cumulative-index"]);
+    // console.log(cvToValue(callResponse.result).value["last-liquidity-cumulative-index"]);
 
     callResponse = simnet.callPublicFnCheckOk(
       config.borrowHelper,
@@ -489,9 +500,9 @@ describe("Flashloans", () => {
       ],
       FlashLender
     );
-    console.log(Cl.prettyPrint(callResponse.result));
+    // console.log(Cl.prettyPrint(callResponse.result));
     // console.log(callResponse.events);
-    console.log(callResponse.events[callResponse.events.length - 4].data.value);
+    // console.log(callResponse.events[callResponse.events.length - 4].data.value);
     let amountFee = (2000000000n * 35n) / 10000n;
     let protocolFee = (amountFee * 3000n) / 10000n;
 
@@ -503,7 +514,7 @@ describe("Flashloans", () => {
       ],
       deployerAddress
     );
-    console.log(cvToValue(callResponse.result).value["last-liquidity-cumulative-index"]);
+    // console.log(cvToValue(callResponse.result).value["last-liquidity-cumulative-index"]);
 
   });
 });

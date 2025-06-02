@@ -102,6 +102,7 @@
     (who principal)
 )
     (begin
+        (asserts! (is-eq who tx-sender) ERR_UNAUTHORIZED)
         (try! (is-approved-contract contract-caller))
         (update-claim-state lp-supplied-asset supplied-asset who true)
     )
@@ -113,6 +114,7 @@
     (who principal)
 )
     (begin
+        (asserts! (is-eq who tx-sender) ERR_UNAUTHORIZED)
         (try! (is-approved-contract contract-caller))
         (update-claim-state lp-supplied-asset supplied-asset who false)
     )

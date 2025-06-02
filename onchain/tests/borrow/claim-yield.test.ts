@@ -926,6 +926,25 @@ describe("Claim rewards", () => {
     );
 
     simnet.mineEmptyStacksBlocks(100000);
+    callResponse = simnet.callPublicFn(
+      config.borrowHelper,
+      "claim-rewards",
+      [
+        Cl.contractPrincipal(deployerAddress, config.lpSbtc),
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, sBTC),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.standardPrincipal(LP_2),
+        Cl.list(assets),
+        Cl.contractPrincipal(deployerAddress, wstx),
+        Cl.contractPrincipal(deployerAddress, config.incentives),
+        Cl.none(),
+      ],
+      LP_1
+    );
+    expect(callResponse.result).toBeErr(Cl.uint(8000001));
+
+    simnet.mineEmptyStacksBlocks(100000);
     callResponse = simnet.callPublicFnCheckOk(
       config.borrowHelper,
       "claim-rewards",
@@ -2644,7 +2663,7 @@ First user should not earn anything when they come back.`, () => {
         Cl.contractPrincipal(deployerAddress, config.incentives),
         Cl.none(),
       ],
-      LP_1
+      LP_2
     );
     expect(Number(simnet.getAssetsMap().get("STX")!.get(LP_2)! - 100000000000000n)).toBe(vaultRewardsBeforeClaim);
 

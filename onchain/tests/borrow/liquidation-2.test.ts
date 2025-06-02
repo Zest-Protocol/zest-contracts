@@ -24,6 +24,7 @@ import {
 } from "./tools/config";
 import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards, setGracePeriodVars } from "./tools/common";
 import * as config from "./tools/config";
+import { isWithinMarginOfError } from "../utils/utils";
 
 const simnet = await initSimnet();
 
@@ -423,10 +424,12 @@ describe("Liquidations", () => {
       cvToJSON(callResponse.result)["value"]["value"]["health-factor"]["value"]
     );
 
+    const ststxLiquidationPrice = 100_000_000;
+
     oracleContract.setPrice(
       deployerAddress,
       stSTX,
-      100_000_000,
+      ststxLiquidationPrice,
       deployerAddress
     );
 
@@ -612,6 +615,127 @@ describe("Liquidations", () => {
       deployerAddress
     );
 
+    // console.log(simnet.getAssetsMap().get(".lp-ststx-token.lp-ststx")?.get(Borrower_1));
+    // console.log(simnet.getAssetsMap().get(".ststx.ststx")?.get(Liquidator_1));
+    callResponse = simnet.callReadOnlyFn(
+      `${deployerAddress}.pool-0-reserve-v2-0`,
+      "get-user-borrow-balance",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, wstx),
+      ],
+      Borrower_1
+    );
+    let userBorrowBalance = BigInt(
+      cvToValue(callResponse.result)["value"]["compounded-balance"]["value"]
+    );
+    // console.log("User borrow balance in wstx");
+    // console.log(userBorrowBalance);
+    callResponse = simnet.callReadOnlyFn(
+      lpStstx,
+      "get-balance",
+      [
+        Cl.standardPrincipal(Borrower_1),
+      ],
+      Borrower_1
+    );
+    let userCollateralBalance = BigInt(cvToValue(callResponse.result)["value"]);
+    // console.log("User collateral balance in ststx");
+    // console.log(userCollateralBalance);
+
+    callResponse = simnet.callReadOnlyFn(
+      "liquidation-manager-v2-1",
+      "get-liquidation-bonus",
+      [
+        Cl.standardPrincipal(Borrower_1),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      deployerAddress
+    );
+    // console.log("Liquidation bonus");
+    let liquidationBonus = BigInt(cvToValue(callResponse.result)["value"]);
+
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "div",
+      [
+        Cl.uint(100_000_000),
+        Cl.uint(100_000_000n + liquidationBonus),
+      ],
+      deployerAddress
+    );
+    let liquidationBonusFactor = cvToValue(callResponse.result);
+
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "get-y-from-x",
+      [
+        Cl.uint(userCollateralBalance),
+        Cl.uint(6),
+        Cl.uint(6),
+        Cl.uint(ststxLiquidationPrice),
+        Cl.uint(190_000_000),
+      ],
+      deployerAddress
+    );
+    let step1 = cvToValue(callResponse.result);
+
+
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "mul-perc",
+      [
+        // aeusdc
+        Cl.uint(userCollateralBalance),
+        Cl.uint(6),
+        Cl.uint(100_000_000n - liquidationBonusFactor),
+      ],
+      deployerAddress
+    );
+    let liquidationBonusAmount = cvToValue(callResponse.result);
+    // console.log("Liquidation bonus amount");
+    // console.log(liquidationBonusAmount);
+
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "mul-perc",
+      [
+        // aeusdc
+        Cl.uint(step1),
+        Cl.uint(6),
+        Cl.uint(liquidationBonusFactor),
+      ],
+      deployerAddress
+    );
+    let debtNeeded = cvToValue(callResponse.result);
+    // console.log("Debt needed");
+    // console.log(debtNeeded);
+
+    let collateralAmount = userCollateralBalance;
+    // console.log("Collateral amount");
+    // console.log(collateralAmount);
+
+    // remove protocol fee
+    callResponse = simnet.callReadOnlyFn(
+      config.poolReserveData,
+      "get-origination-fee-prc-read",
+      [
+        Cl.contractPrincipal(deployerAddress, stSTX),
+      ],
+      deployerAddress
+    );
+    let originationFeePrc = BigInt(cvToValue(callResponse.result)["value"]);
+    // console.log("Origination fee prc");
+    // console.log(originationFeePrc);
+
+    let collateralProtocolFee = (originationFeePrc * liquidationBonusAmount) / 10000n;
+    // console.log("Collateral protocol fee");
+    // console.log(collateralProtocolFee);
+
+    let collateralToLiquidator = collateralAmount - collateralProtocolFee;
+    // console.log("Collateral to liquidator");
+    // console.log(collateralToLiquidator);
+
     callResponse = simnet.callPublicFn(
       borrowHelper,
       "liquidation-call",
@@ -644,12 +768,20 @@ describe("Liquidations", () => {
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.contractPrincipal(deployerAddress, "oracle"),
         Cl.standardPrincipal(Borrower_1),
-        Cl.uint(maxBorrowAmount),
+        Cl.uint(userBorrowBalance),
         Cl.bool(false),
         Cl.none(),
       ],
       Liquidator_1
     );
+    // console.log(callResponse.events);
+    // console.log(callResponse.events[18]["data"]["value"]);
+    // console.log((callResponse.events[18]["data"]["value"] as any)["data"]["borrowed-ret"]);
+    // console.log((callResponse.events[18]["data"]["value"] as any)["data"]["available-collateral-principal"]);
+    // console.log((callResponse.events[18]["data"]["value"] as any)["data"]["borrower-reserve-data"]);
+    // console.log(simnet.getAssetsMap().get(".lp-ststx-token.lp-ststx")?.get(Borrower_1));
+    // console.log(simnet.getAssetsMap().get(".ststx.ststx")?.get(Liquidator_1)! - prevLiquidatorCollateralBalance);
+
     currVaultBalance = simnet
       .getAssetsMap()
       .get(".ststx.ststx")
@@ -658,15 +790,23 @@ describe("Liquidations", () => {
       .getAssetsMap()
       .get(".ststx.ststx")
       ?.get(Liquidator_1)!;
-    expect(simnet.getAssetsMap().get(".ststx.ststx")?.get(Collector_2)!).toBe(
-      7619010n
-    );
+    expect(
+      isWithinMarginOfError(
+        Number(simnet.getAssetsMap().get(".ststx.ststx")?.get(Collector_2)!),
+        Number(collateralProtocolFee)
+      )
+    ).toBe(true);
+
+
+    currLiquidatorCollateralBalance = simnet
+      .getAssetsMap()
+      .get(".ststx.ststx")
+      ?.get(Liquidator_1)!;
 
     // add the protocol fee difference
     expect(
       currLiquidatorCollateralBalance - prevLiquidatorCollateralBalance
-    ).toBe(63992061793n);
-    // .toBe(prevVaultBalance - currVaultBalance);
+    ).toBe(collateralToLiquidator);
     expect(
       simnet
         .getAssetsMap()

@@ -148,6 +148,97 @@ describe("Math", () => {
     expect(callResponse.result).toBeUint(25_925_925_690);
   });
 
+  it("get-y-from-x", () => {
+    let ZERO_ZERO_5 = ONE / 20;
+    const collateralBalance = 10572178
+    // console.log("Calculating collateral from purchased debt")
+    let callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "get-y-from-x",
+      [
+        // aeusdc
+        Cl.uint(10_000_000_000),
+        Cl.uint(6),
+        Cl.uint(8),
+        Cl.uint(1 * ONE),
+        Cl.uint(94587.89 * ONE),
+      ],
+      deployerAddress
+    );
+    // console.log(Cl.prettyPrint(callResponse.result));
+    const collateralAmount = cvToValue(callResponse.result);
+    // console.log(`Collateral purchased: ${Number(collateralAmount) / 100000000}`);
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "mul-perc",
+      [
+        // aeusdc
+        Cl.uint(collateralAmount),
+        Cl.uint(8),
+        Cl.uint(1 * ONE + (0.1 * ONE)),
+      ],
+      deployerAddress
+    );
+    const collateralAndLiquidationBonus = cvToValue(callResponse.result);
+    // console.log(`Collateral and liquidation bonus: ${Number(collateralAndLiquidationBonus) / 100000000}`);
+    // console.log(`Bonus Only: ${Number(collateralAndLiquidationBonus - collateralAmount) / 100000000}`);
+
+    // console.log("Calculating debt from collateral balance")
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "div",
+      [
+        Cl.uint(ONE),
+        Cl.uint(ONE + (0.1 * ONE)),
+      ],
+      deployerAddress
+    );
+    const mulFactor = cvToValue(callResponse.result);
+
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "get-y-from-x",
+      [
+        // aeusdc
+        Cl.uint(collateralBalance),
+        Cl.uint(8),
+        Cl.uint(6),
+        Cl.uint(94587.89 * ONE),
+        Cl.uint(1 * ONE),
+      ],
+      deployerAddress
+    );
+    const step1 = cvToValue(callResponse.result);
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "mul-perc",
+      [
+        // aeusdc
+        Cl.uint(step1),
+        Cl.uint(8),
+        Cl.uint(mulFactor),
+      ],
+      deployerAddress
+    );
+    const debtNeeded = cvToValue(callResponse.result);
+    // console.log(`Mul Factor: ${Number(mulFactor) / 100000000}`);
+    // console.log(`Debt needed from Balance: ${Number(debtNeeded) / 100000000}`);
+    callResponse = simnet.callReadOnlyFn(
+      config.math,
+      "mul-perc",
+      [
+        // aeusdc
+        Cl.uint(collateralAmount),
+        Cl.uint(8),
+        Cl.uint(BigInt(ONE) - mulFactor),
+      ],
+      deployerAddress
+    );
+    const bonusFromDebt = cvToValue(callResponse.result);
+    // console.log(`Bonus from Debt: ${Number(bonusFromDebt) / 100000000}`);
+    // console.log(`Collateral and Bonus: ${Number(collateralAmount + bonusFromDebt) / 100000000}`);
+  });
+
   it("calculate-linear-interest", () => {
     let callResponse = simnet.callReadOnlyFn(
       `pool-0-reserve`,
