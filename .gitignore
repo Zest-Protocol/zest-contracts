@@ -19,6 +19,6 @@ onchain/contracts/borrow/deployment_mainnet/upgrades/zsusdt
 onchain/contracts/borrow/deployment_mainnet/upgrades/zusdh
 onchain/contracts/borrow/deployment_mainnet/upgrades/zwstx
 onchain/contracts/borrow/deployment_mainnet/update-asset
+onchain/contracts/borrow/deployment_mainnet/
 .vscode
 history.txt
-onchain/contracts/borrow/deployment_mainnet
