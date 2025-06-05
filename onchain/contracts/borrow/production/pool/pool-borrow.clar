@@ -72,13 +72,13 @@
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
+    (try! (is-approved-contract contract-caller))
     (let (
       (current-balance (try! (contract-call? lp get-balance owner)))
       (current-available-liquidity (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-available-liquidity asset)))
       (user-assets (contract-call? .pool-0-reserve-v2-0 get-user-assets owner))
       (isolated-asset (contract-call? .pool-0-reserve-v2-0 is-in-isolation-mode owner))
       (assets-used-as-collateral (contract-call? .pool-0-reserve-v2-0 get-assets-used-as-collateral owner)))
-      (try! (is-approved-contract contract-caller))
       (asserts! (>= (get supply-cap reserve-state) (+ amount current-available-liquidity (get total-borrows-variable reserve-state))) ERR_EXCEED_SUPPLY_CAP)
 
       (map-insert users-id (var-get last-user-id) owner)
@@ -498,25 +498,26 @@
     (print { type: "liquidation-call", payload: { key: liquidated-user, data: {
       collateral-to-liquidate: collateral-to-liquidate, debt-asset: debt-asset, liquidated-user: liquidated-user, debt-amount: debt-amount  } } })
 
-    (try!
-      (reduce-isolated-mode-debt-liquidation
-        debt-asset
-        ;; returns actual-debt-to-liquidate
-        (try! (contract-call? .liquidation-manager-v2-1 liquidation-call
-          assets
-          collateral-lp
-          collateral-to-liquidate
+    (match (contract-call? .liquidation-manager-v2-1 liquidation-call
+      assets
+      collateral-lp
+      collateral-to-liquidate
+      debt-asset
+      collateral-oracle
+      debt-oracle
+      liquidated-user
+      debt-amount
+      to-receive-atoken)
+      liquidation-result (begin
+        (try! (reduce-isolated-mode-debt-liquidation
           debt-asset
-          collateral-oracle
-          debt-oracle
+          (get actual-debt-to-liquidate liquidation-result)
           liquidated-user
-          debt-amount
-          to-receive-atoken
-        ))
-        liquidated-user
+          ))
+        (ok liquidation-result)
       )
+      err-code (err err-code)
     )
-    (ok u0)
   )
 )
 
@@ -544,11 +545,11 @@
   )
 )
 
-(define-public (flashloan
+(define-public (flashloan-liquidation-step-1
   (receiver principal)
   (asset <ft>)
   (amount uint)
-  (flashloan <flash-loan>))
+  (flashloan-script <flash-loan>))
   (let  (
     (available-liquidity-before (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-available-liquidity asset)))
     (total-fee-bps (try! (contract-call? .pool-0-reserve-v2-0 get-flashloan-fee-total (contract-of asset))))
@@ -565,8 +566,30 @@
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
 
     (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user asset receiver amount))
-    (try! (contract-call? flashloan execute asset receiver amount))
-    ;; force transfer of assets to vault
+    (ok u0)
+  )
+)
+
+(define-public (flashloan-liquidation-step-2
+  (receiver principal)
+  (asset <ft>)
+  (amount uint)
+  (flashloan-script <flash-loan>))
+  (let  (
+    (available-liquidity-before (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-available-liquidity asset)))
+    (total-fee-bps (try! (contract-call? .pool-0-reserve-v2-0 get-flashloan-fee-total (contract-of asset))))
+    (protocol-fee-bps (try! (contract-call? .pool-0-reserve-v2-0 get-flashloan-fee-protocol (contract-of asset))))
+    (amount-fee (/ (* amount total-fee-bps) u10000))
+    (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
+    (reserve-data (try! (get-reserve-state (contract-of asset))))
+  )
+    (try! (is-approved-contract contract-caller))
+    (asserts! (>= available-liquidity-before amount) ERR_EXCEEDED_LIQ)
+    (asserts! (and (> amount-fee u0) (> protocol-fee u0)) ERR_NOT_ZERO)
+    (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
+    (asserts! (get is-active reserve-data) ERR_INACTIVE)
+    (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
+
     (try!
       (contract-call? asset transfer
         (+ amount amount-fee)
@@ -692,8 +715,8 @@
     (reserve-data (try! (get-reserve-state (contract-of asset))))
     (user-data (get-user-reserve-data who (contract-of asset)))
     )
-    (try! (validate-assets assets-to-calculate))
     (try! (is-approved-contract contract-caller))
+    (try! (validate-assets assets-to-calculate))
 
     (asserts! (is-eq tx-sender who) ERR_UNAUTHORIZED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
@@ -763,7 +786,7 @@
   (oracle principal)
   (interest-rate-strategy-address principal))
   (begin
-    (asserts! (is-configurator tx-sender) (err u9))
+    (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-0-reserve-v2-0 set-reserve
       asset
       {

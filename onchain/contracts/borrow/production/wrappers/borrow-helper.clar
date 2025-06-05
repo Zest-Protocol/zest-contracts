@@ -45,6 +45,199 @@
   )
 )
 
+(define-public (supply-all
+  (ststx-amount uint)
+  (aeusdc-amount uint)
+  (wstx-amount uint)
+  (diko-amount uint)
+  (usdh-amount uint)
+  (susdt-amount uint)
+  (usda-amount uint)
+  (sbtc-amount uint)
+  (ststxbtc-amount uint)
+  (alex-amount uint)
+  (pool-reserve principal)
+  (owner principal)
+  (referral (optional principal))
+  (incentives <incentives-trait>)
+  )
+  (begin
+    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
+
+    (if (> ststx-amount u0)
+      (begin
+        (try! (supply
+          ;; SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zststx-v2-0
+          .lp-ststx-v3
+          pool-reserve
+          ;; 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token
+          .ststx
+          ststx-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> aeusdc-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zaeusdc-v2-0
+          .lp-usda-v3
+          pool-reserve
+          ;; 'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc
+          .usda
+          aeusdc-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> wstx-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zwstx-v2-0
+          .lp-wstx-v3
+          pool-reserve
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.wstx
+          .wstx
+          wstx-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> diko-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zdiko-v2-0
+          .lp-diko-v3
+          pool-reserve
+          ;; 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.arkadiko-token
+          .diko
+          diko-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> usdh-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zusdh-v2-0
+          .lp-usda-v3
+          pool-reserve
+          ;; 'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.usdh-token-v1
+          .usda
+          usdh-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> susdt-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zsusdt-v2-0
+          .lp-xusd-v3
+          pool-reserve
+          ;; 'SP2XD7417HGPRTREMKF748VNEQPDRR0RMANB7X1NK.token-susdt
+          .usda
+          susdt-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> usda-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zusda-v2-0
+          .lp-usda-v3
+          pool-reserve
+          ;; 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token
+          .usda
+          usda-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> sbtc-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zsbtc-v2-0
+          .lp-sbtc-v3
+          pool-reserve
+          ;; 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
+          .sbtc
+          sbtc-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> ststxbtc-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zststxbtc-v2-0
+          .lp-ststx-v3
+          pool-reserve
+          ;; 'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststxbtc-token
+          .ststx
+          ststxbtc-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (if (> alex-amount u0)
+      (begin
+        (try! (supply
+          ;; 'SP2VCQJGH7PHP2DJK7Z0V48AGBHQAW3R3ZW1QF4N.zalex-v2-0
+          .lp-diko-v3
+          pool-reserve
+          ;; 'SP102V8P0F7JX67ARQ77WEA3D3CFB5XW39REDT0AM.token-alex
+          .diko
+          alex-amount
+          owner
+          referral
+          incentives
+          ))
+      )
+      false
+    )
+
+    (ok true)
+  )
+)
+
 (define-public (borrow
   (pool-reserve principal)
   (oracle <oracle-trait>)
@@ -261,27 +454,8 @@
   )
 )
 
-(define-public (flashloan
-  (receiver principal)
-  (asset <ft>)
-  (amount uint)
-  (flashloan-script <flash-loan>))
-  (begin
-    (asserts! (is-eq tx-sender contract-caller) ERR_UNAUTHORIZED)
-
-    (try! 
-      (contract-call? .pool-borrow-v2-1 flashloan
-        receiver
-        asset
-        amount
-        flashloan-script))
-
-    (print { type: "flashloan-call", payload: { key: receiver, data: {
-      reserve-state: (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-state (contract-of asset))),
-    }}})
-    (ok u0)
-  )
-)
+(define-read-only (is-approved-sender (sender principal))
+  (default-to false (contract-call? .flashloan-data get-approved-sender-read sender)))
 
 (define-private (write-feed (price-feed-bytes (optional (buff 8192))))
   (match price-feed-bytes
