@@ -331,6 +331,11 @@ path = "contracts/borrow/production/reserve-data/flashloan-data.clar"
 clarity_version = 2
 epoch = 2.4
 
+[contracts.flashloan-wrapper]
+path = "contracts/borrow/production/mocks/flashloan-scripts/flashloan-wrapper.clar"
+clarity_version = 3
+epoch = 3.0
+
 # [contracts.rewards-deployment]
 # path = "contracts/borrow/deployment_mainnet/upgrades/rewards/rewards-deployment-v2-1.clar"
 # clarity_version = 3
