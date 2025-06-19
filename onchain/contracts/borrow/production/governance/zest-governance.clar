@@ -1,9 +1,6 @@
 (use-trait proposal-trait .proposal-trait.proposal-trait)
 
-;; emergency proposal
-(define-map emergency-team principal bool)
-(define-data-var emergency-proposal-duration uint u1440) ;; ~10 day
-(define-data-var emergency-team-sunset-height uint (+ burn-block-height u26280)) ;; ~6 months from deploy time
+(define-data-var emergency-shutdown bool false)
 
 ;; emergency execution
 (define-data-var executive-team-sunset-height uint (+ burn-block-height u13140)) ;; ~3 month from deploy time
@@ -89,56 +86,6 @@
 	)
 )
 
-(define-public (set-proposal-cool-down-period (period uint))
-	(begin
-		(try! (is-dao))
-		(ok (var-set proposal-cool-down-period period))
-	)
-)
-
-;; --- Emergency Proposal functions
-;; --- Emergency DAO functions
-
-(define-public (set-emergency-proposal-duration (duration uint))
-	(begin
-		(try! (is-dao))
-		(ok (var-set emergency-proposal-duration duration))
-	)
-)
-
-(define-public (set-emergency-team-sunset-height (height uint))
-	(begin
-		(try! (is-dao))
-		(asserts! (> height burn-block-height) err-sunset-height-in-past)
-		(ok (var-set emergency-team-sunset-height height))
-	)
-)
-
-(define-public (set-emergency-team-member (who principal) (member bool))
-	(begin
-		(try! (is-dao))
-		(ok (map-set emergency-team who member))
-	)
-)
-
-(define-read-only (is-emergency-team-member (who principal))
-	(default-to false (map-get? emergency-team who))
-)
-
-(define-public (emergency-propose (proposal <proposal-trait>))
-	(begin
-		(asserts! (is-emergency-team-member tx-sender) err-not-emergency-team-member)
-		(asserts! (< burn-block-height (var-get emergency-team-sunset-height)) err-sunset-height-reached)
-		(add-proposal proposal
-			{
-				start-block-height: burn-block-height,
-				end-block-height: (+ burn-block-height (var-get emergency-proposal-duration)),
-				proposer: tx-sender
-			}
-		)
-	)
-)
-
 ;; --- Emergency Execution functions
 ;; --- Internal DAO functions
 
@@ -192,7 +139,7 @@
 		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
 		(asserts! (< burn-block-height (var-get executive-team-sunset-height)) err-sunset-height-reached)
 		(and (>= signals (var-get executive-signals-required))
-			(try! (execute proposal contract-caller))
+			(var-set emergency-shutdown (not (var-get emergency-shutdown)))
 		)
 		(map-set executive-action-signals {proposal: proposal-principal, team-member: contract-caller} true)
 		(map-set executive-action-signal-count proposal-principal signals)
