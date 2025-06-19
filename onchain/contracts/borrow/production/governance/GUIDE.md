@@ -10,38 +10,36 @@ The Zest Governance system is designed to manage important decisions for the Zes
 
 The governance system has two specialized teams responsible for executing proposals:
 
-1. **Executive Team** - Executes proposals quickly when needed
-2. **Signer Team** - Provides additional execution layer with built-in safety delays
+1. **Executive Team** - Controls emergency shutdown functionality
+2. **Signer Team** - Provides execution layer with built-in safety delays
 
 ## Execution Mechanisms
 
-### Executive Team: The Quick Executors
+### Executive Team: The Emergency Shutdown Controllers
 
-The Executive Team is responsible for executing proposals when speed is important. They work like a multi-signature system - multiple people must agree before anything gets executed.
+The Executive Team is responsible for controlling the emergency shutdown functionality of the protocol.
 
 **What they do:**
-- Execute proposals quickly when needed
+- Toggle the emergency shutdown state of the protocol
 - Provide multi-signature approval (multiple people must agree)
-- Can execute proposals immediately when sufficient approval is gathered
+- Can activate or deactivate emergency shutdown when sufficient approval is gathered
 
 **How it works:**
-1. A proposal is created through normal governance channels
-2. Executive Team members signal their approval
-3. Once enough approvals are collected, the proposal executes automatically
-4. This happens immediately - no waiting period
+1. Executive Team members signal their approval to toggle emergency shutdown
+2. Once enough approvals are collected, the emergency shutdown state changes
+3. This happens immediately - no waiting period
+4. The shutdown state toggles between active and inactive
 
 **Safety features:**
 - Requires multiple Executive Team members to approve
-- Powers automatically expire after 3 months
-- Each member can only approve once per proposal
 
 ### Signer Team: The Deliberate Executors
 
-The Signer Team provides an additional execution layer with built-in safety delays to ensure proper consideration of proposals.
+The Signer Team provides an execution layer with built-in safety delays to ensure proper consideration of proposals.
 
 **What they do:**
 - Execute proposals after proper deliberation
-- Provide multi-signature approval like the Executive Team
+- Provide multi-signature approval
 - Follow strict timing rules to ensure proper consideration
 
 **Timing Rules:**
@@ -50,25 +48,21 @@ The Signer Team provides an additional execution layer with built-in safety dela
 3. **Cooldown period** - Must wait an additional day after voting ends
 4. **Then execution** - Only then can the Signer Team execute
 
-**Why the delays:**
-- Ensures proposals get proper consideration
-- Prevents hasty decisions
-- Gives time for community discussion and review
-
 ## Execution Mechanisms Explained
 
-### Quick Execution (Executive Team)
+### Emergency Shutdown Control (Executive Team)
 
 ```
-Proposal Created → Executive Team Approval → Immediate Execution
-       ↓                    ↓                        ↓
-   Normal Process      Multi-Signature           No Waiting
-                      Agreement Required
+Emergency Situation → Executive Team Approval → Shutdown Toggle
+       ↓                        ↓                    ↓
+   Critical Issue        Multi-Signature        Protocol State
+                        Agreement Required      Changes Immediately
 ```
 
 **Timeline:** Minutes to hours
 **Approval:** Multiple Executive Team members must agree
 **Safety:** Automatic expiration of powers
+**Action:** Toggles emergency shutdown state (on/off)
 
 ### Deliberate Execution (Signer Team)
 
@@ -83,14 +77,5 @@ Regular Proposal → Voting Period → Cooldown Period → Signer Team Execution
 **Approval:** Multiple Signer Team members must agree
 **Safety:** Multiple timing checks and delays
 
-## Safety Mechanisms
 
-### Automatic Safeguards
-- **Sunset Heights**: All special powers expire automatically
-- **Multi-Signature**: Multiple people must agree
-- **Timing Controls**: Proper delays for regular proposals
 
-### Human Safeguards
-- **Team Separation**: Different teams for different timing needs
-- **Approval Requirements**: Multiple approvals needed
-- **Time for Consideration**: Built-in delays prevent rushing
