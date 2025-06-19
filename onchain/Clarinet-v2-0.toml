@@ -48,10 +48,10 @@ path = "contracts/borrow/production/mocks/oracle/oracle.clar"
 clarity_version = 2
 epoch = 2.4
 
-[contracts.update-asset]
-path = "contracts/borrow/deployment_mainnet/update-asset.clar"
-clarity_version = 2
-epoch = 2.4
+# [contracts.update-asset]
+# path = "contracts/borrow/deployment_mainnet/update-asset.clar"
+# clarity_version = 2
+# epoch = 2.4
 
 [contracts.flashloan-script]
 path = "contracts/borrow/production/mocks/flashloan-scripts/flashloan-script.clar"
@@ -488,6 +488,16 @@ epoch = 3.0
 
 [contracts.pyth-oracle]
 path = "contracts/borrow/production/mocks/oracle/pyth-oracle.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.proposal-trait]
+path = "contracts/borrow/production/governance/proposal-trait.clar"
+clarity_version = 3
+epoch = 3.0
+
+[contracts.zest-governance]
+path = "contracts/borrow/production/governance/zest-governance.clar"
 clarity_version = 3
 epoch = 3.0
 
