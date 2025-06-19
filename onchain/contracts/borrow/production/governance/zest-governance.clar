@@ -62,6 +62,10 @@
 	(ok (asserts! (is-eq tx-sender .zest-governance) err-unauthorised))
 )
 
+(define-read-only (get-emergency-shutdown)
+	(var-get emergency-shutdown)
+)
+
 ;; --- DAO functions
 (define-read-only (executed-at (proposal <proposal-trait>))
 	(map-get? executed-proposals (contract-of proposal))
