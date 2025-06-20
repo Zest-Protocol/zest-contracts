@@ -4,6 +4,8 @@
 
 ;; emergency execution
 (define-data-var executive-team-sunset-height uint (+ burn-block-height u13140)) ;; ~3 month from deploy time
+(define-data-var last-emergency-shutdown uint u0)
+(define-data-var executive-toggle-period uint u100)
 
 (define-map executive-team principal bool)
 (define-map executive-action-signals {proposal: principal, team-member: principal} bool)
@@ -55,7 +57,7 @@
 (define-constant err-unknown-proposal (err u3010))
 (define-constant err-proposal-inactive (err u3011))
 (define-constant err-proposal-cool-down-period-not-reached (err u3012))
-
+(define-constant err-executive-toggle-period-not-reached (err u3013))
 
 ;; --- Authorisation check
 (define-public (is-dao)
@@ -115,6 +117,13 @@
 	)
 )
 
+(define-public (set-executive-toggle-period (new-period uint))
+	(begin
+		(try! (is-dao))
+		(ok (var-set executive-toggle-period new-period))
+	)
+)
+
 ;; --- Public functions
 
 (define-read-only (is-executive-team-member (who principal))
@@ -142,8 +151,15 @@
 		)
 		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
 		(asserts! (< burn-block-height (var-get executive-team-sunset-height)) err-sunset-height-reached)
+		(asserts! (> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period)) err-executive-toggle-period-not-reached)
 		(and (>= signals (var-get executive-signals-required))
-			(var-set emergency-shutdown (not (var-get emergency-shutdown)))
+			(begin
+				(var-set emergency-shutdown (not (var-get emergency-shutdown)))
+				;; if emergency is not enabled, set the last executive on block to the current burn block height
+				(and (not (var-get emergency-shutdown))
+					(var-set last-emergency-shutdown burn-block-height)
+				)
+			)
 		)
 		(map-set executive-action-signals {proposal: proposal-principal, team-member: contract-caller} true)
 		(map-set executive-action-signal-count proposal-principal signals)
