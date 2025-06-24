@@ -188,7 +188,8 @@
 			(signals (+ (get-executive-signals proposal-principal) (if (has-signalled-executive proposal-principal contract-caller) u0 u1)))
 		)
 		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
-		(asserts! (> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period)) err-executive-toggle-period-not-reached)
+		;; the first time, the shutdown can be done any time, but the next time it must be after the toggle period
+		(asserts! (or (> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period)) (is-eq (var-get last-emergency-shutdown) u0)) err-executive-toggle-period-not-reached)
 		(and (>= signals (var-get executive-signals-required))
 			(begin
 				(var-set emergency-shutdown (not (var-get emergency-shutdown)))

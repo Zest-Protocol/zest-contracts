@@ -20,6 +20,7 @@ const wallet_3 = accounts.get("wallet_3")!;
 const wallet_4 = accounts.get("wallet_4")!;
 const wallet_5 = accounts.get("wallet_5")!;
 const wallet_6 = accounts.get("wallet_6")!;
+const wallet_7 = accounts.get("wallet_7")!;
 
 const contractInterfaces = simnet.getContractsInterfaces();
 
@@ -87,10 +88,20 @@ describe("Execute bootstrap proposal", () => {
 			],
 			deployerAddress
 		);
+
+		// check not set yet
+		let callResult = simnet.callReadOnlyFn(
+			config.poolReserveData,
+			"get-optimal-utilization-rate-read",
+			[
+				Cl.contractPrincipal(deployerAddress, stSTX),
+			],
+			deployerAddress
+		);
+		expect(callResult.result).toBeNone();
 	});
 
 	it("Execute signer proposal", () => {
-
 		simnet.deployContractCheckOk(
 			"proposal-1",
 			readFileSync("contracts/borrow/legacy/archive/deployment_testnet/proposal-1.clar").toString(),
@@ -156,6 +167,61 @@ describe("Execute bootstrap proposal", () => {
 		);
 		expect(callResult.result).toBeSome(Cl.uint(50000000));
 
+	});
+
+	it("Execute executive proposal", () => {
+		simnet.deployContractCheckOk(
+			"proposal-1",
+			readFileSync("contracts/borrow/legacy/archive/deployment_testnet/proposal-1.clar").toString(),
+			{
+				clarityVersion: 3,
+			},
+			deployerAddress
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"add-executive-proposal",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-1"),
+			],
+			wallet_5
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"executive-action",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-1"),
+			],
+			wallet_5
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"executive-action",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-1"),
+			],
+			wallet_6
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"executive-action",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-1"),
+			],
+			wallet_7
+		);
+
+		let callResult = simnet.callReadOnlyFn(
+			config.zest_governance,
+			"get-emergency-shutdown",
+			[],
+			deployerAddress
+		);
+		expect(callResult.result).toStrictEqual(Cl.bool(true));
 
 	});
 });
