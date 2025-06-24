@@ -146,6 +146,8 @@ export const pythStorage = pythStorageV3;
 export const pythPnauDecoderV2 = "pyth-pnau-decoder-v2";
 export const pythPnauDecoder = pythPnauDecoderV2;
 
+export const zest_governance = "zest-governance";
+
 // migrating to v1-2
 export const migrateV0ToV1FilePath = `contracts/borrow/production/mocks/migrate-v0-v1.clar`;
 export const migrateV1ToV2FilePath = `contracts/borrow/production/mocks/migrate-v1-v2.clar`;
@@ -214,7 +216,8 @@ export const hk_ecc_v1_path = `contracts/borrow/production/mocks/oracle/pyth/hir
 export const hk_merkle_tree_keccak160_v1_path = `contracts/borrow/production/mocks/oracle/pyth/hiro-kit/hk-merkle-tree-keccak160-v1.clar`;
 
 export const pyth_oracle_path = `contracts/borrow/production/mocks/oracle/pyth-oracle.clar`;
-
+export const zest_governance_path = `contracts/borrow/production/governance/zest-governance.clar`;
+export const proposal_trait_path = `contracts/borrow/production/governance/proposal-trait.clar`;
 export const oracle = "oracle";
 
 

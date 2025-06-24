@@ -18,6 +18,12 @@ export type SimnetChecker = {
   mineBlockCheckOk: (
     txs: Tx[]
   ) => ParsedTransactionResult[];
+  deployContractCheckOk: (
+    contract: string,
+    code: string,
+    args: { clarityVersion: 1 | 2 | 3 } | null,
+    sender: string
+  ) => ParsedTransactionResult;
 } & Simnet;
 
 export const initSimnetChecker = async () => {
@@ -64,6 +70,34 @@ export const initSimnetChecker = async () => {
     }
     return ret;
   };
+
+  simnet.deployContractCheckOk = function (
+    contract: string,
+    code: string,
+    args: { clarityVersion: 1 | 2 | 3 } | null,
+    sender: string
+  ) {
+    const ret = this.deployContract(
+      contract,
+      code,
+      args,
+      sender
+    ) as ParsedTransactionResult;
+    try {
+      expect(ret.result).toHaveClarityType(ClarityType.ResponseOk);
+    } catch (error) {
+      try {
+        expect(ret.result).toHaveClarityType(ClarityType.BoolTrue);
+      } catch (secondError) {
+        throw new Error(
+          `actual value must be a ${(error as any).expected} or ${(secondError as any).expected}, received ${
+            (error as any).actual
+          } ${Cl.prettyPrint(ret.result)}`
+        );
+      }
+    }
+    return ret;
+  }
 
   return simnet;
 };

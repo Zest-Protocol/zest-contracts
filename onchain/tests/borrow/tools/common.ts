@@ -181,6 +181,22 @@ export const deployV2TokenContracts = (simnet: Simnet, deployerAddress: string) 
 }
 
 export const deployV2_1Contracts = (simnet: Simnet, deployerAddress: string) => {
+	simnet.deployContract(
+		"proposal-trait",
+		readFileSync(config.proposal_trait_path).toString(),
+		{
+			clarityVersion: 3,
+		},
+		deployerAddress
+	);
+	simnet.deployContract(
+		"zest-governance",
+		readFileSync(config.zest_governance_path).toString(),
+		{
+			clarityVersion: 3,
+		},
+		deployerAddress
+	);
   simnet.deployContract(
     "liquidation-manager-v2-1",
     readFileSync(config.liquidation_manager_path).toString(),
