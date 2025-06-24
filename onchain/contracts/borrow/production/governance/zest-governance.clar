@@ -69,6 +69,7 @@
 (define-constant err-proposal-cool-down-period-not-reached (err u3012))
 (define-constant err-executive-toggle-period-not-reached (err u3013))
 (define-constant err-proposal-already-concluded (err u3014))
+(define-constant err-start-block-height-in-past (err u3015))
 
 ;; --- Authorisation check
 (define-public (is-dao)
@@ -89,6 +90,8 @@
 	(begin
 		(asserts! (is-signer-team-member tx-sender) err-not-signer-team-member)
 		(asserts! (is-none (executed-at proposal)) err-proposal-already-executed)
+		(asserts! (> (get start-block-height data) burn-block-height) err-start-block-height-in-past)
+		(asserts! (> (- (get end-block-height data) (var-get proposal-cool-down-period)) burn-block-height) err-proposal-cool-down-period-not-reached)
 		(print {event: "propose", proposal: proposal, proposer: tx-sender})
 		(ok (asserts! (map-insert signer-proposals (contract-of proposal) (merge
 			{
@@ -126,13 +129,13 @@
 		)
 		(asserts! (not (get concluded proposal-data)) err-proposal-already-concluded)
 		(asserts! (>= burn-block-height (get end-block-height proposal-data)) err-end-block-height-not-reached)
+
 		(map-set signer-proposals (contract-of proposal) (merge proposal-data {concluded: true, passed: true}))
 		(print {event: "conclude", proposal: proposal, passed: true})
-		(try! (contract-call? proposal execute tx-sender))
+		(as-contract (try! (contract-call? proposal execute tx-sender)))
 		(ok true)
 	)
 )
-
 
 
 ;; --- Emergency Execution functions
@@ -235,6 +238,10 @@
 	(default-to u0 (map-get? signer-action-signal-count proposal))
 )
 
+(define-read-only (get-signer-proposal-data (proposal principal))
+	(map-get? signer-proposals proposal)
+)
+
 (define-public (signer-action (proposal <proposal-trait>))
 	(let
 		(
@@ -244,8 +251,6 @@
 		)
 		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
 		(asserts! (>= burn-block-height (get start-block-height proposal-data)) err-proposal-inactive)
-		(asserts! (< (- (get end-block-height proposal-data) (var-get proposal-cool-down-period)) burn-block-height) err-proposal-cool-down-period-not-reached)
-		(asserts! (>= burn-block-height (get end-block-height proposal-data)) err-end-block-height-not-reached)
 
 		(and (>= signals (var-get signer-signals-required))
 			(try! (execute-signer-proposal proposal contract-caller))
