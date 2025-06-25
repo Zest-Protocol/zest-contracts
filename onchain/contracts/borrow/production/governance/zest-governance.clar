@@ -12,7 +12,7 @@
 
 
 (define-data-var last-shutdown-proposal-id uint u0)
-(define-map last-shutdown-proposal-executed uint bool)
+(define-data-var execution-in-process bool false)
 (define-map executive-action-signal-count uint uint)
 
 (define-data-var executive-signals-required uint u1) ;; signals required for an executive action.
@@ -74,6 +74,8 @@
 (define-constant err-executive-toggle-period-not-reached (err u3013))
 (define-constant err-proposal-already-concluded (err u3014))
 (define-constant err-start-block-height-in-past (err u3015))
+(define-constant err-execution-in-process (err u3016))
+(define-constant err-execution-not-in-process (err u3017))
 
 ;; --- Authorisation check
 (define-public (is-dao)
@@ -116,9 +118,11 @@
 	)
 		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
 		;; check if last-id was executed
-		(asserts! (is-none (map-get? last-shutdown-proposal-executed last-id)) err-proposal-already-executed)
+		(asserts! (not (var-get execution-in-process)) err-execution-in-process)
+		;; check if the last emergency shutdown was more than the toggle period ago
+		(asserts! (or (> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period)) (is-eq (var-get last-emergency-shutdown) u0)) err-executive-toggle-period-not-reached)
 		(print {event: "propose", proposal-id: next-proposal-id, proposer: tx-sender})
-		(map-set last-shutdown-proposal-executed next-proposal-id false)
+		(var-set execution-in-process true)
 		(ok (var-set last-shutdown-proposal-id next-proposal-id))
 	)
 )
@@ -163,6 +167,14 @@
 	)
 )
 
+(define-read-only (get-executive-toggle-period)
+	(var-get executive-toggle-period)
+)
+
+(define-read-only (get-last-emergency-shutdown)
+	(var-get last-emergency-shutdown)
+)
+
 ;; --- Public functions
 
 (define-read-only (is-executive-team-member (who principal))
@@ -181,6 +193,10 @@
 	(default-to u0 (map-get? executive-action-signal-count id))
 )
 
+;; TODO: remove this
+(define-read-only (test)
+	(- burn-block-height (var-get last-emergency-shutdown))
+)
 
 (define-public (executive-action)
 	(let
@@ -189,15 +205,15 @@
 			(signals (+ (get-executive-signals proposal-id) (if (has-signalled-executive proposal-id contract-caller) u0 u1)))
 		)
 		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
+		(asserts! (var-get execution-in-process) err-execution-not-in-process)
 		;; the first time, the shutdown can be done any time, but the next time it must be after the toggle period
-		(asserts! (or (> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period)) (is-eq (var-get last-emergency-shutdown) u0)) err-executive-toggle-period-not-reached)
 		(and (>= signals (var-get executive-signals-required))
 			(begin
 				(print {event: "execute", proposal-id: proposal-id, caller: contract-caller})
-				(map-set last-shutdown-proposal-executed proposal-id true)
+				(var-set execution-in-process false)
 				(var-set emergency-shutdown (not (var-get emergency-shutdown)))
 				;; if emergency is not enabled, set the last executive on block to the current burn block height
-				(and (not (var-get emergency-shutdown))
+				(and (var-get emergency-shutdown)
 					(var-set last-emergency-shutdown burn-block-height)
 				)
 			)
