@@ -1,14 +1,16 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { Cl, ClarityType, cvToValue } from "@stacks/transactions";
 import { readFileSync } from "fs";
-import { PoolReserve } from "./models/poolReserve";
-import { PoolBorrow } from "./models/poolBorrow";
-import { Oracle } from "./models/oracle";
 
 import * as config from "./tools/config";
 import { initSimnetChecker } from "./tools/SimnetChecker";
-import { deployPythContracts, deployV2_1Contracts, deployV2Contracts, deployV2TokenContracts, initializeRewards } from "./tools/common";
-import { incentivesDummy } from "./tools/config";
+import {
+	deployPythContracts,
+	deployV2_1Contracts,
+	deployV2Contracts,
+	deployV2TokenContracts,
+	initializeRewards
+} from "./tools/common";
 
 const simnet = await initSimnetChecker();
 
@@ -23,7 +25,6 @@ const wallet_6 = accounts.get("wallet_6")!;
 const wallet_7 = accounts.get("wallet_7")!;
 
 const contractInterfaces = simnet.getContractsInterfaces();
-
 
 const pool0Reserve = "pool-0-reserve";
 const feesCalculator = "fees-calculator";
@@ -112,8 +113,9 @@ describe("Execute bootstrap proposal", () => {
 		);
 
 		const delay = 10;
+		const proposalCoolDownPeriod = 144;
 		const day = 144;
-		const startBlockHeight = simnet.burnBlockHeight + delay;
+		const startBlockHeight = simnet.burnBlockHeight + proposalCoolDownPeriod;
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"add-signer-proposal",
@@ -140,9 +142,8 @@ describe("Execute bootstrap proposal", () => {
 			deployerAddress
 		);
 
-		const delay = 10;
-		const day = 144;
-		const startBlockHeight = simnet.burnBlockHeight + delay;
+		const proposalCoolDownPeriod = 144;
+		const startBlockHeight = simnet.burnBlockHeight + proposalCoolDownPeriod;
 		const callResult = simnet.callPublicFn(
 			config.zest_governance,
 			"add-signer-proposal",
@@ -150,7 +151,7 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day - 1),
+					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod - 1),
 					"proposer": Cl.principal(wallet_7)
 				})
 			],
@@ -169,9 +170,9 @@ describe("Execute bootstrap proposal", () => {
 			deployerAddress
 		);
 
-		const delay = 10;
-		const day = 144;
-		const startBlockHeight = simnet.burnBlockHeight + delay;
+		const proposalDuration = 1440;
+		const proposalCoolDownPeriod = 144;
+		const startBlockHeight = simnet.burnBlockHeight;
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"add-signer-proposal",
@@ -179,14 +180,14 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day),
+					"end-block-height": Cl.uint(startBlockHeight),
 					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
 		);
 
-		simnet.mineEmptyBurnBlocks(day + delay);
+		simnet.mineEmptyBurnBlock();
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
@@ -213,6 +214,17 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
 			wallet_3
+		);
+
+		simnet.mineEmptyBurnBlocks(proposalCoolDownPeriod);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-proposal",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-1"),
+			],
+			deployerAddress
 		);
 
 		let callResult = simnet.callReadOnlyFn(
@@ -236,9 +248,8 @@ describe("Execute bootstrap proposal", () => {
 			deployerAddress
 		);
 
-		const delay = 10;
-		const day = 144;
-		let startBlockHeight = simnet.burnBlockHeight + delay;
+		const proposalCoolDownPeriod = 144;
+		let startBlockHeight = simnet.burnBlockHeight;
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"add-signer-proposal",
@@ -246,7 +257,7 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day),
+					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
 					"proposer": Cl.principal(wallet_1)
 				})
 			],
@@ -260,14 +271,15 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day),
+					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
 					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
 		);
 		expect(callResult.result).toBeErr(Cl.uint(3005));
-		simnet.mineEmptyBurnBlocks(day + delay);
+
+		simnet.mineEmptyBurnBlock();
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
@@ -295,7 +307,17 @@ describe("Execute bootstrap proposal", () => {
 			],
 			wallet_3
 		);
+		simnet.mineEmptyBurnBlocks(proposalCoolDownPeriod);
 
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-proposal",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-1"),
+			],
+			deployerAddress
+		);
 		callResult = simnet.callReadOnlyFn(
 			config.poolReserveData,
 			"get-optimal-utilization-rate-read",
@@ -306,7 +328,7 @@ describe("Execute bootstrap proposal", () => {
 		);
 		expect(callResult.result).toBeSome(Cl.uint(50000000));
 
-		startBlockHeight = simnet.burnBlockHeight + delay;
+		startBlockHeight = simnet.burnBlockHeight + proposalCoolDownPeriod;
 		// try to propose again, should fail
 		callResult = simnet.callPublicFn(
 			config.zest_governance,
@@ -315,7 +337,7 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day),
+					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
 					"proposer": Cl.principal(wallet_1)
 				})
 			],
@@ -335,9 +357,8 @@ describe("Execute bootstrap proposal", () => {
 			deployerAddress
 		);
 
-		const delay = 10;
-		const day = 144;
-		const startBlockHeight = simnet.burnBlockHeight + delay;
+		const proposalCoolDownPeriod = 144;
+		const startBlockHeight = simnet.burnBlockHeight;
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"add-signer-proposal",
@@ -345,14 +366,14 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day),
+					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
 					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
 		);
 
-		simnet.mineEmptyBurnBlocks(day + delay);
+		simnet.mineEmptyBurnBlock();
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
@@ -393,9 +414,8 @@ describe("Execute bootstrap proposal", () => {
 			deployerAddress
 		);
 
-		const delay = 10;
-		const day = 144;
-		let startBlockHeight = simnet.burnBlockHeight + delay;
+		const proposalCoolDownPeriod = 144;
+		let startBlockHeight = simnet.burnBlockHeight;
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"add-signer-proposal",
@@ -403,14 +423,14 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day),
+					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
 					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
 		);
 
-		simnet.mineEmptyBurnBlocks(day + delay);
+		simnet.mineEmptyBurnBlock();
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
@@ -437,6 +457,17 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
 			wallet_3
+		);
+
+		simnet.mineEmptyBurnBlocks(proposalCoolDownPeriod);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-proposal",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-1"),
+			],
+			deployerAddress
 		);
 
 		let callResult = simnet.callReadOnlyFn(
@@ -449,7 +480,7 @@ describe("Execute bootstrap proposal", () => {
 		);
 		expect(callResult.result).toBeSome(Cl.uint(50000000));
 
-		startBlockHeight = simnet.burnBlockHeight + delay;
+		startBlockHeight = simnet.burnBlockHeight;
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"add-signer-proposal",
@@ -457,14 +488,14 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-2"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day),
+					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
 					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
 		);
 
-		simnet.mineEmptyBurnBlocks(day + delay);
+		simnet.mineEmptyBurnBlock();
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
@@ -491,6 +522,17 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-2"),
 			],
 			wallet_3
+		);
+
+		simnet.mineEmptyBurnBlocks(proposalCoolDownPeriod);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-proposal",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-2"),
+			],
+			deployerAddress
 		);
 
 		callResult = simnet.callReadOnlyFn(
