@@ -3,7 +3,7 @@
 (define-data-var emergency-shutdown bool false)
 
 ;; emergency execution
-(define-data-var executive-team-sunset-height uint (+ burn-block-height u13140)) ;; ~3 month from deploy time
+;; (define-data-var executive-team-sunset-height uint (+ burn-block-height u13140)) ;; ~3 month from deploy time
 (define-data-var last-emergency-shutdown uint u0)
 (define-data-var executive-toggle-period uint u100)
 
@@ -29,21 +29,6 @@
 (define-map signer-proposals
 	principal
 	{
-		votes-for: uint,
-		votes-against: uint,
-		start-block-height: uint,
-		end-block-height: uint,
-		concluded: bool,
-		passed: bool,
-		proposer: principal
-	}
-)
-
-(define-map executive-proposals
-	principal
-	{
-		votes-for: uint,
-		votes-against: uint,
 		start-block-height: uint,
 		end-block-height: uint,
 		concluded: bool,
@@ -54,14 +39,12 @@
 
 (define-data-var proposal-cool-down-period uint u144) ;; ~1 day
 
-(define-map executed-proposals principal uint)
-
 ;; deployment executive
 (define-data-var executive principal tx-sender)
 
 
 (define-constant err-unauthorised (err u3000))
-(define-constant err-not-emergency-team-member (err u3001))
+;; (define-constant err-not-emergency-team-member (err u3001))
 (define-constant err-proposal-already-executed (err u3004))
 (define-constant err-proposal-already-exists (err u3005))
 (define-constant err-not-executive-team-member (err u3006))
@@ -76,6 +59,7 @@
 (define-constant err-start-block-height-in-past (err u3015))
 (define-constant err-execution-in-process (err u3016))
 (define-constant err-execution-not-in-process (err u3017))
+(define-constant err-already-signed (err u3018))
 
 ;; --- Authorisation check
 (define-public (is-dao)
@@ -86,23 +70,15 @@
 	(var-get emergency-shutdown)
 )
 
-;; --- DAO functions
-(define-read-only (executed-at (proposal <proposal-trait>))
-	(map-get? executed-proposals (contract-of proposal))
-)
-
 ;; --- Proposal functions
 (define-public (add-signer-proposal (proposal <proposal-trait>) (data {start-block-height: uint, end-block-height: uint, proposer: principal}))
 	(begin
 		(asserts! (is-signer-team-member tx-sender) err-not-signer-team-member)
-		(asserts! (is-none (executed-at proposal)) err-proposal-already-executed)
 		(asserts! (> (get start-block-height data) burn-block-height) err-start-block-height-in-past)
 		(asserts! (> (- (get end-block-height data) (var-get proposal-cool-down-period)) burn-block-height) err-proposal-cool-down-period-not-reached)
 		(print {event: "propose", proposal: proposal, proposer: tx-sender})
 		(ok (asserts! (map-insert signer-proposals (contract-of proposal) (merge
 			{
-				votes-for: u0,
-				votes-against: u0,
 				concluded: false,
 				passed: false,
 			}
@@ -117,7 +93,6 @@
 		(next-proposal-id (+ last-id u1))
 	)
 		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
-		;; check if last-id was executed
 		(asserts! (not (var-get execution-in-process)) err-execution-in-process)
 		;; check if the last emergency shutdown was more than the toggle period ago
 		(asserts! (or (> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period)) (is-eq (var-get last-emergency-shutdown) u0)) err-executive-toggle-period-not-reached)
@@ -127,7 +102,7 @@
 	)
 )
 
-(define-public (execute-signer-proposal (proposal <proposal-trait>) (sender principal))
+(define-private (execute-signer-proposal (proposal <proposal-trait>) (sender principal))
 	(let
 		(
 			(proposal-data (unwrap! (map-get? signer-proposals (contract-of proposal)) err-unknown-proposal))
@@ -202,10 +177,11 @@
 	(let
 		(
 			(proposal-id (var-get last-shutdown-proposal-id))
-			(signals (+ (get-executive-signals proposal-id) (if (has-signalled-executive proposal-id contract-caller) u0 u1)))
+			(signals (+ (get-executive-signals proposal-id) u1))
 		)
 		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
 		(asserts! (var-get execution-in-process) err-execution-not-in-process)
+		(asserts! (not (has-signalled-executive proposal-id contract-caller)) err-already-signed)
 		;; the first time, the shutdown can be done any time, but the next time it must be after the toggle period
 		(and (>= signals (var-get executive-signals-required))
 			(begin
@@ -267,9 +243,10 @@
 		(
 			(proposal-principal (contract-of proposal))
 			(proposal-data (unwrap! (map-get? signer-proposals proposal-principal) err-unknown-proposal))
-			(signals (+ (get-signer-signals proposal-principal) (if (has-signalled-signer proposal-principal contract-caller) u0 u1)))
+			(signals (+ (get-signer-signals proposal-principal) u1))
 		)
 		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
+		(asserts! (not (has-signalled-signer proposal-principal contract-caller)) err-already-signed)
 		(asserts! (>= burn-block-height (get start-block-height proposal-data)) err-proposal-inactive)
 
 		(and (>= signals (var-get signer-signals-required))
@@ -280,7 +257,6 @@
 		(ok signals)
 	)
 )
-
 
 
 ;; --- Bootstrap
