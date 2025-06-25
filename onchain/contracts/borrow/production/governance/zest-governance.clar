@@ -44,12 +44,10 @@
 
 
 (define-constant err-unauthorised (err u3000))
-;; (define-constant err-not-emergency-team-member (err u3001))
-(define-constant err-proposal-already-executed (err u3004))
 (define-constant err-proposal-already-exists (err u3005))
 (define-constant err-not-executive-team-member (err u3006))
 (define-constant err-not-signer-team-member (err u3007))
-(define-constant err-already-executed (err u3008))
+
 (define-constant err-end-block-height-not-reached (err u3009))
 (define-constant err-unknown-proposal (err u3010))
 (define-constant err-proposal-inactive (err u3011))
@@ -68,6 +66,13 @@
 
 (define-read-only (get-emergency-shutdown)
 	(var-get emergency-shutdown)
+)
+
+(define-public (set-proposal-cool-down-period (new-period uint))
+	(begin
+		(try! (is-dao))
+		(ok (var-set proposal-cool-down-period new-period))
+	)
 )
 
 ;; --- Proposal functions
@@ -166,11 +171,6 @@
 
 (define-read-only (get-executive-signals (id uint))
 	(default-to u0 (map-get? executive-action-signal-count id))
-)
-
-;; TODO: remove this
-(define-read-only (test)
-	(- burn-block-height (var-get last-emergency-shutdown))
 )
 
 (define-public (executive-action)
