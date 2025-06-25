@@ -182,36 +182,28 @@ describe("Execute bootstrap proposal", () => {
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"add-executive-proposal",
-			[
-				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-			],
+			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"executive-action",
-			[
-				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-			],
+			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"executive-action",
-			[
-				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-			],
+			[],
 			wallet_6
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"executive-action",
-			[
-				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-			],
+			[],
 			wallet_7
 		);
 
@@ -224,4 +216,53 @@ describe("Execute bootstrap proposal", () => {
 		expect(callResult.result).toStrictEqual(Cl.bool(true));
 
 	});
+
+	// it("Execute emergency shutdown, check minimum wait time, then disable emergency shutdown", () => {
+	// 	simnet.deployContractCheckOk(
+	// 		"proposal-1",
+	// 		readFileSync("contracts/borrow/legacy/archive/deployment_testnet/proposal-1.clar").toString(),
+	// 		{
+	// 			clarityVersion: 3,
+	// 		},
+	// 		deployerAddress
+	// 	);
+
+	// 	simnet.callPublicFnCheckOk(
+	// 		config.zest_governance,
+	// 		"add-executive-proposal",
+	// 		[],
+	// 		wallet_5
+	// 	);
+
+	// 	simnet.callPublicFnCheckOk(
+	// 		config.zest_governance,
+	// 		"executive-action",
+	// 		[],
+	// 		wallet_5
+	// 	);
+
+	// 	simnet.callPublicFnCheckOk(
+	// 		config.zest_governance,
+	// 		"executive-action",
+	// 		[],
+	// 		wallet_6
+	// 	);
+
+	// 	simnet.callPublicFnCheckOk(
+	// 		config.zest_governance,
+	// 		"executive-action",
+	// 		[],
+	// 		wallet_7
+	// 	);
+
+	// 	let callResult = simnet.callReadOnlyFn(
+	// 		config.zest_governance,
+	// 		"get-emergency-shutdown",
+	// 		[],
+	// 		deployerAddress
+	// 	);
+	// 	expect(callResult.result).toStrictEqual(Cl.bool(true));
+
+	// });
+
 });

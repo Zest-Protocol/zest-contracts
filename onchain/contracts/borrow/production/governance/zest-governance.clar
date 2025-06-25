@@ -8,8 +8,12 @@
 (define-data-var executive-toggle-period uint u100)
 
 (define-map executive-team principal bool)
-(define-map executive-action-signals {proposal: principal, team-member: principal} bool)
-(define-map executive-action-signal-count principal uint)
+(define-map executive-action-signals {id: uint, team-member: principal} bool)
+
+
+(define-data-var last-shutdown-proposal-id uint u0)
+(define-map last-shutdown-proposal-executed uint bool)
+(define-map executive-action-signal-count uint uint)
 
 (define-data-var executive-signals-required uint u1) ;; signals required for an executive action.
 
@@ -104,21 +108,18 @@
 	)
 )
 
-(define-public (add-executive-proposal (proposal <proposal-trait>))
-	(begin
+
+(define-public (add-executive-proposal)
+	(let (
+		(last-id (var-get last-shutdown-proposal-id))
+		(next-proposal-id (+ last-id u1))
+	)
 		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
-		(asserts! (is-none (executed-at proposal)) err-proposal-already-executed)
-		(print {event: "propose", proposal: proposal, proposer: tx-sender})
-		(ok (asserts! (map-insert executive-proposals (contract-of proposal)
-		{
-			start-block-height: burn-block-height,
-			end-block-height: burn-block-height,
-			proposer: tx-sender,
-			votes-for: u0,
-			votes-against: u0,
-			concluded: false,
-			passed: false
-		}) err-proposal-already-exists))
+		;; check if last-id was executed
+		(asserts! (is-none (map-get? last-shutdown-proposal-executed last-id)) err-proposal-already-executed)
+		(print {event: "propose", proposal-id: next-proposal-id, proposer: tx-sender})
+		(map-set last-shutdown-proposal-executed next-proposal-id false)
+		(ok (var-set last-shutdown-proposal-id next-proposal-id))
 	)
 )
 
@@ -168,30 +169,32 @@
 	(default-to false (map-get? executive-team who))
 )
 
-(define-read-only (has-signalled-executive (proposal principal) (who principal))
-	(default-to false (map-get? executive-action-signals {proposal: proposal, team-member: who}))
+(define-read-only (has-signalled-executive (id uint) (who principal))
+	(default-to false (map-get? executive-action-signals {id: id, team-member: who}))
 )
 
 (define-read-only (get-executive-signals-required)
 	(var-get executive-signals-required)
 )
 
-(define-read-only (get-executive-signals (proposal principal))
-	(default-to u0 (map-get? executive-action-signal-count proposal))
+(define-read-only (get-executive-signals (id uint))
+	(default-to u0 (map-get? executive-action-signal-count id))
 )
 
 
-(define-public (executive-action (proposal <proposal-trait>))
+(define-public (executive-action)
 	(let
 		(
-			(proposal-principal (contract-of proposal))
-			(signals (+ (get-executive-signals proposal-principal) (if (has-signalled-executive proposal-principal contract-caller) u0 u1)))
+			(proposal-id (var-get last-shutdown-proposal-id))
+			(signals (+ (get-executive-signals proposal-id) (if (has-signalled-executive proposal-id contract-caller) u0 u1)))
 		)
 		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
 		;; the first time, the shutdown can be done any time, but the next time it must be after the toggle period
 		(asserts! (or (> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period)) (is-eq (var-get last-emergency-shutdown) u0)) err-executive-toggle-period-not-reached)
 		(and (>= signals (var-get executive-signals-required))
 			(begin
+				(print {event: "execute", proposal-id: proposal-id, caller: contract-caller})
+				(map-set last-shutdown-proposal-executed proposal-id true)
 				(var-set emergency-shutdown (not (var-get emergency-shutdown)))
 				;; if emergency is not enabled, set the last executive on block to the current burn block height
 				(and (not (var-get emergency-shutdown))
@@ -199,8 +202,8 @@
 				)
 			)
 		)
-		(map-set executive-action-signals {proposal: proposal-principal, team-member: contract-caller} true)
-		(map-set executive-action-signal-count proposal-principal signals)
+		(map-set executive-action-signals {id: proposal-id, team-member: contract-caller} true)
+		(map-set executive-action-signal-count proposal-id signals)
 		(ok signals)
 	)
 )
