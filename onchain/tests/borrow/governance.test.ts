@@ -123,8 +123,6 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + day - 1),
-					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
@@ -151,13 +149,11 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod - 1),
-					"proposer": Cl.principal(wallet_7)
 				})
 			],
 			wallet_7
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3007));
+		expect(callResult.result).toBeErr(Cl.uint(3003));
 	});
 
 	it("Execute signer proposal", () => {
@@ -180,8 +176,6 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight),
-					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
@@ -257,8 +251,6 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
-					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
@@ -271,13 +263,11 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
-					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3005));
+		expect(callResult.result).toBeErr(Cl.uint(3001));
 
 		simnet.mineEmptyBurnBlock();
 
@@ -337,13 +327,11 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
-					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3005));
+		expect(callResult.result).toBeErr(Cl.uint(3001));
 	});
 
 
@@ -366,8 +354,6 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
-					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
@@ -392,7 +378,7 @@ describe("Execute bootstrap proposal", () => {
 			],
 			wallet_1
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3018));
+		expect(callResult.result).toBeErr(Cl.uint(3012));
 	});
 
 	it("Execute signer proposal, execute a second proposal", () => {
@@ -423,8 +409,6 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
-					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
@@ -488,8 +472,6 @@ describe("Execute bootstrap proposal", () => {
 				Cl.contractPrincipal(deployerAddress, "proposal-2"),
 				Cl.tuple({
 					"start-block-height": Cl.uint(startBlockHeight),
-					"end-block-height": Cl.uint(startBlockHeight + proposalCoolDownPeriod),
-					"proposer": Cl.principal(wallet_1)
 				})
 			],
 			wallet_1
@@ -618,7 +600,7 @@ describe("Execute bootstrap proposal", () => {
 			[],
 			wallet_5
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3016));
+		expect(callResult.result).toBeErr(Cl.uint(3010));
 	});
 
 	it("Execute executive proposal, try to propose again, should fail", () => {
@@ -644,7 +626,7 @@ describe("Execute bootstrap proposal", () => {
 			[],
 			wallet_5
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3018));
+		expect(callResult.result).toBeErr(Cl.uint(3012));
 	});
 
 	it("Execute without being in process, should fail", () => {
@@ -654,7 +636,7 @@ describe("Execute bootstrap proposal", () => {
 			[],
 			wallet_5
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3017));
+		expect(callResult.result).toBeErr(Cl.uint(3011));
 	});
 
 	it("Execute action, wrong team member, should fail", () => {
@@ -664,7 +646,7 @@ describe("Execute bootstrap proposal", () => {
 			[],
 			wallet_1
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3006));
+		expect(callResult.result).toBeErr(Cl.uint(3002));
 	});
 
 	it("Execute emergency shutdown, check minimum wait time, then disable emergency shutdown. It's back online.", () => {
@@ -712,10 +694,10 @@ describe("Execute bootstrap proposal", () => {
 			[],
 			wallet_5
 		);
-		expect(callResult.result).toBeErr(Cl.uint(3013));
+		expect(callResult.result).toBeErr(Cl.uint(3007));
 
 		// mine 99 blocks to make sure the toggle period is reached
-		simnet.mineEmptyBurnBlocks(101);
+		simnet.mineEmptyBurnBlocks(145);
 
 
 		// should not be able to propose again
@@ -804,24 +786,7 @@ describe("Execute bootstrap proposal", () => {
 		);
 		expect(callResult.result).toStrictEqual(Cl.bool(true));
 
-		callResult = simnet.callReadOnlyFn(
-			config.zest_governance,
-			"get-last-emergency-shutdown",
-			[],
-			deployerAddress
-		);
-		// TODO: checking toggle-executive-period values
-		// console.log(Cl.prettyPrint(callResult.result));
-
-		callResult = simnet.callReadOnlyFn(
-			config.zest_governance,
-			"get-executive-toggle-period",
-			[],
-			deployerAddress
-		);
-		// console.log(Cl.prettyPrint(callResult.result));
-		// mine 99 blocks to make sure the toggle period is reached
-		simnet.mineEmptyBurnBlocks(101);
+		simnet.mineEmptyBurnBlocks(145);
 
 
 		simnet.callPublicFnCheckOk(
