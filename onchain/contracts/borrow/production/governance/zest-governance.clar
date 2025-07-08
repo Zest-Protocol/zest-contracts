@@ -208,7 +208,7 @@
 		(
 			(proposal-principal (contract-of proposal))
 			(proposal-data (unwrap! (map-get? signer-proposals proposal-principal) err-unknown-proposal))
-			(signals (+ (get-signer-signals proposal-principal) (if (has-signalled-signer proposal-principal contract-caller) u0 u1)))
+			(signals (+ (get-signer-signals proposal-principal) u1))
 		)
 		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
 		(asserts! (not (has-signalled-signer proposal-principal contract-caller)) err-already-signed)
