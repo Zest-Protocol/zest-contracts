@@ -25,7 +25,7 @@
 ;; emergency execution
 (define-data-var executive-toggle-period uint u144)
 (define-data-var proposal-execution-delay uint u144) ;; ~1 day
-(define-data-var proposal-expiration-period uint u1440)
+(define-data-var proposal-expiration-period uint u720)
 
 
 (define-map executive-team principal bool)
