@@ -174,12 +174,12 @@
 	(begin
 		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
 		(asserts! (>= start-block-height burn-block-height) err-invalid-start-block-height)
-		(print {event: "propose", proposal: proposal, proposer: tx-sender})
+		(print {event: "propose", proposal: proposal, proposer: contract-caller})
 		(ok (asserts! (map-insert signer-proposals (contract-of proposal) {
 			start-block-height: start-block-height,
 			concluded: false,
 			passed: false,
-			proposer: tx-sender
+			proposer: contract-caller
 		}) err-proposal-already-exists))
 	)
 )
