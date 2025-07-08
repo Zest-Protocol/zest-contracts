@@ -228,6 +228,7 @@
 		(proposal-data (unwrap! (map-get? signer-proposals (contract-of proposal)) err-unknown-proposal))
 		(signals (get-signer-signals (contract-of proposal)))
 	)
+		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
 		;; Check enough signatures
 		(asserts! (>= signals (var-get signer-signals-required)) err-insufficient-signatures)
 		(asserts! (>= burn-block-height (+ (get start-block-height proposal-data) (var-get proposal-execution-delay))) err-proposal-cool-down-period-not-reached)

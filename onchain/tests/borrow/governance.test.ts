@@ -212,7 +212,7 @@ describe("Execute bootstrap proposal", () => {
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
-			deployerAddress
+			wallet_3
 		);
 
 		let callResult = simnet.callReadOnlyFn(
@@ -289,6 +289,16 @@ describe("Execute bootstrap proposal", () => {
 		);
 		simnet.mineEmptyBurnBlocks(proposalCoolDownPeriod);
 
+		// fail when caller is not a team member
+		callResult = simnet.callPublicFn(
+			config.zest_governance,
+			"execute-proposal",
+			[
+				Cl.contractPrincipal(deployerAddress, "proposal-1"),
+			],
+			deployerAddress
+		);
+		expect(callResult.result).toBeErr(Cl.uint(3003));
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
@@ -296,7 +306,7 @@ describe("Execute bootstrap proposal", () => {
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
-			deployerAddress
+			wallet_3
 		);
 		callResult = simnet.callReadOnlyFn(
 			config.poolReserveData,
@@ -435,7 +445,7 @@ describe("Execute bootstrap proposal", () => {
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
-			deployerAddress
+			wallet_3
 		);
 
 		let callResult = simnet.callReadOnlyFn(
@@ -496,7 +506,7 @@ describe("Execute bootstrap proposal", () => {
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-2"),
 			],
-			deployerAddress
+			wallet_3
 		);
 
 		callResult = simnet.callReadOnlyFn(
