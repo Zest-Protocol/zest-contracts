@@ -116,6 +116,7 @@
 (define-public (set-signer-team-member (who principal) (member bool))
 	(begin
 		(try! (is-dao))
+		(print {event: "set-signer-team-member", who: who, member: member})
 		(ok (map-set signer-team who member))
 	)
 )
@@ -123,6 +124,7 @@
 (define-public (set-signer-signals-required (new-requirement uint))
 	(begin
 		(try! (is-dao))
+		(print {event: "set-signer-signals-required", new-requirement: new-requirement})
 		(ok (var-set signer-signals-required new-requirement))
 	)
 )
@@ -130,6 +132,7 @@
 (define-public (set-proposal-expiration-period (new-period uint))
 	(begin
 		(try! (is-dao))
+		(print {event: "set-proposal-expiration-period", new-period: new-period})
 		(ok (var-set proposal-expiration-period new-period))
 	)
 )
@@ -137,6 +140,7 @@
 (define-public (set-proposal-execution-delay (new-period uint))
 	(begin
 		(try! (is-dao))
+		(print {event: "set-proposal-execution-delay", new-period: new-period})
 		(ok (var-set proposal-execution-delay new-period))
 	)
 )
@@ -144,6 +148,7 @@
 (define-public (set-executive-team-member (who principal) (member bool))
 	(begin
 		(try! (is-dao))
+		(print {event: "set-executive-team-member", who: who, member: member})
 		(ok (map-set executive-team who member))
 	)
 )
@@ -151,6 +156,7 @@
 (define-public (set-executive-signals-required (new-requirement uint))
 	(begin
 		(try! (is-dao))
+		(print {event: "set-executive-signals-required", new-requirement: new-requirement})
 		(ok (var-set executive-signals-required new-requirement))
 	)
 )
@@ -158,6 +164,7 @@
 (define-public (set-executive-toggle-period (new-period uint))
 	(begin
 		(try! (is-dao))
+		(print {event: "set-executive-toggle-period", new-period: new-period})
 		(ok (var-set executive-toggle-period new-period))
 	)
 )
