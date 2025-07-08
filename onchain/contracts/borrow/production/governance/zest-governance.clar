@@ -170,13 +170,13 @@
 )
 
 ;; --- Proposal functions
-(define-public (add-signer-proposal (proposal <proposal-trait>) (data {start-block-height: uint}))
+(define-public (add-signer-proposal (proposal <proposal-trait>) (start-block-height uint))
 	(begin
 		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
-		(asserts! (>= (get start-block-height data) burn-block-height) err-invalid-start-block-height)
+		(asserts! (>= start-block-height burn-block-height) err-invalid-start-block-height)
 		(print {event: "propose", proposal: proposal, proposer: tx-sender})
 		(ok (asserts! (map-insert signer-proposals (contract-of proposal) {
-			start-block-height: (get start-block-height data),
+			start-block-height: start-block-height,
 			concluded: false,
 			passed: false,
 			proposer: tx-sender

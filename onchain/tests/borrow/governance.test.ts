@@ -121,9 +121,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_1
 		);
@@ -147,9 +145,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_7
 		);
@@ -174,9 +170,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_1
 		);
@@ -249,9 +243,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_1
 		);
@@ -261,9 +253,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_1
 		);
@@ -325,9 +315,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_1
 		);
@@ -352,9 +340,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_1
 		);
@@ -407,9 +393,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_1
 		);
@@ -470,9 +454,7 @@ describe("Execute bootstrap proposal", () => {
 			"add-signer-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-2"),
-				Cl.tuple({
-					"start-block-height": Cl.uint(startBlockHeight),
-				})
+				Cl.uint(startBlockHeight),
 			],
 			wallet_1
 		);
