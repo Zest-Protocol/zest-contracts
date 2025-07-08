@@ -228,10 +228,10 @@
 		(proposal-data (unwrap! (map-get? signer-proposals (contract-of proposal)) err-unknown-proposal))
 		(signals (get-signer-signals (contract-of proposal)))
 	)
-		(asserts! (>= burn-block-height (+ (get start-block-height proposal-data) (var-get proposal-execution-delay))) err-proposal-cool-down-period-not-reached)
-		(asserts! (< burn-block-height (+ (get start-block-height proposal-data) (var-get proposal-expiration-period))) err-proposal-expired)
 		;; Check enough signatures
 		(asserts! (>= signals (var-get signer-signals-required)) err-insufficient-signatures)
+		(asserts! (>= burn-block-height (+ (get start-block-height proposal-data) (var-get proposal-execution-delay))) err-proposal-cool-down-period-not-reached)
+		(asserts! (< burn-block-height (+ (get start-block-height proposal-data) (var-get proposal-expiration-period))) err-proposal-expired)
 
 		;; Execute
 		(asserts! (not (get concluded proposal-data)) err-proposal-already-concluded)
