@@ -239,8 +239,7 @@
 
 		(map-set signer-proposals (contract-of proposal) (merge proposal-data {concluded: true, passed: true}))
 		(print {event: "conclude", proposal: proposal, passed: true})
-		(as-contract (try! (contract-call? proposal execute contract-caller)))
-		(ok true)
+		(as-contract (contract-call? proposal execute contract-caller))
 	)
 )
 
