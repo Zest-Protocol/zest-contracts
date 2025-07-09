@@ -117,7 +117,7 @@
 (define-public (set-signer-team-member (who principal) (member bool))
 	(begin
 		(try! (is-dao))
-		(print {event: "set-signer-team-member", who: who, member: member})
+		(print {type: "set-signer-team-member", payload: { key: who, data: { member: member }}})
 		(ok (map-set signer-team who member))
 	)
 )
@@ -125,7 +125,7 @@
 (define-public (set-signer-signals-required (new-requirement uint))
 	(begin
 		(try! (is-dao))
-		(print {event: "set-signer-signals-required", new-requirement: new-requirement})
+		(print {type: "set-signer-signals-required", payload: { data: { new-requirement: new-requirement} }})
 		(ok (var-set signer-signals-required new-requirement))
 	)
 )
@@ -133,7 +133,7 @@
 (define-public (set-proposal-expiration-period (new-period uint))
 	(begin
 		(try! (is-dao))
-		(print {event: "set-proposal-expiration-period", new-period: new-period})
+		(print {type: "set-proposal-expiration-period", payload: { data: { new-period: new-period} }})
 		(ok (var-set proposal-expiration-period new-period))
 	)
 )
@@ -141,7 +141,7 @@
 (define-public (set-proposal-execution-delay (new-period uint))
 	(begin
 		(try! (is-dao))
-		(print {event: "set-proposal-execution-delay", new-period: new-period})
+		(print {type: "set-proposal-execution-delay", payload: { data: { new-period: new-period} }})
 		(ok (var-set proposal-execution-delay new-period))
 	)
 )
@@ -149,7 +149,7 @@
 (define-public (set-executive-team-member (who principal) (member bool))
 	(begin
 		(try! (is-dao))
-		(print {event: "set-executive-team-member", who: who, member: member})
+		(print {type: "set-executive-team-member", payload: { key: who, data: { member: member }}})
 		(ok (map-set executive-team who member))
 	)
 )
@@ -157,7 +157,7 @@
 (define-public (set-executive-signals-required (new-requirement uint))
 	(begin
 		(try! (is-dao))
-		(print {event: "set-executive-signals-required", new-requirement: new-requirement})
+		(print {type: "set-executive-signals-required", payload: { data: { new-requirement: new-requirement} }})
 		(ok (var-set executive-signals-required new-requirement))
 	)
 )
@@ -165,7 +165,7 @@
 (define-public (set-executive-toggle-period (new-period uint))
 	(begin
 		(try! (is-dao))
-		(print {event: "set-executive-toggle-period", new-period: new-period})
+		(print {type: "set-executive-toggle-period", payload: { data: { new-period: new-period} }})
 		(ok (var-set executive-toggle-period new-period))
 	)
 )
@@ -175,7 +175,9 @@
 	(begin
 		(asserts! (is-signer-team-member tx-sender) err-not-signer-team-member)
 		(asserts! (>= start-block-height burn-block-height) err-invalid-start-block-height)
-		(print {event: "propose", proposal: proposal, proposer: tx-sender})
+
+		(print {type: "add-signer-proposal", payload: { data: { proposal: proposal, proposer: tx-sender} }})
+
 		(ok (asserts! (map-insert signer-proposals (contract-of proposal) {
 			start-block-height: start-block-height,
 			concluded: false,
@@ -200,6 +202,9 @@
 
 		(map-set signer-action-signals {proposal: proposal-principal, team-member: tx-sender} true)
 		(map-set signer-action-signal-count proposal-principal signals)
+
+		(print {type: "approve-proposal", payload: { data: { proposal: proposal, signals: signals} }})
+
 		(ok signals)
 	)
 )
@@ -219,7 +224,9 @@
 		(asserts! (not (get concluded proposal-data)) err-proposal-already-concluded)
 
 		(map-set signer-proposals (contract-of proposal) (merge proposal-data {concluded: true, passed: true}))
-		(print {event: "conclude", proposal: proposal, passed: true})
+
+		(print {type: "execute-proposal", payload: { data: { proposal: proposal, passed: true} }})
+
 		(as-contract (contract-call? proposal execute tx-sender))
 	)
 )
@@ -232,8 +239,10 @@
 	)
 		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
 		(asserts! (not (var-get execution-in-process)) err-execution-in-process)
-		(print {event: "propose", proposal-id: next-proposal-id, proposer: tx-sender})
 		(var-set execution-in-process true)
+
+		(print {type: "init-executive-toggle", payload: { data: { proposal-id: next-proposal-id, proposer: tx-sender} }})
+
 		(ok (var-set last-shutdown-proposal-id next-proposal-id))
 	)
 )
@@ -252,6 +261,8 @@
 
 		(map-set executive-action-signals {id: proposal-id, team-member: tx-sender} true)
 		(map-set executive-action-signal-count proposal-id signals)
+
+		(print {type: "approve-executive-toggle", payload: { data: { proposal-id: proposal-id, signals: signals} }})
 
 		(ok signals)
 	)
@@ -272,6 +283,8 @@
 		(var-set execution-in-process false)
 		(var-set emergency-shutdown true)
 		(var-set last-emergency-shutdown burn-block-height)
+
+		(print {type: "execute-pause", payload: { data: { proposal-id: proposal-id, signals: signals} }})
 
 		(ok signals)
 	)
@@ -296,6 +309,8 @@
 
 		(var-set execution-in-process false)
 		(var-set emergency-shutdown false)
+
+		(print {type: "execute-unpause", payload: { data: { proposal-id: proposal-id, signals: signals} }})
 
 		(ok signals)
 	)
