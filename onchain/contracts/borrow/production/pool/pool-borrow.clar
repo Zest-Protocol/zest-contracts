@@ -78,7 +78,7 @@
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
     (try! (is-approved-contract contract-caller))
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
     (let (
       (current-balance (try! (contract-call? lp get-balance owner)))
       (current-available-liquidity (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-available-liquidity asset)))
@@ -169,7 +169,7 @@
     (asserts! (is-eq (contract-of lp) (get a-token-address reserve-state)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (contract-of oracle) (get oracle reserve-state)) ERR_INVALID_ORACLE)
     (asserts! (is-eq owner tx-sender) ERR_UNAUTHORIZED)
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
     (let (
       (balances-ret (try! (contract-call? lp cumulate-balance owner)))
       (current-balance (get current-balance balances-ret))
@@ -229,7 +229,7 @@
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (> amount-to-be-borrowed u0) ERR_NOT_ZERO)
 
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
 
     (let (
       (available-liquidity (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-available-liquidity asset-to-borrow)))
@@ -452,7 +452,7 @@
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (> amount-to-repay u0) ERR_NOT_ZERO)
     (asserts! (is-eq payer tx-sender) ERR_UNAUTHORIZED)
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
 
     (match is-in-isolation-mode
       isolated-asset (begin
@@ -502,7 +502,7 @@
     (asserts! (is-eq (contract-of collateral-lp) (get a-token-address collateral-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (contract-of collateral-oracle) (get oracle collateral-data)) ERR_INVALID_ORACLE)
     (asserts! (is-eq (contract-of debt-oracle) (get oracle reserve-data)) ERR_INVALID_ORACLE)
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
 
     (try! (validate-assets assets))
     
@@ -575,7 +575,7 @@
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
 
     (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user asset receiver amount))
     (ok u0)
@@ -601,7 +601,7 @@
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
 
     (try!
       (contract-call? asset transfer
@@ -647,7 +647,7 @@
   (begin
     (asserts! (is-eq tx-sender user) ERR_UNAUTHORIZED)
     (try! (is-approved-contract contract-caller))
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
     (try! (validate-assets assets))
 
     (if (is-eq new-e-mode-type e-mode-disabled-type)
@@ -738,7 +738,7 @@
     (asserts! (get usage-as-collateral-enabled reserve-data) ERR_COLLATERAL_DISABLED)
     (asserts! (is-eq (contract-of lp-token) (get a-token-address reserve-data)) ERR_INVALID_Z_TOKEN)
     (asserts! (is-eq (get oracle reserve-data) (contract-of oracle)) ERR_INVALID_ORACLE)
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
 
     (if (and enable-as-collateral (is-in-e-mode who))
       ;; if in e-mode, check that the user is enabling asset of the same e-mode type
@@ -896,7 +896,7 @@
   (let (
     (reserve-data (try! (get-reserve-state asset))))
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
-	(asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
+    (asserts! (not (emergency-shutdown)) ERR_EMERGENCY_SHUTDOWN)
 
     (contract-call? .pool-0-reserve-v2-0 set-reserve
       asset
