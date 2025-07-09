@@ -703,7 +703,6 @@ describe("Execute bootstrap proposal", () => {
 			wallet_5
 		);
 
-
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"approve-executive-toggle",
@@ -725,6 +724,7 @@ describe("Execute bootstrap proposal", () => {
 			wallet_7
 		);
 
+		// pause
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"execute-pause",
@@ -732,20 +732,8 @@ describe("Execute bootstrap proposal", () => {
 			wallet_5
 		);
 
-		let callResult = simnet.callPublicFn(
-			config.zest_governance,
-			"init-executive-toggle",
-			[],
-			wallet_5
-		);
-		expect(callResult.result).toBeErr(Cl.uint(3007));
-
-		// mine 99 blocks to make sure the toggle period is reached
-		simnet.mineEmptyBurnBlocks(145);
-
-
-		// should not be able to propose again
-		simnet.callPublicFnCheckOk(
+		// init unpause
+		let callResult = simnet.callPublicFnCheckOk(
 			config.zest_governance,
 			"init-executive-toggle",
 			[],
@@ -772,6 +760,18 @@ describe("Execute bootstrap proposal", () => {
 			[],
 			wallet_7
 		);
+
+		// unpause
+		callResult = simnet.callPublicFn(
+			config.zest_governance,
+			"execute-unpause",
+			[],
+			wallet_5
+		);
+		expect(callResult.result).toBeErr(Cl.uint(3007));
+
+		// mine 99 blocks to make sure the toggle period is reached
+		simnet.mineEmptyBurnBlocks(145);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,

@@ -232,11 +232,6 @@
 	)
 		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
 		(asserts! (not (var-get execution-in-process)) err-execution-in-process)
-		;; check if the last emergency shutdown was more than the toggle period ago
-		(asserts! (or
-			(> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period))
-			(is-eq (var-get last-emergency-shutdown) u0)
-		) err-executive-toggle-period-not-reached)
 		(print {event: "propose", proposal-id: next-proposal-id, proposer: tx-sender})
 		(var-set execution-in-process true)
 		(ok (var-set last-shutdown-proposal-id next-proposal-id))
@@ -293,6 +288,11 @@
 		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
 		(asserts! (>= signals (var-get executive-signals-required)) err-insufficient-signatures)
 		(asserts! (var-get emergency-shutdown) err-emergency-shutdown-not-active)
+		;; check if the last emergency shutdown was more than the toggle period ago
+		(asserts! (or
+			(> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period))
+			(is-eq (var-get last-emergency-shutdown) u0)
+		) err-executive-toggle-period-not-reached)
 
 		(var-set execution-in-process false)
 		(var-set emergency-shutdown false)
