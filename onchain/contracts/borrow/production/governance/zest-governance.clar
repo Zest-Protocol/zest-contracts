@@ -173,14 +173,14 @@
 ;; --- Proposal functions
 (define-public (add-signer-proposal (proposal <proposal-trait>) (start-block-height uint))
 	(begin
-		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
+		(asserts! (is-signer-team-member tx-sender) err-not-signer-team-member)
 		(asserts! (>= start-block-height burn-block-height) err-invalid-start-block-height)
-		(print {event: "propose", proposal: proposal, proposer: contract-caller})
+		(print {event: "propose", proposal: proposal, proposer: tx-sender})
 		(ok (asserts! (map-insert signer-proposals (contract-of proposal) {
 			start-block-height: start-block-height,
 			concluded: false,
 			passed: false,
-			proposer: contract-caller
+			proposer: tx-sender
 		}) err-proposal-already-exists))
 	)
 )
@@ -192,13 +192,13 @@
 			(proposal-data (unwrap! (map-get? signer-proposals proposal-principal) err-unknown-proposal))
 			(signals (+ (get-signer-signals proposal-principal) u1))
 		)
-		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
-		(asserts! (not (has-signalled-signer proposal-principal contract-caller)) err-already-signed)
+		(asserts! (is-signer-team-member tx-sender) err-not-signer-team-member)
+		(asserts! (not (has-signalled-signer proposal-principal tx-sender)) err-already-signed)
 		(asserts! (not (get concluded proposal-data)) err-proposal-already-concluded)
 
 		(asserts! (>= burn-block-height (get start-block-height proposal-data)) err-proposal-inactive)
 
-		(map-set signer-action-signals {proposal: proposal-principal, team-member: contract-caller} true)
+		(map-set signer-action-signals {proposal: proposal-principal, team-member: tx-sender} true)
 		(map-set signer-action-signal-count proposal-principal signals)
 		(ok signals)
 	)
@@ -209,7 +209,7 @@
 		(proposal-data (unwrap! (map-get? signer-proposals (contract-of proposal)) err-unknown-proposal))
 		(signals (get-signer-signals (contract-of proposal)))
 	)
-		(asserts! (is-signer-team-member contract-caller) err-not-signer-team-member)
+		(asserts! (is-signer-team-member tx-sender) err-not-signer-team-member)
 		;; Check enough signatures
 		(asserts! (>= signals (var-get signer-signals-required)) err-insufficient-signatures)
 		(asserts! (>= burn-block-height (+ (get start-block-height proposal-data) (var-get proposal-execution-delay))) err-proposal-cool-down-period-not-reached)
@@ -220,7 +220,7 @@
 
 		(map-set signer-proposals (contract-of proposal) (merge proposal-data {concluded: true, passed: true}))
 		(print {event: "conclude", proposal: proposal, passed: true})
-		(as-contract (contract-call? proposal execute contract-caller))
+		(as-contract (contract-call? proposal execute tx-sender))
 	)
 )
 
@@ -230,14 +230,14 @@
 		(last-id (var-get last-shutdown-proposal-id))
 		(next-proposal-id (+ last-id u1))
 	)
-		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
+		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
 		(asserts! (not (var-get execution-in-process)) err-execution-in-process)
 		;; check if the last emergency shutdown was more than the toggle period ago
 		(asserts! (or
 			(> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period))
 			(is-eq (var-get last-emergency-shutdown) u0)
 		) err-executive-toggle-period-not-reached)
-		(print {event: "propose", proposal-id: next-proposal-id, proposer: contract-caller})
+		(print {event: "propose", proposal-id: next-proposal-id, proposer: tx-sender})
 		(var-set execution-in-process true)
 		(ok (var-set last-shutdown-proposal-id next-proposal-id))
 	)
@@ -252,10 +252,10 @@
 			(signals (+ (get-executive-signals proposal-id) u1))
 		)
 		(asserts! (var-get execution-in-process) err-execution-not-in-process)
-		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
-		(asserts! (not (has-signalled-executive proposal-id contract-caller)) err-already-signed)
+		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
+		(asserts! (not (has-signalled-executive proposal-id tx-sender)) err-already-signed)
 
-		(map-set executive-action-signals {id: proposal-id, team-member: contract-caller} true)
+		(map-set executive-action-signals {id: proposal-id, team-member: tx-sender} true)
 		(map-set executive-action-signal-count proposal-id signals)
 
 		(ok signals)
@@ -270,7 +270,7 @@
 			(signals (get-executive-signals proposal-id))
 		)
 		(asserts! (var-get execution-in-process) err-execution-not-in-process)
-		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
+		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
 		(asserts! (>= signals (var-get executive-signals-required)) err-insufficient-signatures)
 		(asserts! (not (var-get emergency-shutdown)) err-emergency-shutdown-already-active)
 
@@ -290,7 +290,7 @@
 			(signals (get-executive-signals proposal-id))
 		)
 		(asserts! (var-get execution-in-process) err-execution-not-in-process)
-		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
+		(asserts! (is-executive-team-member tx-sender) err-not-executive-team-member)
 		(asserts! (>= signals (var-get executive-signals-required)) err-insufficient-signatures)
 		(asserts! (var-get emergency-shutdown) err-emergency-shutdown-not-active)
 

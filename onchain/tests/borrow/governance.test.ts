@@ -676,16 +676,15 @@ describe("Execute bootstrap proposal", () => {
 		expect(callResult.result).toBeErr(Cl.uint(3002));
 	});
 
-	// TODO: uncomment when unpause is implemented
-	// it("Execute unpause without being in process, should fail", () => {
-	// 	let callResult = simnet.callPublicFn(
-	// 		config.zest_governance,
-	// 		"execute-unpause",
-	// 		[],
-	// 		wallet_5
-	// 	);
-	// 	expect(callResult.result).toBeErr(Cl.uint(3011));
-	// });
+	it("Execute unpause without being in process, should fail", () => {
+		let callResult = simnet.callPublicFn(
+			config.zest_governance,
+			"execute-unpause",
+			[],
+			wallet_5
+		);
+		expect(callResult.result).toBeErr(Cl.uint(3011));
+	});
 
 	it("Execute emergency shutdown, check minimum wait time, then disable emergency shutdown. It's back online.", () => {
 		simnet.deployContractCheckOk(
