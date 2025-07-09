@@ -179,7 +179,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -188,7 +188,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -197,7 +197,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -263,7 +263,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -272,7 +272,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -281,7 +281,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -359,7 +359,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -368,7 +368,7 @@ describe("Execute bootstrap proposal", () => {
 
 		const callResult = simnet.callPublicFn(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -412,7 +412,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -421,7 +421,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -430,7 +430,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-1"),
 			],
@@ -473,7 +473,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-2"),
 			],
@@ -482,7 +482,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-2"),
 			],
@@ -491,7 +491,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"signer-action",
+			"approve-proposal",
 			[
 				Cl.contractPrincipal(deployerAddress, "proposal-2"),
 			],
@@ -533,28 +533,35 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_6
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
+			[],
+			wallet_7
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-pause",
 			[],
 			wallet_7
 		);
@@ -580,7 +587,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
@@ -588,17 +595,17 @@ describe("Execute bootstrap proposal", () => {
 		// try to propose again, should fail
 		const callResult = simnet.callPublicFn(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
 		expect(callResult.result).toBeErr(Cl.uint(3010));
 	});
 
-	it("Execute executive proposal, try to propose again, should fail", () => {
+	it("Execute executive proposal, try to sign again, should fail", () => {
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
@@ -606,7 +613,7 @@ describe("Execute bootstrap proposal", () => {
 		// try to propose again, should fail
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_5
 		);
@@ -614,17 +621,17 @@ describe("Execute bootstrap proposal", () => {
 		// try to propose again, should fail
 		const callResult = simnet.callPublicFn(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_5
 		);
 		expect(callResult.result).toBeErr(Cl.uint(3012));
 	});
 
-	it("Execute without being in process, should fail", () => {
+	it("Execute pause without being in process, should fail", () => {
 		let callResult = simnet.callPublicFn(
 			config.zest_governance,
-			"executive-action",
+			"execute-pause",
 			[],
 			wallet_5
 		);
@@ -632,14 +639,53 @@ describe("Execute bootstrap proposal", () => {
 	});
 
 	it("Execute action, wrong team member, should fail", () => {
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"init-executive-toggle",
+			[],
+			wallet_5
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"approve-executive-toggle",
+			[],
+			wallet_5
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"approve-executive-toggle",
+			[],
+			wallet_6
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"approve-executive-toggle",
+			[],
+			wallet_7
+		);
+
 		let callResult = simnet.callPublicFn(
 			config.zest_governance,
-			"executive-action",
+			"execute-pause",
 			[],
 			wallet_1
 		);
 		expect(callResult.result).toBeErr(Cl.uint(3002));
 	});
+
+	// TODO: uncomment when unpause is implemented
+	// it("Execute unpause without being in process, should fail", () => {
+	// 	let callResult = simnet.callPublicFn(
+	// 		config.zest_governance,
+	// 		"execute-unpause",
+	// 		[],
+	// 		wallet_5
+	// 	);
+	// 	expect(callResult.result).toBeErr(Cl.uint(3011));
+	// });
 
 	it("Execute emergency shutdown, check minimum wait time, then disable emergency shutdown. It's back online.", () => {
 		simnet.deployContractCheckOk(
@@ -653,7 +699,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
@@ -661,28 +707,35 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_6
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_7
 		);
 
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-pause",
+			[],
+			wallet_5
+		);
+
 		let callResult = simnet.callPublicFn(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
@@ -695,31 +748,39 @@ describe("Execute bootstrap proposal", () => {
 		// should not be able to propose again
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_6
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_7
 		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-unpause",
+			[],
+			wallet_5
+		);
+
 		// should be set to false, emergency shutdown is disabled
 		callResult = simnet.callReadOnlyFn(
 			config.zest_governance,
@@ -743,7 +804,7 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
@@ -751,23 +812,30 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_6
 		);
 
 		let callResult = simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_7
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-pause",
+			[],
+			wallet_5
 		);
 
 		callResult = simnet.callReadOnlyFn(
@@ -783,30 +851,37 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_6
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_7
+		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-unpause",
+			[],
+			wallet_5
 		);
 		// should be set to false, emergency shutdown is disabled
 		callResult = simnet.callReadOnlyFn(
@@ -820,31 +895,39 @@ describe("Execute bootstrap proposal", () => {
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"add-executive-proposal",
+			"init-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_5
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_6
 		);
 
 		simnet.callPublicFnCheckOk(
 			config.zest_governance,
-			"executive-action",
+			"approve-executive-toggle",
 			[],
 			wallet_7
 		);
+
+		simnet.callPublicFnCheckOk(
+			config.zest_governance,
+			"execute-pause",
+			[],
+			wallet_5
+		);
+
 		// should be set to false, emergency shutdown is disabled
 		callResult = simnet.callReadOnlyFn(
 			config.zest_governance,

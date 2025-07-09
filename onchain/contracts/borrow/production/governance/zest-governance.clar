@@ -15,7 +15,8 @@
 (define-constant err-already-signed (err u3012))
 (define-constant err-insufficient-signatures (err u3013))
 (define-constant err-proposal-expired (err u3014))
-
+(define-constant err-emergency-shutdown-already-active (err u3015))
+(define-constant err-emergency-shutdown-not-active (err u3016))
 
 (define-data-var emergency-shutdown bool false)
 (define-data-var last-shutdown-proposal-id uint u0)
@@ -184,26 +185,7 @@
 	)
 )
 
-(define-public (add-executive-proposal)
-	(let (
-		(last-id (var-get last-shutdown-proposal-id))
-		(next-proposal-id (+ last-id u1))
-	)
-		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
-		(asserts! (not (var-get execution-in-process)) err-execution-in-process)
-		;; check if the last emergency shutdown was more than the toggle period ago
-		(asserts! (or
-			(> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period))
-			(is-eq (var-get last-emergency-shutdown) u0)
-		) err-executive-toggle-period-not-reached)
-		(print {event: "propose", proposal-id: next-proposal-id, proposer: contract-caller})
-		(var-set execution-in-process true)
-		(ok (var-set last-shutdown-proposal-id next-proposal-id))
-	)
-)
-
-;; --- approve function
-(define-public (signer-action (proposal <proposal-trait>))
+(define-public (approve-proposal (proposal <proposal-trait>))
 	(let
 		(
 			(proposal-principal (contract-of proposal))
@@ -222,7 +204,6 @@
 	)
 )
 
-;; --- execute functions
 (define-public (execute-proposal (proposal <proposal-trait>))
 	(let (
 		(proposal-data (unwrap! (map-get? signer-proposals (contract-of proposal)) err-unknown-proposal))
@@ -243,33 +224,82 @@
 	)
 )
 
-(define-public (executive-action)
+;; --- Executive functions
+(define-public (init-executive-toggle)
+	(let (
+		(last-id (var-get last-shutdown-proposal-id))
+		(next-proposal-id (+ last-id u1))
+	)
+		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
+		(asserts! (not (var-get execution-in-process)) err-execution-in-process)
+		;; check if the last emergency shutdown was more than the toggle period ago
+		(asserts! (or
+			(> (- burn-block-height (var-get last-emergency-shutdown)) (var-get executive-toggle-period))
+			(is-eq (var-get last-emergency-shutdown) u0)
+		) err-executive-toggle-period-not-reached)
+		(print {event: "propose", proposal-id: next-proposal-id, proposer: contract-caller})
+		(var-set execution-in-process true)
+		(ok (var-set last-shutdown-proposal-id next-proposal-id))
+	)
+)
+
+;; Approve executive toggle, before being able to execute a pause.
+;; The approval lets pause or unpause be executed, but only one.
+(define-public (approve-executive-toggle)
 	(let
 		(
 			(proposal-id (var-get last-shutdown-proposal-id))
-			(signals (+ (get-executive-signals proposal-id) (if (has-signalled-executive proposal-id contract-caller) u0 u1)))
+			(signals (+ (get-executive-signals proposal-id) u1))
 		)
-		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
 		(asserts! (var-get execution-in-process) err-execution-not-in-process)
+		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
 		(asserts! (not (has-signalled-executive proposal-id contract-caller)) err-already-signed)
-		;; the first time, the shutdown can be done any time, but the next time it must be after the toggle period
-		(and (>= signals (var-get executive-signals-required))
-			(begin
-				(print {event: "execute", proposal-id: proposal-id, caller: contract-caller})
-				(var-set execution-in-process false)
-				(var-set emergency-shutdown (not (var-get emergency-shutdown)))
-				;; if emergency is not enabled, set the last executive on block to the current burn block height
-				(and (var-get emergency-shutdown)
-					(var-set last-emergency-shutdown burn-block-height)
-				)
-			)
-		)
+
 		(map-set executive-action-signals {id: proposal-id, team-member: contract-caller} true)
 		(map-set executive-action-signal-count proposal-id signals)
+
 		(ok signals)
 	)
 )
 
+;; Pause can be executed , after it's been approved by the executive team
+(define-public (execute-pause)
+	(let
+		(
+			(proposal-id (var-get last-shutdown-proposal-id))
+			(signals (get-executive-signals proposal-id))
+		)
+		(asserts! (var-get execution-in-process) err-execution-not-in-process)
+		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
+		(asserts! (>= signals (var-get executive-signals-required)) err-insufficient-signatures)
+		(asserts! (not (var-get emergency-shutdown)) err-emergency-shutdown-already-active)
+
+		(var-set execution-in-process false)
+		(var-set emergency-shutdown true)
+		(var-set last-emergency-shutdown burn-block-height)
+
+		(ok signals)
+	)
+)
+
+;; Unpause can be executed, after it's been approved by the executive team
+(define-public (execute-unpause)
+	(let
+		(
+			(proposal-id (var-get last-shutdown-proposal-id))
+			(signals (get-executive-signals proposal-id))
+		)
+		(asserts! (var-get execution-in-process) err-execution-not-in-process)
+		(asserts! (is-executive-team-member contract-caller) err-not-executive-team-member)
+		(asserts! (>= signals (var-get executive-signals-required)) err-insufficient-signatures)
+		(asserts! (var-get emergency-shutdown) err-emergency-shutdown-not-active)
+
+		(var-set execution-in-process false)
+		(var-set emergency-shutdown false)
+
+		(ok signals)
+	)
+)
 
 ;; --- Bootstrap
 (define-public (construct (proposal <proposal-trait>))
