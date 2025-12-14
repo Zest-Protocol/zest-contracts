@@ -1,23 +1,61 @@
+
 {
   "name": "@zest/contracts",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Zest Protocol - DeFi lending/borrowing protocol for Stacks blockchain",
+  "main": "dist/index.js",
   "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "steps": "ts-node-esm ./src/index.ts"
-  },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "defi",
+    "stacks",
+    "blockchain",
+    "lending",
+    "borrowing",
+    "smart-contracts"
+  ],
+  "author": "Zest Protocol",
   "license": "ISC",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -w -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "test": "npm run build && echo \"No tests specified for TypeScript deployment scripts\"",
+    "test:onchain": "cd onchain && npm test",
+    "test:coverage": "echo \"Coverage reporting not implemented yet\"",
+    "steps": "ts-node-esm ./src/index.ts",
+    "deploy:initialize-pool": "npm run steps initialize-pool",
+    "deploy:send-funds": "npm run steps send-funds",
+    "deploy:drawdown": "npm run steps drawdown",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky install",
+    "release": "semantic-release",
+    "docs": "typedoc --out docs src",
+    "security:audit": "npm audit",
+    "clean:all": "npm run clean && rm -rf node_modules package-lock.json && npm install"
+  },
   "devDependencies": {
     "@types/crypto-js": "^4.2.0",
     "@types/node": "^18.11.3",
     "@types/wif": "^2.0.2",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
+    "prettier": "^3.0.0",
+    "semantic-release": "^21.0.7",
     "ts-node": "^10.5.0",
     "tslib": "^2.4.0",
-    "typescript": "^4.8.4"
+    "typedoc": "^0.25.0",
+    "typescript": "^5.1.6"
   },
   "dependencies": {
     "@noble/secp256k1": "^1.7.1",
@@ -31,5 +69,23 @@
     "cross-fetch": "^3.1.5",
     "node-fetch": "^3.2.10",
     "wif": "^2.0.6"
-  }
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zest-Protocol/zest-contracts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zest-Protocol/zest-contracts/issues"
+  },
+  "homepage": "https://github.com/Zest-Protocol/zest-contracts#readme"
 }
