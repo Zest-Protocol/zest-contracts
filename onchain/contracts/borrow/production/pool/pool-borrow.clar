@@ -921,7 +921,7 @@
     (borroweable-assets (get-borroweable-isolated)))
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-0-reserve-v2-0 set-borroweable-isolated
-      (unwrap-panic (as-max-len? (append borroweable-assets asset) u100)))
+      (unwrap! (as-max-len? (append borroweable-assets asset) u100) ERR_PANIC))
   )
 )
 
