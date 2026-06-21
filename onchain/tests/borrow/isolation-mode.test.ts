@@ -142,6 +142,29 @@ describe("Isolated mode", () => {
     initializeRewards(simnet, deployerAddress);
   });
 
+  it("returns a typed error when the isolated borrowable list is full", () => {
+    const poolBorrow = new PoolBorrow(
+      simnet,
+      deployerAddress,
+      config.poolBorrow
+    );
+
+    for (let index = 0; index < 100; index += 1) {
+      poolBorrow.setBorroweableIsolated(
+        deployerAddress,
+        xUSD,
+        deployerAddress
+      );
+    }
+
+    const callResponse = poolBorrow.setBorroweableIsolated(
+      deployerAddress,
+      xUSD,
+      deployerAddress
+    );
+
+    expect(callResponse.result).toBeErr(Cl.uint(30023));
+  });
   it("Supply and borrow supplying only isolated asset.", () => {
     const poolBorrow = new PoolBorrow(
       simnet,
