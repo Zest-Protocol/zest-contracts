@@ -107,6 +107,107 @@ describe("Supply and redeem ", () => {
     initializeRewards(simnet, deployerAddress);
 
   });
+  it("Borrow returns inactive error when reserve is inactive", () => {
+    const poolBorrow = new PoolBorrow(
+      simnet,
+      deployerAddress,
+      poolBorrowContractName
+    );
+
+    let callResponse = poolBorrow.init(
+      deployerAddress,
+      zstSTX,
+      deployerAddress,
+      stSTX,
+      6,
+      max_value,
+      max_value,
+      deployerAddress,
+      oracle,
+      deployerAddress,
+      interestRateStrategyDefault,
+      deployerAddress
+    );
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+
+    callResponse = poolBorrow.addAsset(deployerAddress, stSTX, deployerAddress);
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+
+    callResponse = poolBorrow.setBorrowingEnabled(
+      deployerAddress,
+      stSTX,
+      true,
+      deployerAddress
+    );
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+
+    callResponse = simnet.callPublicFnCheckOk(
+      poolBorrowContractName,
+      "set-reserve",
+      [
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.tuple({
+          "a-token-address": Cl.contractPrincipal(deployerAddress, zstSTX),
+          "base-ltv-as-collateral": Cl.uint(0),
+          "borrow-cap": Cl.uint(max_value),
+          "borrowing-enabled": Cl.bool(true),
+          "current-average-stable-borrow-rate": Cl.uint(0),
+          "current-liquidity-rate": Cl.uint(0),
+          "current-stable-borrow-rate": Cl.uint(0),
+          "current-variable-borrow-rate": Cl.uint(0),
+          "debt-ceiling": Cl.uint(0),
+          "accrued-to-treasury": Cl.uint(0),
+          decimals: Cl.uint(6),
+          "flashloan-enabled": Cl.bool(false),
+          "interest-rate-strategy-address": Cl.contractPrincipal(
+            deployerAddress,
+            interestRateStrategyDefault
+          ),
+          "is-active": Cl.bool(false),
+          "is-frozen": Cl.bool(false),
+          "is-stable-borrow-rate-enabled": Cl.bool(false),
+          "last-liquidity-cumulative-index": Cl.uint(100000000),
+          "last-updated-block": Cl.uint(simnet.stacksBlockHeight),
+          "last-variable-borrow-cumulative-index": Cl.uint(100000000),
+          "liquidation-bonus": Cl.uint(0),
+          "liquidation-threshold": Cl.uint(0),
+          oracle: Cl.contractPrincipal(deployerAddress, oracle),
+          "supply-cap": Cl.uint(max_value),
+          "total-borrows-stable": Cl.uint(0),
+          "total-borrows-variable": Cl.uint(0),
+          "usage-as-collateral-enabled": Cl.bool(false),
+        }),
+      ],
+      deployerAddress
+    );
+    expect(callResponse.result).toBeOk(Cl.bool(true));
+
+    callResponse = simnet.callPublicFn(
+      borrowHelper,
+      "borrow",
+      [
+        Cl.contractPrincipal(deployerAddress, pool0Reserve),
+        Cl.contractPrincipal(deployerAddress, oracle),
+        Cl.contractPrincipal(deployerAddress, stSTX),
+        Cl.contractPrincipal(deployerAddress, zstSTX),
+        Cl.list([
+          Cl.tuple({
+            asset: Cl.contractPrincipal(deployerAddress, stSTX),
+            "lp-token": Cl.contractPrincipal(deployerAddress, zstSTX),
+            oracle: Cl.contractPrincipal(deployerAddress, oracle),
+          }),
+        ]),
+        Cl.uint(1),
+        Cl.contractPrincipal(deployerAddress, feesCalculator),
+        Cl.uint(0),
+        Cl.standardPrincipal(Borrower_1),
+        Cl.none(),
+      ],
+      Borrower_1
+    );
+    expect(callResponse.result).toBeErr(Cl.uint(30012));
+  });
+
   it("Supply and immediately redeem without returns ", () => {
     const poolBorrow = new PoolBorrow(
       simnet,

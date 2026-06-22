@@ -218,7 +218,7 @@
     (asserts! (is-eq (get oracle reserve-state) (contract-of oracle)) ERR_INVALID_ORACLE)
 
     (asserts! (get borrowing-enabled reserve-state) ERR_BORROWING_DISABLED)
-    (asserts! (get is-active reserve-state) ERR_FROZEN)
+    (asserts! (get is-active reserve-state) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-state)) ERR_FROZEN)
     (asserts! (> amount-to-be-borrowed u0) ERR_NOT_ZERO)
 
