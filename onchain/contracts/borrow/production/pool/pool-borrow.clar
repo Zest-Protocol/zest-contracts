@@ -88,7 +88,7 @@
       (if (is-eq current-balance u0)
         ;; additional checks for first supply and if it's isolation mode
         (if (and (get usage-as-collateral-enabled reserve-state)
-              (unwrap-panic
+              (unwrap!
                 (validate-use-as-collateral
                   isolated-asset
                   ;; we only use base ltv, no need to fetch in case of e-mode
@@ -97,7 +97,8 @@
                   supplied-asset-principal
                   owner
                   (get debt-ceiling reserve-state)
-                ))
+                )
+                ERR_PANIC)
               (if (is-in-e-mode owner)
                 ;; if in e-mode, can only enable use-as-collateral for same e-mode type
                 (is-eq (get-asset-e-mode-type supplied-asset-principal) (get-user-e-mode owner))
@@ -921,7 +922,7 @@
     (borroweable-assets (get-borroweable-isolated)))
     (asserts! (is-configurator tx-sender) ERR_UNAUTHORIZED)
     (contract-call? .pool-0-reserve-v2-0 set-borroweable-isolated
-      (unwrap-panic (as-max-len? (append borroweable-assets asset) u100)))
+      (unwrap! (as-max-len? (append borroweable-assets asset) u100) ERR_PANIC))
   )
 )
 
