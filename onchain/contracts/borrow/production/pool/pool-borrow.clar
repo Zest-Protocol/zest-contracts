@@ -40,11 +40,17 @@
 (define-constant ERR_E_MODE_TYPE_MISMATCH (err u30029))
 (define-constant ERR_NO_ASSETS_USED_AS_COLLATERAL (err u30030))
 (define-constant ERR_MUST_ENABLE_ASSET_OF_E_MODE (err u30031))
+(define-constant ERR_FLASHLOAN_ALREADY_PENDING (err u30032))
+(define-constant ERR_NO_PENDING_FLASHLOAN (err u30033))
 
 
 (define-constant e-mode-disabled-type 0x00)
 
 (define-map users-id uint principal)
+
+(define-map pending-flashloan-liquidations
+  { caller: principal, receiver: principal, asset: principal, flashloan-script: principal }
+  { amount: uint, available-liquidity-before: uint })
 
 (define-data-var last-user-id uint u0)
 
@@ -557,6 +563,12 @@
     (amount-fee (/ (* amount total-fee-bps) u10000))
     (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
     (reserve-data (try! (get-reserve-state (contract-of asset))))
+    (flashloan-key {
+      caller: contract-caller,
+      receiver: receiver,
+      asset: (contract-of asset),
+      flashloan-script: (contract-of flashloan-script)
+    })
   )
     (try! (is-approved-contract contract-caller))
     (asserts! (>= available-liquidity-before amount) ERR_EXCEEDED_LIQ)
@@ -564,6 +576,11 @@
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
+    (asserts!
+      (map-insert pending-flashloan-liquidations
+        flashloan-key
+        { amount: amount, available-liquidity-before: available-liquidity-before })
+      ERR_FLASHLOAN_ALREADY_PENDING)
 
     (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user asset receiver amount))
     (ok u0)
@@ -576,15 +593,21 @@
   (amount uint)
   (flashloan-script <flash-loan>))
   (let  (
-    (available-liquidity-before (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-available-liquidity asset)))
     (total-fee-bps (try! (contract-call? .pool-0-reserve-v2-0 get-flashloan-fee-total (contract-of asset))))
     (protocol-fee-bps (try! (contract-call? .pool-0-reserve-v2-0 get-flashloan-fee-protocol (contract-of asset))))
     (amount-fee (/ (* amount total-fee-bps) u10000))
     (protocol-fee (/ (* amount-fee protocol-fee-bps) u10000))
     (reserve-data (try! (get-reserve-state (contract-of asset))))
+    (flashloan-key {
+      caller: contract-caller,
+      receiver: receiver,
+      asset: (contract-of asset),
+      flashloan-script: (contract-of flashloan-script)
+    })
+    (pending-flashloan (unwrap! (map-get? pending-flashloan-liquidations flashloan-key) ERR_NO_PENDING_FLASHLOAN))
   )
     (try! (is-approved-contract contract-caller))
-    (asserts! (>= available-liquidity-before amount) ERR_EXCEEDED_LIQ)
+    (asserts! (is-eq amount (get amount pending-flashloan)) ERR_INVALID_AMOUNT)
     (asserts! (and (> amount-fee u0) (> protocol-fee u0)) ERR_NOT_ZERO)
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
@@ -599,11 +622,13 @@
       )
     )
 
+    (map-delete pending-flashloan-liquidations flashloan-key)
+
     (try!
       (contract-call? .pool-0-reserve-v2-0 update-state-on-flash-loan
         receiver
         asset
-        available-liquidity-before
+        (get available-liquidity-before pending-flashloan)
         (- amount-fee protocol-fee)
         protocol-fee
       )
