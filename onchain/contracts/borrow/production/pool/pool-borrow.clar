@@ -40,6 +40,7 @@
 (define-constant ERR_E_MODE_TYPE_MISMATCH (err u30029))
 (define-constant ERR_NO_ASSETS_USED_AS_COLLATERAL (err u30030))
 (define-constant ERR_MUST_ENABLE_ASSET_OF_E_MODE (err u30031))
+(define-constant ERR_NO_FLASHLOAN_SNAPSHOT (err u30032))
 
 
 (define-constant e-mode-disabled-type 0x00)
@@ -545,6 +546,12 @@
   )
 )
 
+;; F-01 fix: step-2 previously re-queried get-reserve-available-liquidity,
+;; which by that point reflects POST-loan liquidity (step-1 already
+;; transferred `amount` out). This map lets step-1 snapshot the true
+;; pre-loan liquidity so step-2 consumes that instead of re-querying.
+(define-map flashloan-liquidity-snapshot principal uint)
+
 (define-public (flashloan-liquidation-step-1
   (receiver principal)
   (asset <ft>)
@@ -565,6 +572,7 @@
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
 
+    (map-set flashloan-liquidity-snapshot (contract-of asset) available-liquidity-before)
     (try! (contract-call? .pool-0-reserve-v2-0 transfer-to-user asset receiver amount))
     (ok u0)
   )
@@ -576,7 +584,7 @@
   (amount uint)
   (flashloan-script <flash-loan>))
   (let  (
-    (available-liquidity-before (try! (contract-call? .pool-0-reserve-v2-0 get-reserve-available-liquidity asset)))
+    (available-liquidity-before (unwrap! (map-get? flashloan-liquidity-snapshot (contract-of asset)) ERR_NO_FLASHLOAN_SNAPSHOT))
     (total-fee-bps (try! (contract-call? .pool-0-reserve-v2-0 get-flashloan-fee-total (contract-of asset))))
     (protocol-fee-bps (try! (contract-call? .pool-0-reserve-v2-0 get-flashloan-fee-protocol (contract-of asset))))
     (amount-fee (/ (* amount total-fee-bps) u10000))
@@ -589,6 +597,8 @@
     (asserts! (get flashloan-enabled reserve-data) ERR_FLASHLOAN_DISABLED)
     (asserts! (get is-active reserve-data) ERR_INACTIVE)
     (asserts! (not (get is-frozen reserve-data)) ERR_FROZEN)
+
+    (map-delete flashloan-liquidity-snapshot (contract-of asset))
 
     (try!
       (contract-call? asset transfer
